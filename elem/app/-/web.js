@@ -5140,6 +5140,32 @@ var $;
                                 overflow: () => 'hidden',
                             },
                             elem: {
+                                iconSquare: () => ({
+                                    prop: {
+                                        '#width': () => 28,
+                                        '#height': () => 28,
+                                        '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                                            to: isShrinked ? 18 : 16
+                                        })),
+                                        '#alignVer': () => $$.$me_align.center,
+                                    },
+                                    elem: {
+                                        icon: () => ({
+                                            node: 'img',
+                                            prop: {
+                                                '#width': () => 20,
+                                                '#height': () => 22,
+                                                '#align': () => $$.$me_align.center,
+                                            },
+                                            attr: {
+                                                src: () => '../assets/' + 'icons-8-enter-2' + '@2x.png',
+                                            },
+                                            style: {
+                                                filter: () => 'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'
+                                            },
+                                        }),
+                                    },
+                                }),
                                 text: () => ({
                                     prop: {
                                         '#width': () => null,
@@ -5241,7 +5267,7 @@ var $;
                                         '#cursor': () => 'pointer',
                                         'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => id == selected),
                                         'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover'], ({ masters: [isSelected, isHover] }) => isSelected ? '#0070a4' :
-                                            isHover ? '#C0D4E3' :
+                                            isHover ? '#cce2ed' :
                                                 'white'),
                                         'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
                                     },
