@@ -848,6 +848,9 @@ var $;
             return Object.assign({}, p, pp);
         }
         $$.$me_atom2_prop_def_prepare = $me_atom2_prop_def_prepare;
+        $$.$me_atom2_prop_compute_fn_or = (initial) => initial === void 0 ? compute_fn_or :
+            (p) => compute_fn_and(p, initial);
+        const compute_fn_or = (p, initial) => p.masters.reduce((result, val) => result || val, initial === void 0 ? false : initial);
         $$.$me_atom2_prop_compute_fn_and = (initial) => initial === void 0 ? compute_fn_and :
             (p) => compute_fn_and(p, initial);
         const compute_fn_and = (p, initial) => p.masters.reduce((result, val) => result && val, initial === void 0 ? true : initial);
@@ -1239,6 +1242,7 @@ var $;
                             }
                             if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
                                 $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
+                                $me_atom2.anim_active(anim, true);
                                 $$.$me_atom2_async();
                             }
                             if (anim.delay <= 0)
@@ -1264,8 +1268,9 @@ var $;
                 }
                 const next_value = helper(val);
                 if (next_value !== void 0) {
-                    if (!just_set_anim)
-                        $me_atom2.anim_to_play.delete(this.path);
+                    if (!just_set_anim) {
+                        $me_atom2.anim_stop(this.path);
+                    }
                     this.set_value(next_value, true_set, force);
                 }
             }
@@ -1527,6 +1532,26 @@ var $;
                         this._key_idx_changed_helper(p, entities_key[k], n - 1, key.concat(k));
                     }
                 }
+            }
+            static anim_start(anim, t) {
+                if (anim.start == null)
+                    anim.start = anim.progress == null ? t :
+                        t - anim.delay - Math.min(1, anim.progress) * anim.duration;
+            }
+            static anim_active(anim, active) {
+                if (!anim.path_active)
+                    return;
+                const atom_active = $$.$me_atom2_entity.root().by_path(anim.path_active);
+                if (!atom_active)
+                    return;
+                atom_active.value(active);
+            }
+            static anim_stop(path) {
+                if (!$me_atom2.anim_to_play.has(path))
+                    return;
+                const anim = $me_atom2.anim_to_play.get(path);
+                $me_atom2.anim_to_play.delete(path);
+                $me_atom2.anim_active(anim, false);
             }
             static fn_compute_false() {
                 return false;
@@ -2393,8 +2418,8 @@ var $;
                     node_parent.appendChild(node_child);
                 }
                 else {
-                    let node_after;
                     const children = node_parent.children;
+                    let node_after;
                     let i_min = 0;
                     let i_max = children.length - 1;
                     let i_mid;
@@ -2412,26 +2437,23 @@ var $;
                                 idx = $me_atom2_elem._indexOf(order, $me_atom2_elem._elem_name(child.id), name_strip, key_enum_store, id);
                             }
                             if (idx > idx_curr) {
-                                if (i_max - i_min < 2) {
-                                    node_after = child;
-                                }
-                                else
-                                    while (i_max - i_min >= 2) {
-                                        const i_mid = (i_max + i_min) / 2;
-                                        child = children[i_mid];
-                                        idx = $me_atom2_elem._indexOf(order, $me_atom2_elem._elem_name(child.id), name_strip, key_enum_store, id);
-                                        if (idx < idx_curr) {
-                                            i_min = i_mid;
-                                        }
-                                        else {
-                                            i_max = i_mid;
-                                            node_after = child;
-                                        }
+                                node_after = child;
+                                while (i_max - i_min >= 2) {
+                                    const i_mid = Math.floor((i_max + i_min) / 2);
+                                    child = children[i_mid];
+                                    idx = $me_atom2_elem._indexOf(order, $me_atom2_elem._elem_name(child.id), name_strip, key_enum_store, id);
+                                    if (idx < idx_curr) {
+                                        i_min = i_mid;
                                     }
+                                    else {
+                                        i_max = i_mid;
+                                        node_after = child;
+                                    }
+                                }
                             }
                         }
                     }
-                    if (void 0 === node_after) {
+                    if (null == node_after) {
                         node_parent.appendChild(node_child);
                     }
                     else {
@@ -2697,6 +2719,8 @@ var $;
                 for (const [path, fn_array] of item.handlers) {
                     const ec = $$.$me_atom2_entity.root().by_path(path);
                     if (!ec)
+                        continue;
+                    if (!ec._entities.prop['#visible'].value())
                         continue;
                     const clientRect = ec._entities.prop['#clientRect'].value();
                     if (!clientRect)
@@ -3253,15 +3277,19 @@ var $;
                     const pre = performance.now() - last_now;
                     const anim_to_play = new Array();
                     for (const [path, anim] of $$.$me_atom2.anim_to_play)
-                        if (anim.progress !== void 0 && anim.progress < 1) {
-                            const atom = $$.$me_atom2.by_path(path);
-                            if (!atom) {
-                                $$.$me_atom2.anim_to_play.delete(path);
+                        if (anim.progress !== void 0)
+                            if (anim.progress < 1) {
+                                const atom = $$.$me_atom2.by_path(path);
+                                if (!atom) {
+                                    $$.$me_atom2.anim_stop(path);
+                                }
+                                else {
+                                    anim_to_play.push([atom, anim]);
+                                }
                             }
                             else {
-                                anim_to_play.push([atom, anim]);
+                                $$.$me_atom2.anim_stop(path);
                             }
-                        }
                     const [count, needReplay] = $me_atom2_async_anim(anim_to_play, t, start);
                     if (needReplay)
                         $$.$me_atom2_async();
@@ -3276,7 +3304,7 @@ var $;
             let needReplay = false, count = 0;
             for (const [atom, anim] of anim_to_play) {
                 count += 1;
-                $me_atom2_async_anim_start(anim, t);
+                $$.$me_atom2.anim_start(anim, t);
                 anim.progress = Math.min(1, (t - anim.start - anim.delay) / anim.duration);
                 if (!anim.fn && typeof anim.to !== 'number')
                     $$.$me_throw('anim.fn must be specified');
@@ -3295,12 +3323,6 @@ var $;
             return [count, needReplay];
         }
         $$.$me_atom2_async_anim = $me_atom2_async_anim;
-        function $me_atom2_async_anim_start(anim, t) {
-            if (anim.start == null)
-                anim.start = anim.progress == null ? t :
-                    t - anim.delay - Math.min(1, anim.progress) * anim.duration;
-        }
-        $$.$me_atom2_async_anim_start = $me_atom2_async_anim_start;
         const ops_event = {
             mousemove: (last_now) => {
                 const pre = performance.now() - last_now;
@@ -3466,25 +3488,20 @@ var $;
                     const anim_to_play = new Array();
                     for (const [path, anim] of $$.$me_atom2.anim_to_play) {
                         if (anim.delay) {
-                            $$.$me_atom2_async_anim_start(anim, t);
+                            $$.$me_atom2.anim_start(anim, t);
                             if ((t - anim.start) < anim.delay) {
                                 needReplay = true;
                                 continue;
                             }
                         }
                         if (anim.progress === void 0) {
-                            anim_active(anim, true);
                             const atom = $$.$me_atom2.by_path(path);
                             if (atom) {
                                 anim_to_play.push([atom, anim]);
                             }
                             else {
-                                $$.$me_atom2.anim_to_play.delete(path);
+                                $$.$me_atom2.anim_stop(path);
                             }
-                        }
-                        else if (anim.progress >= 1) {
-                            anim_active(anim, false);
-                            $$.$me_atom2.anim_to_play.delete(path);
                         }
                     }
                     if (!$$.$me_atom2_async_complete()) {
@@ -3514,14 +3531,6 @@ var $;
             !$$.$me_atom2_elem._to_def.length &&
             !$$.$me_atom2._to_def.length &&
             true;
-        function anim_active(anim, active) {
-            if (!anim.path_active)
-                return;
-            const atom_active = $$.$me_atom2_entity.root().by_path(anim.path_active);
-            if (!atom_active)
-                return;
-            atom_active.value(active);
-        }
         $$.$me_atom2_async_complete = (including_anim = false) => !($$.$me_atom2_elem.children_to_add.size ||
             $$.$me_atom2_elem.lazy_prop_apply_did() ||
             $$.$me_atom2_entity._to_activate.size ||
@@ -3654,38 +3663,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //ric.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_app = (rootElem, elem) => {
-            $$.$me_atom2_entity.root().props({
-                '#height': '.#viewportHeight',
-                '#width': '.#viewportWidth',
-                '#left': () => 0,
-                '#top': () => 0,
-                '#isReady': () => true,
-                em: () => 16,
-                colorText: () => '#313745',
-                fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-                fontWeight: () => 400,
-            });
-            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em' });
-            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
-            return new $$.$me_atom2_elem({ tail: 'app', cnf: {
-                    node: rootElem,
-                    style: {
-                        margin: () => 0,
-                        background: () => '#D9DCE2',
-                    },
-                    elem: elem,
-                } });
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//nl.js.map
 ;
 "use strict";
 var $;
@@ -4536,139 +4513,346 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
         $$.$nl_elem_search_grid = {
-            prop: {
-                col_ids: $$.$me_atom2_prop_keys(['.cols']),
-                col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]),
-                col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.width),
-                col_width_min: () => 10,
-                col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
-                col_fixed_width: () => 136,
-                ofsHor: () => 136,
-                col_left: $$.$me_atom2_prop({
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'get_row_height') {
+                    const row_heights = $$.a('.row_heights');
+                    dispatch_arg.val = !row_heights.has(dispatch_arg.idx) ? $$.a('.row_height_min') : row_heights.get(dispatch_arg.idx);
+                    return true;
+                }
+                else if (dispatch_name == 'set_row_height') {
+                    const row_heights = $$.a('.row_heights');
+                    if (dispatch_arg.val != $$.a('.row_height_min')) {
+                        row_heights.set(dispatch_arg.idx, dispatch_arg.val);
+                    }
+                    else if (row_heights.has(dispatch_arg.idx)) {
+                        row_heights.delete(dispatch_arg.idx);
+                    }
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
+            prop: Object.assign({ row_heights: () => new Map(), col_ids: $$.$me_atom2_prop_keys(['.cols']), col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]), col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.width), col_width_min: () => 10, col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id), col_fixed_width: () => 37, col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()), ofsHor: $$.$me_atom2_prop(['.#width', '.col_width_sum', '.col_fixed_width'], ({ prev, masters: [width, col_width_sum, col_fixed_width] }) => prev == null ? col_fixed_width :
+                    Math.min(col_fixed_width, Math.max(prev, width - col_width_sum))), col_left: $$.$me_atom2_prop({
                     keys: ['.col_ids'],
                     masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
                         const idx = ids.indexOf(id);
                         return !idx ? ['.ofsHor'] : [`.col_left[${ids[idx - 1]}]`, `.col_width[${ids[idx - 1]}]`];
                     }),
-                }, ({ len, masters: [left, width] }) => len == 1 ? left : left + width),
+                }, ({ len, masters: [left, width] }) => len == 1 ? left : left + width), header_height: () => 32, row_height_min: () => 28, row_idx_max: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => row_count - 1), row_key_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.row_count'], ({ masters: [height, row_height_min, header_height, row_count] }) => Math.min(Math.ceil((height - header_height) / row_height_min), row_count) + 2, ({ prev, val }) => {
+                    if (prev != null && prev > val)
+                        return prev;
+                }), row_keys: $$.$me_atom2_prop(['.row_key_count'], ({ masters: [row_key_count] }) => [...Array(row_key_count).keys()].map(i => i + '')) }, $$.$me_atom2_prop_same_def(() => null, [
+                ...min_max('row_i'),
+                ...min_max('visible_idx'),
+                ...min_max('visible', 'top', 'bottom')
+            ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_keys'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_key], masters: [row_i_min, row_i_max] }) => is_key_out_of_range(+row_key, row_i_min, row_i_max)), row_idx_delta: () => 1, row_idx: $$.$me_atom2_prop({
+                    keys: ['.row_keys'],
+                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_key_count'], ({ key: [row_key], masters: [row_i_min, row_i_max, row_key_count] }) => {
+                        const key = +row_key;
+                        const result = (() => {
+                            if (is_key_out_of_range(key, row_i_min, row_i_max))
+                                return [];
+                            if (key == row_i_min)
+                                return ['.visible_idx_min'];
+                            if (!row_key_count)
+                                return [];
+                            const i = next_i(-1, key, row_key_count);
+                            return [`.row_idx[${i}]`, '.row_idx_delta'];
+                        })();
+                        return result;
+                    }),
+                }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0)), row_height_source: $$.$me_atom2_prop({
+                    keys: ['.row_keys'],
+                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max'], ({ key: [row_key], masters: [row_i_min, row_i_max] }) => {
+                        return is_key_out_of_range(+row_key, row_i_min, row_i_max) ? [] :
+                            [`.row_idx[${row_key}]`, '.provider'];
+                    }),
+                }, ({ len, masters: [row_idx, provider] }) => {
+                    return !len || !provider ? -1 : get_row_height(row_idx, provider, true);
+                }, ({ key: [row_key], val }) => {
+                    if (val >= 0 &&
+                        +row_key < $$.a('.row_key_count') &&
+                        is_key_out_of_range(+row_key, $$.a('.row_i_min'), $$.a('.row_i_max')))
+                        set_row_height($$.a(`.row_idx[${row_key}]`), $$.a('.provider'), val);
+                }), provider: () => $$.a.curr.parent(true).path, row_height: $$.$me_atom2_prop({
+                    keys: ['.row_keys'],
+                    masters: ['.row_height_source[]']
+                }, ({ key: [row_key], masters: [row_height_source] }) => {
+                    const result = row_height_source < 0 ? null : $$.$me_atom2_anim({ to: row_height_source });
+                    return result;
+                }, ({ val, prev, key: [row_key] }) => {
+                    if (val == null)
+                        return;
+                    val = Math.round(val);
+                    prev = Math.round(prev);
+                    let delta = val - prev;
+                    const height = $$.a('.#height');
+                    const key_idx = $$.a(`.row_idx[${row_key}]`);
+                    const fromBottom = $$.a('.visible_idx_max') == $$.a('.row_idx_max') && (+row_key == $$.a('.row_i_max') || $$.a('.visible_bottom') + delta < height) || delta > 0 && $$.a(`.row_top[${row_key}]`) + val > height;
+                    adjust_rows($$.a(fromBottom ? '.visible_bottom' : '.visible_top'), fromBottom, (idx, provider) => idx === key_idx ? val : get_row_height(idx, provider, true));
+                    return val;
+                }), row_top: $$.$me_atom2_prop({
+                    keys: ['.row_keys'],
+                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_key_count'], ({ key: [row_key], masters: [row_i_min, row_i_max, row_key_count] }) => {
+                        const key = +row_key;
+                        const result = (() => {
+                            if (is_key_out_of_range(key, row_i_min, row_i_max))
+                                return [];
+                            if (key == row_i_min)
+                                return ['.visible_top'];
+                            if (!row_key_count)
+                                return [];
+                            const i = next_i(-1, key, row_key_count);
+                            return [`.row_top[${i}]`, `.row_height[${i}]`];
+                        })();
+                        return result;
+                    }),
+                }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0)), '#order': () => ['row', 'header'], anim_height: () => false, adjust_bottom: $$.$me_atom2_prop(['.row_i_min', '.visible_top', '.visible_idx_min', '.#height', '.header_height', '.row_key_count', '.row_idx_max', '.provider', '.anim_height'], ({ masters: [i, val, idx, height, header_height, len, idx_max, provider, anim_height] }) => {
+                    return !provider || anim_height ? null : compute_visible({ i, val, idx, height, header_height, len, idx_max, provider }, true);
+                }, ({ val }) => {
+                    if (val != null)
+                        set_visible(val, true);
+                }), adjust_top: $$.$me_atom2_prop(['.row_i_max', '.visible_bottom', '.visible_idx_max', '.#height', '.header_height', '.row_key_count', '.row_idx_max', '.provider', '.anim_height'], ({ masters: [i, val, idx, height, header_height, len, idx_max, provider, anim_height] }) => {
+                    return idx < idx_max || val > height ? null : compute_visible({ i, val: height, idx, height, header_height, len, idx_max, provider }, false);
+                }, ({ val }) => {
+                    if (val != null) {
+                        set_visible(val, false);
+                    }
+                }) }),
+            elem: {
+                header: () => header,
+                row: $$.$me_atom2_prop({ keys: ['.row_keys'] }, ({ key: [row_key] }) => ({
+                    prop: {
+                        '#ofsVer': `<.row_top[${row_key}]`,
+                        '#height': () => 28,
+                        '#hidden': `<.row_hidden[${row_key}]`,
+                    },
+                    style: {
+                        border: () => '1px solid red',
+                    },
+                    dom: {
+                        innerText: `<.row_idx[${row_key}]`,
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log(row_key);
+                            return true;
+                        },
+                    },
+                })),
             },
             event: {
                 wheel: p => {
+                    if (!p.isInRect(p.event.clientX, p.event.clientY))
+                        return false;
                     let ofs = 0;
-                    if (p.event._deltaX < 0) {
-                        const ids = $$.a('.col_ids');
-                        const id_last = ids[ids.length - 1];
-                        const right = $$.a(`.col_left[${id_last}]`) + $$.a(`.col_width[${id_last}]`);
-                        ofs = Math.max($$.a('.#width') - right, p.event._deltaX);
+                    if (Math.abs(p.event._deltaX) > Math.abs(p.event._deltaY)) {
+                        if (p.event._deltaX < 0) {
+                            const ids = $$.a('.col_ids');
+                            const id_last = ids[ids.length - 1];
+                            const right = $$.a(`.col_left[${id_last}]`) + $$.a(`.col_width[${id_last}]`);
+                            ofs = Math.max($$.a('.#width') - right, p.event._deltaX);
+                        }
+                        else {
+                            const ids = $$.a('.col_ids');
+                            const left = $$.a(`.col_left[${ids[0]}]`);
+                            ofs = Math.min($$.a('.col_fixed_width') - left, p.event._deltaX);
+                        }
+                        $$.a('.ofsHor', $$.a('.ofsHor') + ofs);
                     }
                     else {
-                        const ids = $$.a('.col_ids');
-                        const left = $$.a(`.col_left[${ids[0]}]`);
-                        ofs = Math.min($$.a('.col_fixed_width') - left, p.event._deltaX);
+                        const fromBottom = p.event._deltaY < 0;
+                        if (fromBottom ?
+                            $$.a('.visible_idx_min') > 0 || $$.a('.visible_top') < $$.a('.header_height') :
+                            $$.a('.visible_idx_max') < $$.a('.row_idx_max') || $$.a('.visible_bottom') > $$.a('.#height'))
+                            adjust_rows($$.a(fromBottom ? '.visible_bottom' : '.visible_top') - p.event._deltaY, fromBottom);
                     }
-                    $$.a('.ofsHor', $$.a('.ofsHor') + ofs);
                     return true;
                 },
             },
+            init: () => {
+                set_visible({ val: $$.a('.header_height'), idx: 0, i: 0 });
+            },
+        };
+        const is_key_out_of_range = (key, row_i_min, row_i_max) => row_i_max == row_i_min ||
+            row_i_max > row_i_min && (key < row_i_min || key > row_i_max) ||
+            row_i_max < row_i_min && key > row_i_max && key < row_i_min;
+        const next_i = (inc, i, len) => {
+            if (!len)
+                $$.$me_throw('len == 0');
+            return (i + len + inc % len) % len;
+        };
+        const get_row_height = (idx, provider, non_cache = false) => {
+            let result;
+            if (!non_cache) {
+                const visible_idx_min = $$.a('.visible_idx_min');
+                const visible_idx_max = $$.a('.visible_idx_max');
+                if (visible_idx_min != null && visible_idx_max != null && visible_idx_min <= idx && idx <= visible_idx_max) {
+                    const i = next_i(idx - visible_idx_min, $$.a('.row_i_min'), $$.a('.row_key_count'));
+                    const name_atom = `.row_height[${i}]`;
+                    result = $$.a(name_atom);
+                }
+            }
+            if (result == null) {
+                const dispatch_arg = { idx };
+                const ec = $$.$me_atom2_entity.root().by_path(provider);
+                if (!ec.dispatch('get_row_height', dispatch_arg)) {
+                    $$.$me_throw(`could not obtain row_height[${idx}] from ${ec.name()}`);
+                }
+                else {
+                    result = dispatch_arg.val;
+                }
+            }
+            return Math.round(result);
+        };
+        const set_row_height = (idx, provider, val) => {
+            const dispatch_arg = { idx, val };
+            const ec = $$.$me_atom2_entity.root().by_path(provider);
+            if (!ec.dispatch('set_row_height', dispatch_arg)) {
+                $$.$me_throw(`could not obtain row_height[${idx}] from ${ec.name()}`);
+            }
+        };
+        function adjust_rows(val, fromBottom = false, row_height) {
+            if (!row_height)
+                row_height = get_row_height;
+            if (!$$.a('.row_count'))
+                return;
+            const p = {
+                val,
+                idx_max: $$.a('.row_idx_max'),
+                i: $$.a(fromBottom ? '.row_i_max' : '.row_i_min'),
+                idx: $$.a(fromBottom ? '.visible_idx_max' : '.visible_idx_min'),
+                len: $$.a('.row_key_count'),
+                provider: $$.a('.provider'),
+                height: $$.a('.#height'),
+                header_height: $$.a('.header_height'),
+            };
+            compute_visible(p, !fromBottom, row_height);
+            set_visible(p, !fromBottom);
+            compute_visible(p, fromBottom, row_height);
+            set_visible(p, fromBottom);
+        }
+        function compute_visible(p, bottom = false, row_height) {
+            if (!row_height)
+                row_height = get_row_height;
+            if (bottom) {
+                for (; (p.val += row_height(p.idx, p.provider)) < p.height && p.idx < p.idx_max; p.idx++)
+                    p.i = next_i(+1, p.i, p.len);
+                if (p.val < p.height)
+                    p.val = p.height;
+            }
+            else {
+                for (; (p.val -= row_height(p.idx, p.provider)) > p.header_height && p.idx; p.idx--)
+                    p.i = next_i(-1, p.i, p.len);
+                if (p.val > p.header_height)
+                    p.val = p.header_height;
+            }
+            return p;
+        }
+        function set_visible(p, bottom = false) {
+            $$.a(bottom ? '.row_i_max' : '.row_i_min', p.i);
+            $$.a(bottom ? '.visible_idx_max' : '.visible_idx_min', p.idx);
+            $$.a(bottom ? '.visible_bottom' : '.visible_top', p.val);
+        }
+        const header = {
+            prop: {
+                '#height': '<.header_height',
+                '#order': () => ['cell', 'fixed'],
+                readyToResize: () => '',
+                resizeStart: () => null,
+                resizeInitial: () => null,
+                '#cursor': $$.$me_atom2_prop(['.readyToResize'], ({ masters: [readyToResize] }) => !readyToResize ? 'default' : 'col-resize'),
+            },
+            event: {
+                mousemove: p => {
+                    const resizeStart = $$.a('.resizeStart');
+                    if (resizeStart != null) {
+                        const width = Math.max($$.a('<.col_width_min'), $$.a('.resizeInitial') + p.event.clientX - resizeStart);
+                        const id = $$.a('.readyToResize');
+                        $$.a(`<.col_width[${id}]`, width);
+                        return true;
+                    }
+                    else if (!p.isInRect(p.event.clientX, p.event.clientY))
+                        return false;
+                    const cells = $$.a.get('@cell')._entities.key;
+                    let id_found = '';
+                    const delta = 4;
+                    for (const id in cells) {
+                        const clientRect = cells[id]._entities.prop['#clientRect'].value();
+                        if (clientRect.right - delta <= p.event.clientX && p.event.clientX <= clientRect.right + delta) {
+                            id_found = id;
+                            break;
+                        }
+                    }
+                    $$.a('.readyToResize', id_found);
+                    return true;
+                },
+                mousedown: p => {
+                    if (!p.isInRect(p.event.clientX, p.event.clientY))
+                        return false;
+                    const id = $$.a('.readyToResize');
+                    if (id) {
+                        $$.a('.resizeStart', p.event.clientX);
+                        $$.a('.resizeInitial', $$.a(`<.col_width[${id}]`));
+                    }
+                },
+                mouseup: p => {
+                    const resizeStart = $$.a('.resizeStart');
+                    if (resizeStart != null) {
+                        $$.a('.resizeStart', null);
+                        $$.a('.resizeInitial', null);
+                    }
+                    return false;
+                },
+            },
+            style: {
+                overflow: () => 'hidden',
+            },
             elem: {
-                header: () => ({
+                fixed: () => ({
                     prop: {
-                        '#height': () => 32,
-                        '#order': () => ['cell', 'fixed'],
-                        readyToResize: () => '',
-                        resizeStart: () => null,
-                        resizeInitial: () => null,
-                        '#cursor': $$.$me_atom2_prop(['.readyToResize'], ({ masters: [readyToResize] }) => !readyToResize ? 'default' : 'col-resize'),
-                    },
-                    event: {
-                        mousemove: p => {
-                            const resizeStart = $$.a('.resizeStart');
-                            if (resizeStart != null) {
-                                const width = Math.max($$.a('<.col_width_min'), $$.a('.resizeInitial') + p.event.clientX - resizeStart);
-                                const id = $$.a('.readyToResize');
-                                $$.a(`<.col_width[${id}]`, width);
-                                return true;
-                            }
-                            else if (!p.isInRect(p.event.clientX, p.event.clientY))
-                                return false;
-                            const cells = $$.a.get('@cell')._entities.key;
-                            let id_found = '';
-                            const delta = 4;
-                            for (const id in cells) {
-                                const clientRect = cells[id]._entities.prop['#clientRect'].value();
-                                if (clientRect.right - delta <= p.event.clientX && p.event.clientX <= clientRect.right + delta) {
-                                    id_found = id;
-                                    break;
-                                }
-                            }
-                            $$.a('.readyToResize', id_found);
-                            return true;
-                        },
-                        mousedown: p => {
-                            if (!p.isInRect(p.event.clientX, p.event.clientY))
-                                return false;
-                            const id = $$.a('.readyToResize');
-                            if (id) {
-                                $$.a('.resizeStart', p.event.clientX);
-                                $$.a('.resizeInitial', $$.a(`<.col_width[${id}]`));
-                            }
-                        },
-                        mouseup: p => {
-                            const resizeStart = $$.a('.resizeStart');
-                            if (resizeStart != null) {
-                                $$.a('.resizeStart', null);
-                                $$.a('.resizeInitial', null);
-                            }
-                            return false;
-                        },
+                        '#width': '<<.col_fixed_width',
                     },
                     style: {
-                        overflow: () => 'hidden',
+                        borderRight: () => '1px solid #adb0b8',
+                        background: () => '#d8dce3',
+                        boxSizing: () => 'border-box',
                     },
-                    elem: {
-                        fixed: () => ({
-                            prop: {
-                                '#width': '<<.col_fixed_width',
-                            },
-                            style: {
-                                borderRight: () => '1px solid #adb0b8',
-                                background: () => '#d8dce3',
-                                boxSizing: () => 'border-box',
-                            },
-                        }),
-                        cell: $$.$me_atom2_prop({ keys: ['<.col_ids'], masters: ['<.col_left[]', '<.col_width[]', '<.col_fixed_width', '<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width] }) => col_left >= parent_width || col_left + col_width <= col_fixed_width ? null :
-                            {
+                }),
+                cell: $$.$me_atom2_prop({ keys: ['<.col_ids'], masters: ['<.col_left[]', '<.col_width[]', '<.col_fixed_width', '<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width] }) => col_left >= parent_width || col_left + col_width <= col_fixed_width ? null :
+                    {
+                        prop: {
+                            '#width': `<<.col_width[${id}]`,
+                            '#ofsHor': `<<.col_left[${id}]`,
+                        },
+                        style: {
+                            borderRight: () => '1px solid #adb0b8',
+                            background: () => '#d8dce3',
+                            boxSizing: () => 'border-box',
+                        },
+                        elem: {
+                            text: () => ({
                                 prop: {
-                                    '#width': `<<.col_width[${id}]`,
-                                    '#ofsHor': `<<.col_left[${id}]`,
+                                    '#height': () => null,
+                                    '#align': () => $$.$me_align.center,
+                                    '#width': () => null,
+                                },
+                                dom: {
+                                    innerText: `<<<.col_caption[${id}]`,
                                 },
                                 style: {
-                                    borderRight: () => '1px solid #adb0b8',
-                                    background: () => '#d8dce3',
-                                    boxSizing: () => 'border-box',
-                                },
-                                elem: {
-                                    text: () => ({
-                                        prop: {
-                                            '#height': () => null,
-                                            '#align': () => $$.$me_align.center,
-                                            '#width': () => null,
-                                        },
-                                        dom: {
-                                            innerText: `<<<.col_caption[${id}]`,
-                                        },
-                                        style: {
-                                            whiteSpace: () => 'nowrap',
-                                            overflow: () => 'hidden',
-                                            textOverflow: () => 'ellipsis',
-                                            maxWidth: $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 6),
-                                        },
-                                    }),
+                                    whiteSpace: () => 'nowrap',
+                                    overflow: () => 'hidden',
+                                    textOverflow: () => 'ellipsis',
+                                    maxWidth: $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 6),
                                 },
                             }),
-                    },
-                })
+                        },
+                    }),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -4688,6 +4872,34 @@ var $;
                     order.result_mode = val;
                     $$.a(`.order`, order, true);
                 }),
+                count: $$.$me_atom2_prop(['.order'], ({ masters: [order] }) => {
+                    $$.a('.dataWorker').postMessage({ cmd: 'count' });
+                    return null;
+                }),
+                dataWorker: () => {
+                    const result = new Worker(window.location.href.slice(0, -5) + 'data/-/web.js');
+                    const curr = $$.a.curr;
+                    result.onmessage = (event) => {
+                        const prev = $$.a.curr;
+                        $$.a.curr = curr;
+                        if (event.data.status != 'ok') {
+                            console.error(event.data);
+                        }
+                        else if (event.data.cmd == 'count') {
+                            $$.a('.count', event.data.count);
+                        }
+                        else if (event.data.cmd == 'recs') {
+                            console.log(event.data.by_idx);
+                        }
+                        else {
+                            console.error(event.data);
+                        }
+                        $$.a.curr = prev;
+                    };
+                    return result;
+                },
+            },
+            init() {
             },
             elem: {
                 shown: () => ({
@@ -4703,7 +4915,7 @@ var $;
                         fontWeight: () => 500,
                     },
                     dom: {
-                        innerText: $$.$me_atom2_prop(['<<.offerCount', '<<.objCount'], ({ masters: [offerCount, objCount] }) => `Показано ${offerCount} предложений`.toUpperCase()),
+                        innerText: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => `Показано ${count} предложений`.toUpperCase()),
                     },
                 }),
                 filter: () => ({
@@ -4795,6 +5007,7 @@ var $;
                                 width: 41,
                             },
                         }),
+                        row_count: '<.count',
                     },
                 }),
             },
@@ -4892,7 +5105,7 @@ var $;
     var $$;
     (function ($$) {
         $$.$nl_elem_app = (rootElem) => {
-            return $$.$nl_app(rootElem, {
+            return app(rootElem, {
                 workspace: () => ({
                     prop: {
                         '#ofsHor': '<@menu.#width',
@@ -4908,7 +5121,12 @@ var $;
                 menu: () => ({
                     prop: {
                         isShrinked: $$.$me_atom2_prop_store(false, (val) => typeof val == 'boolean'),
-                        '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({ to: isShrinked ? 64 : 290 })),
+                        '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                            to: isShrinked ? 64 : 290,
+                            path_active: $$.a.get('.isShrinked_animActive').path,
+                        })),
+                        isShrinked_animActive: $$.$me_atom2_prop([], () => false),
+                        '#order': () => ['ear', 'login', 'list'],
                     },
                     elem: {
                         login: () => ({
@@ -4919,6 +5137,7 @@ var $;
                             },
                             style: {
                                 background: '.colorBackground',
+                                overflow: () => 'hidden',
                             },
                             elem: {
                                 text: () => ({
@@ -4927,7 +5146,7 @@ var $;
                                         '#ofsHor': () => 61,
                                         '#height': () => null,
                                         '#alignVer': () => $$.$me_align.center,
-                                        '#hidden': '<<.isShrinked',
+                                        '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                                     },
                                     style: {
                                         color: () => 'white',
@@ -4942,14 +5161,30 @@ var $;
                             prop: {
                                 '#height': '<@login.#height',
                                 '#width': () => 17,
-                                'colorBackground': '<@login.colorBackground',
-                                '#ofsHor': $$.$me_atom2_prop(['<@login.#width'], ({ masters: [width] }) => width + 1),
+                                '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive] }) => {
+                                    if (isHover)
+                                        isShrinked = !isShrinked;
+                                    return width + (isShrinked ? 0 : 2);
+                                }),
                                 '#cursor': () => 'pointer',
                             },
-                            style: {
-                                borderTopRightRadius: () => '4px',
-                                borderBottomRightRadius: () => '4px',
-                                background: '.colorBackground',
+                            elem: {
+                                img: () => ({
+                                    node: 'img',
+                                    prop: {
+                                        '#height': () => 72,
+                                        '#width': () => 35,
+                                        '#ofsVer': () => -3,
+                                        '#ofsHor': () => -9,
+                                    },
+                                    attr: {
+                                        src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => {
+                                            if (isShrinked_animActive)
+                                                isShrinked = !isShrinked;
+                                            return `../assets/light-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
+                                        }),
+                                    },
+                                }),
                             },
                             event: {
                                 clickOrTap: () => {
@@ -4964,76 +5199,118 @@ var $;
                                 '#height': $$.$me_atom2_prop(['.#ofsVer', '<.#height'], ({ masters: [ofsVer, height] }) => height - ofsVer),
                                 colorBorder: () => 'blue',
                                 items: () => ({
-                                    'main': { title: 'Главная' },
-                                    'search': { title: 'Поиск' },
-                                    'orders': { title: 'Заказы' },
-                                    'clients': { title: 'Клиенты' },
-                                    'advs': { title: 'Мои объявления' },
-                                    'docs': { title: 'Документы' },
-                                    'users': { title: 'Пользователи' },
-                                    'feedback': { title: 'Обратная связь' },
-                                    'subscription': { title: 'Подписка' },
-                                    'settings': { title: 'Настройки' },
-                                    'sma': { title: 'СМА' },
-                                    'history': { title: 'История поиска' },
-                                    'favorites': { title: 'Избранное' },
-                                    'archive': { title: 'Архивные данные' },
+                                    'main': { title: 'Главная', icon: 'icons-8-home', icon_width: 26, icon_height: 23 },
+                                    'search': { title: 'Поиск', icon: 'icons-8-search' },
+                                    'orders': { title: 'Заказы', icon: 'icons-8-buy' },
+                                    'clients': { title: 'Клиенты', icon: 'icons-8-meeting', icon_width: 22 },
+                                    'advs': { title: 'Мои объявления', icon: 'icons-8-resume-website', icon_width: 22, icon_height: 22 },
+                                    'docs': { title: 'Документы', icon: 'icons-8-wipes' },
+                                    'users': { title: 'Пользователи', icon: 'icons-8-add-user-group', icon_width: 27 },
+                                    'feedback': { title: 'Обратная связь', icon: 'icons-8-info-popup', icon_width: 22 },
+                                    'subscription': { title: 'Подписка', icon: 'icons-8-wallet-copy-2', icon_width: 22, icon_height: 22 },
+                                    'settings': { title: 'Настройки', icon: 'icons-8-settings' },
+                                    'sma': { title: 'СМА', icon: 'icons-8-sell-property', icon_width: 26, icon_height: 23 },
+                                    'history': { title: 'История поиска', icon: 'icons-8-last-hour' },
+                                    'favorites': { title: 'Избранное', icon: 'icons-8-star', icon_width: 26, icon_height: 25 },
+                                    'archive': { title: 'Архивные данные', icon: 'icons-8-winrar', icon_height: 22, },
                                 }),
-                                item_keys: $$.$me_atom2_prop(['.items'], ({ masters: [items] }) => Object.keys(items)),
-                                item_idx: $$.$me_atom2_prop(['.item_keys'], ({ masters: [item_keys] }) => [...item_keys.keys()]),
-                                item_key: $$.$me_atom2_prop({
-                                    keys: ['.item_idx'],
-                                    masters: ['.item_keys'],
-                                }, ({ key: [idx], masters: [item_keys, items] }) => item_keys[+idx]),
-                                item: $$.$me_atom2_prop({ keys: ['.item_idx'], masters: ['.item_keys', '.items'] }, ({ key: [idx], masters: [item_keys, items] }) => items[item_keys[idx]]),
-                                item_height: () => 52,
+                                item_id: $$.$me_atom2_prop_keys(['.items']),
+                                item: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
                                 item_top: $$.$me_atom2_prop({
-                                    keys: ['.item_idx'],
-                                    masters: $$.$me_atom2_prop_masters([], ({ key: [idx] }) => !idx ? [] : [`.item_top[${+idx - 1}]`, '.item_height']),
-                                }, ({ key: [idx], masters: [top, height] }) => !idx ? 0 : top + height),
-                                item_title: $$.$me_atom2_prop({
-                                    keys: ['.item_idx'],
-                                    masters: ['.item_keys', '.items'],
-                                }, ({ key: [idx], masters: [item_keys, items] }) => items[item_keys[+idx]].title),
+                                    keys: ['.item_id'],
+                                    masters: $$.$me_atom2_prop_masters(['.item_id'], ({ key: [id], masters: [ids] }) => {
+                                        const idx = ids.indexOf(id);
+                                        return !idx ? [] : [`.item_top[${ids[idx - 1]}]`, '.item_height'];
+                                    }),
+                                }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
+                                item_title: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
+                                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => '../assets/' + item.icon + '@2x.png'),
+                                item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
+                                item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
+                                item_height: () => 52,
                                 selected: $$.$me_atom2_prop_store('', (val) => typeof val == 'string'),
                             },
                             style: {
                                 background: () => 'white',
                             },
                             elem: {
-                                item: $$.$me_atom2_prop({ keys: ['.item_idx'] }, ({ key: [idx] }) => ({
+                                item: $$.$me_atom2_prop({ keys: ['.item_id'] }, ({ key: [id] }) => ({
                                     prop: {
-                                        '#ofsVer': `<.item_top[${idx}]`,
+                                        '#ofsVer': `<.item_top[${id}]`,
                                         '#height': '<.item_height',
                                         '#cursor': () => 'pointer',
-                                        'isSelected': $$.$me_atom2_prop([`<.item_key[${idx}]`, '<.selected'], ({ masters: [item_key, selected] }) => item_key == selected),
-                                        'colorBackground': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#0070a4' : 'white'),
+                                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => id == selected),
+                                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover'], ({ masters: [isSelected, isHover] }) => isSelected ? '#0070a4' :
+                                            isHover ? '#C0D4E3' :
+                                                'white'),
                                         'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
                                     },
                                     style: {
                                         background: '.colorBackground',
+                                        overflow: () => 'hidden',
                                     },
                                     elem: {
-                                        inner: () => ({
+                                        iconSquare: () => ({
+                                            prop: {
+                                                '#width': () => 28,
+                                                '#height': () => 28,
+                                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                                                    to: isShrinked ? 18 : 16
+                                                })),
+                                                '#alignVer': () => $$.$me_align.center,
+                                            },
+                                            elem: {
+                                                icon: () => ({
+                                                    node: 'img',
+                                                    prop: {
+                                                        '#width': `<<<.item_icon_width[${id}]`,
+                                                        '#height': `<<<.item_icon_height[${id}]`,
+                                                        '#align': () => $$.$me_align.center,
+                                                    },
+                                                    attr: {
+                                                        src: `<<<.item_icon[${id}]`
+                                                    },
+                                                    style: {
+                                                        filter: $$.$me_atom2_prop(['<<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
+                                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                                    },
+                                                }),
+                                            },
+                                        }),
+                                        text: () => ({
                                             prop: {
                                                 '#alignVer': () => $$.$me_align.center,
                                                 '#height': () => null,
                                                 '#ofsHor': () => 61,
                                                 '#width': () => null,
-                                                '#hidden': '<<<.isShrinked',
+                                                '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                                             },
                                             dom: {
-                                                innerText: `<<.item_title[${idx}]`,
+                                                innerText: `<<.item_title[${id}]`,
                                             },
                                             style: {
                                                 color: '<.colorText',
                                                 whiteSpace: () => 'nowrap',
+                                                opacity: $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({ to: isShrinked ? 0 : 1 })),
+                                            },
+                                        }),
+                                        separator: $$.$me_atom2_prop(['<.item_id', '.isSelected'], ({ masters: [ids, isSelected] }) => isSelected || !ids.indexOf(id) ? null : {
+                                            prop: {
+                                                '#hidden': $$.$me_atom2_prop(['<.isSelected', '<.#isHover'], $$.$me_atom2_prop_compute_fn_or()),
+                                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                                                    to: isShrinked ? 12 : 16
+                                                })),
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                                            },
+                                            style: {
+                                                borderTop: () => '1px solid #eceff5',
                                             },
                                         }),
                                     },
                                     event: {
                                         clickOrTap: () => {
-                                            $$.a('<.selected', $$.a(`<.item_key[${idx}]`));
+                                            $$.a('<.selected', id);
                                             return true;
                                         },
                                     },
@@ -5043,6 +5320,29 @@ var $;
                     },
                 }),
             });
+        };
+        const app = (rootElem, elem) => {
+            $$.$me_atom2_entity.root().props({
+                '#height': '.#viewportHeight',
+                '#width': '.#viewportWidth',
+                '#left': () => 0,
+                '#top': () => 0,
+                '#isReady': () => true,
+                em: () => 16,
+                colorText: () => '#313745',
+                fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+                fontWeight: () => 400,
+            });
+            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em' });
+            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
+            return new $$.$me_atom2_elem({ tail: 'app', cnf: {
+                    node: rootElem,
+                    style: {
+                        margin: () => 0,
+                        background: () => '#D9DCE2',
+                    },
+                    elem: elem,
+                } });
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
