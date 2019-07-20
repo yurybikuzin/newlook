@@ -4523,27 +4523,7 @@ var $;
     (function ($$) {
         const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
         $$.$nl_elem_search_grid = {
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_row_height') {
-                    const row_heights = $$.a('.row_heights');
-                    dispatch_arg.val = !row_heights.has(dispatch_arg.idx) ? $$.a('.row_height_min') : row_heights.get(dispatch_arg.idx);
-                    return true;
-                }
-                else if (dispatch_name == 'set_row_height') {
-                    const row_heights = $$.a('.row_heights');
-                    if (dispatch_arg.val != $$.a('.row_height_min')) {
-                        row_heights.set(dispatch_arg.idx, dispatch_arg.val);
-                    }
-                    else if (row_heights.has(dispatch_arg.idx)) {
-                        row_heights.delete(dispatch_arg.idx);
-                    }
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            },
-            prop: Object.assign({ row_heights: () => new Map(), col_ids: $$.$me_atom2_prop_keys(['.cols']), col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]), col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.width), col_width_min: () => 10, col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id), col_fixed_width: () => 37, col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()), ofsHor: $$.$me_atom2_prop(['.#width', '.col_width_sum', '.col_fixed_width'], ({ prev, masters: [width, col_width_sum, col_fixed_width] }) => prev == null ? col_fixed_width :
+            prop: Object.assign({ col_ids: $$.$me_atom2_prop_keys(['.cols']), col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]), col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.width), col_width_min: () => 10, col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id), col_fixed_width: () => 37, col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()), ofsHor: $$.$me_atom2_prop(['.#width', '.col_width_sum', '.col_fixed_width'], ({ prev, masters: [width, col_width_sum, col_fixed_width] }) => prev == null ? col_fixed_width :
                     Math.min(col_fixed_width, Math.max(prev, width - col_width_sum))), col_left: $$.$me_atom2_prop({
                     keys: ['.col_ids'],
                     masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
@@ -4651,7 +4631,7 @@ var $;
                 }), row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_height_source[]'] }, ({ key: [row_i], masters: [to, row_top_anim], prev }) => to < 0 ? null : prev == null || prev == to ? to : $$.$me_atom2_anim({
                     to,
                     fini: () => adjust_rows($$.a('.visible_top')),
-                }), ({ val }) => val == null ? null : Math.round(val)), on_height_change: $$.$me_atom2_prop(['.#height'], null, ({ val }) => adjust_rows($$.a('.visible_top'))), '#order': () => ['row', 'header'] }),
+                }), ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.order', '.#height', '.rec_count'], null, () => adjust_rows($$.a('.visible_top'))), '#order': () => ['row', 'header'] }),
             elem: {
                 header: () => header,
                 row: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
@@ -4709,9 +4689,6 @@ var $;
                     }
                     return true;
                 },
-            },
-            init: () => {
-                adjust_rows($$.a('.header_height'));
             },
         };
         const is_row_i_out_of_range = (key, row_i_min, row_i_max) => row_i_max == row_i_min ||
@@ -4915,11 +4892,6 @@ var $;
         $$.$nl_elem_search_panel_result = {
             base: $$.$nl_elem_search_panel,
             prop: {
-                mode: $$.$me_atom2_prop([`.order`], ({ masters: [order] }) => order.result_mode || 'Таблица', ({ val }) => {
-                    const order = $$.a(`.order`);
-                    order.result_mode = val;
-                    $$.a(`.order`, order, true);
-                }),
                 count: $$.$me_atom2_prop(['.order'], ({ masters: [order] }) => {
                     $$.a('.dataWorker').postMessage({ cmd: 'count' });
                     return null;
@@ -4997,9 +4969,68 @@ var $;
                         paddingHor: () => 16,
                     },
                 }),
-                grid: $$.$me_atom2_prop(['.mode'], ({ masters: [mode] }) => mode != 'Таблица' ? null : {
+                grid: $$.$me_atom2_prop(['.mode'], ({ masters: [mode], prev }) => mode != 'Таблица' ? prev || null : {
+                    type: '$nl_elem_search_grid',
                     base: $$.$nl_elem_search_grid,
+                    dispatch: (dispatch_name, dispatch_arg) => {
+                        if (dispatch_name == 'get_row_height') {
+                            const row_heights = $$.a('.row_heights');
+                            dispatch_arg.val = !row_heights.has(dispatch_arg.idx) ? $$.a('.row_height_min') : row_heights.get(dispatch_arg.idx);
+                            return true;
+                        }
+                        else if (dispatch_name == 'set_row_height') {
+                            const row_heights = $$.a('.row_heights');
+                            if (dispatch_arg.val != $$.a('.row_height_min')) {
+                                row_heights.set(dispatch_arg.idx, dispatch_arg.val);
+                            }
+                            else if (row_heights.has(dispatch_arg.idx)) {
+                                row_heights.delete(dispatch_arg.idx);
+                            }
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    },
                     prop: {
+                        rec_count: '<.count',
+                        order: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
+                            if (!val)
+                                return;
+                            const elem = $$.a.curr.parent(true);
+                            {
+                                const prop_row_height_source = elem._entities.prop['row_height_source'];
+                                const key = prop_row_height_source._entities.key;
+                                if (key)
+                                    for (const k in key) {
+                                        const atom = key[k];
+                                        atom.value(null);
+                                    }
+                            }
+                            {
+                                const prop_row_height_source = elem._entities.prop['row_height'];
+                                const key = prop_row_height_source._entities.key;
+                                if (key)
+                                    for (const k in key) {
+                                        const atom = key[k];
+                                        atom.value(null);
+                                    }
+                            }
+                            $$.a('.row_i_min', val.row_i_min || 0);
+                            $$.a('.visible_idx_min', val.visible_idx_min || 0);
+                            $$.a('.visible_top', val.visible_top || $$.a('.header_height'));
+                        }),
+                        on_change_row_i_min: $$.$me_atom2_prop(['.row_i_min', '<.order'], null, ({ val: [row_i_min, order] }) => {
+                            order.row_i_min = row_i_min;
+                        }),
+                        on_change_visible_idx_min: $$.$me_atom2_prop(['.visible_idx_min', '<.order'], null, ({ val: [visible_idx_min, order] }) => {
+                            order.visible_idx_min = visible_idx_min;
+                        }),
+                        on_change_visible_top: $$.$me_atom2_prop(['.visible_top', '<.order'], null, ({ val: [visible_top, order] }) => {
+                            order.visible_top = visible_top;
+                        }),
+                        row_heights: $$.$me_atom2_prop(['.order'], ({ masters: [order] }) => order.row_heights || (order.row_heights = new Map())),
+                        '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'Таблица'),
                         '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, em] }) => width - 2 * em),
                         '#ofsHor': '.em',
                         '#ofsVer': () => 56,
@@ -5055,7 +5086,6 @@ var $;
                                 width: 41,
                             },
                         }),
-                        rec_count: '<.count',
                     },
                 }),
             },
@@ -5075,7 +5105,6 @@ var $;
                     {
                         id: 'id1',
                         title: 'Заказ 2',
-                        result_mode: 'Таблица',
                         params: {
                             rmqt: new Set(['1', '2']),
                         },
@@ -5083,7 +5112,6 @@ var $;
                     {
                         id: 'id2',
                         title: 'Заказ 1',
-                        result_mode: 'Плитка',
                         params: {
                             rmqt: new Set(['4', '6+']),
                         },
@@ -5143,6 +5171,13 @@ var $;
                     prop: {
                         '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
                         order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
+                        mode: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? '' : $$.a(`<.order[${selected}]`).result_mode || 'Таблица', ({ val }) => {
+                            if (!val)
+                                return;
+                            const order = $$.a(`.order`);
+                            order.result_mode = val;
+                            $$.a(`.order`, order, true);
+                        }),
                         '#ofsVer': $$.$me_atom2_prop(['<@panelParam.#ofsVer', '<@panelParam.#height', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
                         '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
                     },
@@ -5166,7 +5201,13 @@ var $;
                         '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.#ofsHor'], ({ masters: [viewportWidth, ofsHor] }) => viewportWidth - ofsHor),
                     },
                     elem: {
-                        search: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected] }) => selected != 'search' ? null : $$.$nl_elem_search_workspace),
+                        search: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'search' ? prev || null : {
+                            type: '$nl_elem_search_workspace',
+                            base: $$.$nl_elem_search_workspace,
+                            prop: {
+                                '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'search'),
+                            },
+                        }),
                     },
                     style: {
                         overflow: () => 'hidden',
