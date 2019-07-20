@@ -1746,7 +1746,7 @@ var $;
                                 path_abs = new $$.$me_atom2_path({ ent, tail, path: path_abs });
                             }
                         }
-                        if (prev && val && prev.type === val.type)
+                        if (prev && val && (prev === val || prev.type == val.type))
                             return;
                         const control = this.by_path(path);
                         if (control instanceof $$.$me_atom2_control)
@@ -1977,7 +1977,7 @@ var $;
                                 path_abs = new $$.$me_atom2_path({ ent, tail, path: path_abs });
                             }
                         }
-                        if (prev === val)
+                        if (prev && val && (prev === val || prev.type == val.type))
                             return;
                         const elem = this.by_path(path);
                         if (elem instanceof $me_atom2_elem)
@@ -4911,6 +4911,7 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let _dataWorker;
         $$.$nl_elem_search_panel_result = {
             base: $$.$nl_elem_search_panel,
             prop: {
@@ -4924,29 +4925,29 @@ var $;
                     return null;
                 }),
                 dataWorker: () => {
-                    const result = new Worker(window.location.href.slice(0, -5) + 'data/-/web.js');
-                    const curr = $$.a.curr;
-                    result.onmessage = (event) => {
-                        const prev = $$.a.curr;
-                        $$.a.curr = curr;
-                        if (event.data.status != 'ok') {
-                            console.error(event.data);
-                        }
-                        else if (event.data.cmd == 'count') {
-                            $$.a('.count', event.data.count);
-                        }
-                        else if (event.data.cmd == 'recs') {
-                            console.log(event.data.by_idx);
-                        }
-                        else {
-                            console.error(event.data);
-                        }
-                        $$.a.curr = prev;
-                    };
-                    return result;
+                    if (!_dataWorker) {
+                        _dataWorker = new Worker(window.location.href.slice(0, -5) + 'data/-/web.js');
+                        const curr = $$.a.curr;
+                        _dataWorker.onmessage = (event) => {
+                            const prev = $$.a.curr;
+                            $$.a.curr = curr;
+                            if (event.data.status != 'ok') {
+                                console.error(event.data);
+                            }
+                            else if (event.data.cmd == 'count') {
+                                $$.a('.count', event.data.count);
+                            }
+                            else if (event.data.cmd == 'recs') {
+                                console.log(event.data.by_idx);
+                            }
+                            else {
+                                console.error(event.data);
+                            }
+                            $$.a.curr = prev;
+                        };
+                    }
+                    return _dataWorker;
                 },
-            },
-            init() {
             },
             elem: {
                 shown: () => ({
@@ -5117,25 +5118,31 @@ var $;
                         '#ofsVer': () => 16,
                     },
                 }),
-                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => selected ? null : {
+                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => selected ? prev || null : {
+                    type: '$nl_elem_search_new',
                     base: $$.$nl_elem_search_new,
                     prop: {
+                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected),
                         '#ofsVer': '<@tabs.#height',
                         '#height': $$.$me_atom2_prop(['<.#height', '<@tabs.#height'], ({ masters: [height_parent, height_tabs] }) => height_parent - height_tabs),
                     },
                 }),
-                panelParam: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
+                panelParam: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => !selected ? prev || null : {
+                    type: '$nl_elem_search_panel_param',
                     base: $$.$nl_elem_search_panel_param,
                     prop: {
-                        order: `<.order[${selected}]`,
+                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
+                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
                         '#ofsVer': '<@tabs.#height',
                         '#height': $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => $$.$me_atom2_anim({ to: modes[mode].height, duration: 400 })),
                     },
                 }),
-                panelResult: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
+                panelResult: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => !selected ? prev || null : {
+                    type: '$nl_elem_search_panel_result',
                     base: $$.$nl_elem_search_panel_result,
                     prop: {
-                        order: `<.order[${selected}]`,
+                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
+                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
                         '#ofsVer': $$.$me_atom2_prop(['<@panelParam.#ofsVer', '<@panelParam.#height', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
                         '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
                     },
