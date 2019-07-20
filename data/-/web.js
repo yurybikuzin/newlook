@@ -30,7 +30,7 @@ var $;
         }
         onmessage = function (event) {
             if (event.data.cmd == 'count') {
-                const cmd = 'count';
+                const { cmd, tag } = event.data;
                 open_idb((idb) => {
                     const transaction = idb.transaction(['adv'], 'readonly');
                     const start = Date.now();
@@ -48,7 +48,7 @@ var $;
                             cursor.continue();
                         }
                         else if (count >= size) {
-                            postMessage({ cmd, status: 'ok', count, timing: Date.now() - start });
+                            postMessage({ cmd, tag, status: 'ok', count, timing: Date.now() - start });
                         }
                         else {
                             const bodyJson = {
@@ -171,26 +171,26 @@ var $;
                                 body,
                                 mode: 'cors',
                             })
-                                .catch(error => postMessage({ cmd, status: 'error', message: `${error}` }))
+                                .catch(error => postMessage({ cmd, tag, status: 'error', message: `${error}` }))
                                 .then((response) => {
                                 console.log({ fetch: Date.now() - start });
                                 if (response.status != 200) {
-                                    postMessage({ cmd, status: 'error', message: response.statusText });
+                                    postMessage({ cmd, tag, status: 'error', message: response.statusText });
                                 }
                                 else {
                                     const start = Date.now();
                                     response.json()
-                                        .catch((error) => postMessage({ cmd, status: 'error', message: `${error}` }))
+                                        .catch((error) => postMessage({ cmd, tag, status: 'error', message: `${error}` }))
                                         .then((data) => {
                                         const count = data.advs.length;
                                         console.log({ count });
                                         const transaction = idb.transaction(['adv', 'user'], 'readwrite');
                                         transaction.oncomplete = (event) => {
-                                            postMessage({ cmd, status: 'ok', count, timing: Date.now() - start });
+                                            postMessage({ cmd, tag, status: 'ok', count, timing: Date.now() - start });
                                             console.log(event);
                                         };
                                         transaction.onabort = (event) => {
-                                            postMessage({ cmd, status: 'error', message: `${event}` });
+                                            postMessage({ cmd, tag, status: 'error', message: `${event}` });
                                             console.error(event);
                                         };
                                         const advStore = transaction.objectStore('adv');
@@ -218,7 +218,7 @@ var $;
                 });
             }
             else if (event.data.cmd == 'recs') {
-                const cmd = 'recs';
+                const { cmd, tag } = event.data;
                 const request = event.data;
                 open_idb((idb) => {
                     const response = {};
@@ -232,7 +232,7 @@ var $;
                         const nextGuid = () => {
                             const next = guidIter.next();
                             if (next.done) {
-                                postMessage(Object.assign({ cmd, status: 'ok' }, response, { timing: Date.now() - start }));
+                                postMessage(Object.assign({ cmd, tag, status: 'ok' }, response, { timing: Date.now() - start }));
                             }
                             else {
                                 let guidRequest = objectStore.get(next.value);
@@ -276,7 +276,7 @@ var $;
                                     });
                                     response.by_idx[idx] = idx_response;
                                     if (Object.keys(response.by_idx).length >= Object.keys(request.by_idx).length) {
-                                        postMessage(Object.assign({ cmd, status: 'ok' }, response, { timing: Date.now() - start }));
+                                        postMessage(Object.assign({ cmd, tag, status: 'ok' }, response, { timing: Date.now() - start }));
                                         return;
                                     }
                                 }
@@ -284,12 +284,12 @@ var $;
                                 cursor.continue();
                             }
                             else {
-                                postMessage(Object.assign({ cmd, status: 'ok' }, response, { timing: Date.now() - start }));
+                                postMessage(Object.assign({ cmd, tag, status: 'ok' }, response, { timing: Date.now() - start }));
                             }
                         };
                     }
                     else {
-                        postMessage({ cmd, status: 'warn', message: 'no .by_guid, neither .by_idx' });
+                        postMessage({ cmd, tag, status: 'warn', message: 'no .by_guid, neither .by_idx' });
                     }
                 });
             }
