@@ -4441,10 +4441,18 @@ var $;
                         'selected': $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
                     },
                 }),
-                param: $$.$me_atom2_prop({ keys: ['.param_names'], masters: ['.params', '<.param_mode'] }, ({ key: [param_name], masters: [params, param_mode] }) => {
+                param: $$.$me_atom2_prop({ keys: ['.param_names'], masters: ['.params', '<.param_mode', '.height_anim_is'] }, ({ key: [param_name], masters: [params, param_mode, height_anim_is], prev }) => {
                     const def = params[param_name];
-                    if (!def.visible[param_mode])
-                        return null;
+                    const visible_prev = !!prev;
+                    const visible_curr = def.visible[param_mode];
+                    if (!visible_curr)
+                        if (!height_anim_is || !prev) {
+                            return null;
+                        }
+                        else {
+                            $$.a(`@param[${param_name}].show`, false);
+                            return prev;
+                        }
                     let ctrl;
                     switch (def.type) {
                         case 'multiselector': {
@@ -4473,6 +4481,7 @@ var $;
                                 '#height': () => 24,
                                 '#ofsHor': () => 32,
                                 '#ofsVer': () => 140,
+                                show: () => false,
                             },
                             elem: {
                                 label: () => ({
@@ -4488,6 +4497,12 @@ var $;
                                 }),
                                 ctrl: () => ctrl,
                             },
+                            style: {
+                                opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })),
+                            },
+                            init: () => {
+                                $$.a('.show', true);
+                            }
                         };
                     }
                     else {
@@ -4495,16 +4510,16 @@ var $;
                     }
                 }),
                 found: () => ({
-                    node: 'span',
                     prop: {
                         '#alignVer': () => $$.$me_align.bottom,
-                        '#height': () => null,
-                        '#ofsHor': '.em',
-                        '#ofsVer': '.em',
+                        '#height': $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 3 * em),
                     },
                     style: {
-                        position: () => 'relative',
                         fontWeight: () => 500,
+                        background: '<.style.background',
+                        paddingLeft: () => 16,
+                        paddingTop: () => 16,
+                        boxSizing: () => 'border-box',
                     },
                     dom: {
                         innerText: $$.$me_atom2_prop(['<<.offerCount', '<<.objCount'], ({ masters: [offerCount, objCount] }) => `Найдено ${objCount} объектов / ${offerCount} предложений`.toUpperCase()),
@@ -4626,11 +4641,17 @@ var $;
                     to,
                     fini: () => adjust_rows($$.a('.visible_top')),
                 }), ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.provider', '.provider_tag', '.#height', '.rec_count'], null, () => {
-                    console.log('adjust_rows');
                     adjust_rows($$.a('.visible_top'));
                 }), '#order': () => ['row', 'header'] }),
             elem: {
-                header: '.header',
+                header: $$.$me_atom2_prop(['.header_content'], ({ masters: [header_content] }) => !header_content ? null : {
+                    prop: {
+                        '#height': '<.header_height',
+                    },
+                    elem: {
+                        content: () => header_content
+                    },
+                }),
                 row: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
                     prop: {
                         '#ofsVer': `<.row_top[${row_i}]`,
@@ -4766,103 +4787,6 @@ var $;
             $$.a(bottom ? '.visible_idx_max' : '.visible_idx_min', p.idx);
             $$.a(bottom ? '.visible_bottom' : '.visible_top', p.val);
         }
-        const header = {
-            prop: {
-                '#height': '<.header_height',
-                '#order': () => ['cell', 'fixed'],
-                readyToResize: () => '',
-                resizeStart: () => null,
-                resizeInitial: () => null,
-                '#cursor': $$.$me_atom2_prop(['.readyToResize'], ({ masters: [readyToResize] }) => !readyToResize ? 'default' : 'col-resize'),
-            },
-            event: {
-                mousemove: p => {
-                    const resizeStart = $$.a('.resizeStart');
-                    if (resizeStart != null) {
-                        const width = Math.max($$.a('<.col_width_min'), $$.a('.resizeInitial') + p.event.clientX - resizeStart);
-                        const id = $$.a('.readyToResize');
-                        $$.a(`<.col_width[${id}]`, width);
-                        return true;
-                    }
-                    else if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    const cells = $$.a.get('@cell')._entities.key;
-                    let id_found = '';
-                    const delta = 4;
-                    for (const id in cells) {
-                        const clientRect = cells[id]._entities.prop['#clientRect'].value();
-                        if (clientRect.right - delta <= p.event.clientX && p.event.clientX <= clientRect.right + delta) {
-                            id_found = id;
-                            break;
-                        }
-                    }
-                    $$.a('.readyToResize', id_found);
-                    return true;
-                },
-                mousedown: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    const id = $$.a('.readyToResize');
-                    if (id) {
-                        $$.a('.resizeStart', p.event.clientX);
-                        $$.a('.resizeInitial', $$.a(`<.col_width[${id}]`));
-                    }
-                },
-                mouseup: p => {
-                    const resizeStart = $$.a('.resizeStart');
-                    if (resizeStart != null) {
-                        $$.a('.resizeStart', null);
-                        $$.a('.resizeInitial', null);
-                    }
-                    return false;
-                },
-            },
-            style: {
-                overflow: () => 'hidden',
-            },
-            elem: {
-                fixed: () => ({
-                    prop: {
-                        '#width': '<<.col_fixed_width',
-                    },
-                    style: {
-                        borderRight: () => '1px solid #adb0b8',
-                        background: () => '#d8dce3',
-                        boxSizing: () => 'border-box',
-                    },
-                }),
-                cell: $$.$me_atom2_prop({ keys: ['<.col_ids'], masters: ['<.col_left[]', '<.col_width[]', '<.col_fixed_width', '<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width] }) => col_left >= parent_width || col_left + col_width <= col_fixed_width ? null :
-                    {
-                        prop: {
-                            '#width': `<<.col_width[${id}]`,
-                            '#ofsHor': `<<.col_left[${id}]`,
-                        },
-                        style: {
-                            borderRight: () => '1px solid #adb0b8',
-                            background: () => '#d8dce3',
-                            boxSizing: () => 'border-box',
-                        },
-                        elem: {
-                            text: () => ({
-                                prop: {
-                                    '#height': () => null,
-                                    '#align': () => $$.$me_align.center,
-                                    '#width': () => null,
-                                },
-                                dom: {
-                                    innerText: `<<<.col_caption[${id}]`,
-                                },
-                                style: {
-                                    whiteSpace: () => 'nowrap',
-                                    overflow: () => 'hidden',
-                                    textOverflow: () => 'ellipsis',
-                                    maxWidth: $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 6),
-                                },
-                            }),
-                        },
-                    }),
-            },
-        };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //list.js.map
@@ -4894,59 +4818,150 @@ var $;
                 }, ({ len, masters: [left, width] }) => len == 1 ? left : left + width),
                 header_height: () => 32,
                 row_height_min: () => 28,
-                header: () => header,
+                header_content: () => header,
                 row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                    style: {
-                        border: () => '1px solid red',
-                    },
-                    dom: {
-                        innerText: `<<.row_idx[${row_i}]`,
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            if ($$.a(`<<.row_height[${row_i}]`) == 28) {
-                                $$.a(`<<.row_height_source[${row_i}]`, 28 * 4);
-                            }
-                            else {
-                                $$.a(`<<.row_height_source[${row_i}]`, 28);
-                            }
-                            return true;
-                        },
+                    base: row,
+                    prop: {
+                        row_i: () => row_i,
                     },
                 })),
             },
         };
+        const cell = {
+            style: {
+                borderRight: () => '1px solid #adb0b8',
+                borderBottom: () => '1px solid #adb0b8',
+                boxSizing: () => 'border-box',
+            },
+        };
+        const header_cell = {
+            base: cell,
+            style: {
+                background: () => '#d8dce3',
+            },
+        };
+        const row_cell = {
+            base: cell,
+            style: {
+                background: () => '#F5F8F8',
+            },
+        };
+        const cell_content = {
+            prop: {
+                '#height': () => null,
+                '#width': () => null,
+            },
+            style: {
+                whiteSpace: () => 'nowrap',
+                overflow: () => 'hidden',
+                textOverflow: () => 'ellipsis',
+                maxWidth: $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 8),
+                fontSize: () => 14,
+                userSelect: () => 'none',
+            },
+        };
+        const row = {
+            prop: {
+                '#order': () => ['cell', 'fixed'],
+            },
+            style: {
+                overflow: () => 'hidden',
+            },
+            elem: {
+                fixed: () => ({
+                    base: row_cell,
+                    prop: {
+                        '#width': '<<<.col_fixed_width',
+                    },
+                }),
+                cell: $$.$me_atom2_prop({ keys: ['<<.col_ids'], masters: ['<<.col_left[]', '<<.col_width[]', '<<.col_fixed_width', '<<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width], prev }) => col_left >= parent_width || col_left + col_width <= col_fixed_width ? prev || null :
+                    {
+                        base: row_cell,
+                        prop: {
+                            '#width': `<<<.col_width[${id}]`,
+                            '#ofsHor': `<<<.col_left[${id}]`,
+                        },
+                        elem: {
+                            text: () => ({
+                                base: cell_content,
+                                prop: {
+                                    '#align': () => $$.$me_align.center,
+                                },
+                                dom: {
+                                    innerText: `<<<<.col_caption[${id}]`,
+                                },
+                            }),
+                        },
+                    }),
+            },
+        };
         const header = {
             prop: {
-                '#height': '<.header_height',
-                '#order': () => ['cell', 'fixed'],
                 readyToResize: () => '',
-                resizeStart: () => null,
+                resizeStart: () => -1,
                 resizeInitial: () => null,
-                '#cursor': $$.$me_atom2_prop(['.readyToResize'], ({ masters: [readyToResize] }) => !readyToResize ? 'default' : 'col-resize'),
+                'cursor': $$.$me_atom2_prop(['.readyToResize', '.resizeStart'], ({ masters: [readyToResize, resizeStart] }) => {
+                    const result = !readyToResize && resizeStart == -1 ? 'default' : 'col-resize';
+                    return result;
+                }, ({ atom, val }) => {
+                    $$.$me_atom2_body_cursor({ origin: atom.path, val: val });
+                }),
+                '#order': () => ['cell', 'fixed'],
+            },
+            style: {
+                overflow: () => 'hidden',
+            },
+            elem: {
+                fixed: () => ({
+                    base: header_cell,
+                    prop: {
+                        '#width': '<<<.col_fixed_width',
+                    },
+                }),
+                cell: $$.$me_atom2_prop({ keys: ['<<.col_ids'], masters: ['<<.col_left[]', '<<.col_width[]', '<<.col_fixed_width', '<<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width], prev }) => col_left >= parent_width || col_left + col_width <= col_fixed_width ? prev || null :
+                    {
+                        base: header_cell,
+                        prop: {
+                            '#width': `<<<.col_width[${id}]`,
+                            '#ofsHor': `<<<.col_left[${id}]`,
+                        },
+                        elem: {
+                            text: () => ({
+                                base: cell_content,
+                                prop: {
+                                    '#align': () => $$.$me_align.center,
+                                },
+                                dom: {
+                                    innerText: `<<<<.col_caption[${id}]`,
+                                },
+                            }),
+                        },
+                    }),
             },
             event: {
                 mousemove: p => {
                     const resizeStart = $$.a('.resizeStart');
-                    if (resizeStart != null) {
-                        const width = Math.max($$.a('<.col_width_min'), $$.a('.resizeInitial') + p.event.clientX - resizeStart);
+                    if (resizeStart != -1) {
+                        const width = Math.max($$.a('<<.col_width_min'), $$.a('.resizeInitial') + p.event.clientX - resizeStart);
                         const id = $$.a('.readyToResize');
-                        $$.a(`<.col_width[${id}]`, width);
+                        $$.a(`<<.col_width[${id}]`, width);
                         return true;
                     }
-                    else if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    const cells = $$.a.get('@cell')._entities.key;
-                    let id_found = '';
-                    const delta = 4;
-                    for (const id in cells) {
-                        const clientRect = cells[id]._entities.prop['#clientRect'].value();
-                        if (clientRect.right - delta <= p.event.clientX && p.event.clientX <= clientRect.right + delta) {
-                            id_found = id;
-                            break;
+                    else {
+                        let id_found = '';
+                        if (p.isInRect(p.event.clientX, p.event.clientY)) {
+                            const cells = $$.a.get('@cell')._entities.key;
+                            const delta = 4;
+                            for (const id in cells) {
+                                const clientRect = cells[id]._entities.prop['#clientRect'].value();
+                                if (clientRect.right - delta <= p.event.clientX && p.event.clientX <= clientRect.right + delta) {
+                                    id_found = id;
+                                    break;
+                                }
+                            }
                         }
+                        $$.a('.readyToResize', id_found);
                     }
-                    $$.a('.readyToResize', id_found);
                     return true;
                 },
                 mousedown: p => {
@@ -4955,62 +4970,19 @@ var $;
                     const id = $$.a('.readyToResize');
                     if (id) {
                         $$.a('.resizeStart', p.event.clientX);
-                        $$.a('.resizeInitial', $$.a(`<.col_width[${id}]`));
+                        $$.a('.resizeInitial', $$.a(`<<.col_width[${id}]`));
                     }
+                    return true;
                 },
                 mouseup: p => {
                     const resizeStart = $$.a('.resizeStart');
-                    if (resizeStart != null) {
-                        $$.a('.resizeStart', null);
+                    if (resizeStart != -1) {
+                        $$.a('.resizeStart', -1);
                         $$.a('.resizeInitial', null);
+                        $$.a('.readyToResize', '');
                     }
                     return false;
                 },
-            },
-            style: {
-                overflow: () => 'hidden',
-            },
-            elem: {
-                fixed: () => ({
-                    prop: {
-                        '#width': '<<.col_fixed_width',
-                    },
-                    style: {
-                        borderRight: () => '1px solid #adb0b8',
-                        background: () => '#d8dce3',
-                        boxSizing: () => 'border-box',
-                    },
-                }),
-                cell: $$.$me_atom2_prop({ keys: ['<.col_ids'], masters: ['<.col_left[]', '<.col_width[]', '<.col_fixed_width', '<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width] }) => col_left >= parent_width || col_left + col_width <= col_fixed_width ? null :
-                    {
-                        prop: {
-                            '#width': `<<.col_width[${id}]`,
-                            '#ofsHor': `<<.col_left[${id}]`,
-                        },
-                        style: {
-                            borderRight: () => '1px solid #adb0b8',
-                            background: () => '#d8dce3',
-                            boxSizing: () => 'border-box',
-                        },
-                        elem: {
-                            text: () => ({
-                                prop: {
-                                    '#height': () => null,
-                                    '#align': () => $$.$me_align.center,
-                                    '#width': () => null,
-                                },
-                                dom: {
-                                    innerText: `<<<.col_caption[${id}]`,
-                                },
-                                style: {
-                                    whiteSpace: () => 'nowrap',
-                                    overflow: () => 'hidden',
-                                    textOverflow: () => 'ellipsis',
-                                    maxWidth: $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 6),
-                                },
-                            }),
-                        },
-                    }),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -5154,6 +5126,7 @@ var $;
                             }
                             $$.a('.provider_tag', val.id);
                             $$.a('.row_i_min', val.row_i_min || 0);
+                            $$.a('.row_i_max', ($$.a('.row_i_min') + $$.a('.row_count') - 1) % $$.a('.row_count'));
                             $$.a('.visible_idx_min', val.visible_idx_min || 0);
                             $$.a('.visible_top', val.visible_top || $$.a('.header_height'));
                         }),
@@ -5171,7 +5144,11 @@ var $;
                         '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, em] }) => width - 2 * em),
                         '#ofsHor': '.em',
                         '#ofsVer': () => 56,
-                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
+                        '#height': $$.$me_atom2_prop(['<.height_target', '<.height_anim_is', '.#ofsVer'], ({ masters: [height, height_anim_is, ofsVer], prev }) => {
+                            const val = height - ofsVer;
+                            const result = prev == null || val > prev || !height_anim_is ? val : prev;
+                            return result;
+                        }),
                         cols: () => ({
                             photo: {
                                 caption: 'Фото',
@@ -5299,7 +5276,14 @@ var $;
                         '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
                         order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
                         '#ofsVer': '<@tabs.#height',
-                        '#height': $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => $$.$me_atom2_anim({ to: modes[mode].height, duration: 400 })),
+                        height_target: $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => modes[mode].height),
+                        '#height': $$.$me_atom2_prop(['.height_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
+                            path_active: $$.a.get('.height_anim_is').path
+                        })),
+                        height_anim_is: $$.$me_atom2_prop([], () => false),
+                    },
+                    style: {
+                        overflow: () => 'hidden',
                     },
                 }),
                 panelResult: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => !selected ? prev || null : {
@@ -5315,8 +5299,17 @@ var $;
                             order.result_mode = val;
                             $$.a(`.order`, order, true);
                         }),
-                        '#ofsVer': $$.$me_atom2_prop(['<@panelParam.#ofsVer', '<@panelParam.#height', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
+                        ofsVer_target: $$.$me_atom2_prop(['<@panelParam.#ofsVer', '<@panelParam.height_target', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#ofsVer': $$.$me_atom2_prop(['.ofsVer_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400 })),
+                        height_target: $$.$me_atom2_prop(['<.#height', '.ofsVer_target'], ({ masters: [height, ofsVer] }) => height - ofsVer, ({ val, prev }) => {
+                            if (prev != null && val != prev) {
+                                $$.a('.height_anim_is', true);
+                            }
+                        }),
+                        '#height': $$.$me_atom2_prop(['.height_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
+                            path_active: $$.a.get('.height_anim_is').path
+                        })),
+                        height_anim_is: $$.$me_atom2_prop([], () => false),
                     },
                 }),
             },
