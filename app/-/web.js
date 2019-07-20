@@ -1054,7 +1054,6 @@ var $;
                 const pre = performance.now() - last_now;
                 let count = 0;
                 let atoms_to_update = new Set();
-                const ss = new Set();
                 while ($me_atom2.to_update.size) {
                     if (performance.now() > deadline)
                         break;
@@ -1076,7 +1075,6 @@ var $;
                     for (const atom of atoms_to_update) {
                         if (performance.now() > deadline)
                             break;
-                        ss.add(atom.name());
                         atom.update();
                         count++;
                         atoms_to_update.delete(atom);
@@ -1084,8 +1082,6 @@ var $;
                 }
                 for (const atom of atoms_to_update)
                     $me_atom2.to_update.add(atom.path);
-                if (ss.size)
-                    console.warn(ss);
                 return [count, pre];
             }
             key_enum() {
