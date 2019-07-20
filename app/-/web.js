@@ -4671,27 +4671,15 @@ var $;
                     if (!p.isInRect(p.event.clientX, p.event.clientY))
                         return false;
                     let ofs = 0;
-                    if (Math.abs(p.event._deltaX) > Math.abs(p.event._deltaY)) {
-                        const ids = $$.a('.col_ids');
-                        if (p.event._deltaX < 0) {
-                            const left = $$.a(`.col_left[${ids[0]}]`);
-                            ofs = Math.min($$.a('.col_fixed_width') - left, -p.event._deltaX);
-                        }
-                        else {
-                            const id_last = ids[ids.length - 1];
-                            const right = $$.a(`.col_left[${id_last}]`) + $$.a(`.col_width[${id_last}]`);
-                            ofs = Math.max($$.a('.#width') - right, -p.event._deltaX);
-                        }
-                        $$.a('.ofsHor', $$.a('.ofsHor') + ofs);
-                    }
-                    else {
+                    if (Math.abs(p.event._deltaX) < Math.abs(p.event._deltaY)) {
                         const fromBottom = p.event._deltaY < 0;
                         if (fromBottom ?
                             $$.a('.visible_idx_min') > 0 || $$.a('.visible_top') < $$.a('.header_height') :
                             $$.a('.visible_idx_max') < $$.a('.row_idx_max') || $$.a('.visible_bottom') > $$.a('.#height'))
                             adjust_rows($$.a(fromBottom ? '.visible_bottom' : '.visible_top') - p.event._deltaY, fromBottom);
+                        return true;
                     }
-                    return true;
+                    return false;
                 },
             },
         };
@@ -4807,8 +4795,7 @@ var $;
                 col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
                 col_fixed_width: () => 37,
                 col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                ofsHor: $$.$me_atom2_prop(['.#width', '.col_width_sum', '.col_fixed_width'], ({ prev, masters: [width, col_width_sum, col_fixed_width] }) => prev == null ? col_fixed_width :
-                    Math.min(col_fixed_width, Math.max(prev, width - col_width_sum))),
+                ofsHor: $$.$me_atom2_prop(['.#width', '.col_width_sum', '.col_fixed_width'], ({ prev, masters: [width, col_width_sum, col_fixed_width] }) => prev == null ? col_fixed_width : Math.max(prev, width - col_width_sum), ({ val }) => Math.min(val, $$.a('.col_fixed_width'))),
                 col_left: $$.$me_atom2_prop({
                     keys: ['.col_ids'],
                     masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
@@ -4825,6 +4812,28 @@ var $;
                         row_i: () => row_i,
                     },
                 })),
+            },
+            event: {
+                wheel: p => {
+                    if (!p.isInRect(p.event.clientX, p.event.clientY))
+                        return false;
+                    if (Math.abs(p.event._deltaX) > Math.abs(p.event._deltaY)) {
+                        let ofs = 0;
+                        const ids = $$.a('.col_ids');
+                        if (p.event._deltaX < 0) {
+                            const left = $$.a(`.col_left[${ids[0]}]`);
+                            ofs = Math.min($$.a('.col_fixed_width') - left, -p.event._deltaX);
+                        }
+                        else {
+                            const id_last = ids[ids.length - 1];
+                            const right = $$.a(`.col_left[${id_last}]`) + $$.a(`.col_width[${id_last}]`);
+                            ofs = Math.max($$.a('.#width') - right, -p.event._deltaX);
+                        }
+                        $$.a('.ofsHor', $$.a('.ofsHor') + ofs);
+                        return true;
+                    }
+                    return false;
+                },
             },
         };
         const cell = {
