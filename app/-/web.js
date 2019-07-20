@@ -3693,217 +3693,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_elem_switch = {
-            prop: {
-                '#height': () => 44,
-                '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.values'], ({ masters: [values] }) => values.map(value => `@item[${value}].#width`)), $$.$me_atom2_prop_compute_fn_sum()),
-                paddingHor: () => 8,
-                paddingTop: () => 18,
-                paddingBottom: () => 8,
-            },
-            style: {
-                fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em),
-                border: () => 'red',
-            },
-            elem: {
-                item: $$.$me_atom2_prop({ keys: ['.values'] }, ({ key: [key] }) => ({
-                    node: 'span',
-                    dom: {
-                        innerText: () => key.toUpperCase(),
-                    },
-                    prop: {
-                        '#width': () => null,
-                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == key),
-                        '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-                    },
-                    style: {
-                        background: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#0070a4' : 'white'),
-                        color: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => !isSelected ? '#0070a4' : 'white'),
-                        position: () => 'relative',
-                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                        fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400),
-                        paddingTop: '<.paddingTop',
-                        paddingLeft: '<.paddingHor',
-                        paddingRight: '<.paddingHor',
-                        paddingBottom: '<.paddingBottom',
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a('<.selected', key);
-                            return true;
-                        },
-                    },
-                })),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//switch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_elem_search = {
-            prop: {
-                orders: () => [
-                    {
-                        id: 'id1',
-                        title: 'Заказ 2',
-                        result_mode: 'Таблица',
-                    },
-                    {
-                        id: 'id2',
-                        title: 'Заказ 1',
-                        result_mode: 'Плитка',
-                    },
-                ],
-                order_idx: $$.$me_atom2_prop_keys(['.orders']),
-                order: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.orders'] }, ({ key: [idx], masters: [orders] }) => orders[idx]),
-                order_title: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.order[]'] }, ({ masters: [order] }) => order.title.toUpperCase()),
-                selected: $$.$me_atom2_prop_store('', (val) => $$.a('.order_idx').indexOf(val) >= 0),
-                param_modes: () => ({
-                    Полный: {
-                        height: 627,
-                    },
-                    Основной: {
-                        height: 295,
-                    },
-                    Сжатый: {
-                        height: 123,
-                    },
-                }),
-                param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
-                param_mode: $$.$me_atom2_prop_store('Основной', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
-            },
-            elem: {
-                tabs: () => ({
-                    prop: {
-                        '#height': '/@app@menu@login.#height',
-                        '#ofsHor': () => 36,
-                        '#ofsVer': () => 16,
-                    },
-                    elem: {
-                        new: () => ({
-                            base: tab,
-                            prop: {
-                                idx: () => '',
-                            },
-                            dom: {
-                                innerText: () => 'Новый заказ +'.toUpperCase(),
-                            },
-                        }),
-                        tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
-                            base: tab,
-                            prop: {
-                                idx: () => idx,
-                            },
-                            dom: {
-                                innerText: `<<.order_title[${idx}]`,
-                            },
-                        })),
-                    },
-                }),
-                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => selected ? null : {
-                    base: $$.$nl_elem_search_new,
-                    prop: {
-                        '#ofsVer': '<@tabs.#height',
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@tabs.#height'], ({ masters: [height_parent, height_tabs] }) => height_parent - height_tabs),
-                    },
-                }),
-                params: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
-                    base: $$.$nl_elem_panel,
-                    prop: {
-                        '#ofsVer': '<@tabs.#height',
-                        '#height': $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => $$.$me_atom2_anim({ to: modes[mode].height, duration: 400 })),
-                        '#ofsHor': '.em',
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                    },
-                    elem: {
-                        mode_switcher: () => ({
-                            base: $$.$nl_elem_switch,
-                            prop: {
-                                '#ofsVer': () => 16,
-                                '#alignHor': () => $$.$me_align.right,
-                                'values': '<<.param_mode_keys',
-                                'selected': $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
-                            },
-                        }),
-                        found: () => ({
-                            node: 'span',
-                            prop: {
-                                offerCount: () => 1200,
-                                objCount: () => 800,
-                                '#alignVer': () => $$.$me_align.bottom,
-                                '#height': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                position: () => 'relative',
-                                fontWeight: () => 500,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['.offerCount', '.objCount'], ({ masters: [offerCount, objCount] }) => `Найдено ${objCount} объектов / ${offerCount} предложений`.toUpperCase()),
-                            },
-                        }),
-                    },
-                }),
-                result: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
-                    base: $$.$nl_elem_panel,
-                    prop: {
-                        '#ofsVer': $$.$me_atom2_prop(['<@params.#ofsVer', '<@params.#height', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
-                        '#ofsHor': '.em',
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                    },
-                    elem: {
-                        mode_switcher: () => ({
-                            base: $$.$nl_elem_switch,
-                            prop: {
-                                '#ofsVer': () => 16,
-                                '#alignHor': () => $$.$me_align.right,
-                                values: () => ['Таблица', 'Плитка', 'Карта'],
-                                selected: () => 'Таблица',
-                                paddingHor: () => 16,
-                            },
-                        }),
-                    },
-                }),
-            },
-        };
-        const tab = {
-            node: 'span',
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('<<.selected', $$.a('.idx'));
-                    return true;
-                },
-            },
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 10,
-                paddingRight: () => 10,
-                paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//search.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$nl_elem_search_new = {
             prop: {
                 data: () => ({
@@ -4256,6 +4045,217 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //new.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_elem_switch = {
+            prop: {
+                '#height': () => 44,
+                '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.values'], ({ masters: [values] }) => values.map(value => `@item[${value}].#width`)), $$.$me_atom2_prop_compute_fn_sum()),
+                paddingHor: () => 8,
+                paddingTop: () => 18,
+                paddingBottom: () => 8,
+            },
+            style: {
+                fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em),
+                border: () => 'red',
+            },
+            elem: {
+                item: $$.$me_atom2_prop({ keys: ['.values'] }, ({ key: [key] }) => ({
+                    node: 'span',
+                    dom: {
+                        innerText: () => key.toUpperCase(),
+                    },
+                    prop: {
+                        '#width': () => null,
+                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == key),
+                        '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+                    },
+                    style: {
+                        background: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#0070a4' : 'white'),
+                        color: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => !isSelected ? '#0070a4' : 'white'),
+                        position: () => 'relative',
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                        fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400),
+                        paddingTop: '<.paddingTop',
+                        paddingLeft: '<.paddingHor',
+                        paddingRight: '<.paddingHor',
+                        paddingBottom: '<.paddingBottom',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('<.selected', key);
+                            return true;
+                        },
+                    },
+                })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//switch.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_elem_search = {
+            prop: {
+                orders: () => [
+                    {
+                        id: 'id1',
+                        title: 'Заказ 2',
+                        result_mode: 'Таблица',
+                    },
+                    {
+                        id: 'id2',
+                        title: 'Заказ 1',
+                        result_mode: 'Плитка',
+                    },
+                ],
+                order_idx: $$.$me_atom2_prop_keys(['.orders']),
+                order: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.orders'] }, ({ key: [idx], masters: [orders] }) => orders[idx]),
+                order_title: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.order[]'] }, ({ masters: [order] }) => order.title.toUpperCase()),
+                selected: $$.$me_atom2_prop_store('', (val) => $$.a('.order_idx').indexOf(val) >= 0),
+                param_modes: () => ({
+                    Полный: {
+                        height: 627,
+                    },
+                    Основной: {
+                        height: 295,
+                    },
+                    Сжатый: {
+                        height: 123,
+                    },
+                }),
+                param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
+                param_mode: $$.$me_atom2_prop_store('Основной', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
+            },
+            elem: {
+                tabs: () => ({
+                    prop: {
+                        '#height': '/@app@menu@login.#height',
+                        '#ofsHor': () => 36,
+                        '#ofsVer': () => 16,
+                    },
+                    elem: {
+                        new: () => ({
+                            base: tab,
+                            prop: {
+                                idx: () => '',
+                            },
+                            dom: {
+                                innerText: () => 'Новый заказ +'.toUpperCase(),
+                            },
+                        }),
+                        tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
+                            base: tab,
+                            prop: {
+                                idx: () => idx,
+                            },
+                            dom: {
+                                innerText: `<<.order_title[${idx}]`,
+                            },
+                        })),
+                    },
+                }),
+                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => selected ? null : {
+                    base: $$.$nl_elem_search_new,
+                    prop: {
+                        '#ofsVer': '<@tabs.#height',
+                        '#height': $$.$me_atom2_prop(['<.#height', '<@tabs.#height'], ({ masters: [height_parent, height_tabs] }) => height_parent - height_tabs),
+                    },
+                }),
+                params: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
+                    base: $$.$nl_elem_panel,
+                    prop: {
+                        '#ofsVer': '<@tabs.#height',
+                        '#height': $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => $$.$me_atom2_anim({ to: modes[mode].height, duration: 400 })),
+                        '#ofsHor': '.em',
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                    },
+                    elem: {
+                        mode_switcher: () => ({
+                            base: $$.$nl_elem_switch,
+                            prop: {
+                                '#ofsVer': () => 16,
+                                '#alignHor': () => $$.$me_align.right,
+                                'values': '<<.param_mode_keys',
+                                'selected': $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
+                            },
+                        }),
+                        found: () => ({
+                            node: 'span',
+                            prop: {
+                                offerCount: () => 1200,
+                                objCount: () => 800,
+                                '#alignVer': () => $$.$me_align.bottom,
+                                '#height': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                position: () => 'relative',
+                                fontWeight: () => 500,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['.offerCount', '.objCount'], ({ masters: [offerCount, objCount] }) => `Найдено ${objCount} объектов / ${offerCount} предложений`.toUpperCase()),
+                            },
+                        }),
+                    },
+                }),
+                result: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
+                    base: $$.$nl_elem_panel,
+                    prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<@params.#ofsVer', '<@params.#height', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
+                        '#ofsHor': '.em',
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                    },
+                    elem: {
+                        mode_switcher: () => ({
+                            base: $$.$nl_elem_switch,
+                            prop: {
+                                '#ofsVer': () => 16,
+                                '#alignHor': () => $$.$me_align.right,
+                                values: () => ['Таблица', 'Плитка', 'Карта'],
+                                selected: () => 'Таблица',
+                                paddingHor: () => 16,
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        const tab = {
+            node: 'span',
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('<<.selected', $$.a('.idx'));
+                    return true;
+                },
+            },
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 10,
+                paddingRight: () => 10,
+                paddingBottom: () => 5,
+                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//search.js.map
 ;
 "use strict";
 var $;
@@ -4803,7 +4803,7 @@ var $;
                 col_ids: $$.$me_atom2_prop_keys(['.cols']),
                 col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]),
                 col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.width),
-                col_width_min: () => 10,
+                col_width_min: () => 8,
                 col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
                 col_fixed_width: () => 37,
                 col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
@@ -5004,7 +5004,7 @@ var $;
                 }),
                 dataWorker: () => {
                     if (!_dataWorker) {
-                        _dataWorker = new Worker(window.location.href.slice(0, -5) + 'data/-/web.js');
+                        _dataWorker = new Worker(window.location.href + 'data/-/web.js');
                         const curr = $$.a.curr;
                         _dataWorker.onmessage = (event) => {
                             const prev = $$.a.curr;
@@ -5054,7 +5054,7 @@ var $;
                         '#cursor': () => 'pointer',
                     },
                     attr: {
-                        src: () => '../assets/icons-8-filter@2x.png'
+                        src: () => 'assets/icons-8-filter@2x.png'
                     },
                     event: {
                         clickOrTap: () => {
@@ -5323,7 +5323,7 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_elem_app = (rootElem) => {
+        $$.$nl_app = (rootElem) => {
             return app(rootElem, {
                 workspace: () => ({
                     prop: {
@@ -5363,6 +5363,7 @@ var $;
                             style: {
                                 background: '.colorBackground',
                                 overflow: () => 'hidden',
+                                userSelect: () => 'none',
                             },
                             elem: {
                                 iconSquare: () => ({
@@ -5383,7 +5384,7 @@ var $;
                                                 '#align': () => $$.$me_align.center,
                                             },
                                             attr: {
-                                                src: () => '../assets/' + 'icons-8-enter-2' + '@2x.png',
+                                                src: () => 'assets/' + 'icons-8-enter-2' + '@2x.png',
                                             },
                                             style: {
                                                 filter: () => 'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'
@@ -5432,7 +5433,7 @@ var $;
                                         src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => {
                                             if (isShrinked_animActive)
                                                 isShrinked = !isShrinked;
-                                            return `../assets/light-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
+                                            return `assets/light-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
                                         }),
                                     },
                                 }),
@@ -5475,7 +5476,7 @@ var $;
                                     }),
                                 }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
                                 item_title: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
-                                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => '../assets/' + item.icon + '@2x.png'),
+                                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => 'assets/' + item.icon + '@2x.png'),
                                 item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
                                 item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
                                 item_height: () => 52,
@@ -5499,6 +5500,7 @@ var $;
                                     style: {
                                         background: '.colorBackground',
                                         overflow: () => 'hidden',
+                                        userSelect: () => 'none',
                                     },
                                     elem: {
                                         iconSquare: () => ({
