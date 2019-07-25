@@ -719,7 +719,7 @@ var $;
                                                 }
                                             }
                                         }
-                                        $$.$me_atom2._to_def.push(def_atom);
+                                        $$.$me_atom2.to_def.push(def_atom);
                                         this.wait($me_atom2_entity_enum.prop, tail);
                                         prop_defined[tail] = idx;
                                     }
@@ -1026,17 +1026,19 @@ var $;
                                     return masters;
                                 },
                                 fn_apply: ({ val, prev }) => {
+                                    if ($$.$me_equal(val, prev))
+                                        return;
                                     if (Array.isArray(prev))
                                         this.unregister_as_slave(prev);
                                     this._masters_store = null;
                                 },
                             });
-                            atom.add_slave(this);
+                            atom.add_slave(this, '#masters');
                             this.masters = atom;
                         }
                     }
                 }
-                this.set_state(false);
+                this.set_state($me_atom2_state_enum.invalid);
                 const name = this.name();
                 const sp = $me_atom2._waiting_for_atom_def[name];
                 if (!sp)
@@ -1049,71 +1051,55 @@ var $;
                 delete $me_atom2._waiting_for_atom_def[name];
             }
             state() { return this._state; }
-            slaves() { return this._slaves; }
-            static update_atoms(deadline, last_now) {
-                const pre = performance.now() - last_now;
-                let count = 0;
-                let atoms_to_update = new Set();
-                while ($me_atom2.to_update.size) {
-                    if (performance.now() > deadline)
-                        break;
-                    for (const tail of $me_atom2._update_order) {
-                        for (const path of $me_atom2.to_update) {
-                            if (performance.now() > deadline)
-                                break;
-                            if (tail && path.tail !== tail)
-                                continue;
-                            const atom = $$.$me_atom2_entity.root().by_path(path);
-                            if (atom && atom.active()) {
-                                atoms_to_update.add(atom);
-                            }
-                            $me_atom2.to_update.delete(path);
-                        }
-                        if (atoms_to_update.size)
-                            break;
-                    }
-                    for (const atom of atoms_to_update) {
-                        if (performance.now() > deadline)
-                            break;
-                        atom.update();
-                        count++;
-                        atoms_to_update.delete(atom);
-                    }
-                }
-                for (const atom of atoms_to_update)
-                    $me_atom2.to_update.add(atom.path);
-                return [count, pre];
+            get 'fn_compute()'() {
+                return this._compute();
             }
-            key_enum() {
-                const result = [];
-                let atom = this;
-                while (atom._key_gen) {
-                    const key_enum = atom._key_gen.value();
-                    result.push(key_enum);
-                    atom = atom._entities.key[key_enum[0]];
-                }
-                return result;
+            get 'fn_apply()'() {
+                return this._state === $me_atom2_state_enum.valid ? this._apply(this._value, true) : new Error(`this._state is ${this._state}`);
             }
-            _on_active() {
-                if (this.fn_apply && this._state === false) {
-                    $me_atom2.to_update.add(this.path);
-                    $$.$me_atom2_async();
-                }
-            }
-            _masters() {
-                const masters = this.masters;
-                return (Array.isArray(masters) ? masters :
-                    masters instanceof $me_atom2 ? masters.value() :
-                        []);
+            get 'update()'() {
+                return this.update();
             }
             get 'masters()'() {
                 return this._masters().map(name_atom => this.by_path_s(name_atom));
             }
             get 'slaves()'() {
-                return !this._slaves ? null : [...this._slaves].map(path => $me_atom2.root().by_path(path));
+                if (!this._slaves)
+                    return null;
+                const result = {};
+                for (const [path] of this._slaves)
+                    result[path.toString()] = $me_atom2.root().by_path(path);
+                return result;
             }
             get 'state()'() {
                 return this.get_state_helper(this._state);
+            }
+            get_state_helper(state) {
+                if (state instanceof Error)
+                    return state;
+                if (typeof state === 'number')
+                    return $me_atom2_state_enum[state];
+                if (state instanceof Set) {
+                    const state_complex = state;
+                    const result = {};
+                    for (const s of state_complex) {
+                        const ret = this.by_path_s(s);
+                        const key = typeof ret == 'string' ? ret : ret.name();
+                        const val = typeof ret == 'string' ? 'waiting_for' : ret['state()'];
+                        result[key] = val;
+                    }
+                    return result;
+                }
+            }
+            destroy() {
+                if (this._slaves)
+                    for (let [path] of this._slaves) {
+                        const atom = $$.$me_atom2_entity.root().by_path(path);
+                        if (atom)
+                            this.rm_slave(atom);
+                    }
+                this.unregister_as_slave(this._masters());
+                super.destroy();
             }
             by_path_s(s, keys) {
                 const descendant = this._descendant(this._descendant_level);
@@ -1121,24 +1107,35 @@ var $;
                     $$.$me_throw(descendant);
                 return descendant.by_path_s(s, keys || this._key_provider());
             }
-            get_state_helper(state) {
-                if (typeof state === 'boolean' || state instanceof Error)
-                    return false;
-                const result = {};
-                const ma = state;
-                result[waiting_for_sym] = ma[waiting_for_sym];
-                for (const name_master in ma)
-                    result[name_master] = this.get_state_helper(ma[name_master]);
-                return result;
+            no_wait_for_master(name_master) {
+                if (!(this._state instanceof Set))
+                    return;
+                const state_complex = this._state;
+                state_complex.delete(name_master);
+                if (state_complex.size)
+                    return;
+                this.set_state($me_atom2_state_enum.invalid);
             }
-            get 'fn_compute()'() {
-                return this._compute();
+            add_slave(atom_slave, name_master) {
+                if (!this._slaves)
+                    this._slaves = new Map();
+                this._slaves.set(atom_slave.path, name_master);
+                atom_slave.no_wait_for_master(name_master);
+                const store = atom_slave._masters_store || (atom_slave._masters_store = {});
+                store[name_master] = this;
+                atom_slave.set_state_slave(name_master, this._state instanceof Set ? this._state :
+                    $me_atom2_state_enum.invalid);
             }
-            get 'fn_apply()'() {
-                return this._state === true ? this._apply(this._value, true) : new Error(`this._state is ${this._state}`);
-            }
-            get 'update()'() {
-                return this.update();
+            rm_slave(atom_slave) {
+                if (this._slaves && this._slaves.has(atom_slave.path)) {
+                    const name_master = this._slaves.get(atom_slave.path);
+                    atom_slave.set_state_slave(name_master, $me_atom2_state_enum.invalid);
+                    if (atom_slave._masters_store)
+                        delete atom_slave._masters_store[name_master];
+                    this._slaves.delete(atom_slave.path);
+                    if (!this._slaves.size)
+                        this._slaves = null;
+                }
             }
             unregister_as_slave(masters) {
                 if (Array.isArray(masters))
@@ -1149,73 +1146,25 @@ var $;
                         }
                         else {
                             const ms = $me_atom2._waiting_for_atom_def;
-                            let name_master = atom_master;
-                            const ss = ms[name_master];
+                            let s = atom_master;
+                            const ss = ms[s];
                             if (!ss)
                                 continue;
                             ss.delete(this.path);
                             if (!ss.size)
-                                delete ms[name_master];
+                                delete ms[s];
                             this.no_wait_for_master(name_master);
                         }
                     }
             }
-            wait_for_atom_def(waiting_for, master) {
-                {
-                    const ms = $me_atom2._waiting_for_atom_def;
-                    const ss = ms[waiting_for] || (ms[waiting_for] = new Map());
-                    ss.set(this.path, master);
-                }
-                {
-                    const state = typeof this._state === 'boolean' || this._state instanceof Error ?
-                        (this._state = {}) :
-                        this._state;
-                    const ss = state[waiting_for_sym] || (state[waiting_for_sym] = new Set());
-                    ss.add(waiting_for);
-                    return state;
-                }
-            }
-            add_slave(atom_slave, master) {
-                if (!this._slaves)
-                    this._slaves = new Set();
-                this._slaves.add(atom_slave.path);
-                if (master !== void 0) {
-                    atom_slave.no_wait_for_master(this.name());
-                    const store = atom_slave._masters_store || (atom_slave._masters_store = {});
-                    store[master] = this;
-                }
-                atom_slave.set_state_slave(this._state, this.name());
-            }
-            no_wait_for_master(name_master) {
-                if (typeof this._state === 'boolean' || this._state instanceof Error)
-                    return;
-                const ma = this._state;
-                const ss = ma[waiting_for_sym];
-                if (ss) {
-                    ss.delete(name_master);
-                    if (!ss.size)
-                        delete ma[waiting_for_sym];
-                    if (!Object.keys(ma).length)
-                        this._state = true;
-                }
-            }
-            rm_slave(atom_slave) {
-                if (this._slaves) {
-                    this._slaves.delete(atom_slave.path);
-                    if (!this._slaves.size)
-                        this._slaves = null;
-                    atom_slave.set_state_slave(false, this.name());
-                    atom_slave._masters_store = null;
-                }
-            }
             value(val, force = false) {
-                if (val === void 0 && this._state === true)
+                if (val === void 0 && this._state === $me_atom2_state_enum.valid)
                     return this._value;
                 if (!this.active() ||
                     $me_atom2._cyclic_dependency)
                     return null;
                 this.update(val, force);
-                return ($me_atom2._cyclic_dependency || this._state !== true ?
+                return ($me_atom2._cyclic_dependency || this._state !== $me_atom2_state_enum.valid ?
                     null :
                     this._value);
             }
@@ -1225,35 +1174,9 @@ var $;
             update(val, force = false) {
                 if (!this.active() ||
                     $me_atom2._cyclic_dependency ||
-                    this._state !== false && val === void 0)
+                    val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
+                        this._state === $me_atom2_state_enum.need_check))
                     return;
-                let just_set_anim = false;
-                const helper = (val) => {
-                    let result;
-                    if (val instanceof $me_atom2_anim_class) {
-                        const anim = val._anim;
-                        if (!$me_atom2.is_valid_value(anim.to)) {
-                            result = null;
-                        }
-                        else {
-                            if (!$me_atom2.is_valid_value(anim.from)) {
-                                const value = typeof this._state == 'boolean' ? this._value : null;
-                                anim.from = ($me_atom2.is_valid_value(value) ? value : anim.to);
-                            }
-                            if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
-                                $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
-                                $me_atom2.anim_active(anim, true);
-                                $$.$me_atom2_async();
-                            }
-                            if (anim.delay <= 0)
-                                result = anim.from;
-                        }
-                    }
-                    else {
-                        result = val;
-                    }
-                    return result;
-                };
                 const true_set = val !== void 0;
                 if (val === void 0) {
                     const compute_result = this._compute();
@@ -1266,22 +1189,47 @@ var $;
                     }
                     val = ret;
                 }
-                const next_value = helper(val);
-                if (next_value !== void 0) {
-                    if (!just_set_anim) {
-                        $me_atom2.anim_stop(this.path);
-                    }
-                    this.set_value(next_value, true_set, force);
+                let just_set_anim = false;
+                let next_value = null;
+                if (!(val instanceof $me_atom2_anim_class)) {
+                    next_value = val;
                 }
+                else {
+                    const anim = val._anim;
+                    if ($me_atom2.is_valid_value(anim.to)) {
+                        if (!$me_atom2.is_valid_value(anim.from)) {
+                            const value = typeof this._state == 'number' ? this._value : null;
+                            anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
+                        }
+                        if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
+                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
+                            $me_atom2.anim_active(anim, true);
+                            $$.$me_atom2_async();
+                        }
+                        next_value = anim.delay > 0 ? void 0 : anim.from;
+                    }
+                }
+                if (next_value === void 0)
+                    return;
+                if (!just_set_anim)
+                    $me_atom2.anim_stop(this.path);
+                this.set_value(next_value, true_set, force);
             }
             set_value(next_value, true_set = true, force = false) {
                 const prev_value = this._value;
+                if (!true_set && !force &&
+                    this._state === $me_atom2_state_enum.need_check &&
+                    $$.$me_equal(next_value, prev_value)) {
+                    this._state = $me_atom2_state_enum.valid;
+                    return;
+                }
                 next_value = this._apply(next_value, force);
-                const state = $me_atom2.is_valid_value(this._value = next_value) || (true_set && (this.fn_compute || this.masters) ? false :
-                    new Error(`${this.name()} got ${next_value}`));
+                const state = $me_atom2.is_valid_value(this._value = next_value) ? $me_atom2_state_enum.valid :
+                    true_set && (this.fn_compute || this.masters) ? $me_atom2_state_enum.invalid :
+                        `${this.name()} got ${next_value}`;
                 if (state !== this._state ||
-                    this._state === true && (force || !$$.$me_equal(prev_value, next_value)))
-                    this.set_state(state);
+                    this._state === $me_atom2_state_enum.valid && (force || !$$.$me_equal(prev_value, next_value)))
+                    this.set_state(state, $me_atom2_state_enum.need_check);
             }
             _compute() {
                 return this.update_helper('compute', () => {
@@ -1291,51 +1239,62 @@ var $;
                     if (this.masters) {
                         let ma;
                         masters = Array.isArray(this.masters) ? this.masters : (ma = this.masters).value();
-                        if (ma) {
-                            if (ma._state !== true)
-                                return { state: ma._state };
-                            if (this._state !== false)
-                                return null;
-                        }
                         let state;
+                        if (ma && ma._state !== $me_atom2_state_enum.valid) {
+                            state = new Set();
+                            state.add('#masters');
+                            return { state };
+                        }
                         let store = this._masters_store;
                         if (!store) {
-                            for (const master of masters) {
-                                const atom_master = this.by_path_s(master, this._key_provider());
-                                if (typeof atom_master === 'string') {
-                                    state = this.wait_for_atom_def(atom_master, master);
+                            for (const name_master of masters) {
+                                const atom_master = this.by_path_s(name_master, this._key_provider());
+                                if (atom_master instanceof $me_atom2) {
+                                    atom_master.add_slave(this, name_master);
                                 }
                                 else {
-                                    atom_master.add_slave(this, master);
+                                    const name_atom_waiting_for = atom_master;
+                                    const ms = $me_atom2._waiting_for_atom_def;
+                                    const ss = ms[name_atom_waiting_for] || (ms[name_atom_waiting_for] = new Map());
+                                    ss.set(this.path, name_master);
+                                    if (!state)
+                                        state =
+                                            this._state instanceof Set ?
+                                                this._state :
+                                                new Set();
+                                    state.add(name_master);
                                 }
                             }
-                            if (state)
+                            if (state) {
                                 return { state };
+                            }
                             store = this._masters_store;
                         }
-                        master_values = Array(masters.length);
+                        master_values = [];
                         let not_ready = false;
-                        for (let i = 0; i < masters.length; i++) {
-                            const name_master = masters[i];
+                        for (const name_master of masters) {
                             const atom_master = store[name_master];
                             if (!atom_master)
                                 $$.$me_throw(`${this.name()}: no .store[${name_master}]`);
-                            master_values[i] = atom_master.value();
-                            if (atom_master._state !== true) {
+                            master_values.push(atom_master.value());
+                            if (atom_master._state !== $me_atom2_state_enum.valid) {
                                 if (!state)
-                                    state = {};
-                                state[atom_master.name()] = atom_master._state;
+                                    state = new Set();
+                                state.add(name_master);
                             }
                         }
-                        if (state)
+                        if (state) {
                             return { state };
-                        if (!fn_compute)
+                        }
+                        if (!fn_compute) {
                             return {
                                 ret: (master_values.length == 1 ? master_values[0] : master_values)
                             };
+                        }
                     }
-                    if (!fn_compute)
+                    if (!fn_compute) {
                         return { ret: void 0 };
+                    }
                     const result = {};
                     const key_provider_ret = this._key_provider() || {};
                     try {
@@ -1347,6 +1306,38 @@ var $;
                     }
                     return result;
                 });
+            }
+            _apply(next_value, force = false) {
+                const fn_apply = this.fn_apply;
+                if (fn_apply && (force || !$$.$me_equal(next_value, this._value))) {
+                    const prev = this._value;
+                    this._value = next_value;
+                    this.update_helper('apply', () => {
+                        const keys = this._key_provider() || {};
+                        const ret = fn_apply.call(this, Object.assign({ atom: this, prev, val: next_value }, keys));
+                        if (ret !== void 0)
+                            next_value = ret;
+                        return null;
+                    });
+                }
+                return next_value;
+            }
+            update_helper(update_kind, fn) {
+                const ss = $me_atom2._update_atoms[update_kind];
+                if (ss.has(this.path)) {
+                    $me_atom2._cyclic_dependency = true;
+                    console.error(`Циклическая ${update_kind}-зависимость`, [this.path.toString()].concat([...$me_atom2._update_atoms[update_kind]]
+                        .map(item => item[0].toString())
+                        .reverse()));
+                    return null;
+                }
+                ss.set(this.path, true);
+                const prev = $$.a.curr;
+                $$.a.curr = this;
+                const ret = fn();
+                $$.a.curr = prev;
+                ss.delete(this.path);
+                return ret;
             }
             _key_provider() {
                 if (this.path.tail === '#masters' || this.path.tail === '#keys')
@@ -1386,114 +1377,50 @@ var $;
                 }
                 return (this._key_provider_cache = result);
             }
-            destroy() {
-                if (this._slaves)
-                    for (let path of this._slaves) {
-                        const atom = $$.$me_atom2_entity.root().by_path(path);
-                        if (atom)
-                            this.rm_slave(atom);
-                    }
-                this.unregister_as_slave(this._masters());
-                super.destroy();
-            }
-            _apply(next_value, force = false) {
-                const fn_apply = this.fn_apply;
-                if (fn_apply && (force || !$$.$me_equal(next_value, this._value))) {
-                    this._value_last_applied = next_value;
-                    const prev = this._value;
-                    this._value = next_value;
-                    this.update_helper('apply', () => {
-                        const keys = this._key_provider() || {};
-                        const ret = fn_apply.call(this, Object.assign({ atom: this, prev, val: next_value }, keys));
-                        if (ret !== void 0)
-                            next_value = ret;
-                        return null;
-                    });
-                }
-                return next_value;
-            }
-            update_helper(update_kind, fn) {
-                const ss = $me_atom2._update_atoms[update_kind];
-                if (ss.has(this.path)) {
-                    $me_atom2._cyclic_dependency = true;
-                    console.error(`Циклическая ${update_kind}-зависимость`, [this.path.toString()].concat([...$me_atom2._update_atoms[update_kind]]
-                        .map(item => item[0].toString())
-                        .reverse()));
-                    return null;
-                }
-                ss.set(this.path, true);
-                const prev = $$.a.curr;
-                $$.a.curr = this;
-                const ret = fn();
-                $$.a.curr = prev;
-                ss.delete(this.path);
-                return ret;
-            }
-            set_state(val) {
+            set_state(val, state2spread) {
                 if ($me_atom2._cyclic_dependency)
                     return;
-                this.set_state_helper(val);
-                const state2spread = typeof val === 'boolean' ? false : this._state;
-                $me_atom2._spread_atoms.set(this, val);
-                this.spread_state(state2spread);
-                $me_atom2._spread_atoms.delete(this);
-            }
-            spread_state(val) {
+                this._state = val;
+                if (this.fn_apply &&
+                    (val === $me_atom2_state_enum.invalid || val === $me_atom2_state_enum.need_check) &&
+                    this.active()) {
+                    $me_atom2.to_update.add(this.path);
+                    $$.$me_atom2_async();
+                }
+                $me_atom2.set_state_count++;
                 if (!this._slaves)
                     return;
-                for (let path_slave of this._slaves) {
+                $me_atom2._spread_atoms.set(this, val);
+                for (let [path_slave, name_master] of this._slaves) {
                     const atom_slave = $$.$me_atom2_entity.root().by_path(path_slave);
                     if (atom_slave instanceof $me_atom2) {
-                        atom_slave.set_state_slave(val, this.name());
+                        atom_slave.set_state_slave(name_master, state2spread !== void 0 ? state2spread : val);
                     }
                     else {
                         this._slaves.delete(path_slave);
                     }
                 }
+                $me_atom2._spread_atoms.delete(this);
             }
-            set_state_slave(val, name_master) {
+            set_state_slave(name_master, val) {
                 if ($me_atom2._spread_atoms.has(this)) {
                     $me_atom2._cyclic_dependency = true;
                     $$.$me_throw('Циклическая spread-зависомость', [[this.name(), val]].concat([...$me_atom2._spread_atoms].map(item => [item[0].name(), item[1]]).reverse()), ...[this].concat([...$me_atom2._spread_atoms].map(item => item[0]).reverse()));
                 }
-                $me_atom2._spread_atoms.set(this, val);
-                {
-                    let skip_spread = false;
-                    {
-                        if (typeof val === 'boolean') {
-                            if (this._state === true || this._state instanceof Error) {
-                                this.set_state_helper(false);
-                            }
-                            else if (this._state) {
-                                const ma = this._state;
-                                delete ma[name_master];
-                                if (Object.keys(ma))
-                                    this.set_state_helper(false);
-                            }
-                            else
-                                skip_spread = true;
-                        }
-                        else {
-                            const m = typeof this._state === 'boolean' || this._state instanceof Error ?
-                                (this._state = {}) :
-                                this._state;
-                            if (m[name_master] !== val) {
-                                m[name_master] = val;
-                            }
-                            else
-                                skip_spread = true;
-                        }
-                    }
-                    if (!skip_spread)
-                        this.spread_state(this._state);
+                if (this._state instanceof Set && typeof val == 'number') {
+                    this.no_wait_for_master(name_master);
                 }
-                $me_atom2._spread_atoms.delete(this);
-            }
-            set_state_helper(val) {
-                this._state = val;
-                if (this.fn_apply && val === false && this.active()) {
-                    $me_atom2.to_update.add(this.path);
-                    $$.$me_atom2_async();
+                else if ((typeof this._state == 'string' || this._state instanceof Error) && typeof val == 'number') {
+                    this.set_state($me_atom2_state_enum.invalid);
+                }
+                else if (val instanceof Set || typeof val == 'string' || val instanceof Error) {
+                    if (!(this._state instanceof Set))
+                        this._state = new Set();
+                    this._state.add(name_master);
+                }
+                else if (this._state === $me_atom2_state_enum.valid &&
+                    (val == $me_atom2_state_enum.need_check || val == $me_atom2_state_enum.invalid)) {
+                    this.set_state($me_atom2_state_enum.need_check);
                 }
             }
             _key_idx_changed(p) {
@@ -1532,6 +1459,69 @@ var $;
                         this._key_idx_changed_helper(p, entities_key[k], n - 1, key.concat(k));
                     }
                 }
+            }
+            key_enum() {
+                const result = [];
+                let atom = this;
+                while (atom._key_gen) {
+                    const key_enum = atom._key_gen.value();
+                    result.push(key_enum);
+                    atom = atom._entities.key[key_enum[0]];
+                }
+                return result;
+            }
+            _on_active() {
+                if (this.fn_apply && this._state === $me_atom2_state_enum.invalid) {
+                    $me_atom2.to_update.add(this.path);
+                    $$.$me_atom2_async();
+                }
+            }
+            _masters() {
+                const masters = this.masters;
+                return (Array.isArray(masters) ? masters :
+                    masters instanceof $me_atom2 ? masters.value() :
+                        []);
+            }
+            static update_atoms(deadline, last_now) {
+                const pre = performance.now() - last_now;
+                let count = 0;
+                let atoms_to_update = new Set();
+                let ss;
+                if ($me_atom2._update_atoms_debug)
+                    ss = new Set();
+                while ($me_atom2.to_update.size) {
+                    if (performance.now() > deadline)
+                        break;
+                    for (const tail of $me_atom2._update_order) {
+                        for (const path of $me_atom2.to_update) {
+                            if (performance.now() > deadline)
+                                break;
+                            if (tail && path.tail !== tail)
+                                continue;
+                            const atom = $$.$me_atom2_entity.root().by_path(path);
+                            if (atom && atom.active()) {
+                                atoms_to_update.add(atom);
+                            }
+                            $me_atom2.to_update.delete(path);
+                        }
+                        if (atoms_to_update.size)
+                            break;
+                    }
+                    for (const atom of atoms_to_update) {
+                        if (performance.now() > deadline)
+                            break;
+                        if (ss && atom.name().startsWith('/@app@workspace@search@panelResult@grid@row[1]@content@cell[Комнат]'))
+                            ss.add(atom.name());
+                        atom.update();
+                        count++;
+                        atoms_to_update.delete(atom);
+                    }
+                }
+                for (const atom of atoms_to_update)
+                    $me_atom2.to_update.add(atom.path);
+                if (ss && ss.size)
+                    console.warn(ss);
+                return [count, pre];
             }
             static anim_start(anim, t) {
                 if (anim.start == null)
@@ -1572,19 +1562,26 @@ var $;
                 return 0;
             }
         }
-        $me_atom2._spread_atoms = new Map();
-        $me_atom2._cyclic_dependency = false;
-        $me_atom2.to_update = new Set();
-        $me_atom2._update_order = ['#keys', '#masters', ''];
-        $me_atom2._waiting_for_atom_def = {};
-        $me_atom2._to_def = Array();
         $me_atom2._update_atoms = {
             compute: new Map(),
             apply: new Map(),
         };
+        $me_atom2._spread_atoms = new Map();
+        $me_atom2._cyclic_dependency = false;
+        $me_atom2.set_state_count = 0;
+        $me_atom2._waiting_for_atom_def = {};
+        $me_atom2.to_def = Array();
+        $me_atom2.to_update = new Set();
+        $me_atom2._update_order = ['#keys', '#masters', ''];
+        $me_atom2._update_atoms_debug = false;
         $me_atom2.anim_to_play = new Map();
         $$.$me_atom2 = $me_atom2;
-        const waiting_for_sym = Symbol('waiting_for');
+        let $me_atom2_state_enum;
+        (function ($me_atom2_state_enum) {
+            $me_atom2_state_enum[$me_atom2_state_enum["invalid"] = 0] = "invalid";
+            $me_atom2_state_enum[$me_atom2_state_enum["valid"] = 1] = "valid";
+            $me_atom2_state_enum[$me_atom2_state_enum["need_check"] = 2] = "need_check";
+        })($me_atom2_state_enum = $$.$me_atom2_state_enum || ($$.$me_atom2_state_enum = {}));
         function $me_atom2_anim(anim) {
             return new $me_atom2_anim_class(anim);
         }
@@ -1657,7 +1654,7 @@ var $;
                 }
                 if (!this._wait_for_child) {
                     this._wait_for_child_did_helper();
-                    this._isReady(true);
+                    $me_atom2_ec.almost_ready.add(this);
                 }
             }
             _isReady(val) {
@@ -1712,7 +1709,8 @@ var $;
             }
             invalidateClientRect() {
                 const prop_clientRect = this._entities.prop['#clientRect'];
-                prop_clientRect.set_state(false);
+                if (prop_clientRect.state() === $$.$me_atom2_state_enum.valid)
+                    prop_clientRect.set_state($$.$me_atom2_state_enum.invalid);
                 for (const ec_kind of ['elem', 'control']) {
                     const entities_of_kind = this._entities[ec_kind];
                     if (!entities_of_kind)
@@ -1752,7 +1750,7 @@ var $;
                         if (control instanceof $$.$me_atom2_control)
                             control.destroy();
                         if (val) {
-                            $$.$me_atom2_control._to_def.push({
+                            $$.$me_atom2_control.to_def.push({
                                 cnf: val,
                                 parent: this,
                                 tail,
@@ -1775,7 +1773,7 @@ var $;
                                 this._wait_for_child_did(this.name() + '^' + tail);
                         }
                     };
-                    $$.$me_atom2._to_def.push($$.$me_atom2_prop_def_prepare(prop_def, {
+                    $$.$me_atom2.to_def.push($$.$me_atom2_prop_def_prepare(prop_def, {
                         parent: this,
                         tail: '^' + tail,
                         fn_apply,
@@ -1886,6 +1884,7 @@ var $;
         }
         $me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer']), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
         $me_atom2_ec._to_init = Array();
+        $me_atom2_ec.almost_ready = new Set();
         $me_atom2_ec._cnf_cache = new Map();
         $me_atom2_ec._prepare_cache = {};
         $$.$me_atom2_ec = $me_atom2_ec;
@@ -1983,7 +1982,7 @@ var $;
                         if (elem instanceof $me_atom2_elem)
                             elem.destroy();
                         if (val) {
-                            $me_atom2_elem._to_def.push({
+                            $me_atom2_elem.to_def.push({
                                 cnf: val,
                                 parent: this,
                                 tail,
@@ -2016,7 +2015,7 @@ var $;
                         if ($$.$me_debug)
                             console.log(elem.path.toString());
                     };
-                    $$.$me_atom2._to_def.push($$.$me_atom2_prop_def_prepare(prop_def, {
+                    $$.$me_atom2.to_def.push($$.$me_atom2_prop_def_prepare(prop_def, {
                         parent: this,
                         tail: '@' + tail,
                         fn_apply,
@@ -2042,12 +2041,6 @@ var $;
             fn_compute_visible(p) {
                 const [hidden, visible] = p.masters;
                 return !hidden && (!this.parent().elem_parent() || visible);
-            }
-            fn_compute_clientRect() {
-                const elem = this.parent();
-                const { left, top, right, bottom } = elem.node.getBoundingClientRect();
-                const result = { left, top, right, bottom };
-                return result;
             }
             fn_compute_ctxSize(p) {
                 const [pixelRatio, width, height] = p.masters;
@@ -2082,6 +2075,12 @@ var $;
             fn_apply_left(p) {
                 if (p.val != null)
                     this.parent().style({ left: p.val });
+            }
+            fn_compute_clientRect() {
+                const elem = this.parent();
+                const { left, top, right, bottom } = elem.node.getBoundingClientRect();
+                const result = { left, top, right, bottom };
+                return result;
             }
             fn_apply_clientRect(p) {
                 const elem = this.parent();
@@ -2194,7 +2193,7 @@ var $;
                 const prev = $$.a.curr;
                 $$.a.curr = this;
                 for (const src of ['style', 'attr', 'dom']) {
-                    $$.$me_atom2._to_def.push({
+                    $$.$me_atom2.to_def.push({
                         tail: src,
                         parent: this,
                         masters: null,
@@ -2219,7 +2218,7 @@ var $;
                 const prop_defined = {};
                 if (src === 'style') {
                     const tail = 'visibility';
-                    $$.$me_atom2._to_def.push({
+                    $$.$me_atom2.to_def.push({
                         tail,
                         parent,
                         masters: ['.#visible'],
@@ -2247,7 +2246,7 @@ var $;
                                 $$.$me_throw(`${this.name()}: .style.visibility is reserved for internal use, use .#hidden instead`);
                             }
                             else if (prop_defined[tail] === void 0) {
-                                $$.$me_atom2._to_def.push($$.$me_atom2_prop_def_prepare(props[tail], {
+                                $$.$me_atom2.to_def.push($$.$me_atom2_prop_def_prepare(props[tail], {
                                     tail,
                                     parent,
                                     fn_apply: $me_atom2_elem.fn_apply(src, tail, this),
@@ -2560,7 +2559,7 @@ var $;
                 return elem_id.slice(elem_id.lastIndexOf('@') + 1);
             }
         }
-        $me_atom2_elem._to_def = Array();
+        $me_atom2_elem.to_def = Array();
         $me_atom2_elem.style_default = {
             position: () => 'absolute',
         };
@@ -2624,7 +2623,7 @@ var $;
                     $$.a('.#isHover', true));
                 _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY) && $$.a('.#isHover', false));
             }
-            else if (name_event === 'tap' || name_event === 'clickOrTap' && ('ontouchstart' in window)) {
+            else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
                 _do_event_add(ec, 'touchstart', zIndex, p => {
                     const ret = p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
                     if (ret) {
@@ -2638,7 +2637,7 @@ var $;
                 _do_event_add(ec, 'touchend', zIndex, p => $$.tapRet.has(ec.path) &&
                     fn(Object.assign({}, p, { event: { start: $$.tapRet.get(ec.path), end: p.event } })));
             }
-            else if (name_event === 'click' || name_event === 'clickOrTap' && !('ontouchstart' in window)) {
+            else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
                 _do_event_add(ec, 'mousedown', zIndex, p => {
                     const ret = p.isInRect(p.event.clientX, p.event.clientY);
                     if (ret) {
@@ -2749,36 +2748,7 @@ var $;
         function $me_atom2_event_keyboard_process(name_event, event) {
         }
         $$.$me_atom2_event_keyboard_process = $me_atom2_event_keyboard_process;
-        function init() {
-            if ('ontouchstart' in window) {
-                document.body.addEventListener('touchstart', (event) => $me_atom2_event_process('touchstart', event));
-                document.body.addEventListener('touchend', (event) => $me_atom2_event_process('touchend', event));
-            }
-            else {
-                document.body.addEventListener('mousedown', (event) => $me_atom2_event_process('mousedown', event));
-                document.body.addEventListener('mouseup', (event) => $me_atom2_event_process('mouseup', event));
-                document.body.addEventListener('mousemove', (event) => {
-                    $$.$me_atom2_event_mousemove_last = $$.$me_atom2_event_mousemove_to_process = event;
-                    $$.$me_atom2_async();
-                });
-                document.body.addEventListener('wheel', (event) => {
-                    if (!$$.$me_atom2_event_wheel_to_process) {
-                        $$.$me_atom2_event_wheel_to_process = event;
-                        $$.$me_atom2_event_wheel_to_process._deltaX = event.deltaX;
-                        $$.$me_atom2_event_wheel_to_process._deltaY = event.deltaY;
-                    }
-                    else {
-                        $$.$me_atom2_event_wheel_to_process._deltaX = event.deltaX + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaX) * Math.sign(event.deltaX) < 0 ? 0 : $$.$me_atom2_event_wheel_to_process._deltaX);
-                        $$.$me_atom2_event_wheel_to_process._deltaY = event.deltaY + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaY) * Math.sign(event.deltaY) < 0 ? 0 : $$.$me_atom2_event_wheel_to_process._deltaY);
-                    }
-                    $$.$me_atom2_async();
-                    event.preventDefault();
-                }, { passive: false });
-                document.body.addEventListener('keydown', (event) => $me_atom2_event_keyboard_process('keydown', event));
-                document.body.addEventListener('keyup', (event) => $me_atom2_event_keyboard_process('keyup', event));
-            }
-        }
-        init();
+        const isTouch = () => $$.$me_atom2_entity.root()._entities.prop['#isTouch'].value();
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //event.js.map
@@ -3077,7 +3047,7 @@ var $;
                     (!to_render || control._entities.prop['#visible'].value()));
             }
         }
-        $me_atom2_control._to_def = Array();
+        $me_atom2_control.to_def = Array();
         $me_atom2_control._to_render = new Set();
         $me_atom2_control._to_clean = new Set();
         $me_atom2_control._fill_controls_cache = new Map();
@@ -3282,6 +3252,7 @@ var $;
             const start = performance.now();
             const stat = new Map();
             if ($$.$me_atom2.anim_to_play.size) {
+                $$.$me_atom2.set_state_count = 0;
                 fill_stat(stat, 'anim', last_now => {
                     const pre = performance.now() - last_now;
                     const anim_to_play = new Array();
@@ -3436,9 +3407,9 @@ var $;
                 def_atom: (deadline, last_now) => {
                     const pre = performance.now() - last_now;
                     let count = 0;
-                    while ($$.$me_atom2._to_def.length
+                    while ($$.$me_atom2.to_def.length
                         && performance.now() < deadline) {
-                        const def = $$.$me_atom2._to_def.shift();
+                        const def = $$.$me_atom2.to_def.shift();
                         if ($$.$me_atom2_entity.root().by_path(def.parent.path)) {
                             new $$.$me_atom2(def);
                             count++;
@@ -3449,8 +3420,8 @@ var $;
                 def_control: (deadline, last_now) => {
                     const pre = performance.now() - last_now;
                     let count = 0;
-                    while ($$.$me_atom2_control._to_def.length && performance.now() < deadline) {
-                        const def = $$.$me_atom2_control._to_def.shift();
+                    while ($$.$me_atom2_control.to_def.length && performance.now() < deadline) {
+                        const def = $$.$me_atom2_control.to_def.shift();
                         if ($$.$me_atom2_entity.root().by_path(def.parent.path)) {
                             new $$.$me_atom2_control(def);
                             count++;
@@ -3461,8 +3432,8 @@ var $;
                 def_elem: (deadline, last_now) => {
                     const pre = performance.now() - last_now;
                     let count = 0;
-                    while ($$.$me_atom2_elem._to_def.length && performance.now() < deadline) {
-                        const def = $$.$me_atom2_elem._to_def.shift();
+                    while ($$.$me_atom2_elem.to_def.length && performance.now() < deadline) {
+                        const def = $$.$me_atom2_elem.to_def.shift();
                         if ($$.$me_atom2_entity.root().by_path(def.parent.path)) {
                             new $$.$me_atom2_elem(def);
                             count++;
@@ -3481,6 +3452,14 @@ var $;
                         ec.init();
                         count++;
                     }
+                    return [count, pre];
+                },
+                set_ready: (deadline, last_now) => {
+                    const pre = performance.now() - last_now;
+                    for (const ec of $$.$me_atom2_ec.almost_ready)
+                        ec._isReady(true);
+                    const count = $$.$me_atom2_ec.almost_ready.size;
+                    $$.$me_atom2_ec.almost_ready.clear();
                     return [count, pre];
                 },
                 fini_asyncComplete: (deadline, last_now) => {
@@ -3535,9 +3514,9 @@ var $;
         }
         init_ric();
         const ready_to_render = () => $$.$me_atom2_control._to_render.size &&
-            !$$.$me_atom2_control._to_def.length &&
-            !$$.$me_atom2_elem._to_def.length &&
-            !$$.$me_atom2._to_def.length &&
+            !$$.$me_atom2_control.to_def.length &&
+            !$$.$me_atom2_elem.to_def.length &&
+            !$$.$me_atom2.to_def.length &&
             true;
         $$.$me_atom2_async_complete = (including_anim = false) => !($$.$me_atom2_elem.children_to_add.size ||
             $$.$me_atom2_elem.lazy_prop_apply_did() ||
@@ -3545,14 +3524,37 @@ var $;
             $$.$me_atom2_control._to_clean.size ||
             $$.$me_atom2_control._to_render.size ||
             $$.$me_atom2.to_update.size ||
-            $$.$me_atom2_control._to_def.length ||
-            $$.$me_atom2_elem._to_def.length ||
-            $$.$me_atom2._to_def.length ||
+            $$.$me_atom2_control.to_def.length ||
+            $$.$me_atom2_elem.to_def.length ||
+            $$.$me_atom2.to_def.length ||
             $$.$me_atom2_ec._to_init.length ||
             including_anim && $$.$me_atom2.anim_to_play.size ||
             $$.$me_atom2_event_mousemove_to_process ||
             $$.$me_atom2_event_wheel_to_process ||
             false);
+        const touchstart = (event) => $$.$me_atom2_event_process('touchstart', event);
+        const touchend = (event) => $$.$me_atom2_event_process('touchend', event);
+        const mousedown = (event) => $$.$me_atom2_event_process('mousedown', event);
+        const mouseup = (event) => $$.$me_atom2_event_process('mouseup', event);
+        const mousemove = (event) => {
+            $$.$me_atom2_event_mousemove_last = $$.$me_atom2_event_mousemove_to_process = event;
+            $$.$me_atom2_async();
+        };
+        const wheel = (event) => {
+            if (!$$.$me_atom2_event_wheel_to_process) {
+                $$.$me_atom2_event_wheel_to_process = event;
+                $$.$me_atom2_event_wheel_to_process._deltaX = event.deltaX;
+                $$.$me_atom2_event_wheel_to_process._deltaY = event.deltaY;
+            }
+            else {
+                $$.$me_atom2_event_wheel_to_process._deltaX = event.deltaX + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaX) * Math.sign(event.deltaX) < 0 ? 0 : $$.$me_atom2_event_wheel_to_process._deltaX);
+                $$.$me_atom2_event_wheel_to_process._deltaY = event.deltaY + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaY) * Math.sign(event.deltaY) < 0 ? 0 : $$.$me_atom2_event_wheel_to_process._deltaY);
+            }
+            $$.$me_atom2_async();
+            event.preventDefault();
+        };
+        const keydown = (event) => $$.$me_atom2_event_keyboard_process('keydown', event);
+        const keyup = (event) => $$.$me_atom2_event_keyboard_process('keyup', event);
         function _settingsInit() {
             let asyncCompleteStart;
             let asyncCompleteIncludingAnimateStart;
@@ -3564,6 +3566,41 @@ var $;
             });
             const viewport = _viewport();
             $$.$me_atom2_entity.root().props({
+                '#isTouch': $$.$me_atom2_prop([], () => 'ontouchstart' in window, ({ val, prev }) => {
+                    if (prev != null && prev != val) {
+                        if (prev) {
+                            document.body.removeEventListener('touchstart', touchstart);
+                            document.body.removeEventListener('touchend', touchend);
+                        }
+                        else {
+                            document.body.removeEventListener('mousedown', mousedown);
+                            document.body.removeEventListener('mouseup', mouseup);
+                            document.body.removeEventListener('mousemove', mousemove);
+                            document.body.removeEventListener('wheel', wheel);
+                            document.body.removeEventListener('keydown', keydown);
+                            document.body.removeEventListener('keyup', keyup);
+                        }
+                    }
+                    if (prev !== val) {
+                        if (val) {
+                            document.body.addEventListener('touchstart', touchstart);
+                            document.body.addEventListener('touchend', touchend);
+                        }
+                        else {
+                            document.body.addEventListener('mousedown', mousedown);
+                            document.body.addEventListener('mouseup', mouseup);
+                            document.body.addEventListener('mousemove', mousemove);
+                            document.body.addEventListener('wheel', wheel, { passive: false });
+                            document.body.addEventListener('keydown', keydown);
+                            document.body.addEventListener('keyup', keyup);
+                        }
+                    }
+                }),
+                '#height': '.#viewportHeight',
+                '#width': '.#viewportWidth',
+                '#left': () => 0,
+                '#top': () => 0,
+                '#isReady': () => true,
                 '#viewportChanged': () => false,
                 '#viewportPortrait': () => false,
                 '#viewportWidthChanged': () => false,
@@ -3671,59 +3708,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //ric.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_elem_search_tabs = {
-            elem: {
-                new: () => ({
-                    base: tab,
-                    prop: {
-                        idx: () => '',
-                    },
-                    dom: {
-                        innerText: () => 'Новый заказ +'.toUpperCase(),
-                    },
-                }),
-                tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
-                    base: tab,
-                    prop: {
-                        idx: () => idx,
-                    },
-                    dom: {
-                        innerText: `<<.order_title[${idx}]`,
-                    },
-                })),
-            },
-        };
-        const tab = {
-            node: 'span',
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('<<.selected', $$.a('.idx'));
-                    return true;
-                },
-            },
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 10,
-                paddingRight: () => 10,
-                paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//tabs.js.map
 ;
 "use strict";
 var $;
@@ -4104,22 +4088,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_elem_search_panel = {
-            base: $$.$nl_elem_panel,
-            prop: {
-                '#ofsHor': '.em',
-                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$nl_elem_switch = {
             prop: {
                 '#height': () => 44,
@@ -4166,6 +4134,234 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //switch.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_elem_search = {
+            prop: {
+                orders: () => [
+                    {
+                        id: 'id1',
+                        title: 'Заказ 2',
+                        result_mode: 'Таблица',
+                    },
+                    {
+                        id: 'id2',
+                        title: 'Заказ 1',
+                        result_mode: 'Плитка',
+                    },
+                ],
+                order_idx: $$.$me_atom2_prop_keys(['.orders']),
+                order: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.orders'] }, ({ key: [idx], masters: [orders] }) => orders[idx]),
+                order_title: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.order[]'] }, ({ masters: [order] }) => order.title.toUpperCase()),
+                selected: $$.$me_atom2_prop_store('', (val) => $$.a('.order_idx').indexOf(val) >= 0),
+                param_modes: () => ({
+                    Полный: {
+                        height: 627,
+                    },
+                    Основной: {
+                        height: 295,
+                    },
+                    Сжатый: {
+                        height: 123,
+                    },
+                }),
+                param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
+                param_mode: $$.$me_atom2_prop_store('Основной', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
+            },
+            elem: {
+                tabs: () => ({
+                    prop: {
+                        '#height': '/@app@menu@login.#height',
+                        '#ofsHor': () => 36,
+                        '#ofsVer': () => 16,
+                    },
+                    elem: {
+                        new: () => ({
+                            base: tab,
+                            prop: {
+                                idx: () => '',
+                            },
+                            dom: {
+                                innerText: () => 'Новый заказ +'.toUpperCase(),
+                            },
+                        }),
+                        tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
+                            base: tab,
+                            prop: {
+                                idx: () => idx,
+                            },
+                            dom: {
+                                innerText: `<<.order_title[${idx}]`,
+                            },
+                        })),
+                    },
+                }),
+                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => selected ? null : {
+                    base: $$.$nl_elem_search_new,
+                    prop: {
+                        '#ofsVer': '<@tabs.#height',
+                        '#height': $$.$me_atom2_prop(['<.#height', '<@tabs.#height'], ({ masters: [height_parent, height_tabs] }) => height_parent - height_tabs),
+                    },
+                }),
+                params: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
+                    base: $$.$nl_elem_panel,
+                    prop: {
+                        '#ofsVer': '<@tabs.#height',
+                        '#height': $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => $$.$me_atom2_anim({ to: modes[mode].height, duration: 400 })),
+                        '#ofsHor': '.em',
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                    },
+                    elem: {
+                        mode_switcher: () => ({
+                            base: $$.$nl_elem_switch,
+                            prop: {
+                                '#ofsVer': () => 16,
+                                '#alignHor': () => $$.$me_align.right,
+                                'values': '<<.param_mode_keys',
+                                'selected': $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
+                            },
+                        }),
+                        found: () => ({
+                            node: 'span',
+                            prop: {
+                                offerCount: () => 1200,
+                                objCount: () => 800,
+                                '#alignVer': () => $$.$me_align.bottom,
+                                '#height': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                position: () => 'relative',
+                                fontWeight: () => 500,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['.offerCount', '.objCount'], ({ masters: [offerCount, objCount] }) => `Найдено ${objCount} объектов / ${offerCount} предложений`.toUpperCase()),
+                            },
+                        }),
+                    },
+                }),
+                result: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
+                    base: $$.$nl_elem_panel,
+                    prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<@params.#ofsVer', '<@params.#height', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
+                        '#ofsHor': '.em',
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                    },
+                    elem: {
+                        mode_switcher: () => ({
+                            base: $$.$nl_elem_switch,
+                            prop: {
+                                '#ofsVer': () => 16,
+                                '#alignHor': () => $$.$me_align.right,
+                                values: () => ['Таблица', 'Плитка', 'Карта'],
+                                selected: () => 'Таблица',
+                                paddingHor: () => 16,
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        const tab = {
+            node: 'span',
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('<<.selected', $$.a('.idx'));
+                    return true;
+                },
+            },
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 10,
+                paddingRight: () => 10,
+                paddingBottom: () => 5,
+                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//search.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_elem_search_tabs = {
+            elem: {
+                new: () => ({
+                    base: tab,
+                    prop: {
+                        idx: () => '',
+                    },
+                    dom: {
+                        innerText: () => 'Новый заказ +'.toUpperCase(),
+                    },
+                }),
+                tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
+                    base: tab,
+                    prop: {
+                        idx: () => idx,
+                    },
+                    dom: {
+                        innerText: `<<.order_title[${idx}]`,
+                    },
+                })),
+            },
+        };
+        const tab = {
+            node: 'span',
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('<<.selected', $$.a('.idx'));
+                    return true;
+                },
+            },
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 10,
+                paddingRight: () => 10,
+                paddingBottom: () => 5,
+                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//tabs.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_elem_search_panel = {
+            base: $$.$nl_elem_panel,
+            prop: {
+                '#ofsHor': '.em',
+                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
 ;
 "use strict";
 var $;
@@ -4829,11 +5025,12 @@ var $;
                 col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
                 col_fixed_width: () => 37,
                 col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev, ({ val }) => Math.min(Math.max(val, ($$.a('.#width') + $$.a('.col_fixed_width')) / 2 - $$.a('.col_width_sum')), $$.a('.col_fixed_width'))),
+                ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev, ({ val, atom }) => Math.min(Math.max(val, ($$.a('.#width') + $$.a('.col_fixed_width')) / 2 - $$.a('.col_width_sum')), $$.a('.col_fixed_width'))),
                 ofsHor_adjust: $$.$me_atom2_prop(['.#width'], null, ({ val, prev }) => {
                     if (prev == null || val == prev)
                         return;
-                    $$.a('.ofsHor', $$.a('.ofsHor') + val - prev);
+                    if (val > prev)
+                        $$.a('.ofsHor', $$.a('.ofsHor') + val - prev);
                 }),
                 col_left: $$.$me_atom2_prop({
                     keys: ['.col_ids'],
@@ -5674,11 +5871,6 @@ var $;
         };
         const app = (rootElem, elem) => {
             $$.$me_atom2_entity.root().props({
-                '#height': '.#viewportHeight',
-                '#width': '.#viewportWidth',
-                '#left': () => 0,
-                '#top': () => 0,
-                '#isReady': () => true,
                 em: () => 16,
                 colorText: () => '#313745',
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
