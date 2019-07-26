@@ -142,13 +142,10 @@ var $;
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
         $$.$me_pos = () => ({ left: 0, top: 0 });
-        function $me_point_in_rect(x, y, rect, tolerance = 0) {
-            const result = rect.left - tolerance < x && x < rect.right + tolerance &&
-                rect.top - tolerance < y && y < rect.bottom + tolerance &&
-                true;
-            return result;
-        }
-        $$.$me_point_in_rect = $me_point_in_rect;
+        $$.$me_point_in_rect = (x, y, rect, tolerance = 0) => rect.left - tolerance < x && x < rect.right + tolerance &&
+            rect.top - tolerance < y && y < rect.bottom + tolerance;
+        $$.$me_dist_to_rect = (x, y, rect) => $$.$me_point_in_rect(x, y, rect) ? 0 :
+            Math.max(Math.min(Math.abs(rect.left - x), Math.abs(rect.right - x)), Math.min(Math.abs(rect.top - y), Math.abs(rect.bottom - y)));
         function $me_point_in_rect_offset(x, y, offsetRect, clientRect) {
             x -= clientRect.left;
             y -= clientRect.top;
@@ -1007,6 +1004,7 @@ var $;
                 }
             }
             destroy() {
+                this.fini();
                 super.destroy();
             }
             init() {
@@ -1017,6 +1015,14 @@ var $;
                 this._cnf_init(this.cnf);
                 $$.a.curr = prev;
                 this._init_did = true;
+            }
+            fini() {
+                if (!this._init_did)
+                    return;
+                const prev = $$.a.curr;
+                $$.a.curr = this;
+                this._cnf_fini(this.cnf);
+                $$.a.curr = prev;
             }
             dispatch(dispatch_name, dispatch_arg) {
                 const prev = $$.a.curr;
@@ -1032,9 +1038,16 @@ var $;
             _cnf_init(cnf) {
                 if (!cnf)
                     return;
-                if (cnf.init)
-                    cnf.init();
                 this._cnf_init(cnf.base);
+                if (cnf.init)
+                    cnf.init(this);
+            }
+            _cnf_fini(cnf) {
+                if (!cnf)
+                    return;
+                if (cnf.fini)
+                    cnf.fini(this);
+                this._cnf_fini(cnf.base);
             }
             cnf_item(name) {
                 return this._cnf_item(name, this.cnf);
@@ -2238,7 +2251,8 @@ var $;
             'tapOutside',
         ];
         $$.clickRet = new Map();
-        $$.tapRet = new Map();
+        let tapTarget;
+        $$.$me_atom2_event_touch_tolerance = 22;
         function _event_add(ec, name_event, events) {
             let name_atom, fn;
             if (events) {
@@ -2256,38 +2270,64 @@ var $;
                 $$.$me_throw(ec.name(), ec.active(), ec._entities.prop);
             const zIndex = ec._entities.prop['#zIndex'].value();
             if (name_event === 'hover') {
-                _do_event_add(ec, 'mousemove', zIndex, (p) => p.isInRect(p.event.clientX, p.event.clientY, 0) &&
+                _do_event_add(ec, 'mousemove', zIndex, (p) => p.isInRect(p.event.clientX, p.event.clientY) &&
                     $$.a('.#isHover', true));
-                _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY, 0) && $$.a('.#isHover', false));
+                _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY) && $$.a('.#isHover', false));
             }
             else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
                 _do_event_add(ec, 'touchstart', zIndex, p => {
-                    const ret = p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY, 10);
-                    if (ret) {
-                        $$.tapRet.set(ec.path, p.event);
-                    }
-                    else {
-                        $$.tapRet.delete(ec.path);
-                    }
-                    return ret;
-                });
-                _do_event_add(ec, 'touchmove', zIndex, p => $$.tapRet.has(ec.path) &&
-                    (() => {
-                        $$.tapRet.delete(ec.path);
+                    const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
+                    if (dist > $$.$me_atom2_event_touch_tolerance)
                         return false;
-                    })());
-                _do_event_add(ec, 'touchend', zIndex, p => $$.tapRet.has(ec.path) &&
-                    fn(Object.assign({}, p, { event: { start: $$.tapRet.get(ec.path), end: p.event } })) &&
-                    (() => {
-                        const event = $$.tapRet.get(ec.path);
-                        const app = $$.a.get('/@app');
-                        app.dispatch('tapEffect', { x: event.touches[0].clientX, y: event.touches[0].clientY });
-                        return true;
-                    })());
+                    if (tapTarget == null) {
+                        tapTarget = { ec, dist, event: p.event };
+                        console.log(tapTarget.ec.name(), tapTarget.dist);
+                    }
+                    else if (dist < tapTarget.dist) {
+                        tapTarget = { ec, dist, event: p.event };
+                        console.log(tapTarget.ec.name(), tapTarget.dist);
+                    }
+                    return !!tapTarget;
+                });
+                _do_event_add(ec, 'touchmove', zIndex, p => {
+                    if (tapTarget &&
+                        tapTarget.ec == ec) {
+                        const deltaX = Math.abs(p.event.touches[0].clientX - tapTarget.event.touches[0].clientX);
+                        const deltaY = Math.abs(p.event.touches[0].clientY - tapTarget.event.touches[0].clientY);
+                        if (Math.max(deltaX, deltaY) >= 10) {
+                            p.event.touches[0].clientX - tapTarget.event.touches[0].clientX;
+                            console.error('dropped ' + tapTarget.ec.name() + ' for move', {
+                                x: deltaX,
+                                y: deltaY,
+                            });
+                            tapTarget = null;
+                        }
+                        else {
+                            console.warn('near to drop ' + tapTarget.ec.name() + ' for move', {
+                                x: deltaX,
+                                y: deltaY,
+                            });
+                        }
+                    }
+                    return false;
+                });
+                _do_event_add(ec, 'touchend', zIndex, p => {
+                    if (!(tapTarget && tapTarget.ec == ec))
+                        return false;
+                    const event = { start: tapTarget.event, end: p.event };
+                    const _tapTarget = tapTarget;
+                    tapTarget = null;
+                    if (!fn(Object.assign({}, p, { event })))
+                        return false;
+                    const app = $$.a.get('/@app');
+                    app.dispatch('tapEffect', _tapTarget);
+                    console.log('tapped ' + _tapTarget.ec.name());
+                    return true;
+                });
             }
             else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
                 _do_event_add(ec, 'mousedown', zIndex, p => {
-                    const ret = p.isInRect(p.event.clientX, p.event.clientY, 0);
+                    const ret = p.isInRect(p.event.clientX, p.event.clientY);
                     if (ret) {
                         $$.clickRet.set(ec.path, p.event);
                     }
@@ -2385,11 +2425,12 @@ var $;
                     const clientRect = ec._entities.prop['#clientRect'].value();
                     if (!clientRect)
                         continue;
-                    const isInRect = (clientX, clientY, tolerance = 0) => $$.$me_point_in_rect(clientX, clientY, clientRect, tolerance);
+                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
+                    const distToRect = (clientX, clientY) => $$.$me_dist_to_rect(clientX, clientY, clientRect);
                     const prev = $$.a.curr;
                     $$.a.curr = ec;
                     for (const fn of fn_array)
-                        done = fn({ event, isInRect }) || done;
+                        done = fn({ event, isInRect, distToRect }) || done;
                     $$.a.curr = prev;
                 }
                 if (done)
@@ -3593,9 +3634,9 @@ var $;
         let scrollAccuY;
         let rafWheelTouch;
         let tPrev;
-        let event_wheel_touch;
+        let event_wheel_touch_start;
         const touchstart = (event) => {
-            event_wheel_touch = event;
+            event_wheel_touch_start = event;
             clientX = event.touches[0].clientX;
             lastDeltaX = 0;
             accelX = 0;
@@ -3642,17 +3683,20 @@ var $;
                         rafWheelTouch = null;
                         {
                             if (!$$.$me_atom2_event_wheel_to_process) {
-                                $$.$me_atom2_event_wheel_touch_to_process = event_wheel_touch;
-                                $$.$me_atom2_event_wheel_touch_to_process._deltaX = scrollAccuX;
-                                $$.$me_atom2_event_wheel_touch_to_process._deltaY = scrollAccuY;
+                                $$.$me_atom2_event_wheel_touch_to_process = {
+                                    start: event_wheel_touch_start,
+                                    end: event,
+                                    _deltaX: scrollAccuX,
+                                    _deltaY: scrollAccuY,
+                                };
                             }
                             else {
                                 $$.$me_atom2_event_wheel_touch_to_process._deltaX =
                                     scrollAccuX + (Math.sign($$.$me_atom2_event_wheel_touch_to_process._deltaX) * Math.sign(scrollAccuX) < 0 ? 0 : $$.$me_atom2_event_wheel_touch_to_process._deltaX);
                                 $$.$me_atom2_event_wheel_touch_to_process._deltaY =
                                     scrollAccuY + (Math.sign($$.$me_atom2_event_wheel_touch_to_process._deltaY) * Math.sign(scrollAccuY) < 0 ? 0 : $$.$me_atom2_event_wheel_touch_to_process._deltaY);
+                                $$.$me_atom2_event_wheel_touch_to_process.end = event;
                             }
-                            $$.$me_atom2_event_wheel_touch_to_process._end = event;
                             $$.$me_atom2_async();
                             $$.$me_atom2_event_process('wheelTouch', $$.$me_atom2_event_wheel_to_process);
                             if (timePrev !== void 0) {
@@ -3681,21 +3725,27 @@ var $;
             timePrev = void 0;
             let accel_k = 0.95;
             function touch_inert(accelX, accelY) {
-                rafInert = requestAnimationFrame((t) => {
-                    rafInert = null;
-                    const scrollAccuX = accelX * (t - tPrev);
-                    const scrollAccuY = accelY * (t - tPrev);
-                    if (Math.abs(scrollAccuX) >= 1 || Math.abs(scrollAccuY) >= 1) {
-                        event_wheel_touch._deltaX = scrollAccuX;
-                        event_wheel_touch._deltaY = scrollAccuY;
-                        $$.$me_atom2_event_process('wheelTouch', $$.$me_atom2_event_wheel_to_process);
-                        const accelXNew = accelX * accel_k;
-                        const accelYNew = accelY * accel_k;
-                        accel_k = accel_k * 0.9999;
-                        tPrev = t;
-                        touch_inert(accelXNew, accelYNew);
-                    }
-                });
+                if (Math.abs(accelX) >= 1 / 17 || Math.abs(accelY) >= 1 / 17) {
+                    rafInert = requestAnimationFrame((t) => {
+                        rafInert = null;
+                        const scrollAccuX = accelX * (t - tPrev);
+                        const scrollAccuY = accelY * (t - tPrev);
+                        if (Math.abs(scrollAccuX) >= 1 || Math.abs(scrollAccuY) >= 1) {
+                            $$.$me_atom2_event_wheel_touch_to_process = {
+                                start: event_wheel_touch_start,
+                                end: event,
+                                _deltaX: scrollAccuX,
+                                _deltaY: scrollAccuY,
+                            };
+                            $$.$me_atom2_event_process('wheelTouch', $$.$me_atom2_event_wheel_touch_to_process);
+                            const accelXNew = accelX * accel_k;
+                            const accelYNew = accelY * accel_k;
+                            accel_k = accel_k * 0.7;
+                            tPrev = t;
+                            touch_inert(accelXNew, accelYNew);
+                        }
+                    });
+                }
             }
             if (Math.abs(accelX) >= 1 || Math.abs(accelY))
                 touch_inert(accelX, accelY);
@@ -4930,7 +4980,7 @@ var $;
                 overflow: () => 'hidden',
             },
             event: {
-                wheel: p => p.isInRect(p.event.clientX, p.event.clientY, 0) &&
+                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
                     $$.$me_list_wheel_helper(p.event._deltaX, p.event._deltaY),
             },
         };
@@ -5387,9 +5437,9 @@ var $;
                 scrollAccu: () => null,
             },
             event: {
-                wheel: p => p.isInRect(p.event.clientX, p.event.clientY, 0) &&
+                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
                     wheel_helper(p.event._deltaX, p.event._deltaY),
-                wheelTouch: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY, 10) &&
+                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
                     wheel_helper(p.event._deltaX, p.event._deltaY),
             },
             elem: {
@@ -5659,7 +5709,7 @@ var $;
                     }
                     else {
                         let id_found = '';
-                        if (p.isInRect(p.event.clientX, p.event.clientY, 0)) {
+                        if (p.isInRect(p.event.clientX, p.event.clientY)) {
                             const cells = $$.a.get('@cell')._entities.key;
                             const delta = 4;
                             for (const id in cells) {
@@ -5675,7 +5725,7 @@ var $;
                     return true;
                 },
                 mousedown: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY, 0))
+                    if (!p.isInRect(p.event.clientX, p.event.clientY))
                         return false;
                     const id = $$.a('.readyToResize');
                     if (id) {
@@ -6079,7 +6129,7 @@ var $;
                     },
                 }),
                 param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
-                param_mode: $$.$me_atom2_prop_store('Сжатый', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
+                param_mode: $$.$me_atom2_prop_store('Основной', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
                 offerCount: () => 1200,
                 objCount: () => 800,
             },
@@ -6168,14 +6218,8 @@ var $;
                     node: rootElem,
                     dispatch(dispatch_name, dispatch_arg) {
                         if (dispatch_name == 'tapEffect') {
-                            const point = dispatch_arg;
-                            const elem = $$.a.get('@tapEffect');
-                            elem.node.className = 'tapEffect';
-                            $$.a('@tapEffect.#ofsHor', point.x - $$.a('@tapEffect.#width') / 2);
-                            $$.a('@tapEffect.#ofsVer', point.y - $$.a('@tapEffect.#height') / 2);
-                            setTimeout(() => {
-                                elem.node.className = 'tapEffect on';
-                            });
+                            $$.a('.tapTarget', 0);
+                            $$.a('.tapTarget', dispatch_arg);
                             return true;
                         }
                         return false;
@@ -6185,18 +6229,44 @@ var $;
                         background: () => '#D9DCE2',
                     },
                     prop: {
-                        isTapEffect: () => false,
+                        tapTarget: () => 0,
                     },
                     elem: {
                         workspace: () => workspace,
                         menu: () => menu,
-                        tapEffect: () => ({
-                            prop: {
-                                '#width': () => 70,
-                                '#height': () => 70,
-                                '#ofsHor': () => 700,
-                                '#ofsVer': () => 550,
-                            },
+                        tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
+                            if (!tapTarget)
+                                return null;
+                            const size = 70;
+                            const prop_clientRect = tapTarget.ec.by_path_s('.#clientRect');
+                            const name_prop_clientRect = prop_clientRect.name();
+                            const clientRect = prop_clientRect.value();
+                            const ofsHor = tapTarget.event.touches[0].clientX - clientRect.left - size / 2;
+                            const ofsVer = tapTarget.event.touches[0].clientY - clientRect.top - size / 2;
+                            const prop_tapTarget = $$.a.get('.tapTarget');
+                            const animationEndHandler = () => {
+                                prop_tapTarget.value(0);
+                            };
+                            const animEndEventNames = { 'WebkitAnimation': 'webkitAnimationEnd', 'OAnimation': 'oAnimationEnd', 'msAnimation': 'MSAnimationEnd', 'animation': 'animationend' };
+                            const animEndEventName = animEndEventNames[window.Modernizr.prefixed('animation')];
+                            return {
+                                type: name_prop_clientRect,
+                                dom: {
+                                    className: () => 'tapEffect',
+                                },
+                                prop: {
+                                    '#width': () => size,
+                                    '#height': () => size,
+                                    '#ofsHor': $$.$me_atom2_prop([name_prop_clientRect], ({ masters: [clientRect] }) => clientRect.left + ofsHor),
+                                    '#ofsVer': $$.$me_atom2_prop([name_prop_clientRect], ({ masters: [clientRect] }) => clientRect.top + ofsVer),
+                                },
+                                init: ec => {
+                                    ec.node.addEventListener(animEndEventName, animationEndHandler);
+                                },
+                                fini: ec => {
+                                    ec.node.removeEventListener(animEndEventName, animationEndHandler);
+                                },
+                            };
                         }),
                     },
                 } });
@@ -6454,4 +6524,8 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //app.js.map
+;
+/*! modernizr 3.6.0 (Custom Build) | MIT *
+ * https://modernizr.com/download/?-prefixed !*/
+!function(e,n,t){function r(e,n){return typeof e===n}function o(){var e,n,t,o,i,s,l;for(var u in h)if(h.hasOwnProperty(u)){if(e=[],n=h[u],n.name&&(e.push(n.name.toLowerCase()),n.options&&n.options.aliases&&n.options.aliases.length))for(t=0;t<n.options.aliases.length;t++)e.push(n.options.aliases[t].toLowerCase());for(o=r(n.fn,"function")?n.fn():n.fn,i=0;i<e.length;i++)s=e[i],l=s.split("."),1===l.length?Modernizr[l[0]]=o:(!Modernizr[l[0]]||Modernizr[l[0]]instanceof Boolean||(Modernizr[l[0]]=new Boolean(Modernizr[l[0]])),Modernizr[l[0]][l[1]]=o),C.push((o?"":"no-")+l.join("-"))}}function i(e){return e.replace(/([a-z])-([a-z])/g,function(e,n,t){return n+t.toUpperCase()}).replace(/^-/,"")}function s(e,n){return function(){return e.apply(n,arguments)}}function l(e,n,t){var o;for(var i in e)if(e[i]in n)return t===!1?e[i]:(o=n[e[i]],r(o,"function")?s(o,t||n):o);return!1}function u(e,n){return!!~(""+e).indexOf(n)}function f(e){return e.replace(/([A-Z])/g,function(e,n){return"-"+n.toLowerCase()}).replace(/^ms-/,"-ms-")}function a(n,t,r){var o;if("getComputedStyle"in e){o=getComputedStyle.call(e,n,t);var i=e.console;if(null!==o)r&&(o=o.getPropertyValue(r));else if(i){var s=i.error?"error":"log";i[s].call(i,"getComputedStyle returning null, its possible modernizr test results are inaccurate")}}else o=!t&&n.currentStyle&&n.currentStyle[r];return o}function p(){return"function"!=typeof n.createElement?n.createElement(arguments[0]):E?n.createElementNS.call(n,"http://www.w3.org/2000/svg",arguments[0]):n.createElement.apply(n,arguments)}function d(){var e=n.body;return e||(e=p(E?"svg":"body"),e.fake=!0),e}function c(e,t,r,o){var i,s,l,u,f="modernizr",a=p("div"),c=d();if(parseInt(r,10))for(;r--;)l=p("div"),l.id=o?o[r]:f+(r+1),a.appendChild(l);return i=p("style"),i.type="text/css",i.id="s"+f,(c.fake?c:a).appendChild(i),c.appendChild(a),i.styleSheet?i.styleSheet.cssText=e:i.appendChild(n.createTextNode(e)),a.id=f,c.fake&&(c.style.background="",c.style.overflow="hidden",u=z.style.overflow,z.style.overflow="hidden",z.appendChild(c)),s=t(a,e),c.fake?(c.parentNode.removeChild(c),z.style.overflow=u,z.offsetHeight):a.parentNode.removeChild(a),!!s}function m(n,r){var o=n.length;if("CSS"in e&&"supports"in e.CSS){for(;o--;)if(e.CSS.supports(f(n[o]),r))return!0;return!1}if("CSSSupportsRule"in e){for(var i=[];o--;)i.push("("+f(n[o])+":"+r+")");return i=i.join(" or "),c("@supports ("+i+") { #modernizr { position: absolute; } }",function(e){return"absolute"==a(e,null,"position")})}return t}function y(e,n,o,s){function l(){a&&(delete P.style,delete P.modElem)}if(s=r(s,"undefined")?!1:s,!r(o,"undefined")){var f=m(e,o);if(!r(f,"undefined"))return f}for(var a,d,c,y,v,h=["modernizr","tspan","samp"];!P.style&&h.length;)a=!0,P.modElem=p(h.shift()),P.style=P.modElem.style;for(c=e.length,d=0;c>d;d++)if(y=e[d],v=P.style[y],u(y,"-")&&(y=i(y)),P.style[y]!==t){if(s||r(o,"undefined"))return l(),"pfx"==n?y:!0;try{P.style[y]=o}catch(g){}if(P.style[y]!=v)return l(),"pfx"==n?y:!0}return l(),!1}function v(e,n,t,o,i){var s=e.charAt(0).toUpperCase()+e.slice(1),u=(e+" "+w.join(s+" ")+s).split(" ");return r(n,"string")||r(n,"undefined")?y(u,n,o,i):(u=(e+" "+_.join(s+" ")+s).split(" "),l(u,n,t))}var h=[],g={_version:"3.6.0",_config:{classPrefix:"",enableClasses:!0,enableJSClass:!0,usePrefixes:!0},_q:[],on:function(e,n){var t=this;setTimeout(function(){n(t[e])},0)},addTest:function(e,n,t){h.push({name:e,fn:n,options:t})},addAsyncTest:function(e){h.push({name:null,fn:e})}},Modernizr=function(){};Modernizr.prototype=g,Modernizr=new Modernizr;var C=[],S="Moz O ms Webkit",w=g._config.usePrefixes?S.split(" "):[];g._cssomPrefixes=w;var x=function(n){var r,o=prefixes.length,i=e.CSSRule;if("undefined"==typeof i)return t;if(!n)return!1;if(n=n.replace(/^@/,""),r=n.replace(/-/g,"_").toUpperCase()+"_RULE",r in i)return"@"+n;for(var s=0;o>s;s++){var l=prefixes[s],u=l.toUpperCase()+"_"+r;if(u in i)return"@-"+l.toLowerCase()+"-"+n}return!1};g.atRule=x;var _=g._config.usePrefixes?S.toLowerCase().split(" "):[];g._domPrefixes=_;var z=n.documentElement,E="svg"===z.nodeName.toLowerCase(),b={elem:p("modernizr")};Modernizr._q.push(function(){delete b.elem});var P={style:b.elem.style};Modernizr._q.unshift(function(){delete P.style}),g.testAllProps=v;g.prefixed=function(e,n,t){return 0===e.indexOf("@")?x(e):(-1!=e.indexOf("-")&&(e=i(e)),n?v(e,n,t):v(e,"pfx"))};o(),delete g.addTest,delete g.addAsyncTest;for(var L=0;L<Modernizr._q.length;L++)Modernizr._q[L]();e.Modernizr=Modernizr}(window,document);
 //# sourceMappingURL=web.js.map

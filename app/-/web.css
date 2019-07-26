@@ -4,13 +4,9 @@
   opacity:0;
   pointer-events:none;
   box-shadow:inset 0 0 0 35px rgba(111,148,182,0);
-}
-
-.tapEffect.on{
   -webkit-animation:anim-effect-radomir 0.5s ease-out forwards;
   animation:anim-effect-radomir 0.5s ease-out forwards;
 }
-
 @-webkit-keyframes anim-effect-radomir{
   0%{
     opacity:1;
