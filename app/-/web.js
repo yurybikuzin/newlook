@@ -142,9 +142,9 @@ var $;
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
         $$.$me_pos = () => ({ left: 0, top: 0 });
-        function $me_point_in_rect(x, y, rect) {
-            const result = rect.left < x && x < rect.right &&
-                rect.top < y && y < rect.bottom &&
+        function $me_point_in_rect(x, y, rect, tolerance = 0) {
+            const result = rect.left - tolerance < x && x < rect.right + tolerance &&
+                rect.top - tolerance < y && y < rect.bottom + tolerance &&
                 true;
             return result;
         }
@@ -942,674 +942,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //prop.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $me_atom2 extends $$.$me_atom2_entity {
-            constructor(p) {
-                super(Object.assign({}, p, { ent: p.is_key ?
-                        $$.$me_atom2_entity_enum.key :
-                        $$.$me_atom2_entity_enum.prop }));
-                this._descendant_level = p.descendant_level || 0;
-                this._fn_key_idx_changed = p.fn_key_idx_changed;
-                if (p.keys && p.keys.length) {
-                    const self = this;
-                    const pp = p;
-                    this.fn_compute = pp.fn_compute;
-                    const atom = new $me_atom2({
-                        descendant_level: 1,
-                        tail: '#keys',
-                        parent: self,
-                        masters: p.keys.slice(0, 1),
-                        fn_compute: ({ masters: [key] }) => key,
-                        fn_apply: ({ val, prev }) => {
-                            let ss_curr;
-                            let ss_prev;
-                            if (prev) {
-                                ss_curr = new Set(val);
-                                for (const tail of prev)
-                                    if (!ss_curr.has(tail)) {
-                                        const atom = this._entities && this._entities.key && this._entities.key[tail];
-                                        if (atom) {
-                                            atom.value(null);
-                                            atom.destroy();
-                                        }
-                                    }
-                            }
-                            if (val) {
-                                ss_prev = new Set(prev);
-                                for (const tail of val)
-                                    if (!ss_prev.has(tail))
-                                        new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
-                            }
-                            if (prev && val) {
-                                for (const tail of ss_curr) {
-                                    if (ss_prev.has(tail)) {
-                                        const idx_prev = prev.indexOf(tail);
-                                        const idx_curr = val.indexOf(tail);
-                                        if (idx_prev != idx_curr) {
-                                            const atom = this._entities && this._entities.key && this._entities.key[tail];
-                                            if (atom)
-                                                atom._key_idx_changed({
-                                                    key: [tail],
-                                                    change: { idx_curr, idx_prev, i_key: 0 }
-                                                });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    this._key_gen = atom;
-                }
-                else {
-                    this.fn_apply = p.fn_apply;
-                    const pp = p;
-                    this.fn_compute = pp.fn_compute;
-                    if (pp.masters && (!Array.isArray(pp.masters) || pp.masters.length)) {
-                        if (Array.isArray(pp.masters)) {
-                            this.masters = pp.masters;
-                        }
-                        else {
-                            const atom = new $me_atom2({
-                                descendant_level: 1,
-                                tail: '#masters',
-                                parent: this,
-                                masters: pp.masters.masters,
-                                fn_compute: (p) => {
-                                    const masters = pp.masters.fn_compute(p);
-                                    if (!Array.isArray(masters))
-                                        $$.$me_throw(`atom '${atom.name()}'.fn_compute() expected to return string[] instead of`, masters);
-                                    return masters;
-                                },
-                                fn_apply: ({ val, prev }) => {
-                                    if ($$.$me_equal(val, prev))
-                                        return;
-                                    if (Array.isArray(prev))
-                                        this.unregister_as_slave(prev);
-                                    this._masters_store = null;
-                                },
-                            });
-                            atom.add_slave(this, '#masters');
-                            this.masters = atom;
-                        }
-                    }
-                }
-                this.set_state($me_atom2_state_enum.invalid);
-                const name = this.name();
-                const sp = $me_atom2._waiting_for_atom_def[name];
-                if (!sp)
-                    return;
-                for (const [path, master] of sp) {
-                    const atom = $$.$me_atom2_entity.root().by_path(path);
-                    if (typeof atom !== 'string')
-                        this.add_slave(atom, master);
-                }
-                delete $me_atom2._waiting_for_atom_def[name];
-            }
-            state() { return this._state; }
-            get 'fn_compute()'() {
-                return this._compute();
-            }
-            get 'fn_apply()'() {
-                return this._state === $me_atom2_state_enum.valid ? this._apply(this._value, true) : new Error(`this._state is ${this._state}`);
-            }
-            get 'update()'() {
-                return this.update();
-            }
-            get 'masters()'() {
-                return this._masters().map(name_atom => this.by_path_s(name_atom));
-            }
-            get 'slaves()'() {
-                if (!this._slaves)
-                    return null;
-                const result = {};
-                for (const [path] of this._slaves)
-                    result[path.toString()] = $me_atom2.root().by_path(path);
-                return result;
-            }
-            get 'state()'() {
-                return this.get_state_helper(this._state);
-            }
-            get_state_helper(state) {
-                if (state instanceof Error)
-                    return state;
-                if (typeof state === 'number')
-                    return $me_atom2_state_enum[state];
-                if (state instanceof Set) {
-                    const state_complex = state;
-                    const result = {};
-                    for (const s of state_complex) {
-                        const ret = this.by_path_s(s);
-                        const key = typeof ret == 'string' ? ret : ret.name();
-                        const val = typeof ret == 'string' ? 'waiting_for' : ret['state()'];
-                        result[key] = val;
-                    }
-                    return result;
-                }
-            }
-            destroy() {
-                if (this._slaves)
-                    for (let [path] of this._slaves) {
-                        const atom = $$.$me_atom2_entity.root().by_path(path);
-                        if (atom)
-                            this.rm_slave(atom);
-                    }
-                this.unregister_as_slave(this._masters());
-                super.destroy();
-            }
-            by_path_s(s, keys) {
-                const descendant = this._descendant(this._descendant_level);
-                if (typeof descendant === 'string')
-                    $$.$me_throw(descendant);
-                return descendant.by_path_s(s, keys || this._key_provider());
-            }
-            no_wait_for_master(name_master) {
-                if (!(this._state instanceof Set))
-                    return;
-                const state_complex = this._state;
-                state_complex.delete(name_master);
-                if (state_complex.size)
-                    return;
-                this.set_state($me_atom2_state_enum.invalid);
-            }
-            add_slave(atom_slave, name_master) {
-                if (!this._slaves)
-                    this._slaves = new Map();
-                this._slaves.set(atom_slave.path, name_master);
-                atom_slave.no_wait_for_master(name_master);
-                const store = atom_slave._masters_store || (atom_slave._masters_store = {});
-                store[name_master] = this;
-                atom_slave.set_state_slave(name_master, this._state instanceof Set ? this._state :
-                    $me_atom2_state_enum.invalid);
-            }
-            rm_slave(atom_slave) {
-                if (this._slaves && this._slaves.has(atom_slave.path)) {
-                    const name_master = this._slaves.get(atom_slave.path);
-                    atom_slave.set_state_slave(name_master, $me_atom2_state_enum.invalid);
-                    if (atom_slave._masters_store)
-                        delete atom_slave._masters_store[name_master];
-                    this._slaves.delete(atom_slave.path);
-                    if (!this._slaves.size)
-                        this._slaves = null;
-                }
-            }
-            unregister_as_slave(masters) {
-                if (Array.isArray(masters))
-                    for (const name_master of masters) {
-                        const atom_master = this.by_path_s(name_master);
-                        if (typeof atom_master !== 'string') {
-                            atom_master.rm_slave(this);
-                        }
-                        else {
-                            const ms = $me_atom2._waiting_for_atom_def;
-                            let s = atom_master;
-                            const ss = ms[s];
-                            if (!ss)
-                                continue;
-                            ss.delete(this.path);
-                            if (!ss.size)
-                                delete ms[s];
-                            this.no_wait_for_master(name_master);
-                        }
-                    }
-            }
-            value(val, force = false) {
-                if (val === void 0 && this._state === $me_atom2_state_enum.valid)
-                    return this._value;
-                if (!this.active() ||
-                    $me_atom2._cyclic_dependency)
-                    return null;
-                this.update(val, force);
-                return ($me_atom2._cyclic_dependency || this._state !== $me_atom2_state_enum.valid ?
-                    null :
-                    this._value);
-            }
-            static is_valid_value(val) {
-                return !(val == null || Number.isNaN(val));
-            }
-            update(val, force = false) {
-                if (!this.active() ||
-                    $me_atom2._cyclic_dependency ||
-                    val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
-                        this._state === $me_atom2_state_enum.need_check))
-                    return;
-                const true_set = val !== void 0;
-                if (val === void 0) {
-                    const compute_result = this._compute();
-                    if (!compute_result)
-                        return;
-                    const { ret, state } = compute_result;
-                    if (state !== void 0) {
-                        this.set_state(state);
-                        return;
-                    }
-                    val = ret;
-                }
-                let just_set_anim = false;
-                let next_value = null;
-                if (!(val instanceof $me_atom2_anim_class)) {
-                    next_value = val;
-                }
-                else {
-                    const anim = val._anim;
-                    if ($me_atom2.is_valid_value(anim.to)) {
-                        if (!$me_atom2.is_valid_value(anim.from)) {
-                            const value = typeof this._state == 'number' ? this._value : null;
-                            anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
-                        }
-                        if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
-                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
-                            $me_atom2.anim_active(anim, true);
-                            $$.$me_atom2_async();
-                        }
-                        next_value = anim.delay > 0 ? void 0 : anim.from;
-                    }
-                }
-                if (next_value === void 0)
-                    return;
-                if (!just_set_anim)
-                    $me_atom2.anim_stop(this.path);
-                this.set_value(next_value, true_set, force);
-            }
-            set_value(next_value, true_set = true, force = false) {
-                const prev_value = this._value;
-                if (!true_set && !force &&
-                    this._state === $me_atom2_state_enum.need_check &&
-                    $$.$me_equal(next_value, prev_value)) {
-                    this._state = $me_atom2_state_enum.valid;
-                    return;
-                }
-                next_value = this._apply(next_value, force);
-                const state = $me_atom2.is_valid_value(this._value = next_value) ? $me_atom2_state_enum.valid :
-                    true_set && (this.fn_compute || this.masters) ? $me_atom2_state_enum.invalid :
-                        `${this.name()} got ${next_value}`;
-                if (state !== this._state ||
-                    this._state === $me_atom2_state_enum.valid && (force || !$$.$me_equal(prev_value, next_value)))
-                    this.set_state(state, $me_atom2_state_enum.need_check);
-            }
-            _compute() {
-                return this.update_helper('compute', () => {
-                    let master_values;
-                    const fn_compute = this.fn_compute;
-                    let masters;
-                    if (this.masters) {
-                        let ma;
-                        masters = Array.isArray(this.masters) ? this.masters : (ma = this.masters).value();
-                        let state;
-                        if (ma && ma._state !== $me_atom2_state_enum.valid) {
-                            state = new Set();
-                            state.add('#masters');
-                            return { state };
-                        }
-                        let store = this._masters_store;
-                        if (!store) {
-                            for (const name_master of masters) {
-                                const atom_master = this.by_path_s(name_master, this._key_provider());
-                                if (atom_master instanceof $me_atom2) {
-                                    atom_master.add_slave(this, name_master);
-                                }
-                                else {
-                                    const name_atom_waiting_for = atom_master;
-                                    const ms = $me_atom2._waiting_for_atom_def;
-                                    const ss = ms[name_atom_waiting_for] || (ms[name_atom_waiting_for] = new Map());
-                                    ss.set(this.path, name_master);
-                                    if (!state)
-                                        state =
-                                            this._state instanceof Set ?
-                                                this._state :
-                                                new Set();
-                                    state.add(name_master);
-                                }
-                            }
-                            if (state) {
-                                return { state };
-                            }
-                            store = this._masters_store;
-                        }
-                        master_values = [];
-                        let not_ready = false;
-                        for (const name_master of masters) {
-                            const atom_master = store[name_master];
-                            if (!atom_master)
-                                $$.$me_throw(`${this.name()}: no .store[${name_master}]`);
-                            master_values.push(atom_master.value());
-                            if (atom_master._state !== $me_atom2_state_enum.valid) {
-                                if (!state)
-                                    state = new Set();
-                                state.add(name_master);
-                            }
-                        }
-                        if (state) {
-                            return { state };
-                        }
-                        if (!fn_compute) {
-                            return {
-                                ret: (master_values.length == 1 ? master_values[0] : master_values)
-                            };
-                        }
-                    }
-                    if (!fn_compute) {
-                        return { ret: void 0 };
-                    }
-                    const result = {};
-                    const key_provider_ret = this._key_provider() || {};
-                    try {
-                        result.ret = fn_compute.call(this, Object.assign({ atom: this, prev: this._value, len: !master_values ? 0 : master_values.length, masters: master_values }, key_provider_ret));
-                    }
-                    catch (e) {
-                        console.error(e);
-                        result.state = e;
-                    }
-                    return result;
-                });
-            }
-            _apply(next_value, force = false) {
-                const fn_apply = this.fn_apply;
-                if (fn_apply && (force || !$$.$me_equal(next_value, this._value))) {
-                    const prev = this._value;
-                    this._value = next_value;
-                    this.update_helper('apply', () => {
-                        const keys = this._key_provider() || {};
-                        const ret = fn_apply.call(this, Object.assign({ atom: this, prev, val: next_value }, keys));
-                        if (ret !== void 0)
-                            next_value = ret;
-                        return null;
-                    });
-                }
-                return next_value;
-            }
-            update_helper(update_kind, fn) {
-                const ss = $me_atom2._update_atoms[update_kind];
-                if (ss.has(this.path)) {
-                    $me_atom2._cyclic_dependency = true;
-                    console.error(`Циклическая ${update_kind}-зависимость`, [this.path.toString()].concat([...$me_atom2._update_atoms[update_kind]]
-                        .map(item => item[0].toString())
-                        .reverse()));
-                    return null;
-                }
-                ss.set(this.path, true);
-                const prev = $$.a.curr;
-                $$.a.curr = this;
-                const ret = fn();
-                $$.a.curr = prev;
-                ss.delete(this.path);
-                return ret;
-            }
-            _key_provider() {
-                if (this.path.tail === '#masters' || this.path.tail === '#keys')
-                    return this.parent()._key_provider();
-                if (this.path.ent !== $$.$me_atom2_entity_enum.key)
-                    return null;
-                if (this._key_provider_cache)
-                    return this._key_provider_cache;
-                const result = { len_key: 0 };
-                let atom = this;
-                let key_enum;
-                let key;
-                let keys;
-                while (atom.path.ent === $$.$me_atom2_entity_enum.key) {
-                    result.len_key++;
-                    if (!key)
-                        key = Array();
-                    if (!keys)
-                        keys = Array();
-                    if (!key_enum)
-                        key_enum = Array();
-                    key.unshift(atom.path.tail);
-                    atom = atom.parent();
-                    keys = atom._key_gen.masters.concat(keys);
-                    const key_name = atom._key_gen.masters[0];
-                    const masters_store = atom._key_gen._masters_store;
-                    if (masters_store) {
-                        key_enum = [masters_store[key_name].value()].concat(key_enum);
-                    }
-                    else {
-                    }
-                }
-                if (result.len_key) {
-                    result.key = key;
-                    result.keys = keys;
-                    result.key_enum = key_enum;
-                }
-                return (this._key_provider_cache = result);
-            }
-            set_state(val, state2spread) {
-                if ($me_atom2._cyclic_dependency)
-                    return;
-                this._state = val;
-                if (this.fn_apply &&
-                    (val === $me_atom2_state_enum.invalid || val === $me_atom2_state_enum.need_check) &&
-                    this.active()) {
-                    $me_atom2.to_update.add(this.path);
-                    $$.$me_atom2_async();
-                }
-                $me_atom2.set_state_count++;
-                if (!this._slaves)
-                    return;
-                $me_atom2._spread_atoms.set(this, val);
-                for (let [path_slave, name_master] of this._slaves) {
-                    const atom_slave = $$.$me_atom2_entity.root().by_path(path_slave);
-                    if (atom_slave instanceof $me_atom2) {
-                        atom_slave.set_state_slave(name_master, state2spread !== void 0 ? state2spread : val);
-                    }
-                    else {
-                        this._slaves.delete(path_slave);
-                    }
-                }
-                $me_atom2._spread_atoms.delete(this);
-            }
-            set_state_slave(name_master, val) {
-                if ($me_atom2._spread_atoms.has(this)) {
-                    $me_atom2._cyclic_dependency = true;
-                    $$.$me_throw('Циклическая spread-зависомость', [[this.name(), val]].concat([...$me_atom2._spread_atoms].map(item => [item[0].name(), item[1]]).reverse()), ...[this].concat([...$me_atom2._spread_atoms].map(item => item[0]).reverse()));
-                }
-                if (this._state instanceof Set && typeof val == 'number') {
-                    this.no_wait_for_master(name_master);
-                }
-                else if ((typeof this._state == 'string' || this._state instanceof Error) && typeof val == 'number') {
-                    this.set_state($me_atom2_state_enum.invalid);
-                }
-                else if (val instanceof Set || typeof val == 'string' || val instanceof Error) {
-                    if (!(this._state instanceof Set))
-                        this._state = new Set();
-                    this._state.add(name_master);
-                }
-                else if (this._state === $me_atom2_state_enum.valid &&
-                    (val == $me_atom2_state_enum.need_check || val == $me_atom2_state_enum.invalid)) {
-                    this.set_state($me_atom2_state_enum.need_check);
-                }
-            }
-            _key_idx_changed(p) {
-                if ($$.$me_debug)
-                    console.log(this, p);
-                if (this._entities && this._entities.key) {
-                    const entities_key = this._entities.key;
-                    for (const k in entities_key) {
-                        entities_key[k]._key_idx_changed({
-                            key: p.key.concat(k),
-                            change: Object.assign({}, p.change, { i_key: p.change.i_key - 1 }),
-                        });
-                    }
-                }
-                else if (this._fn_key_idx_changed) {
-                    let path = this.path;
-                    let n = 0;
-                    while (path.ent === $$.$me_atom2_entity_enum.key) {
-                        n++;
-                        path = path.path;
-                    }
-                    p.change.i_key = n - 1 + p.change.i_key;
-                    this._key_idx_changed_helper(p, this.by_path(path), n, []);
-                }
-            }
-            _key_idx_changed_helper(p, parent, n, key) {
-                if (n <= p.key.length) {
-                    this._fn_key_idx_changed({
-                        key: key.concat(p.key),
-                        change: p.change,
-                    });
-                }
-                else {
-                    const entities_key = parent._entities.key;
-                    for (const k in entities_key) {
-                        this._key_idx_changed_helper(p, entities_key[k], n - 1, key.concat(k));
-                    }
-                }
-            }
-            key_enum() {
-                const result = [];
-                let atom = this;
-                while (atom._key_gen) {
-                    const key_enum = atom._key_gen.value();
-                    result.push(key_enum);
-                    atom = atom._entities.key[key_enum[0]];
-                }
-                return result;
-            }
-            _on_active() {
-                if (this.fn_apply && this._state === $me_atom2_state_enum.invalid) {
-                    $me_atom2.to_update.add(this.path);
-                    $$.$me_atom2_async();
-                }
-            }
-            _masters() {
-                const masters = this.masters;
-                return (Array.isArray(masters) ? masters :
-                    masters instanceof $me_atom2 ? masters.value() :
-                        []);
-            }
-            static update_atoms(deadline, last_now) {
-                const pre = performance.now() - last_now;
-                let count = 0;
-                let atoms_to_update = new Set();
-                let ss;
-                if ($me_atom2._update_atoms_debug)
-                    ss = new Set();
-                while ($me_atom2.to_update.size) {
-                    if (performance.now() > deadline)
-                        break;
-                    for (const tail of $me_atom2._update_order) {
-                        for (const path of $me_atom2.to_update) {
-                            if (performance.now() > deadline)
-                                break;
-                            if (tail && path.tail !== tail)
-                                continue;
-                            const atom = $$.$me_atom2_entity.root().by_path(path);
-                            if (atom && atom.active()) {
-                                atoms_to_update.add(atom);
-                            }
-                            $me_atom2.to_update.delete(path);
-                        }
-                        if (atoms_to_update.size)
-                            break;
-                    }
-                    for (const atom of atoms_to_update) {
-                        if (performance.now() > deadline)
-                            break;
-                        if (ss && atom.name().startsWith('/@app@workspace@search@panelResult@grid@row[1]@content@cell[Комнат]'))
-                            ss.add(atom.name());
-                        atom.update();
-                        count++;
-                        atoms_to_update.delete(atom);
-                    }
-                }
-                for (const atom of atoms_to_update)
-                    $me_atom2.to_update.add(atom.path);
-                if (ss && ss.size)
-                    console.warn(ss);
-                return [count, pre];
-            }
-            static anim_start(anim, t) {
-                if (anim.start == null)
-                    anim.start = anim.progress == null ? t :
-                        t - anim.delay - Math.min(1, anim.progress) * anim.duration;
-            }
-            static anim_active(anim, active) {
-                if (!anim.path_active)
-                    return;
-                const atom_active = $$.$me_atom2_entity.root().by_path(anim.path_active);
-                if (!atom_active)
-                    return;
-                atom_active.value(active);
-            }
-            static anim_stop(path) {
-                if (!$me_atom2.anim_to_play.has(path))
-                    return;
-                const anim = $me_atom2.anim_to_play.get(path);
-                $me_atom2.anim_to_play.delete(path);
-                $me_atom2.anim_active(anim, false);
-                if (anim.fini) {
-                    const atom = $$.$me_atom2_entity.root().by_path(path);
-                    if (atom instanceof $me_atom2) {
-                        const prev = $$.a.curr;
-                        $$.a.curr = atom;
-                        anim.fini();
-                        $$.a.curr = prev;
-                    }
-                }
-            }
-            static fn_compute_false() {
-                return false;
-            }
-            static fn_compute_true() {
-                return true;
-            }
-            static fn_compute_zero() {
-                return 0;
-            }
-        }
-        $me_atom2._update_atoms = {
-            compute: new Map(),
-            apply: new Map(),
-        };
-        $me_atom2._spread_atoms = new Map();
-        $me_atom2._cyclic_dependency = false;
-        $me_atom2.set_state_count = 0;
-        $me_atom2._waiting_for_atom_def = {};
-        $me_atom2.to_def = Array();
-        $me_atom2.to_update = new Set();
-        $me_atom2._update_order = ['#keys', '#masters', ''];
-        $me_atom2._update_atoms_debug = false;
-        $me_atom2.anim_to_play = new Map();
-        $$.$me_atom2 = $me_atom2;
-        let $me_atom2_state_enum;
-        (function ($me_atom2_state_enum) {
-            $me_atom2_state_enum[$me_atom2_state_enum["invalid"] = 0] = "invalid";
-            $me_atom2_state_enum[$me_atom2_state_enum["valid"] = 1] = "valid";
-            $me_atom2_state_enum[$me_atom2_state_enum["need_check"] = 2] = "need_check";
-        })($me_atom2_state_enum = $$.$me_atom2_state_enum || ($$.$me_atom2_state_enum = {}));
-        function $me_atom2_anim(anim) {
-            return new $me_atom2_anim_class(anim);
-        }
-        $$.$me_atom2_anim = $me_atom2_anim;
-        class $me_atom2_anim_class {
-            constructor(anim) {
-                this._anim = Object.assign({}, anim, { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
-            }
-        }
-        $$.$me_atom2_anim_class = $me_atom2_anim_class;
-        $$.a = window.a = Object.assign((path_s, val, force) => {
-            const relative_to = $$.a.curr || $$.$me_atom2_entity.root();
-            const atom = relative_to.by_path_s(path_s);
-            if (typeof atom === 'string')
-                $$.$me_throw(`atom '${atom}' does not exist`);
-            if (!(atom instanceof $me_atom2))
-                $$.$me_throw(`entity '${atom}' is not $me_atom2`, atom);
-            return atom.value(val, force);
-        }, {
-            root: () => $$.$me_atom2_entity.root(),
-            get: (path_s) => {
-                const relative_to = $$.a.curr || $$.$me_atom2_entity.root();
-                return relative_to.by_path_s(path_s);
-            },
-        });
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//atom2.js.map
 ;
 "use strict";
 var $;
@@ -2586,178 +1918,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        const event_names = [
-            'touchstart',
-            'touchend',
-            'mousedown',
-            'mouseup',
-            'mousemove',
-            'wheel',
-            'click',
-            'tap',
-            'clickOrTap',
-            'clickOrTapOutside',
-            'clickOutside',
-            'tapOutside',
-        ];
-        $$.clickRet = new Map();
-        $$.tapRet = new Map();
-        function _event_add(ec, name_event, events) {
-            let name_atom, fn;
-            if (events) {
-                const event_def = events[name_event];
-                fn = typeof event_def === 'function' ?
-                    event_def :
-                    event_def.fn;
-            }
-            let s;
-            if (!ec._entities)
-                $$.$me_throw(ec.name(), ec.active());
-            if (!ec._entities.prop)
-                $$.$me_throw(ec.name(), ec.active(), ec._entities);
-            if (!ec._entities.prop['#zIndex'])
-                $$.$me_throw(ec.name(), ec.active(), ec._entities.prop);
-            const zIndex = ec._entities.prop['#zIndex'].value();
-            if (name_event === 'hover') {
-                _do_event_add(ec, 'mousemove', zIndex, (p) => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    $$.a('.#isHover', true));
-                _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY) && $$.a('.#isHover', false));
-            }
-            else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
-                _do_event_add(ec, 'touchstart', zIndex, p => {
-                    const ret = p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                    if (ret) {
-                        $$.tapRet.set(ec.path, p.event);
-                    }
-                    else {
-                        $$.tapRet.delete(ec.path);
-                    }
-                    return ret;
-                });
-                _do_event_add(ec, 'touchend', zIndex, p => $$.tapRet.has(ec.path) &&
-                    fn(Object.assign({}, p, { event: { start: $$.tapRet.get(ec.path), end: p.event } })));
-            }
-            else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
-                _do_event_add(ec, 'mousedown', zIndex, p => {
-                    const ret = p.isInRect(p.event.clientX, p.event.clientY);
-                    if (ret) {
-                        $$.clickRet.set(ec.path, p.event);
-                    }
-                    else {
-                        $$.clickRet.delete(ec.path);
-                    }
-                    return ret;
-                });
-                _do_event_add(ec, 'mouseup', zIndex, p => $$.clickRet.has(ec.path) &&
-                    p.isInRect(p.event.clientX, p.event.clientY) &&
-                    fn(Object.assign({}, p, { event: { start: $$.clickRet.get(ec.path), end: p.event } })));
-            }
-            else if (name_event === 'clickOrTapOutside') {
-                _do_event_add(ec, 'mousedown', zIndex, p => !p.isInRect(p.event.clientX, p.event.clientY) && fn(p));
-            }
-            else
-                _do_event_add(ec, name_event, zIndex, fn);
-        }
-        function _do_event_add(ec, name_event, zIndex, fn) {
-            if (!$$.$me_atom2_event_handlers.has(name_event))
-                $$.$me_atom2_event_handlers.set(name_event, []);
-            const queue = $$.$me_atom2_event_handlers.get(name_event);
-            let i = 0;
-            while (i < queue.length && queue[i].zIndex > zIndex)
-                i++;
-            if (i == queue.length || queue[i].zIndex != zIndex)
-                queue.splice(i, 0, {
-                    zIndex,
-                    handlers: new Map(),
-                });
-            const handlers = queue[i].handlers;
-            if (!handlers.has(ec.path))
-                handlers.set(ec.path, []);
-            handlers.get(ec.path).push(fn);
-        }
-        function _events_add_helper(ec, cnf) {
-            if (!cnf)
-                return;
-            if (cnf.event)
-                for (const name_event of event_names)
-                    if (cnf.event[name_event])
-                        _event_add(ec, name_event, cnf.event);
-            if (cnf.base)
-                _events_add_helper(ec, cnf.base);
-        }
-        function _events_add(ec) {
-            let name_atom;
-            if (ec._entities &&
-                ec._entities.prop &&
-                ec._entities.prop['#isHover']
-                && !ec._entities.prop['#isHover'].masters) {
-                _event_add(ec, 'hover');
-            }
-            _events_add_helper(ec, ec.cnf);
-        }
-        function _events_add_recursive(entity) {
-            const entities = entity._entities;
-            if (entities) {
-                for (const ent of [$$.$me_atom2_entity_enum.key, $$.$me_atom2_entity_enum.elem, $$.$me_atom2_entity_enum.control]) {
-                    const entities_of_type = entities[$$.$me_atom2_entity_enum[ent]];
-                    if (!entities_of_type)
-                        continue;
-                    for (const tail in entities_of_type) {
-                        const ec = entities_of_type[tail];
-                        if (!ec.active())
-                            continue;
-                        _events_add(ec);
-                        _events_add_recursive(ec);
-                    }
-                }
-            }
-        }
-        function $me_atom2_event_process(name_event, event) {
-            if (!event)
-                return;
-            if (!$$.$me_atom2_event_handlers) {
-                $$.$me_atom2_event_handlers = new Map();
-                _events_add_recursive($$.$me_atom2_entity.root());
-            }
-            if (!$$.$me_atom2_event_handlers.has(name_event))
-                return;
-            const queue = $$.$me_atom2_event_handlers.get(name_event);
-            let done = false;
-            for (const item of queue) {
-                for (const [path, fn_array] of item.handlers) {
-                    const ec = $$.$me_atom2_entity.root().by_path(path);
-                    if (!ec)
-                        continue;
-                    if (!ec._entities.prop['#visible'].value())
-                        continue;
-                    const clientRect = ec._entities.prop['#clientRect'].value();
-                    if (!clientRect)
-                        continue;
-                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
-                    const prev = $$.a.curr;
-                    $$.a.curr = ec;
-                    for (const fn of fn_array)
-                        done = fn({ event, isInRect }) || done;
-                    $$.a.curr = prev;
-                }
-                if (done)
-                    break;
-            }
-        }
-        $$.$me_atom2_event_process = $me_atom2_event_process;
-        function $me_atom2_event_keyboard_process(name_event, event) {
-        }
-        $$.$me_atom2_event_keyboard_process = $me_atom2_event_keyboard_process;
-        const isTouch = () => $$.$me_atom2_entity.root()._entities.prop['#isTouch'].value();
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//event.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         let $me_atom2_control_state_enum;
         (function ($me_atom2_control_state_enum) {
             $me_atom2_control_state_enum[$me_atom2_control_state_enum["cleaned"] = 0] = "cleaned";
@@ -3061,6 +2221,883 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const event_names = [
+            'touchstart',
+            'touchmove',
+            'touchend',
+            'mousedown',
+            'mouseup',
+            'mousemove',
+            'wheel',
+            'wheelTouch',
+            'click',
+            'tap',
+            'clickOrTap',
+            'clickOrTapOutside',
+            'clickOutside',
+            'tapOutside',
+        ];
+        $$.clickRet = new Map();
+        $$.tapRet = new Map();
+        function _event_add(ec, name_event, events) {
+            let name_atom, fn;
+            if (events) {
+                const event_def = events[name_event];
+                fn = typeof event_def === 'function' ?
+                    event_def :
+                    event_def.fn;
+            }
+            let s;
+            if (!ec._entities)
+                $$.$me_throw(ec.name(), ec.active());
+            if (!ec._entities.prop)
+                $$.$me_throw(ec.name(), ec.active(), ec._entities);
+            if (!ec._entities.prop['#zIndex'])
+                $$.$me_throw(ec.name(), ec.active(), ec._entities.prop);
+            const zIndex = ec._entities.prop['#zIndex'].value();
+            if (name_event === 'hover') {
+                _do_event_add(ec, 'mousemove', zIndex, (p) => p.isInRect(p.event.clientX, p.event.clientY, 0) &&
+                    $$.a('.#isHover', true));
+                _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY, 0) && $$.a('.#isHover', false));
+            }
+            else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
+                _do_event_add(ec, 'touchstart', zIndex, p => {
+                    const ret = p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY, 10);
+                    if (ret) {
+                        $$.tapRet.set(ec.path, p.event);
+                    }
+                    else {
+                        $$.tapRet.delete(ec.path);
+                    }
+                    return ret;
+                });
+                _do_event_add(ec, 'touchmove', zIndex, p => $$.tapRet.has(ec.path) &&
+                    (() => {
+                        $$.tapRet.delete(ec.path);
+                        return false;
+                    })());
+                _do_event_add(ec, 'touchend', zIndex, p => $$.tapRet.has(ec.path) &&
+                    fn(Object.assign({}, p, { event: { start: $$.tapRet.get(ec.path), end: p.event } })) &&
+                    (() => {
+                        const event = $$.tapRet.get(ec.path);
+                        const app = $$.a.get('/@app');
+                        app.dispatch('tapEffect', { x: event.touches[0].clientX, y: event.touches[0].clientY });
+                        return true;
+                    })());
+            }
+            else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
+                _do_event_add(ec, 'mousedown', zIndex, p => {
+                    const ret = p.isInRect(p.event.clientX, p.event.clientY, 0);
+                    if (ret) {
+                        $$.clickRet.set(ec.path, p.event);
+                    }
+                    else {
+                        $$.clickRet.delete(ec.path);
+                    }
+                    return ret;
+                });
+                _do_event_add(ec, 'mouseup', zIndex, p => $$.clickRet.has(ec.path) &&
+                    (() => {
+                        const event = $$.clickRet.get(ec.path);
+                        console.log(event, p.event);
+                        return p.event.clientX == event.clientX && p.event.clientY == event.clientY;
+                    })() &&
+                    fn(Object.assign({}, p, { event: { start: $$.clickRet.get(ec.path), end: p.event } })));
+            }
+            else if (name_event === 'clickOrTapOutside') {
+                $$.$me_throw('TODO');
+            }
+            else
+                _do_event_add(ec, name_event, zIndex, fn);
+        }
+        function _do_event_add(ec, name_event, zIndex, fn) {
+            if (!$$.$me_atom2_event_handlers.has(name_event))
+                $$.$me_atom2_event_handlers.set(name_event, []);
+            const queue = $$.$me_atom2_event_handlers.get(name_event);
+            let i = 0;
+            while (i < queue.length && queue[i].zIndex > zIndex)
+                i++;
+            if (i == queue.length || queue[i].zIndex != zIndex)
+                queue.splice(i, 0, {
+                    zIndex,
+                    handlers: new Map(),
+                });
+            const handlers = queue[i].handlers;
+            if (!handlers.has(ec.path))
+                handlers.set(ec.path, []);
+            handlers.get(ec.path).push(fn);
+        }
+        function _events_add_helper(ec, cnf) {
+            if (!cnf)
+                return;
+            if (cnf.event)
+                for (const name_event of event_names)
+                    if (cnf.event[name_event])
+                        _event_add(ec, name_event, cnf.event);
+            if (cnf.base)
+                _events_add_helper(ec, cnf.base);
+        }
+        function _events_add(ec) {
+            let name_atom;
+            if (ec._entities &&
+                ec._entities.prop &&
+                ec._entities.prop['#isHover']
+                && !ec._entities.prop['#isHover'].masters) {
+                _event_add(ec, 'hover');
+            }
+            _events_add_helper(ec, ec.cnf);
+        }
+        function _events_add_recursive(entity) {
+            const entities = entity._entities;
+            if (entities) {
+                for (const ent of [$$.$me_atom2_entity_enum.key, $$.$me_atom2_entity_enum.elem, $$.$me_atom2_entity_enum.control]) {
+                    const entities_of_type = entities[$$.$me_atom2_entity_enum[ent]];
+                    if (!entities_of_type)
+                        continue;
+                    for (const tail in entities_of_type) {
+                        const ec = entities_of_type[tail];
+                        if (!ec.active())
+                            continue;
+                        _events_add(ec);
+                        _events_add_recursive(ec);
+                    }
+                }
+            }
+        }
+        function $me_atom2_event_process(name_event, event) {
+            if (!event)
+                return;
+            if (!$$.$me_atom2_event_handlers) {
+                $$.$me_atom2_event_handlers = new Map();
+                _events_add_recursive($$.$me_atom2_entity.root());
+            }
+            if (!$$.$me_atom2_event_handlers.has(name_event))
+                return;
+            const queue = $$.$me_atom2_event_handlers.get(name_event);
+            let done = false;
+            for (const item of queue) {
+                for (const [path, fn_array] of item.handlers) {
+                    const ec = $$.$me_atom2_entity.root().by_path(path);
+                    if (!ec)
+                        continue;
+                    if (!ec._entities.prop['#visible'].value())
+                        continue;
+                    const clientRect = ec._entities.prop['#clientRect'].value();
+                    if (!clientRect)
+                        continue;
+                    const isInRect = (clientX, clientY, tolerance = 0) => $$.$me_point_in_rect(clientX, clientY, clientRect, tolerance);
+                    const prev = $$.a.curr;
+                    $$.a.curr = ec;
+                    for (const fn of fn_array)
+                        done = fn({ event, isInRect }) || done;
+                    $$.a.curr = prev;
+                }
+                if (done)
+                    break;
+            }
+        }
+        $$.$me_atom2_event_process = $me_atom2_event_process;
+        function $me_atom2_event_keyboard_process(name_event, event) {
+        }
+        $$.$me_atom2_event_keyboard_process = $me_atom2_event_keyboard_process;
+        const isTouch = () => $$.$me_atom2_entity.root()._entities.prop['#isTouch'].value();
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//event.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $me_atom2 extends $$.$me_atom2_entity {
+            constructor(p) {
+                super(Object.assign({}, p, { ent: p.is_key ?
+                        $$.$me_atom2_entity_enum.key :
+                        $$.$me_atom2_entity_enum.prop }));
+                this._descendant_level = p.descendant_level || 0;
+                this._fn_key_idx_changed = p.fn_key_idx_changed;
+                if (p.keys && p.keys.length) {
+                    const self = this;
+                    const pp = p;
+                    this.fn_compute = pp.fn_compute;
+                    const atom = new $me_atom2({
+                        descendant_level: 1,
+                        tail: '#keys',
+                        parent: self,
+                        masters: p.keys.slice(0, 1),
+                        fn_compute: ({ masters: [key] }) => key,
+                        fn_apply: ({ val, prev }) => {
+                            let ss_curr;
+                            let ss_prev;
+                            if (prev) {
+                                ss_curr = new Set(val);
+                                for (const tail of prev)
+                                    if (!ss_curr.has(tail)) {
+                                        const atom = this._entities && this._entities.key && this._entities.key[tail];
+                                        if (atom) {
+                                            atom.value(null);
+                                            atom.destroy();
+                                        }
+                                    }
+                            }
+                            if (val) {
+                                ss_prev = new Set(prev);
+                                for (const tail of val)
+                                    if (!ss_prev.has(tail))
+                                        new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
+                            }
+                            if (prev && val) {
+                                for (const tail of ss_curr) {
+                                    if (ss_prev.has(tail)) {
+                                        const idx_prev = prev.indexOf(tail);
+                                        const idx_curr = val.indexOf(tail);
+                                        if (idx_prev != idx_curr) {
+                                            const atom = this._entities && this._entities.key && this._entities.key[tail];
+                                            if (atom)
+                                                atom._key_idx_changed({
+                                                    key: [tail],
+                                                    change: { idx_curr, idx_prev, i_key: 0 }
+                                                });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    this._key_gen = atom;
+                }
+                else {
+                    this.fn_apply = p.fn_apply;
+                    const pp = p;
+                    this.fn_compute = pp.fn_compute;
+                    if (pp.masters && (!Array.isArray(pp.masters) || pp.masters.length)) {
+                        if (Array.isArray(pp.masters)) {
+                            this.masters = pp.masters;
+                        }
+                        else {
+                            const atom = new $me_atom2({
+                                descendant_level: 1,
+                                tail: '#masters',
+                                parent: this,
+                                masters: pp.masters.masters,
+                                fn_compute: (p) => {
+                                    const masters = pp.masters.fn_compute(p);
+                                    if (!Array.isArray(masters))
+                                        $$.$me_throw(`atom '${atom.name()}'.fn_compute() expected to return string[] instead of`, masters);
+                                    return masters;
+                                },
+                                fn_apply: ({ val, prev }) => {
+                                    if ($$.$me_equal(val, prev))
+                                        return;
+                                    if (Array.isArray(prev))
+                                        this.unregister_as_slave(prev);
+                                    this._masters_store = null;
+                                },
+                            });
+                            atom.add_slave(this, '#masters');
+                            this.masters = atom;
+                        }
+                    }
+                }
+                this.set_state($me_atom2_state_enum.invalid);
+                const name = this.name();
+                const sp = $me_atom2._waiting_for_atom_def[name];
+                if (!sp)
+                    return;
+                for (const [path, master] of sp) {
+                    const atom = $$.$me_atom2_entity.root().by_path(path);
+                    if (typeof atom !== 'string')
+                        this.add_slave(atom, master);
+                }
+                delete $me_atom2._waiting_for_atom_def[name];
+            }
+            state() { return this._state; }
+            get 'fn_compute()'() {
+                return this._compute();
+            }
+            get 'fn_apply()'() {
+                return this._state === $me_atom2_state_enum.valid ? this._apply(this._value, true) : new Error(`this._state is ${this._state}`);
+            }
+            get 'update()'() {
+                return this.update();
+            }
+            get 'masters()'() {
+                return this._masters().map(name_atom => this.by_path_s(name_atom));
+            }
+            get 'slaves()'() {
+                if (!this._slaves)
+                    return null;
+                const result = {};
+                for (const [path] of this._slaves)
+                    result[path.toString()] = $me_atom2.root().by_path(path);
+                return result;
+            }
+            get 'state()'() {
+                return this.get_state_helper(this._state);
+            }
+            get_state_helper(state) {
+                if (state instanceof Error)
+                    return state;
+                if (typeof state === 'number')
+                    return $me_atom2_state_enum[state];
+                if (state instanceof Set) {
+                    const state_complex = state;
+                    const result = {};
+                    for (const s of state_complex) {
+                        const ret = this.by_path_s(s);
+                        const key = typeof ret == 'string' ? ret : ret.name();
+                        const val = typeof ret == 'string' ? 'waiting_for' : ret['state()'];
+                        result[key] = val;
+                    }
+                    return result;
+                }
+            }
+            destroy() {
+                if (this._slaves)
+                    for (let [path] of this._slaves) {
+                        const atom = $$.$me_atom2_entity.root().by_path(path);
+                        if (atom)
+                            this.rm_slave(atom);
+                    }
+                this.unregister_as_slave(this._masters());
+                super.destroy();
+            }
+            by_path_s(s, keys) {
+                const descendant = this._descendant(this._descendant_level);
+                if (typeof descendant === 'string')
+                    $$.$me_throw(descendant);
+                return descendant.by_path_s(s, keys || this._key_provider());
+            }
+            no_wait_for_master(name_master) {
+                if (!(this._state instanceof Set))
+                    return;
+                const state_complex = this._state;
+                state_complex.delete(name_master);
+                if (state_complex.size)
+                    return;
+                this.set_state($me_atom2_state_enum.invalid);
+            }
+            add_slave(atom_slave, name_master) {
+                if (!this._slaves)
+                    this._slaves = new Map();
+                this._slaves.set(atom_slave.path, name_master);
+                atom_slave.no_wait_for_master(name_master);
+                const store = atom_slave._masters_store || (atom_slave._masters_store = {});
+                store[name_master] = this;
+                atom_slave.set_state_slave(name_master, this._state instanceof Set ? this._state :
+                    $me_atom2_state_enum.invalid);
+            }
+            rm_slave(atom_slave) {
+                if (this._slaves && this._slaves.has(atom_slave.path)) {
+                    const name_master = this._slaves.get(atom_slave.path);
+                    atom_slave.set_state_slave(name_master, $me_atom2_state_enum.invalid);
+                    if (atom_slave._masters_store)
+                        delete atom_slave._masters_store[name_master];
+                    this._slaves.delete(atom_slave.path);
+                    if (!this._slaves.size)
+                        this._slaves = null;
+                }
+            }
+            unregister_as_slave(masters) {
+                if (Array.isArray(masters))
+                    for (const name_master of masters) {
+                        const atom_master = this.by_path_s(name_master);
+                        if (typeof atom_master !== 'string') {
+                            atom_master.rm_slave(this);
+                        }
+                        else {
+                            const ms = $me_atom2._waiting_for_atom_def;
+                            let s = atom_master;
+                            const ss = ms[s];
+                            if (!ss)
+                                continue;
+                            ss.delete(this.path);
+                            if (!ss.size)
+                                delete ms[s];
+                            this.no_wait_for_master(name_master);
+                        }
+                    }
+            }
+            value(val, force = false) {
+                if (val === void 0 && this._state === $me_atom2_state_enum.valid)
+                    return this._value;
+                if (!this.active())
+                    return null;
+                this.update(val, force);
+                return (this._state !== $me_atom2_state_enum.valid ?
+                    null :
+                    this._value);
+            }
+            static is_valid_value(val) {
+                return !(val == null || Number.isNaN(val));
+            }
+            update(val, force = false) {
+                if (!this.active() ||
+                    val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
+                        this._state === $me_atom2_state_enum.need_check))
+                    return;
+                const true_set = val !== void 0;
+                if (val === void 0) {
+                    const compute_result = this._compute();
+                    if (!compute_result)
+                        return;
+                    const { ret, state } = compute_result;
+                    if (state !== void 0) {
+                        this.set_state(state);
+                        return;
+                    }
+                    val = ret;
+                }
+                let just_set_anim = false;
+                let next_value = null;
+                if (!(val instanceof $me_atom2_anim_class)) {
+                    next_value = val;
+                }
+                else {
+                    const anim = val._anim;
+                    if ($me_atom2.is_valid_value(anim.to)) {
+                        if (!$me_atom2.is_valid_value(anim.from)) {
+                            const value = typeof this._state == 'number' ? this._value : null;
+                            anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
+                        }
+                        if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
+                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
+                            $me_atom2.anim_active(anim, true);
+                            $$.$me_atom2_async();
+                        }
+                        next_value = anim.delay > 0 ? void 0 : anim.from;
+                    }
+                }
+                if (next_value === void 0)
+                    return;
+                if (!just_set_anim)
+                    $me_atom2.anim_stop(this.path);
+                this.set_value(next_value, true_set, force);
+            }
+            set_value(next_value, true_set = true, force = false) {
+                const prev_value = this._value;
+                if (!true_set && !force &&
+                    this._state === $me_atom2_state_enum.need_check &&
+                    $$.$me_equal(next_value, prev_value)) {
+                    this._state = $me_atom2_state_enum.valid;
+                    $me_atom2.did_not_apply = true;
+                    return;
+                }
+                next_value = this._apply(next_value, force);
+                if (true_set)
+                    this._masters_store = null;
+                const state = $me_atom2.is_valid_value(this._value = next_value) ? $me_atom2_state_enum.valid :
+                    true_set && (this.fn_compute || this.masters) ? $me_atom2_state_enum.invalid :
+                        `${this.name()} got ${next_value}`;
+                if (state !== this._state ||
+                    this._state === $me_atom2_state_enum.valid && (force || !$$.$me_equal(prev_value, next_value)))
+                    this.set_state(state, $me_atom2_state_enum.need_check);
+            }
+            _compute() {
+                return this.update_helper('compute', () => {
+                    let master_values;
+                    const fn_compute = this.fn_compute;
+                    let masters;
+                    if (this.masters) {
+                        let ma;
+                        masters = Array.isArray(this.masters) ? this.masters : (ma = this.masters).value();
+                        let state;
+                        if (ma && ma._state !== $me_atom2_state_enum.valid) {
+                            state = new Set();
+                            state.add('#masters');
+                            return { state };
+                        }
+                        let store = this._masters_store;
+                        if (!store) {
+                            for (const name_master of masters) {
+                                const atom_master = this.by_path_s(name_master, this._key_provider());
+                                if (atom_master instanceof $me_atom2) {
+                                    atom_master.add_slave(this, name_master);
+                                }
+                                else {
+                                    const name_atom_waiting_for = atom_master;
+                                    const ms = $me_atom2._waiting_for_atom_def;
+                                    const ss = ms[name_atom_waiting_for] || (ms[name_atom_waiting_for] = new Map());
+                                    ss.set(this.path, name_master);
+                                    if (!state)
+                                        state =
+                                            this._state instanceof Set ?
+                                                this._state :
+                                                new Set();
+                                    state.add(name_master);
+                                }
+                            }
+                            if (state) {
+                                return { state };
+                            }
+                            store = this._masters_store;
+                        }
+                        master_values = [];
+                        let not_ready = false;
+                        for (const name_master of masters) {
+                            const atom_master = store[name_master];
+                            if (!atom_master)
+                                $$.$me_throw(`${this.name()}: no .store[${name_master}]`, this);
+                            master_values.push(atom_master.value());
+                            if (atom_master._state !== $me_atom2_state_enum.valid) {
+                                if (!state)
+                                    state = new Set();
+                                state.add(name_master);
+                            }
+                        }
+                        if (state) {
+                            return { state };
+                        }
+                        if (!fn_compute) {
+                            return {
+                                ret: (master_values.length == 1 ? master_values[0] : master_values)
+                            };
+                        }
+                    }
+                    if (!fn_compute) {
+                        return { ret: void 0 };
+                    }
+                    const result = {};
+                    const key_provider_ret = this._key_provider() || {};
+                    try {
+                        result.ret = fn_compute.call(this, Object.assign({ atom: this, prev: this._value, len: !master_values ? 0 : master_values.length, masters: master_values }, key_provider_ret));
+                    }
+                    catch (e) {
+                        console.error(e);
+                        result.state = e;
+                    }
+                    return result;
+                });
+            }
+            _apply(next_value, force = false) {
+                const fn_apply = this.fn_apply;
+                if (fn_apply && (force || !$$.$me_equal(next_value, this._value))) {
+                    const prev = this._value;
+                    this._value = next_value;
+                    this.update_helper('apply', () => {
+                        const keys = this._key_provider() || {};
+                        const ret = fn_apply.call(this, Object.assign({ atom: this, prev, val: next_value }, keys));
+                        if (ret !== void 0)
+                            next_value = ret;
+                        return null;
+                    });
+                }
+                return next_value;
+            }
+            update_helper(update_kind, fn) {
+                const ss = $me_atom2._update_atoms[update_kind];
+                if (ss.has(this.path)) {
+                    console.error(`Циклическая ${update_kind}-зависимость`, [this.path.toString()].concat([...$me_atom2._update_atoms[update_kind]]
+                        .map(item => item[0].toString())
+                        .reverse()));
+                    return null;
+                }
+                ss.set(this.path, true);
+                const prev = $$.a.curr;
+                $$.a.curr = this;
+                const ret = fn();
+                $$.a.curr = prev;
+                ss.delete(this.path);
+                return ret;
+            }
+            _key_provider() {
+                if (this.path.tail === '#masters' || this.path.tail === '#keys')
+                    return this.parent()._key_provider();
+                if (this.path.ent !== $$.$me_atom2_entity_enum.key)
+                    return null;
+                if (this._key_provider_cache)
+                    return this._key_provider_cache;
+                const result = { len_key: 0 };
+                let atom = this;
+                let key_enum;
+                let key;
+                let keys;
+                while (atom.path.ent === $$.$me_atom2_entity_enum.key) {
+                    result.len_key++;
+                    if (!key)
+                        key = Array();
+                    if (!keys)
+                        keys = Array();
+                    if (!key_enum)
+                        key_enum = Array();
+                    key.unshift(atom.path.tail);
+                    atom = atom.parent();
+                    keys = atom._key_gen.masters.concat(keys);
+                    const key_name = atom._key_gen.masters[0];
+                    const masters_store = atom._key_gen._masters_store;
+                    if (masters_store) {
+                        key_enum = [masters_store[key_name].value()].concat(key_enum);
+                    }
+                    else {
+                    }
+                }
+                if (result.len_key) {
+                    result.key = key;
+                    result.keys = keys;
+                    result.key_enum = key_enum;
+                }
+                return (this._key_provider_cache = result);
+            }
+            set_state(val, state2spread) {
+                this._state = val;
+                if (this.fn_apply &&
+                    (val === $me_atom2_state_enum.invalid || val === $me_atom2_state_enum.need_check) &&
+                    this.active()) {
+                    if (this.path.tail != '#clientRect' || $$.$me_atom2_event_mousemove_last && !$$.$me_atom2_event_mousemove_to_process) {
+                        $me_atom2.to_update.add(this.path);
+                        $$.$me_atom2_async();
+                    }
+                    else {
+                        const entity = this.parent(true);
+                        if (entity instanceof $$.$me_atom2_elem) {
+                            const elem = entity;
+                            if (elem.node.style.width == 'auto' || elem.node.style.height == 'auto') {
+                                $me_atom2.to_update.add(this.path);
+                                $$.$me_atom2_async();
+                            }
+                            else {
+                            }
+                        }
+                    }
+                }
+                $me_atom2.set_state_count++;
+                if (!this._slaves)
+                    return;
+                $me_atom2._spread_atoms.set(this, val);
+                for (let [path_slave, name_master] of this._slaves) {
+                    const atom_slave = $$.$me_atom2_entity.root().by_path(path_slave);
+                    if (atom_slave instanceof $me_atom2) {
+                        atom_slave.set_state_slave(name_master, state2spread !== void 0 ? state2spread : val);
+                    }
+                    else {
+                        this._slaves.delete(path_slave);
+                    }
+                }
+                $me_atom2._spread_atoms.delete(this);
+            }
+            set_state_slave(name_master, val) {
+                if ($me_atom2._spread_atoms.has(this)) {
+                    $$.$me_throw('Циклическая spread-зависомость', [[this.name(), val]].concat([...$me_atom2._spread_atoms].map(item => [item[0].name(), item[1]]).reverse()), ...[this].concat([...$me_atom2._spread_atoms].map(item => item[0]).reverse()));
+                }
+                if (this._state instanceof Set && typeof val == 'number') {
+                    this.no_wait_for_master(name_master);
+                }
+                else if ((typeof this._state == 'string' || this._state instanceof Error) && typeof val == 'number') {
+                    this.set_state($me_atom2_state_enum.invalid);
+                }
+                else if (val instanceof Set || typeof val == 'string' || val instanceof Error) {
+                    if (!(this._state instanceof Set))
+                        this._state = new Set();
+                    this._state.add(name_master);
+                }
+                else if (this._state === $me_atom2_state_enum.valid &&
+                    (val == $me_atom2_state_enum.need_check || val == $me_atom2_state_enum.invalid)) {
+                    this.set_state($me_atom2_state_enum.need_check);
+                }
+            }
+            _key_idx_changed(p) {
+                if ($$.$me_debug)
+                    console.log(this, p);
+                if (this._entities && this._entities.key) {
+                    const entities_key = this._entities.key;
+                    for (const k in entities_key) {
+                        entities_key[k]._key_idx_changed({
+                            key: p.key.concat(k),
+                            change: Object.assign({}, p.change, { i_key: p.change.i_key - 1 }),
+                        });
+                    }
+                }
+                else if (this._fn_key_idx_changed) {
+                    let path = this.path;
+                    let n = 0;
+                    while (path.ent === $$.$me_atom2_entity_enum.key) {
+                        n++;
+                        path = path.path;
+                    }
+                    p.change.i_key = n - 1 + p.change.i_key;
+                    this._key_idx_changed_helper(p, this.by_path(path), n, []);
+                }
+            }
+            _key_idx_changed_helper(p, parent, n, key) {
+                if (n <= p.key.length) {
+                    this._fn_key_idx_changed({
+                        key: key.concat(p.key),
+                        change: p.change,
+                    });
+                }
+                else {
+                    const entities_key = parent._entities.key;
+                    for (const k in entities_key) {
+                        this._key_idx_changed_helper(p, entities_key[k], n - 1, key.concat(k));
+                    }
+                }
+            }
+            key_enum() {
+                const result = [];
+                let atom = this;
+                while (atom._key_gen) {
+                    const key_enum = atom._key_gen.value();
+                    result.push(key_enum);
+                    atom = atom._entities.key[key_enum[0]];
+                }
+                return result;
+            }
+            _on_active() {
+                if (this.fn_apply && this._state === $me_atom2_state_enum.invalid) {
+                    $me_atom2.to_update.add(this.path);
+                    $$.$me_atom2_async();
+                }
+            }
+            _masters() {
+                const masters = this.masters;
+                return (Array.isArray(masters) ? masters :
+                    masters instanceof $me_atom2 ? masters.value() :
+                        []);
+            }
+            static update_atoms(deadline, last_now) {
+                const pre = performance.now() - last_now;
+                let count = 0;
+                let atoms_to_update = new Set();
+                let ss;
+                if ($me_atom2._update_atoms_debug)
+                    ss = new Map();
+                while ($me_atom2.to_update.size) {
+                    if (performance.now() > deadline)
+                        break;
+                    for (const tail of $me_atom2._update_order) {
+                        for (const path of $me_atom2.to_update) {
+                            if (performance.now() > deadline)
+                                break;
+                            if (tail && path.tail !== tail)
+                                continue;
+                            const atom = $$.$me_atom2_entity.root().by_path(path);
+                            if (atom && atom.active()) {
+                                atoms_to_update.add(atom);
+                            }
+                            $me_atom2.to_update.delete(path);
+                        }
+                        if (atoms_to_update.size)
+                            break;
+                    }
+                    for (const atom of atoms_to_update) {
+                        if (performance.now() > deadline)
+                            break;
+                        const state_was = atom._state;
+                        if (atom._state != $me_atom2_state_enum.valid) {
+                            $me_atom2.did_not_apply = false;
+                            const start = performance.now();
+                            atom.update();
+                            if (!$me_atom2.did_not_apply) {
+                                if (ss)
+                                    ss.set(atom.name(), `${state_was} => ${atom._state}`);
+                                count++;
+                            }
+                            else {
+                            }
+                        }
+                        atoms_to_update.delete(atom);
+                    }
+                }
+                for (const atom of atoms_to_update)
+                    $me_atom2.to_update.add(atom.path);
+                if (ss && ss.size)
+                    console.warn(ss);
+                return [count, pre];
+            }
+            static anim_start(anim, t) {
+                if (anim.start == null)
+                    anim.start = anim.progress == null ? t :
+                        t - anim.delay - Math.min(1, anim.progress) * anim.duration;
+            }
+            static anim_active(anim, active) {
+                if (!anim.path_active)
+                    return;
+                const atom_active = $$.$me_atom2_entity.root().by_path(anim.path_active);
+                if (!atom_active)
+                    return;
+                atom_active.value(active);
+            }
+            static anim_stop(path) {
+                if (!$me_atom2.anim_to_play.has(path))
+                    return;
+                const anim = $me_atom2.anim_to_play.get(path);
+                $me_atom2.anim_to_play.delete(path);
+                $me_atom2.anim_active(anim, false);
+                if (anim.fini) {
+                    const atom = $$.$me_atom2_entity.root().by_path(path);
+                    if (atom instanceof $me_atom2) {
+                        const prev = $$.a.curr;
+                        $$.a.curr = atom;
+                        anim.fini();
+                        $$.a.curr = prev;
+                    }
+                }
+            }
+            static fn_compute_false() {
+                return false;
+            }
+            static fn_compute_true() {
+                return true;
+            }
+            static fn_compute_zero() {
+                return 0;
+            }
+        }
+        $me_atom2._update_atoms = {
+            compute: new Map(),
+            apply: new Map(),
+        };
+        $me_atom2._spread_atoms = new Map();
+        $me_atom2.set_state_count = 0;
+        $me_atom2._waiting_for_atom_def = {};
+        $me_atom2.to_def = Array();
+        $me_atom2.to_update = new Set();
+        $me_atom2._update_order = ['#keys', '#masters', ''];
+        $me_atom2._update_atoms_debug = false;
+        $me_atom2.did_not_apply = false;
+        $me_atom2.anim_to_play = new Map();
+        $$.$me_atom2 = $me_atom2;
+        let $me_atom2_state_enum;
+        (function ($me_atom2_state_enum) {
+            $me_atom2_state_enum[$me_atom2_state_enum["invalid"] = 0] = "invalid";
+            $me_atom2_state_enum[$me_atom2_state_enum["valid"] = 1] = "valid";
+            $me_atom2_state_enum[$me_atom2_state_enum["need_check"] = 2] = "need_check";
+        })($me_atom2_state_enum = $$.$me_atom2_state_enum || ($$.$me_atom2_state_enum = {}));
+        function $me_atom2_anim(anim) {
+            return new $me_atom2_anim_class(anim);
+        }
+        $$.$me_atom2_anim = $me_atom2_anim;
+        class $me_atom2_anim_class {
+            constructor(anim) {
+                this._anim = Object.assign({}, anim, { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
+            }
+        }
+        $$.$me_atom2_anim_class = $me_atom2_anim_class;
+        $$.a = window.a = Object.assign((path_s, val, force) => {
+            const relative_to = $$.a.curr || $$.$me_atom2_entity.root();
+            const atom = relative_to.by_path_s(path_s);
+            if (typeof atom === 'string')
+                $$.$me_throw(`atom '${atom}' does not exist`);
+            if (!(atom instanceof $me_atom2))
+                $$.$me_throw(`entity '${atom}' is not $me_atom2`, atom);
+            return atom.value(val, force);
+        }, {
+            root: () => $$.$me_atom2_entity.root(),
+            get: (path_s) => {
+                const relative_to = $$.a.curr || $$.$me_atom2_entity.root();
+                return relative_to.by_path_s(path_s);
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//atom2.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         function $me_atom2_ctx_rect(p) {
             ctx_rect_helper(p);
             if (!p.stroke ||
@@ -3323,6 +3360,16 @@ var $;
                 }
                 return [count, pre];
             },
+            wheelTouch: (last_now) => {
+                const pre = performance.now() - last_now;
+                let count = 0;
+                if ($$.$me_atom2_event_wheel_touch_to_process) {
+                    $$.$me_atom2_event_process('wheelTouch', $$.$me_atom2_event_wheel_touch_to_process);
+                    $$.$me_atom2_event_wheel_touch_to_process = null;
+                    count = 1;
+                }
+                return [count, pre];
+            },
         };
         function fill_stat(stat, name, fn) {
             const start = performance.now();
@@ -3532,8 +3579,128 @@ var $;
             $$.$me_atom2_event_mousemove_to_process ||
             $$.$me_atom2_event_wheel_to_process ||
             false);
-        const touchstart = (event) => $$.$me_atom2_event_process('touchstart', event);
-        const touchend = (event) => $$.$me_atom2_event_process('touchend', event);
+        let lastClientX;
+        let lastClientY;
+        let clientX;
+        let clientY;
+        let lastDeltaX;
+        let lastDeltaY;
+        let timePrev;
+        let rafInert;
+        let accelX;
+        let accelY;
+        let scrollAccuX;
+        let scrollAccuY;
+        let rafWheelTouch;
+        let tPrev;
+        let event_wheel_touch;
+        const touchstart = (event) => {
+            event_wheel_touch = event;
+            clientX = event.touches[0].clientX;
+            lastDeltaX = 0;
+            accelX = 0;
+            clientY = event.touches[0].clientY;
+            lastDeltaY = 0;
+            accelY = 0;
+            timePrev = null;
+            if (rafInert != null) {
+                cancelAnimationFrame(rafInert);
+                rafInert = null;
+            }
+            return $$.$me_atom2_event_process('touchstart', event);
+        };
+        const touchmove = (event) => {
+            const deltaX = clientX - event.touches[0].clientX;
+            const deltaY = clientY - event.touches[0].clientY;
+            if (deltaX)
+                if (Math.sign(lastDeltaX) != Math.sign(deltaX)) {
+                    scrollAccuX = deltaX;
+                    timePrev = performance.now();
+                }
+                else {
+                    if (timePrev == null)
+                        timePrev = performance.now();
+                    scrollAccuX += deltaX;
+                }
+            if (deltaY)
+                if (Math.sign(lastDeltaY) != Math.sign(deltaY)) {
+                    scrollAccuY = deltaY;
+                    timePrev = performance.now();
+                }
+                else {
+                    if (timePrev == null)
+                        timePrev = performance.now();
+                    scrollAccuY += deltaY;
+                }
+            lastClientX = event.touches[0].clientX;
+            lastClientY = event.touches[0].clientY;
+            lastDeltaX = deltaX;
+            lastDeltaY = deltaY;
+            if (scrollAccuX || scrollAccuY) {
+                if (rafWheelTouch == null)
+                    rafWheelTouch = requestAnimationFrame((t) => {
+                        rafWheelTouch = null;
+                        {
+                            if (!$$.$me_atom2_event_wheel_to_process) {
+                                $$.$me_atom2_event_wheel_touch_to_process = event_wheel_touch;
+                                $$.$me_atom2_event_wheel_touch_to_process._deltaX = scrollAccuX;
+                                $$.$me_atom2_event_wheel_touch_to_process._deltaY = scrollAccuY;
+                            }
+                            else {
+                                $$.$me_atom2_event_wheel_touch_to_process._deltaX =
+                                    scrollAccuX + (Math.sign($$.$me_atom2_event_wheel_touch_to_process._deltaX) * Math.sign(scrollAccuX) < 0 ? 0 : $$.$me_atom2_event_wheel_touch_to_process._deltaX);
+                                $$.$me_atom2_event_wheel_touch_to_process._deltaY =
+                                    scrollAccuY + (Math.sign($$.$me_atom2_event_wheel_touch_to_process._deltaY) * Math.sign(scrollAccuY) < 0 ? 0 : $$.$me_atom2_event_wheel_touch_to_process._deltaY);
+                            }
+                            $$.$me_atom2_event_wheel_touch_to_process._end = event;
+                            $$.$me_atom2_async();
+                            $$.$me_atom2_event_process('wheelTouch', $$.$me_atom2_event_wheel_to_process);
+                            if (timePrev !== void 0) {
+                                tPrev = t;
+                                const timeCurr = performance.now();
+                                accelX = scrollAccuX / (timeCurr - timePrev);
+                                accelY = scrollAccuY / (timeCurr - timePrev);
+                                timePrev = timeCurr;
+                            }
+                            scrollAccuX = 0;
+                            scrollAccuY = 0;
+                            clientX = lastClientX;
+                            clientY = lastClientY;
+                        }
+                    });
+                const deltaY = clientY - event.touches[0].clientY;
+            }
+            if (!scrollAccuX)
+                accelX = 0;
+            if (!scrollAccuY)
+                accelY = 0;
+            event.preventDefault();
+            return $$.$me_atom2_event_process('touchmove', event);
+        };
+        const touchend = (event) => {
+            timePrev = void 0;
+            let accel_k = 0.95;
+            function touch_inert(accelX, accelY) {
+                rafInert = requestAnimationFrame((t) => {
+                    rafInert = null;
+                    const scrollAccuX = accelX * (t - tPrev);
+                    const scrollAccuY = accelY * (t - tPrev);
+                    if (Math.abs(scrollAccuX) >= 1 || Math.abs(scrollAccuY) >= 1) {
+                        event_wheel_touch._deltaX = scrollAccuX;
+                        event_wheel_touch._deltaY = scrollAccuY;
+                        $$.$me_atom2_event_process('wheelTouch', $$.$me_atom2_event_wheel_to_process);
+                        const accelXNew = accelX * accel_k;
+                        const accelYNew = accelY * accel_k;
+                        accel_k = accel_k * 0.9999;
+                        tPrev = t;
+                        touch_inert(accelXNew, accelYNew);
+                    }
+                });
+            }
+            if (Math.abs(accelX) >= 1 || Math.abs(accelY))
+                touch_inert(accelX, accelY);
+            return $$.$me_atom2_event_process('touchend', event);
+        };
         const mousedown = (event) => $$.$me_atom2_event_process('mousedown', event);
         const mouseup = (event) => $$.$me_atom2_event_process('mouseup', event);
         const mousemove = (event) => {
@@ -3570,6 +3737,7 @@ var $;
                     if (prev != null && prev != val) {
                         if (prev) {
                             document.body.removeEventListener('touchstart', touchstart);
+                            document.body.removeEventListener('touchmove', touchmove);
                             document.body.removeEventListener('touchend', touchend);
                         }
                         else {
@@ -3584,6 +3752,7 @@ var $;
                     if (prev !== val) {
                         if (val) {
                             document.body.addEventListener('touchstart', touchstart);
+                            document.body.addEventListener('touchmove', touchmove, { passive: false });
                             document.body.addEventListener('touchend', touchend);
                         }
                         else {
@@ -4574,9 +4743,78 @@ var $;
     var $$;
     (function ($$) {
         const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
+        $$.$me_atom2_list_row_height_source_fn_apply = ({ key: [row_i], val, prev }) => {
+            if (val == null || val < 0 ||
+                +row_i >= $$.a('.row_count') ||
+                $$.$me_list_row_i_out_of_range_is(+row_i, $$.a('.row_i_min'), $$.a('.row_i_max')))
+                return;
+            set_row_height($$.a(`.rec_idx[${row_i}]`), $$.a('._provider'), $$.a('.provider_tag'), val);
+            if (prev == null)
+                return;
+            const delta = prev - val;
+            if (!delta)
+                return;
+            if (delta < 0) {
+                const top = $$.a(`.row_top[${row_i}]`);
+                const delta_bottom = top + val - $$.a('.#height');
+                if (delta_bottom > 0) {
+                    const delta_top = top - $$.a('.header_height');
+                    if (delta_top > 0) {
+                        const delta = Math.min(delta_bottom, delta_top);
+                        const row_i_min = $$.a('.row_i_min');
+                        const top = $$.a(`.row_top[${row_i_min}]`);
+                        $$.a('.visible_top', top - delta);
+                        $$.a(`.row_top[${row_i_min}]`, $$.$me_atom2_anim({ to: top - delta }));
+                    }
+                }
+            }
+            else {
+                const val = $$.a('.visible_top');
+                const idx_max = $$.a('.rec_idx_max');
+                const i = $$.a('.row_i_min');
+                const idx = $$.a('.visible_idx_min');
+                const len = $$.a('.row_count');
+                const _provider = $$.a('._provider');
+                const provider_tag = $$.a('.provider_tag');
+                const height = $$.a('.#height') + delta;
+                const header_height = $$.a('.header_height');
+                const p = { val, idx_max, i, idx, len, _provider, provider_tag, height, header_height };
+                const rec_idx = $$.a(`.rec_idx[${row_i}]`);
+                const row_height = (idx, _provider, provider_tag) => idx == rec_idx ? prev : get_row_height(idx, _provider, provider_tag);
+                compute_visible_helper(p, true, row_height);
+                set_visible(p, true);
+                if (p.idx == idx_max) {
+                    const ofs = height - p.val;
+                    if (ofs > 0) {
+                        p.idx = idx;
+                        p.val = val + row_height(p.idx, p._provider, p.provider_tag);
+                        p.i = i;
+                        p.header_height = header_height - ofs;
+                        compute_visible_helper(p, false, row_height);
+                        set_visible(p, false);
+                        $$.a(`.row_top[${p.i}]`, $$.$me_atom2_anim({ to: $$.a(`.row_top[${p.i}]`) + ofs }));
+                    }
+                }
+            }
+        };
         $$.$me_list = {
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'set_view') {
+                if (dispatch_name == 'get_row_height') {
+                    const row_heights = $$.a('.row_heights');
+                    dispatch_arg.val = !row_heights.has(dispatch_arg.idx) ? $$.a('.row_height_min') : row_heights.get(dispatch_arg.idx);
+                    return true;
+                }
+                else if (dispatch_name == 'set_row_height') {
+                    const row_heights = $$.a('.row_heights');
+                    if (dispatch_arg.val != $$.a('.row_height_min')) {
+                        row_heights.set(dispatch_arg.idx, dispatch_arg.val);
+                    }
+                    else if (row_heights.has(dispatch_arg.idx)) {
+                        row_heights.delete(dispatch_arg.idx);
+                    }
+                    return true;
+                }
+                else if (dispatch_name == 'set_view') {
                     const val = dispatch_arg || {};
                     const elem = $$.a.curr;
                     {
@@ -4623,12 +4861,12 @@ var $;
                 ...min_max('row_i'),
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
-            ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => is_row_i_out_of_range(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
+            ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
                         const key = +row_i;
                         const result = (() => {
-                            if (is_row_i_out_of_range(key, row_i_min, row_i_max))
+                            if ($$.$me_list_row_i_out_of_range_is(key, row_i_min, row_i_max))
                                 return [];
                             if (key == row_i_min)
                                 return ['.visible_idx_min'];
@@ -4647,7 +4885,7 @@ var $;
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
                         const key = +row_i;
                         const result = (() => {
-                            if (is_row_i_out_of_range(key, row_i_min, row_i_max))
+                            if ($$.$me_list_row_i_out_of_range_is(key, row_i_min, row_i_max))
                                 return [];
                             if (key == row_i_min)
                                 return ['.visible_top'];
@@ -4658,64 +4896,11 @@ var $;
                         })();
                         return result;
                     }),
-                }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0)), row_height_source: $$.$me_atom2_prop({
+                }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0)), row_heights_store: () => new Map(), row_heights: $$.$me_atom2_prop(['.provider_tag', '.row_heights_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Map())), row_height_source: $$.$me_atom2_prop({
                     keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [row_i_min, row_i_max] }) => is_row_i_out_of_range(+row_i, row_i_min, row_i_max) ? [] :
+                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
                         [`.rec_idx[${row_i}]`, '._provider', '.provider_tag']),
-                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => !len || !_provider || !provider_tag ? -1 : get_row_height(rec_idx, _provider, provider_tag, true), ({ key: [row_i], val, prev }) => {
-                    if (val == null || val < 0 ||
-                        +row_i >= $$.a('.row_count') ||
-                        is_row_i_out_of_range(+row_i, $$.a('.row_i_min'), $$.a('.row_i_max')))
-                        return;
-                    set_row_height($$.a(`.rec_idx[${row_i}]`), $$.a('._provider'), $$.a('.provider_tag'), val);
-                    if (prev == null)
-                        return;
-                    const delta = prev - val;
-                    if (!delta)
-                        return;
-                    if (delta < 0) {
-                        const top = $$.a(`.row_top[${row_i}]`);
-                        const delta_bottom = top + val - $$.a('.#height');
-                        if (delta_bottom > 0) {
-                            const delta_top = top - $$.a('.header_height');
-                            if (delta_top > 0) {
-                                const delta = Math.min(delta_bottom, delta_top);
-                                const row_i_min = $$.a('.row_i_min');
-                                const top = $$.a(`.row_top[${row_i_min}]`);
-                                $$.a('.visible_top', top - delta);
-                                $$.a(`.row_top[${row_i_min}]`, $$.$me_atom2_anim({ to: top - delta }));
-                            }
-                        }
-                    }
-                    else {
-                        const val = $$.a('.visible_top');
-                        const idx_max = $$.a('.rec_idx_max');
-                        const i = $$.a('.row_i_min');
-                        const idx = $$.a('.visible_idx_min');
-                        const len = $$.a('.row_count');
-                        const _provider = $$.a('._provider');
-                        const provider_tag = $$.a('.provider_tag');
-                        const height = $$.a('.#height') + delta;
-                        const header_height = $$.a('.header_height');
-                        const p = { val, idx_max, i, idx, len, _provider, provider_tag, height, header_height };
-                        const rec_idx = $$.a(`.rec_idx[${row_i}]`);
-                        const row_height = (idx, _provider, provider_tag) => idx == rec_idx ? prev : get_row_height(idx, _provider, provider_tag);
-                        compute_visible_helper(p, true, row_height);
-                        set_visible(p, true);
-                        if (p.idx == idx_max) {
-                            const ofs = height - p.val;
-                            if (ofs > 0) {
-                                p.idx = idx;
-                                p.val = val + row_height(p.idx, p._provider, p.provider_tag);
-                                p.i = i;
-                                p.header_height = header_height - ofs;
-                                compute_visible_helper(p, false, row_height);
-                                set_visible(p, false);
-                                $$.a(`.row_top[${p.i}]`, $$.$me_atom2_anim({ to: $$.a(`.row_top[${p.i}]`) + ofs }));
-                            }
-                        }
-                    }
-                }), row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_height_source[]'] }, ({ key: [row_i], masters: [to, row_top_anim], prev }) => to < 0 ? null : prev == null || prev == to ? to : $$.$me_atom2_anim({
+                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => !len || !_provider || !provider_tag ? -1 : get_row_height(rec_idx, _provider, provider_tag, true), $$.$me_atom2_list_row_height_source_fn_apply), row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_height_source[]'] }, ({ key: [row_i], masters: [to, row_top_anim], prev }) => to < 0 ? null : prev == null || prev == to ? to : $$.$me_atom2_anim({
                     to,
                     fini: () => adjust_rows($$.a('.visible_top')),
                 }), ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['._provider', '.provider_tag', '.#height', '.rec_count'], null, () => {
@@ -4745,23 +4930,22 @@ var $;
                 overflow: () => 'hidden',
             },
             event: {
-                wheel: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    let ofs = 0;
-                    if (Math.abs(p.event._deltaX) < Math.abs(p.event._deltaY)) {
-                        const fromBottom = p.event._deltaY < 0;
-                        if (fromBottom ?
-                            $$.a('.visible_idx_min') > 0 || $$.a('.visible_top') < $$.a('.header_height') :
-                            $$.a('.visible_idx_max') < $$.a('.rec_idx_max') || $$.a('.visible_bottom') > $$.a('.#height'))
-                            adjust_rows($$.a(fromBottom ? '.visible_bottom' : '.visible_top') - p.event._deltaY, fromBottom);
-                        return true;
-                    }
-                    return false;
-                },
+                wheel: p => p.isInRect(p.event.clientX, p.event.clientY, 0) &&
+                    $$.$me_list_wheel_helper(p.event._deltaX, p.event._deltaY),
             },
         };
-        const is_row_i_out_of_range = (key, row_i_min, row_i_max) => row_i_max == row_i_min ||
+        $$.$me_list_wheel_helper = (deltaX, deltaY) => {
+            if (Math.abs(deltaX) < Math.abs(deltaY)) {
+                const fromBottom = deltaY < 0;
+                if (fromBottom ?
+                    $$.a('.visible_idx_min') > 0 || $$.a('.visible_top') < $$.a('.header_height') :
+                    $$.a('.visible_idx_max') < $$.a('.rec_idx_max') || $$.a('.visible_bottom') > $$.a('.#height'))
+                    adjust_rows($$.a(fromBottom ? '.visible_bottom' : '.visible_top') - deltaY, fromBottom);
+                return true;
+            }
+            return false;
+        };
+        $$.$me_list_row_i_out_of_range_is = (key, row_i_min, row_i_max) => row_i_max == row_i_min ||
             row_i_max > row_i_min && (key < row_i_min || key > row_i_max) ||
             row_i_max < row_i_min && key > row_i_max && key < row_i_min;
         const next_i = (inc, i, len) => {
@@ -4783,7 +4967,7 @@ var $;
                 const dispatch_arg = { idx, tag: provider_tag };
                 const ec = $$.$me_atom2_entity.root().by_path(_provider);
                 if (!ec.dispatch('get_row_height', dispatch_arg))
-                    $$.$me_throw(`could not obtain row_height[${idx}] from ${ec.name()}`);
+                    $$.$me_throw(`could not get_row_height(${provider_tag}, ${idx}) from ${ec.name()}`);
                 result = dispatch_arg.val;
             }
             return Math.round(result);
@@ -4792,7 +4976,7 @@ var $;
             const dispatch_arg = { idx, val, tag: provider_tag };
             const ec = $$.$me_atom2_entity.root().by_path(_provider);
             if (!ec.dispatch('set_row_height', dispatch_arg))
-                $$.$me_throw(`could not obtain row_height[${idx}] from ${ec.name()}`);
+                $$.$me_throw(`could not set_row_height(${provider_tag}, ${idx}, ${val}) to ${ec.name()}`);
         };
         function adjust_rows(val, fromBottom = false, row_height) {
             if (!row_height)
@@ -4859,28 +5043,144 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_panel = {
+            type: '$me_panel',
+            prop: Object.assign({}, $$.$me_atom2_prop_same_def(() => 0, ['borderRadius']), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+                ['paddingHor', ['paddingLeft', 'paddingRight']],
+                ['paddingVer', ['paddingTop', 'paddingBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
+                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
+                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
+            ])),
+            render: p => {
+                let borderHasWidth = false;
+                let borderHasWidthSame = true;
+                let borderHasColor = false;
+                let borderHasColorSame = true;
+                let prevWidth, prevColor;
+                const colorBorder = {};
+                const borderWidth = {};
+                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
+                    const side = s.toLowerCase();
+                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
+                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
+                    borderHasWidth = borderHasWidth || (currWidth > 0);
+                    borderHasColor = borderHasColor || currColor && (currColor != 'transparent');
+                    if (void 0 !== prevWidth) {
+                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
+                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
+                    }
+                    prevWidth = currWidth;
+                    prevColor = currColor;
+                }
+                const colorBackground = $$.a('.colorBackground');
+                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
+                    $$.$me_atom2_ctx_rect({
+                        ctx: p.ctx,
+                        ctxTop: p.ctxRect.top,
+                        ctxLeft: p.ctxRect.left,
+                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
+                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
+                        ctxBorderRadius: p.pixelRatio * $$.a('.borderRadius'),
+                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
+                        stroke: !borderHasWidth || !borderHasColor ? null : {
+                            style: borderHasColorSame ? prevColor : colorBorder,
+                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
+                        }
+                    });
+                }
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_label = {
+            type: '$me_label',
+            base: $$.$me_panel,
+            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), { _width_text: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio'], ({ masters: [ctx, text, pixelRatio] }) => {
+                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                    return Math.ceil(ctx.measureText(text).width / pixelRatio);
+                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                '#width': ['._width_text', '.paddingLeft', '.paddingRight'],
+                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
+            }), { text: () => '' }),
+            render: p => {
+                let { ctxWidth, ctxHeight } = p;
+                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
+                const text = $$.a('.text');
+                const ctxTextWidth = Math.round(p.ctx.measureText(text).width);
+                const ctxPaddingLeft = Math.round(p.pixelRatio * $$.a('.paddingLeft'));
+                const ctxPaddingRight = Math.round(p.pixelRatio * $$.a('.paddingRight'));
+                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
+                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
+                ctxWidth -= ctxPaddingLeft + ctxPaddingRight;
+                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
+                if (ctxHeight < ctxFontSize - 1) {
+                    console.error({ ctxHeight, ctxFontSize });
+                    return;
+                }
+                const bottom = p.ctxRect.bottom - ctxPaddingBottom - $$.$me_align_correction($$.a('.alignVer'), () => ctxHeight - ctxFontSize);
+                const _left = (ctxTextWidth) => p.ctxRect.left + ctxPaddingLeft + $$.$me_align_correction($$.a('.alignHor'), () => ctxWidth - ctxTextWidth);
+                p.ctx.fillStyle = $$.a('.colorText');
+                if (ctxTextWidth <= ctxWidth) {
+                    p.ctx.fillText(text, _left(ctxTextWidth), bottom);
+                }
+                else {
+                    const ctxPeriodWidth = p.ctx.measureText(period).width;
+                    if (ctxWidth < ctxPeriodWidth) {
+                        console.error({ ctxWidth, ctxPeriodWidth });
+                        return;
+                    }
+                    let len = text.length, wi = ctxTextWidth, s;
+                    while (len && wi > ctxWidth - ctxPeriodWidth)
+                        wi = p.ctx.measureText(s = text.slice(0, --len)).width;
+                    const left = _left(wi + ctxPeriodWidth);
+                    p.ctx.fillText(s, left, bottom);
+                    p.ctx.fillText(period, left + wi, bottom);
+                }
+            },
+        };
+        const period = '...';
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//label.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
         let by_idx = {};
         let timerId;
         $$.$nl_elem_search_grid = {
             base: $$.$me_list,
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_row_height') {
-                    const row_heights = $$.a('.row_heights');
-                    dispatch_arg.val = !row_heights.has(dispatch_arg.idx) ? $$.a('.row_height_min') : row_heights.get(dispatch_arg.idx);
+                if (dispatch_name == 'get_row_open') {
+                    const row_opens = $$.a('.row_opens');
+                    dispatch_arg.val = row_opens.has(dispatch_arg.idx);
                     return true;
                 }
-                else if (dispatch_name == 'set_row_height') {
-                    const row_heights = $$.a('.row_heights');
-                    if (dispatch_arg.val != $$.a('.row_height_min')) {
-                        row_heights.set(dispatch_arg.idx, dispatch_arg.val);
+                else if (dispatch_name == 'set_row_open') {
+                    const row_opens = $$.a('.row_opens');
+                    if (dispatch_arg.val) {
+                        row_opens.add(dispatch_arg.idx);
                     }
-                    else if (row_heights.has(dispatch_arg.idx)) {
-                        row_heights.delete(dispatch_arg.idx);
+                    else if (row_opens.has(dispatch_arg.idx)) {
+                        row_opens.delete(dispatch_arg.idx);
                     }
                     return true;
                 }
-                else if (dispatch_name == 'get_cell_text') {
+                if (dispatch_name == 'get_cell_text') {
                     const { rec_idx, col_id, tag } = dispatch_arg;
                     const cell_text_store = $$.a('.cell_text_store');
                     const store_rec = cell_text_store[rec_idx];
@@ -5003,6 +5303,26 @@ var $;
                 return false;
             },
             prop: {
+                row_opens_store: () => new Map(),
+                row_opens: $$.$me_atom2_prop(['.provider_tag', '.row_opens_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Set())),
+                row_open: $$.$me_atom2_prop({
+                    keys: ['.row_i'],
+                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
+                        [`.rec_idx[${row_i}]`, '._provider', '.provider_tag']),
+                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => !len || !_provider || !provider_tag ? -1 : get_row_open(rec_idx, _provider, provider_tag), ({ key: [row_i], val, prev }) => {
+                    if (val == null || val < 0 ||
+                        +row_i >= $$.a('.row_count') ||
+                        $$.$me_list_row_i_out_of_range_is(+row_i, $$.a('.row_i_min'), $$.a('.row_i_max')))
+                        return;
+                    set_row_open($$.a(`.rec_idx[${row_i}]`), $$.a('._provider'), $$.a('.provider_tag'), val);
+                }),
+                adjust_row_height_source: $$.$me_atom2_prop({
+                    keys: ['.row_i'],
+                    masters: $$.$me_atom2_prop_masters(['.row_open[]'], ({ key: [row_i], masters: [row_open] }) => !row_open ? ['.row_height_min'] : ['.row_height_min', `@row[${row_i}]@content@comment.#height`]),
+                }, null, ({ key: [row_i], val }) => {
+                    const height = !Array.isArray(val) ? val : val[0] + val[1];
+                    $$.a(`.row_height_source[${row_i}]`, height);
+                }),
                 influence: $$.$me_atom2_prop(['.cols'], ({ masters: [cols] }) => {
                     const result = {};
                     for (const col_id in cols) {
@@ -5055,18 +5375,48 @@ var $;
                         $$.$me_throw(`could not obtain cell_text[${rec_idx}][${col_id}] from ${ec.name()}`);
                     return dispatch_arg.val;
                 }),
+                row_cursor: () => '',
+                '#order': () => ['row', 'cursor', 'header'],
+                touchStart: () => null,
+                lastDrag: $$.$me_atom2_prop([], () => null, ({ atom, val }) => {
+                    $$.$me_atom2_body_cursor({ origin: atom.path, val: val ? 'grabbing' : 'default' });
+                }),
+                lastDelta: () => null,
+                accel: () => null,
+                prevTime: () => null,
+                scrollAccu: () => null,
             },
             event: {
-                wheel: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    if (Math.abs(p.event._deltaX) > Math.abs(p.event._deltaY)) {
-                        $$.a('.ofsHor', $$.a('.ofsHor') - p.event._deltaX);
-                        return true;
-                    }
-                    return false;
-                },
+                wheel: p => p.isInRect(p.event.clientX, p.event.clientY, 0) &&
+                    wheel_helper(p.event._deltaX, p.event._deltaY),
+                wheelTouch: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY, 10) &&
+                    wheel_helper(p.event._deltaX, p.event._deltaY),
             },
+            elem: {
+                cursor: () => ({
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
+                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`]), ({ len, masters: [val] }) => !len ? null : val),
+                        '#ofsHor': () => 2,
+                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`]), ({ len, masters: [val] }) => !len ? null : val),
+                        '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.col_ids'], ({ masters: [col_ids] }) => {
+                            const col_id_last = col_ids[col_ids.length - 1];
+                            return [`<.col_left[${col_id_last}]`, `<.col_width[${col_id_last}]`];
+                        }), $$.$me_atom2_prop_compute_fn_sum(-4)),
+                    },
+                    style: {
+                        boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
+                        pointerEvents: () => 'none',
+                    },
+                }),
+            }
+        };
+        const wheel_helper = (deltaX, deltaY) => {
+            if (!$$.$me_list_wheel_helper(deltaX, deltaY) && Math.abs(deltaX) > Math.abs(deltaY)) {
+                $$.a('.ofsHor', $$.a('.ofsHor') - deltaX);
+                return true;
+            }
+            return false;
         };
         const cell = {
             style: {
@@ -5103,28 +5453,108 @@ var $;
                 paddingRight: () => 4,
             },
         };
+        const get_row_open = (idx, _provider, provider_tag) => {
+            const dispatch_arg = { idx, tag: provider_tag };
+            const ec = $$.$me_atom2_entity.root().by_path(_provider);
+            if (!ec.dispatch('get_row_open', dispatch_arg))
+                $$.$me_throw(`could not get_row_open(${provider_tag}, ${idx}) from ${ec.name()}`);
+            return dispatch_arg.val;
+        };
+        const set_row_open = (idx, _provider, provider_tag, val) => {
+            const dispatch_arg = { idx, val, tag: provider_tag };
+            const ec = $$.$me_atom2_entity.root().by_path(_provider);
+            if (!ec.dispatch('set_row_open', dispatch_arg))
+                $$.$me_throw(`could not set_row_open(${provider_tag}, ${idx}, ${val}) to ${ec.name()}`);
+        };
+        $$.$nl_elem_search_grid_cursor = $$.$me_atom2_async_multi_origin({
+            default: '',
+            raf_order: 100,
+            flush: (row_i, prev, _value) => {
+                _value.origin.by_path_s('<<.row_cursor').value(row_i);
+            },
+        });
+        const use_control = false;
         const row = {
             prop: {
                 '#order': () => ['cell', 'fixed'],
+                '#isHover': () => false,
+                row_cursor_src: $$.$me_atom2_prop(['.#isHover', '.row_i'], ({ masters: [isHover, row_i] }) => !isHover ? '' : row_i, ({ atom, val }) => {
+                    $$.$nl_elem_search_grid_cursor({ origin: atom, val: val });
+                }),
             },
             style: {
                 overflow: () => 'hidden',
             },
-            elem: {
+            control: !use_control ? null : {
+                fixed: () => ({
+                    base: $$.$me_label,
+                    prop: {
+                        '#width': '<<<.col_fixed_width',
+                        '#height': '<<<.#row_height_min',
+                        borderWidthRight: () => 1,
+                        colorBorderRight: () => '#adb0b8',
+                        borderWidthBottom: () => 1,
+                        colorBorderBottom: () => '#adb0b8',
+                        colorBackground: () => '#d8dce3',
+                        align: () => $$.$me_align.center,
+                        text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_i'], ({ masters: [row_i] }) => [`<<<.rec_idx[${row_i}]`])),
+                        fontSize: () => 14,
+                    },
+                }),
+                cell: $$.$me_atom2_prop({ keys: ['<<.col_ids'], masters: ['<<.col_left[]', '<<.col_width[]', '<<.col_fixed_width', '<<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width], prev }) => ({
+                    base: $$.$me_label,
+                    prop: {
+                        '#width': `<<<.col_width[${id}]`,
+                        '#ofsHor': `<<<.col_left[${id}]`,
+                        borderWidthRight: () => 1,
+                        colorBorderRight: () => '#adb0b8',
+                        borderWidthBottom: () => 1,
+                        colorBorderBottom: () => '#adb0b8',
+                        colorBackground: () => '#F5F8F8',
+                        text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_i'], ({ masters: [row_i] }) => [`<<<.cell_text[${row_i}][${id}]`])),
+                        paddingHor: () => 4,
+                        fontSize: () => 14,
+                        alignVer: () => $$.$me_align.center,
+                        alignHor: `<<<.col_align[${id}]`,
+                    },
+                })),
+            },
+            elem: use_control ? null : {
                 fixed: () => ({
                     base: header_cell,
                     prop: {
                         '#width': '<<<.col_fixed_width',
+                        '#height': '<<<.row_height_min',
                     },
-                    dom: {
-                        innerText: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_i'], ({ masters: [row_i] }) => [`<<<.rec_idx[${row_i}]`])),
+                    elem: {
+                        text: () => ({
+                            base: cell_content,
+                            prop: {
+                                '#align': () => $$.$me_align.center,
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.row_i'], ({ masters: [row_i] }) => [`<<<<.rec_idx[${row_i}]`])),
+                            },
+                        }),
                     },
                 }),
-                cell: $$.$me_atom2_prop({ keys: ['<<.col_ids'], masters: ['<<.col_left[]', '<<.col_width[]', '<<.col_fixed_width', '<<.#width'] }, ({ key: [id], masters: [col_left, col_width, col_fixed_width, parent_width], prev }) => ({
+                cell: $$.$me_atom2_prop({ keys: ['<<.col_ids']
+                }, ({ key: [id] }) => ({
                     base: row_cell,
                     prop: {
                         '#width': `<<<.col_width[${id}]`,
+                        '#height': '<<<.row_height_min',
                         '#ofsHor': `<<<.col_left[${id}]`,
+                        '#hidden': $$.$me_atom2_prop([`<<<.col_left[${id}]`, `<<<.col_width[${id}]`, `<<<.col_fixed_width`, `<<<.#width`], ({ masters: [col_left, col_width, col_fixed_width, parent_width] }) => col_left >= parent_width || col_left + col_width <= col_fixed_width),
+                        '#cursor': () => 'pointer',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            const row_open = $$.a(`<<<.row_open[${$$.a('<.row_i')}]`);
+                            $$.a(`<<<.row_open[${$$.a('<.row_i')}]`, !row_open);
+                            return true;
+                        }
                     },
                     elem: {
                         text: () => ({
@@ -5139,7 +5569,27 @@ var $;
                         }),
                     },
                 })),
-            },
+                comment: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i'], ({ masters: [row_i] }) => [`<<.row_open[${row_i}]`]), ({ masters: [row_open] }) => !row_open ? null :
+                    {
+                        dom: {
+                            innerText: () => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ornare nisl et tortor euismod, ut consequat nunc vehicula. Integer sit amet quam ante. Integer bibendum ante vel semper auctor. Mauris vitae erat gravida, ultrices libero id, pellentesque enim. Phasellus molestie malesuada tellus, in commodo lectus dictum at. Aliquam malesuada venenatis tellus a feugiat. Ut ac.'
+                        },
+                        prop: {
+                            '#ofsVer': '<<<.row_height_min',
+                            '#height': () => null,
+                            '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.col_ids'], ({ masters: [col_ids] }) => {
+                                const col_id_last = col_ids[col_ids.length - 1];
+                                return ['<.#width', `<<<.col_left[${col_id_last}]`, `<<<.col_width[${col_id_last}]`];
+                            }), ({ masters: [width, col_left, col_width] }) => Math.min(width, col_left + col_width)),
+                        },
+                        style: {
+                            fontSize: () => 14,
+                            padding: () => 8,
+                            boxSizing: () => 'border-box',
+                            userSelect: () => 'auto',
+                        },
+                    }),
+            }
         };
         const header = {
             prop: {
@@ -5157,7 +5607,21 @@ var $;
             style: {
                 overflow: () => 'hidden',
             },
-            elem: {
+            control: !use_control ? null : {
+                fixed: () => ({
+                    base: $$.$me_panel,
+                    prop: {
+                        '#width': '<<<.col_fixed_width',
+                        '#height': '<.#height',
+                        borderWidthRight: () => 1,
+                        colorBorderRight: () => '#adb0b8',
+                        borderWidthBottom: () => 1,
+                        colorBorderBottom: () => '#adb0b8',
+                        colorBackground: () => '#d8dce3',
+                    },
+                }),
+            },
+            elem: use_control ? null : {
                 fixed: () => ({
                     base: header_cell,
                     prop: {
@@ -5195,7 +5659,7 @@ var $;
                     }
                     else {
                         let id_found = '';
-                        if (p.isInRect(p.event.clientX, p.event.clientY)) {
+                        if (p.isInRect(p.event.clientX, p.event.clientY, 0)) {
                             const cells = $$.a.get('@cell')._entities.key;
                             const delta = 4;
                             for (const id in cells) {
@@ -5211,7 +5675,7 @@ var $;
                     return true;
                 },
                 mousedown: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY))
+                    if (!p.isInRect(p.event.clientX, p.event.clientY, 0))
                         return false;
                     const id = $$.a('.readyToResize');
                     if (id) {
@@ -5348,7 +5812,7 @@ var $;
                     prop: {
                         provider: () => $$.a.get('<').path,
                         rec_count: '<.count',
-                        row_heights: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.row_heights || (order.row_heights = new Map())),
+                        row_opens: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.row_opens || (order.row_opens = new Set())),
                         on_order_changed: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
                             if (!val)
                                 return;
@@ -5406,27 +5870,47 @@ var $;
                             },
                             'Дом': {
                                 width: 64,
+                                align: $$.$me_align.center,
+                                fld: ['storey', 'storeys_count', 'walls_material_type_id'],
+                                fn: (storey, storeys_count, walls_material_type_id) => (!storey ? '?' : storey) + '/' +
+                                    (!storeys_count ? '?' : storeys_count) + ' ' +
+                                    dic_fld_value('walls_material_type', walls_material_type_id, 'code', '?')
                             },
                             'Балкон': {
                                 width: 38,
+                                align: $$.$me_align.center,
+                                fld: ['balcony_type_id'],
+                                fn: (type_id) => dic_fld_value('balcony_type', type_id, 'code', '?'),
                             },
                             'Санузел': {
                                 width: 38,
+                                fld: ['water_closet_type_id'],
+                                fn: (type_id) => dic_fld_value('water_closet_type', type_id, 'code', '?'),
                             },
                             'Парковка': {
                                 width: 38,
+                                fld: ['parking_type_id'],
+                                fn: (type_id) => dic_fld_value('parking_type', type_id, 'code', '?'),
                             },
                             'Территория': {
                                 width: 112,
+                                fld: ['territory_type_id'],
+                                fn: (type_id) => dic_fld_value('territory_type', type_id, 'code', '?'),
                             },
                             'Окна': {
                                 width: 41,
+                                fld: ['window_overlook_type_id'],
+                                fn: (type_id) => dic_fld_value('window_overlook_type', type_id, 'code', '?'),
                             },
                             'Ремонт': {
                                 width: 92,
+                                fld: ['apartment_condition_type_id'],
+                                fn: (type_id) => dic_fld_value('apartment_condition_type', type_id, 'code', '?'),
                             },
                             'Лифт': {
                                 width: 41,
+                                fld: ['elevator_type_id'],
+                                fn: (type_id) => dic_fld_value('elevator_type', type_id, 'code', '?'),
                             },
                             'Площадь': {
                                 align: $$.$me_align.center,
@@ -5499,6 +5983,59 @@ var $;
                 }),
             },
         };
+        const _dics = new Map();
+        function dic_fld_value(dic_name, id, fld, default_value) {
+            let result;
+            let dic = _dics.get(dic_name);
+            if (!dic) {
+                const dic_def = DICTIONARIES[dic_name];
+                if (dic_def) {
+                    dic = new Map(dic_def.map((item) => [item.id, item]));
+                    _dics.set(dic_name, dic);
+                }
+            }
+            if (dic && dic.has(id)) {
+                const value = dic.get(id);
+                if (value)
+                    result = value[fld];
+            }
+            if (result === void 0 && default_value !== void 0)
+                result = default_value;
+            return result;
+        }
+        const DICTIONARIES = {
+            apartment_condition_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "треб.кап/р", "name": "требуется капитальный ремонт" }, { "id": 3, "code": "без отд.", "name": "без отделки" }, { "id": 4, "code": "треб.рем.", "name": "требуется ремонт" }, { "id": 5, "code": "ср.сост.", "name": "среднее состояние" }, { "id": 6, "code": "хор.сост.", "name": "хорошее состояние" }, { "id": 8, "code": "отл.сост.", "name": "отличное состояние" }, { "id": 9, "code": "евр.рем.", "name": "евроремонт" }, { "id": 10, "code": "дизайн.рем.", "name": "дизайнерский ремонт" }, { "id": 11, "code": "перв.отд.", "name": "первичная отделка" }],
+            building_batch: [{ "id": 0, "name": "" }, { "id": 1, "name": "02/98-НМ" }, { "id": 2, "name": "1385 АР-3" }, { "id": 3, "name": "1605/12" }, { "id": 4, "name": "1605/9" }, { "id": 5, "name": "1605/Б" }, { "id": 6, "name": "17/2004-АС" }, { "id": 7, "name": "1МГ-600" }, { "id": 8, "name": "1МГ-601" }, { "id": 9, "name": "2-71/358" }, { "id": 10, "name": "2548-01-АР" }, { "id": 11, "name": "2548-02-АР" }, { "id": 12, "name": "32/2005-АС" }, { "id": 13, "name": "349/01" }, { "id": 14, "name": "355/24" }, { "id": 15, "name": "7040-01" }, { "id": 16, "name": "I-303" }, { "id": 17, "name": "I-335" }, { "id": 18, "name": "I-447" }, { "id": 19, "name": "I-510" }, { "id": 20, "name": "I-511" }, { "id": 21, "name": "I-513" }, { "id": 22, "name": "I-515" }, { "id": 23, "name": "I605-АМ" }, { "id": 24, "name": "II-04" }, { "id": 25, "name": "II-05" }, { "id": 26, "name": "II-08" }, { "id": 27, "name": "II-18" }, { "id": 28, "name": "II-18-01-МН" }, { "id": 29, "name": "II-18-31/12" }, { "id": 30, "name": "II-29" }, { "id": 31, "name": "II-32" }, { "id": 32, "name": "II-49" }, { "id": 33, "name": "II-57" }, { "id": 34, "name": "II-68-02" }, { "id": 35, "name": "II-68-03" }, { "id": 36, "name": "II-89-01-МН" }, { "id": 37, "name": "III/17" }, { "id": 38, "name": "VI-23" }, { "id": 39, "name": "VII-51" }, { "id": 40, "name": "VII-58" }, { "id": 41, "name": "А-41K" }, { "id": 42, "name": "башня Вулыха" }, { "id": 43, "name": "Бекерон" }, { "id": 44, "name": "БОД-1" }, { "id": 45, "name": "В-2000" }, { "id": 46, "name": "В-2002" }, { "id": 47, "name": "В-2005" }, { "id": 48, "name": "ГМС-1" }, { "id": 49, "name": "ГМС-3" }, { "id": 50, "name": "И-1168 А3" }, { "id": 51, "name": "И-1168 А4" }, { "id": 52, "name": "И-1233" }, { "id": 53, "name": "И-1254" }, { "id": 54, "name": "И-1262А" }, { "id": 55, "name": "И-1429" }, { "id": 56, "name": "И-1430" }, { "id": 57, "name": "И-1459-132" }, { "id": 58, "name": "И-1491-17" }, { "id": 59, "name": "И-1501" }, { "id": 60, "name": "И-155" }, { "id": 61, "name": "И-155МК" }, { "id": 62, "name": "И-155Н" }, { "id": 63, "name": "И-1602" }, { "id": 64, "name": "И-1677" }, { "id": 65, "name": "И-1723" }, { "id": 66, "name": "И-1724" }, { "id": 67, "name": "И-1731" }, { "id": 68, "name": "И-1782/1" }, { "id": 69, "name": "И-1812/1" }, { "id": 70, "name": "И-1834" }, { "id": 71, "name": "И-1836" }, { "id": 72, "name": "И-1838" }, { "id": 73, "name": "И-1839" }, { "id": 74, "name": "И-1849" }, { "id": 75, "name": "И-1932" }, { "id": 76, "name": "И-208" }, { "id": 77, "name": "И-209А" }, { "id": 78, "name": "И-2342" }, { "id": 79, "name": "И-241" }, { "id": 80, "name": "И-491А" }, { "id": 81, "name": "И-515-5М" }, { "id": 82, "name": "И-515/9ш" }, { "id": 83, "name": "И-522" }, { "id": 84, "name": "И-522А" }, { "id": 85, "name": "И-679" }, { "id": 86, "name": "И-700" }, { "id": 87, "name": "И-700А" }, { "id": 88, "name": "И-760А" }, { "id": 89, "name": "И-79-99" }, { "id": 90, "name": "И-99-47/405" }, { "id": 91, "name": "И-99-47/406" }, { "id": 92, "name": "индивидуальный проект" }, { "id": 93, "name": "ИП-46С" }, { "id": 94, "name": "ИШ3/12" }, { "id": 95, "name": "К-7" }, { "id": 96, "name": "КМС-101" }, { "id": 97, "name": "Колос" }, { "id": 98, "name": "КОПЭ" }, { "id": 99, "name": "КОПЭ-М-ПАРУС" }, { "id": 100, "name": "КТЖС" }, { "id": 101, "name": "КТЖС-11/22" }, { "id": 102, "name": "1МГ-300" }, { "id": 103, "name": "МОНОЛИТ" }, { "id": 105, "name": "МЭС-84" }, { "id": 107, "name": "НП-46с" }, { "id": 108, "name": "П-06" }, { "id": 109, "name": "П-111" }, { "id": 110, "name": "П-111М" }, { "id": 111, "name": "П-111МО" }, { "id": 112, "name": "П-12-31/12" }, { "id": 113, "name": "II-14" }, { "id": 114, "name": "П-14/35" }, { "id": 115, "name": "П-18/22" }, { "id": 116, "name": "П-20" }, { "id": 117, "name": "П-21" }, { "id": 118, "name": "П-22" }, { "id": 119, "name": "П-23" }, { "id": 120, "name": "П-28" }, { "id": 121, "name": "П-29" }, { "id": 122, "name": "П-3" }, { "id": 123, "name": "П-3/16" }, { "id": 124, "name": "П-3/17" }, { "id": 125, "name": "П-3/22" }, { "id": 126, "name": "П-30" }, { "id": 127, "name": "П-31" }, { "id": 128, "name": "П-32" }, { "id": 129, "name": "П-321-60" }, { "id": 130, "name": "II-34" }, { "id": 131, "name": "II-35" }, { "id": 132, "name": "П-37" }, { "id": 133, "name": "II-38" }, { "id": 134, "name": "П-39" }, { "id": 135, "name": "П-3М" }, { "id": 136, "name": "П-4" }, { "id": 137, "name": "П-40" }, { "id": 138, "name": "П-41" }, { "id": 139, "name": "П-42" }, { "id": 140, "name": "П-43" }, { "id": 141, "name": "П-44" }, { "id": 142, "name": "П-44К" }, { "id": 143, "name": "П-44М" }, { "id": 144, "name": "П-44Т" }, { "id": 145, "name": "П-44ТМ" }, { "id": 146, "name": "П-45" }, { "id": 147, "name": "П-46" }, { "id": 148, "name": "П-46М" }, { "id": 149, "name": "П-47" }, { "id": 150, "name": "П-49 Д" }, { "id": 151, "name": "П-50" }, { "id": 152, "name": "П-53" }, { "id": 153, "name": "П-55" }, { "id": 154, "name": "П-55М" }, { "id": 155, "name": "II-29-41/37" }, { "id": 156, "name": "II-66" }, { "id": 157, "name": "II-67" }, { "id": 158, "name": "II-68" }, { "id": 159, "name": "ПД-4" }, { "id": 160, "name": "ПД-4/12" }, { "id": 161, "name": "Пд4-1/12Н1" }, { "id": 162, "name": "ПД4-1/8Н1" }, { "id": 163, "name": "ПЗМ-1/14" }, { "id": 164, "name": "ПЗМ-1/16" }, { "id": 165, "name": "ПЗМ-2/16" }, { "id": 166, "name": "ПЗМ-3/16" }, { "id": 167, "name": "ПП-70" }, { "id": 168, "name": "Призма" }, { "id": 169, "name": "РД-90" }, { "id": 170, "name": "С-111М" }, { "id": 171, "name": "С-220" }, { "id": 172, "name": "С-222" }, { "id": 173, "name": "ТИП-441" }, { "id": 174, "name": "ЦВП-4570-II-63" }, { "id": 175, "name": "Юбилейный" }, { "id": 176, "name": "II-02" }, { "id": 177, "name": "II-01" }, { "id": 178, "name": "II-18-01/08" }, { "id": 179, "name": "II-18-01/09" }, { "id": 180, "name": "1605-АМ/9" }, { "id": 181, "name": "1605-АМ/12" }, { "id": 182, "name": "II-49П" }, { "id": 183, "name": "II-49Д" }, { "id": 184, "name": "II-03" }, { "id": 185, "name": "II-18-01/12" }, { "id": 186, "name": "II-18-02/12" }, { "id": 187, "name": "II-18/12" }, { "id": 188, "name": "II-20" }, { "id": 189, "name": "1605-АМ/5" }, { "id": 190, "name": "И-III-3" }, { "id": 191, "name": "II-28" }, { "id": 192, "name": "II-68-02/16М" }, { "id": 193, "name": "КПД-4570" }, { "id": 194, "name": "II-68-01" }, { "id": 195, "name": "1-515/9" }, { "id": 196, "name": "К4/16" }, { "id": 197, "name": "И-155Б" }, { "id": 198, "name": "1-515/5" }, { "id": 199, "name": "II-18-01/12А" }, { "id": 200, "name": "СМ-1 " }, { "id": 201, "name": "П-44ТМ/25" }, { "id": 202, "name": "И-701" }, { "id": 203, "name": "И-155-с" }, { "id": 204, "name": "Айсберг" }, { "id": 205, "name": "II-14/35" }, { "id": 206, "name": "И-99-47/407" }, { "id": 207, "name": "П-101" }, { "id": 208, "name": "1-300" }, { "id": 209, "name": "II-18-01/09К" }, { "id": 210, "name": "И-1900" }, { "id": 211, "name": "М-10" }, { "id": 212, "name": "МПСМ" }, { "id": 213, "name": "ИП-46М" }, { "id": 214, "name": "П-30М" }, { "id": 215, "name": "II-07" }, { "id": 216, "name": "ПБ-01" }, { "id": 217, "name": "И-1414" }, { "id": 218, "name": "И-2111" }, { "id": 219, "name": "1605-АМЛ/5" }, { "id": 220, "name": "1-447С-26" }, { "id": 221, "name": "1-447С-1" }, { "id": 222, "name": "1-447С-36" }, { "id": 223, "name": "1-447С-2" }, { "id": 224, "name": "1-447С-5" }, { "id": 225, "name": "1-446" }, { "id": 226, "name": "ПБ-02" }, { "id": 227, "name": "КПД-4572А" }, { "id": 228, "name": "II-68-04" }, { "id": 229, "name": "124-124-1" }, { "id": 231, "name": "1605-А" }, { "id": 232, "name": "1-439" }, { "id": 233, "name": "Мм1-3" }, { "id": 234, "name": "И-1168" }, { "id": 235, "name": "СМ-06" }, { "id": 236, "name": "СМ-03" }, { "id": 237, "name": "1-419" }, { "id": 238, "name": "1-203" }, { "id": 239, "name": "ЭС-24" }, { "id": 240, "name": "8966" }, { "id": 242, "name": "1-126" }, { "id": 243, "name": "1-225" }, { "id": 244, "name": "1-402" }, { "id": 245, "name": "16/2188" }, { "id": 246, "name": "Т-1" }, { "id": 247, "name": "Т-3" }, { "id": 248, "name": "1-233" }, { "id": 249, "name": "1-260" }, { "id": 250, "name": "К-8-49" }, { "id": 251, "name": "1-255" }, { "id": 252, "name": "КС-8-50" }, { "id": 253, "name": "Д-23" }, { "id": 254, "name": "Д-25Н1" }, { "id": 256, "name": "ПП-83" }, { "id": 258, "name": "К2/16" }, { "id": 259, "name": "К7/16" }, { "id": 260, "name": "К8/16" }, { "id": 262, "name": "1-464А" }, { "id": 263, "name": "КОПЭ-87" }, { "id": 264, "name": "П-121М" }, { "id": 265, "name": "121-041" }, { "id": 266, "name": "121-042" }, { "id": 267, "name": "121-043" }, { "id": 268, "name": "II-29-208" }, { "id": 269, "name": "II-29-3" }, { "id": 270, "name": "II-29-9" }, { "id": 271, "name": "II-29-160" }, { "id": 272, "name": "ПД-1" }, { "id": 273, "name": "И-02/98-НМ" }, { "id": 274, "name": "1-467" }, { "id": 275, "name": "ЭЖРЧС" }, { "id": 276, "name": "П-3МК" }, { "id": 277, "name": "II-18-02/09" }, { "id": 278, "name": "ПД-3" }, { "id": 279, "name": "И-580" }, { "id": 280, "name": "II-18-03/12" }, { "id": 281, "name": "К-14" }, { "id": 282, "name": "И-700Н" }, { "id": 283, "name": "Юникон" }, { "id": 284, "name": "111-121" }, { "id": 285, "name": "1-211" }, { "id": 286, "name": "II-68-01/22" }, { "id": 287, "name": "Лебедь" }, { "id": 288, "name": "И-99-47" }],
+            balcony_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "Б", "name": "балкон" }, { "id": 3, "code": "Л", "name": "лоджия" }, { "id": 4, "code": "БЛ", "name": "балкон + лоджия" }, { "id": 5, "code": "2Б", "name": "два балкона" }, { "id": 6, "code": "2Л", "name": "две лоджии" }, { "id": 7, "code": "3Л", "name": "три лоджии" }, { "id": 8, "code": "4Л", "name": "четыре лоджии" }, { "id": 9, "code": "3Б", "name": "три балкона" }, { "id": 10, "code": "Б2Л", "name": "балкон + две лоджии" }, { "id": 11, "code": "2Б2Л", "name": "два балкона + две лоджии" }, { "id": 12, "code": "Эрк", "name": "эркер" }, { "id": 13, "code": "ЭркЛ", "name": "эркер + лоджия" }, { "id": 14, "code": "*Б", "name": "несколько балконов" }, { "id": 15, "code": "*Л", "name": "несколько лоджий" }],
+            currency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "руб", "name": "RUB" }, { "id": 2, "code": "$", "name": "USD" }, { "id": 3, "code": "€", "name": "EUR" }, { "id": 4, "code": "TL", "name": "TL" }, { "id": 5, "code": "BYR", "name": "BYR" }],
+            deal_status: [{ "id": 1, "code": "продается/арендуется", "name": "продается/арендуется" }, { "id": 2, "code": "аванс/задаток", "name": "аванс/задаток" }, { "id": 3, "code": "продана/арендована", "name": "продана/арендована" }],
+            deal_type: [{ "id": 1, "code": "продажа", "name": "продажа" }, { "id": 2, "code": "аренда", "name": "аренда" }],
+            location_type: [{ "id": 13, "code": "ГСК", "name": "ГСК" }, { "id": 14, "code": "ГК", "name": "ГК" }, { "id": 15, "code": "ЖК", "name": "ЖК" }, { "id": 16, "code": "двор", "name": "двор" }, { "id": 17, "code": "паркинг", "name": "паркинг" }],
+            electricity_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "220В", "name": "220В" }, { "id": 4, "code": "380В", "name": "380В" }, { "id": 5, "code": "П", "name": "в перспективе" }, { "id": 6, "code": "ГУ", "name": "по границе" }, { "id": 7, "code": "10кВ", "name": "10кВ" }, { "id": 8, "code": "И", "name": "иное" }],
+            elevator_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "пасс.", "name": "лифт пассажирский" }, { "id": 2, "code": "груз.", "name": "лифт грузовой" }, { "id": 3, "code": "пасс.+ груз.", "name": "лифт пассажирский и лифт грузовой" }, { "id": 4, "code": "нет", "name": "нет лифта" }, { "id": 5, "code": "есть", "name": "есть лифт" }],
+            floor_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "полы не настелены", "master_realty_type_id": 1 }, { "id": 2, "code": "Д", "name": "дерево", "master_realty_type_id": 1 }, { "id": 3, "code": "п/д", "name": "паркетная доска", "master_realty_type_id": 1 }, { "id": 4, "code": "ЛМ", "name": "ламинат", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "ковролин", "master_realty_type_id": 1 }, { "id": 6, "code": "П", "name": "паркет", "master_realty_type_id": 1 }, { "id": 7, "code": "ЛН", "name": "линолеум", "master_realty_type_id": 1 }, { "id": 8, "code": "Стяж", "name": "стяжка", "master_realty_type_id": 1 }, { "id": 9, "code": "асфальт", "name": "асфальт", "master_realty_type_id": 4 }, { "id": 10, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 11, "code": "грунт", "name": "грунт", "master_realty_type_id": 4 }, { "id": 12, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 13, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 14, "code": "полимерное покрытие", "name": "полимерное покрытие", "master_realty_type_id": 4 }],
+            gas_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ГУ", "name": "по границе" }, { "id": 4, "code": "П", "name": "перспектива" }, { "id": 5, "code": "Р", "name": "рядом" }, { "id": 6, "code": "Б", "name": "баллоны" }, { "id": 7, "code": "М", "name": "магистральный" }, { "id": 8, "code": "И", "name": "иное" }, { "id": 9, "code": "Ц", "name": "центральный" }],
+            habit_class: [{ "id": 1, "name": "эконом" }, { "id": 2, "name": "комфорт" }, { "id": 3, "name": "бизнес" }, { "id": 4, "name": "элитный" }],
+            heating_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ЭК", "name": "электрокотел" }, { "id": 4, "code": "ГК", "name": "газовый котел" }, { "id": 5, "code": "ЖТК", "name": "жидкотопливный котел" }, { "id": 6, "code": "АГВ", "name": "автоматический газовый водонагреватель" }, { "id": 7, "code": "П", "name": "печь" }, { "id": 8, "code": "Ц", "name": "центральное" }, { "id": 9, "code": "И", "name": "иное" }],
+            media: [{ "id": 0, "name": "Прочие", "is_active": 1, "order_number": 1000 }, { "id": 1, "name": "Руки", "is_active": 1, "order_number": 50 }, { "id": 3, "name": "WinNER (зелёная зона)", "is_active": 1, "order_number": 10 }, { "id": 4, "name": "Крис", "is_active": 0, "order_number": 140 }, { "id": 5, "name": "Realty.dmir.ru", "is_active": 0, "order_number": 60 }, { "id": 6, "name": "БН", "is_active": 1, "order_number": 130 }, { "id": 7, "name": "Навигатор", "is_active": 0, "order_number": 1000 }, { "id": 8, "name": "БКН", "is_active": 1, "order_number": 120 }, { "id": 9, "name": "Собственники", "is_active": 0, "order_number": 900 }, { "id": 11, "name": "Приан", "is_active": 0, "order_number": 150 }, { "id": 12, "name": "eip.ru", "is_active": 0, "order_number": 110 }, { "id": 15, "name": "Sob.ru", "is_active": 1, "order_number": 20 }, { "id": 17, "name": "cian.ru", "is_active": 1, "order_number": 40 }, { "id": 20, "name": "A.baza-winner", "is_active": 0, "order_number": 15 }, { "id": 21, "name": "AVITO.ru", "is_active": 1, "order_number": 30 }, { "id": 22, "name": "WinNER Lite", "is_active": 1, "order_number": 16 }, { "id": 23, "name": "Яндекс", "is_active": 1, "order_number": 70 }, { "id": 24, "name": "WinNER (белая зона)", "is_active": 1, "order_number": 15 }],
+            office_class: [{ "id": 2, "name": "A+" }, { "id": 3, "name": "A" }, { "id": 4, "name": "B+" }, { "id": 5, "name": "B" }, { "id": 6, "name": "C+" }, { "id": 7, "name": "C" }, { "id": 8, "name": "D+" }, { "id": 9, "name": "D" }],
+            fire_alarm_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "name": "пожарная сигнализация", "code": "пожарная сигнализация" }, { "id": 2, "name": "система пожаротушения", "code": "система пожаротушения" }],
+            ownership_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "купля/продажа", "name": "купля/продажа" }, { "id": 2, "code": "ЖСК", "name": "ЖСК" }, { "id": 3, "code": "приватиз.", "name": "приватизация" }, { "id": 4, "code": "дар.", "name": "дарение" }, { "id": 5, "code": "наслед.", "name": "наследство" }, { "id": 6, "code": "мена", "name": "мена" }, { "id": 7, "code": "инвест.", "name": "инвестирование" }, { "id": 8, "code": "рента", "name": "рента" }, { "id": 9, "code": "реш.суда", "name": "решение суда" }, { "id": 10, "code": "залог(ипотека)", "name": "залог (ипотека)" }, { "id": 11, "code": "иное", "name": "иное" }, { "id": 12, "code": "кооператив", "name": "кооператив" }, { "id": 13, "code": "собственность", "name": "собственность" }, { "id": 14, "code": "по доверенности", "name": "по доверенности" }, { "id": 15, "code": "ДДУ", "name": "договор долевого участия" }, { "id": 16, "code": "ДУ", "name": "договор уступки прав требования" }, { "id": 17, "code": "ПДДК", "name": "предварительный договор купли-продажи" }],
+            parking_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "о", "name": "охраняемая" }, { "id": 4, "code": "п", "name": "подземная" }, { "id": 5, "code": "с", "name": "стихийная" }, { "id": 6, "code": "з", "name": "закрепленное место" }],
+            pay_period_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "в год", "name": "в год" }, { "id": 2, "code": "в мес.", "name": "в месяц" }, { "id": 3, "code": "в кв.", "name": "в квартал" }, { "id": 4, "code": "в сут.", "name": "в сутки" }],
+            plumbing_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "С", "name": "скважина" }, { "id": 4, "code": "К", "name": "колодец" }, { "id": 5, "code": "М", "name": "магистральный" }, { "id": 6, "code": "И", "name": "иное" }, { "id": 7, "code": "Ц", "name": "центральный" }, { "id": 8, "code": "Л", "name": "летний" }],
+            price_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "вся площадь", "name": "за всю площадь" }, { "id": 2, "code": "сотка", "name": "за сотку" }, { "id": 3, "code": "кв.м.", "name": "за кв.м." }],
+            realty_type: [{ "id": 1, "code": "кв.", "name": "квартира", "master_realty_type_id": 1 }, { "id": 2, "code": "комн.", "name": "комната", "master_realty_type_id": 1 }, { "id": 3, "code": "дом", "name": "дом", "master_realty_type_id": 2 }, { "id": 4, "code": "ЗУ", "name": "земельный участок", "master_realty_type_id": 2 }, { "id": 5, "code": "дача", "name": "дача", "master_realty_type_id": 2 }, { "id": 6, "code": "дуплекс", "name": "дуплекс", "master_realty_type_id": 2 }, { "id": 7, "code": "квадрохаус", "name": "квадрохаус", "master_realty_type_id": 2 }, { "id": 8, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 2 }, { "id": 9, "code": "коттедж в КП", "name": "коттедж в КП", "master_realty_type_id": 2 }, { "id": 10, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 2 }, { "id": 11, "code": "усадьба", "name": "усадьба", "master_realty_type_id": 2 }, { "id": 12, "code": "часть дома", "name": "часть дома", "master_realty_type_id": 2 }, { "id": 15, "code": "офис", "name": "офис", "master_realty_type_id": 3 }, { "id": 16, "code": "маг", "name": "магазин", "master_realty_type_id": 3 }, { "id": 17, "code": "склад", "name": "склад", "master_realty_type_id": 3 }, { "id": 18, "code": "другое", "name": "другое", "master_realty_type_id": 3 }, { "id": 19, "code": "БЦ", "name": "бизнес-центр", "master_realty_type_id": 3 }, { "id": 20, "code": "ТЦ", "name": "торговый центр", "master_realty_type_id": 3 }, { "id": 21, "code": "ППП", "name": "произв.-пром помещение", "master_realty_type_id": 3 }, { "id": 22, "code": "ПП", "name": "предприятие питания", "master_realty_type_id": 3 }, { "id": 23, "code": "ПСН", "name": "помещ.свободного назначения", "master_realty_type_id": 3 }, { "id": 24, "code": "ОСЗ", "name": "отдельно стоящее здание", "master_realty_type_id": 3 }, { "id": 25, "code": "гостиница/отель", "name": "гостиница/отель", "master_realty_type_id": 3 }, { "id": 26, "code": "КЗУ", "name": "ком.земельный участок", "master_realty_type_id": 3 }, { "id": 27, "code": "гар", "name": "гараж", "master_realty_type_id": 3 }, { "id": 28, "code": "автомойка", "name": "автомойка", "master_realty_type_id": 3 }, { "id": 29, "code": "автосервис", "name": "автосервис", "master_realty_type_id": 3 }, { "id": 30, "code": "ателье", "name": "ателье", "master_realty_type_id": 3 }, { "id": 31, "code": "гараж.комплекс", "name": "гараж.комплекс", "master_realty_type_id": 3 }, { "id": 32, "code": "медцентр", "name": "медцентр", "master_realty_type_id": 3 }, { "id": 33, "code": "парикмахерская", "name": "парикмахерская", "master_realty_type_id": 3 }, { "id": 34, "code": "стоматология", "name": "стоматология", "master_realty_type_id": 3 }, { "id": 35, "code": "турфирма", "name": "турфирма", "master_realty_type_id": 3 }, { "id": 36, "code": "учеб.цели", "name": "учеб.цели", "master_realty_type_id": 3 }, { "id": 37, "code": "фотоателье", "name": "фотоателье", "master_realty_type_id": 3 }, { "id": 38, "code": "химчистка", "name": "химчистка", "master_realty_type_id": 3 }, { "id": 39, "code": "офисное здание", "name": "офисное здание", "master_realty_type_id": 3 }, { "id": 40, "code": "торг.площадь", "name": "торговая площадь", "master_realty_type_id": 3 }, { "id": 41, "code": "пром.земли", "name": "промышленные земли", "master_realty_type_id": 3 }, { "id": 42, "code": "сельхоз.земли", "name": "сельхоз.земли", "master_realty_type_id": 3 }, { "id": 43, "code": "банк", "name": "банк", "master_realty_type_id": 3 }, { "id": 44, "code": "кафе/ресторан", "name": "кафе/ресторан", "master_realty_type_id": 3 }, { "id": 45, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 3 }, { "id": 46, "code": "инвест.проект", "name": "инвестиционный проект", "master_realty_type_id": 3 }, { "id": 47, "code": "готовый бизнес", "name": "готовый бизнес", "master_realty_type_id": 3 }, { "id": 48, "code": "база отдыха/лагерь", "name": "база отдыха/лагерь", "master_realty_type_id": 3 }, { "id": 49, "code": "ферма", "name": "ферма", "master_realty_type_id": 3 }, { "id": 50, "code": "бизнес-проект", "name": "бизнес-проект", "master_realty_type_id": 3 }, { "id": 51, "code": "доходный дом", "name": "доходный дом", "master_realty_type_id": 3 }, { "id": 52, "code": "фабрика/завод", "name": "фабрика/завод", "master_realty_type_id": 3 }, { "id": 53, "code": "курортный комплекс", "name": "курортный комплекс", "master_realty_type_id": 3 }, { "id": 54, "code": "апартаменты", "name": "апартаменты", "master_realty_type_id": 1 }, { "id": 55, "code": "пентхаус", "name": "пентхаус", "master_realty_type_id": 1 }, { "id": 56, "code": "дом", "name": "дом", "master_realty_type_id": 1 }, { "id": 57, "code": "элит.недвижимость(поместье, замок, особняк)", "name": "элитная недвижимость(поместье, замок, особняк)", "master_realty_type_id": 1 }, { "id": 59, "code": "гараж", "name": "гараж", "master_realty_type_id": 4 }, { "id": 60, "code": "бокс", "name": "бокс", "master_realty_type_id": 4 }, { "id": 61, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 4 }, { "id": 62, "code": "доля", "name": "доля", "master_realty_type_id": 1 }, { "id": 63, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 1 }, { "id": 64, "code": "вилла", "name": "вилла", "master_realty_type_id": 1 }, { "id": 65, "code": "бунгало", "name": "бунгало", "master_realty_type_id": 1 }, { "id": 66, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 1 }, { "id": 67, "code": "квартира", "name": "квартира", "master_realty_type_id": 5 }],
+            rent_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "любой срок", "name": "любой срок" }, { "id": 2, "code": "длительный срок", "name": "длительный срок" }, { "id": 3, "code": "посуточно", "name": "посуточно" }, { "id": 4, "code": "от месяца и более", "name": "от месяца и более" }, { "id": 5, "code": "сезонная сдача", "name": "сезонная сдача" }],
+            security_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }],
+            sewerage_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ВД", "name": "вне дома" }, { "id": 4, "code": "С", "name": "септик" }, { "id": 5, "code": "Ц", "name": "центральная" }, { "id": 6, "code": "И", "name": "иное" }],
+            territory_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "огорож.", "name": "огороженная" }, { "id": 2, "code": "огорож.+охран.", "name": "огороженная и охраняемая" }, { "id": 3, "code": "не огорож.", "name": "не огорожена" }],
+            walls_material_type: [{ "id": 0, "code": "", "name": "", "master_realty_type_id": null }, { "id": 1, "code": "П", "name": "панельный", "master_realty_type_id": 1 }, { "id": 2, "code": "Б", "name": "блочный", "master_realty_type_id": 1 }, { "id": 3, "code": "М", "name": "монолитный", "master_realty_type_id": 1 }, { "id": 4, "code": "М-К", "name": "монолитно-кирпичный", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "кирпичный", "master_realty_type_id": 1 }, { "id": 6, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 1 }, { "id": 9, "code": "Шлакоблок", "name": "шлакоблоки/шлакобетон", "master_realty_type_id": 1 }, { "id": 11, "code": "Ж-б", "name": "железобетон", "master_realty_type_id": 1 }, { "id": 18, "code": "Стал.", "name": "сталинский", "master_realty_type_id": 1 }, { "id": 19, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 20, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 21, "code": "кирпич", "name": "кирпич", "master_realty_type_id": 4 }, { "id": 22, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 23, "code": "пластик", "name": "пластик", "master_realty_type_id": 4 }, { "id": 24, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 2 }, { "id": 25, "code": "Газоблок.", "name": "газоблочный", "master_realty_type_id": 2 }, { "id": 26, "code": "Кам.", "name": "каменный", "master_realty_type_id": 2 }, { "id": 27, "code": "Каркас.", "name": "каркасный", "master_realty_type_id": 2 }, { "id": 28, "code": "Кирп.", "name": "кирпичный", "master_realty_type_id": 2 }, { "id": 29, "code": "Легкобетон.", "name": "легкобетонный", "master_realty_type_id": 2 }, { "id": 30, "code": "Многослой.", "name": "многослойный", "master_realty_type_id": 2 }, { "id": 31, "code": "Монолит.", "name": "монолитный", "master_realty_type_id": 2 }, { "id": 32, "code": "Щит.", "name": "щитовой", "master_realty_type_id": 2 }],
+            water_closet_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "отсутствует" }, { "id": 2, "code": "С", "name": "совмещенный" }, { "id": 3, "code": "Р", "name": "раздельный" }, { "id": 4, "code": "2", "name": "два санузла" }, { "id": 5, "code": "3", "name": "три санузла" }, { "id": 6, "code": "4", "name": "четыре санузла" }, { "id": 7, "code": "2С", "name": "два совмещенных санузла" }, { "id": 8, "code": "2Р", "name": "два раздельных санузла" }, { "id": 9, "code": "3С", "name": "три совмещенных санузла" }, { "id": 10, "code": "3Р", "name": "три раздельных санузла" }, { "id": 11, "code": "4С", "name": "четыре совмещенных санузла" }, { "id": 12, "code": "4Р", "name": "четыре раздельных санузла" }, { "id": 13, "code": "+", "name": "есть санузел" }],
+            window_overlook_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "на улицу", "name": "окна на улицу" }, { "id": 2, "code": "во двор", "name": "окна во двор" }, { "id": 3, "code": "во двор и на улицу", "name": "окна во двор и на улицу" }],
+            rooms_adjacency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "С", "name": "смежные" }, { "id": 2, "code": "Р", "name": "раздельные" }, { "id": 3, "code": "С+Р", "name": "смежные+раздельные" }],
+            sale_type: [{ "id": 0, "name": "" }, { "id": 9, "name": "прямая продажа" }, { "id": 10, "name": "альтернатива" }],
+        };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //result.js.map
@@ -5542,7 +6079,7 @@ var $;
                     },
                 }),
                 param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
-                param_mode: $$.$me_atom2_prop_store('Основной', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
+                param_mode: $$.$me_atom2_prop_store('Сжатый', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
                 offerCount: () => 1200,
                 objCount: () => 800,
             },
@@ -5619,257 +6156,6 @@ var $;
     var $$;
     (function ($$) {
         $$.$nl_app = (rootElem) => {
-            return app(rootElem, {
-                workspace: () => ({
-                    prop: {
-                        '#ofsHor': '<@menu.#width',
-                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.#ofsHor'], ({ masters: [viewportWidth, ofsHor] }) => viewportWidth - ofsHor),
-                    },
-                    elem: {
-                        search: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'search' ? prev || null : {
-                            type: '$nl_elem_search_workspace',
-                            base: $$.$nl_elem_search_workspace,
-                            prop: {
-                                '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'search'),
-                            },
-                        }),
-                    },
-                    style: {
-                        overflow: () => 'hidden',
-                    },
-                }),
-                menu: () => ({
-                    prop: {
-                        isShrinked: $$.$me_atom2_prop_store(false, (val) => typeof val == 'boolean'),
-                        '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? 64 : 290,
-                            path_active: $$.a.get('.isShrinked_animActive').path,
-                        })),
-                        isShrinked_animActive: $$.$me_atom2_prop([], () => false),
-                        '#order': () => ['ear', 'login', 'list'],
-                    },
-                    elem: {
-                        login: () => ({
-                            prop: {
-                                '#height': () => 54,
-                                '#cursor': () => 'pointer',
-                                'colorBackground': () => '#3c4354',
-                            },
-                            style: {
-                                background: '.colorBackground',
-                                overflow: () => 'hidden',
-                                userSelect: () => 'none',
-                            },
-                            elem: {
-                                iconSquare: () => ({
-                                    prop: {
-                                        '#width': () => 28,
-                                        '#height': () => 28,
-                                        '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                                            to: isShrinked ? 18 : 16
-                                        })),
-                                        '#alignVer': () => $$.$me_align.center,
-                                    },
-                                    elem: {
-                                        icon: () => ({
-                                            node: 'img',
-                                            prop: {
-                                                '#width': () => 20,
-                                                '#height': () => 22,
-                                                '#align': () => $$.$me_align.center,
-                                            },
-                                            attr: {
-                                                src: () => 'assets/' + 'icons-8-enter-2' + '@2x.png',
-                                            },
-                                            style: {
-                                                filter: () => 'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'
-                                            },
-                                        }),
-                                    },
-                                }),
-                                text: () => ({
-                                    prop: {
-                                        '#width': () => null,
-                                        '#ofsHor': () => 61,
-                                        '#height': () => null,
-                                        '#alignVer': () => $$.$me_align.center,
-                                        '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
-                                    },
-                                    style: {
-                                        color: () => 'white',
-                                    },
-                                    dom: {
-                                        innerText: () => 'Авторизация',
-                                    },
-                                }),
-                            },
-                        }),
-                        ear: () => ({
-                            prop: {
-                                '#height': '<@login.#height',
-                                '#width': () => 17,
-                                '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive] }) => {
-                                    if (isHover)
-                                        isShrinked = !isShrinked;
-                                    return width + (isShrinked ? 0 : 2);
-                                }),
-                                '#cursor': () => 'pointer',
-                            },
-                            elem: {
-                                img: () => ({
-                                    node: 'img',
-                                    prop: {
-                                        '#height': () => 72,
-                                        '#width': () => 35,
-                                        '#ofsVer': () => -3,
-                                        '#ofsHor': () => -9,
-                                    },
-                                    attr: {
-                                        src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => {
-                                            if (isShrinked_animActive)
-                                                isShrinked = !isShrinked;
-                                            return `assets/light-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
-                                        }),
-                                    },
-                                }),
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a('<.isShrinked', !$$.a('<.isShrinked'));
-                                    return true;
-                                },
-                            },
-                        }),
-                        list: () => ({
-                            prop: {
-                                '#ofsVer': '<@login.#height',
-                                '#height': $$.$me_atom2_prop(['.#ofsVer', '<.#height'], ({ masters: [ofsVer, height] }) => height - ofsVer),
-                                colorBorder: () => 'blue',
-                                items: () => ({
-                                    'main': { title: 'Главная', icon: 'icons-8-home', icon_width: 26, icon_height: 23 },
-                                    'search': { title: 'Поиск', icon: 'icons-8-search' },
-                                    'orders': { title: 'Заказы', icon: 'icons-8-buy' },
-                                    'clients': { title: 'Клиенты', icon: 'icons-8-meeting', icon_width: 22 },
-                                    'advs': { title: 'Мои объявления', icon: 'icons-8-resume-website', icon_width: 22, icon_height: 22 },
-                                    'docs': { title: 'Документы', icon: 'icons-8-wipes' },
-                                    'users': { title: 'Пользователи', icon: 'icons-8-add-user-group', icon_width: 27 },
-                                    'feedback': { title: 'Обратная связь', icon: 'icons-8-info-popup', icon_width: 22 },
-                                    'subscription': { title: 'Подписка', icon: 'icons-8-wallet-copy-2', icon_width: 22, icon_height: 22 },
-                                    'settings': { title: 'Настройки', icon: 'icons-8-settings' },
-                                    'sma': { title: 'СМА', icon: 'icons-8-sell-property', icon_width: 26, icon_height: 23 },
-                                    'history': { title: 'История поиска', icon: 'icons-8-last-hour' },
-                                    'favorites': { title: 'Избранное', icon: 'icons-8-star', icon_width: 26, icon_height: 25 },
-                                    'archive': { title: 'Архивные данные', icon: 'icons-8-winrar', icon_height: 22, },
-                                }),
-                                item_id: $$.$me_atom2_prop_keys(['.items']),
-                                item: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
-                                item_top: $$.$me_atom2_prop({
-                                    keys: ['.item_id'],
-                                    masters: $$.$me_atom2_prop_masters(['.item_id'], ({ key: [id], masters: [ids] }) => {
-                                        const idx = ids.indexOf(id);
-                                        return !idx ? [] : [`.item_top[${ids[idx - 1]}]`, '.item_height'];
-                                    }),
-                                }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
-                                item_title: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
-                                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => 'assets/' + item.icon + '@2x.png'),
-                                item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
-                                item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
-                                item_height: () => 52,
-                                selected: $$.$me_atom2_prop_store('', (val) => typeof val == 'string'),
-                            },
-                            style: {
-                                background: () => 'white',
-                            },
-                            elem: {
-                                item: $$.$me_atom2_prop({ keys: ['.item_id'] }, ({ key: [id] }) => ({
-                                    prop: {
-                                        '#ofsVer': `<.item_top[${id}]`,
-                                        '#height': '<.item_height',
-                                        '#cursor': () => 'pointer',
-                                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => id == selected),
-                                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover'], ({ masters: [isSelected, isHover] }) => isSelected ? '#0070a4' :
-                                            isHover ? '#cce2ed' :
-                                                'white'),
-                                        'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
-                                    },
-                                    style: {
-                                        background: '.colorBackground',
-                                        overflow: () => 'hidden',
-                                        userSelect: () => 'none',
-                                    },
-                                    elem: {
-                                        iconSquare: () => ({
-                                            prop: {
-                                                '#width': () => 28,
-                                                '#height': () => 28,
-                                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                                                    to: isShrinked ? 18 : 16
-                                                })),
-                                                '#alignVer': () => $$.$me_align.center,
-                                            },
-                                            elem: {
-                                                icon: () => ({
-                                                    node: 'img',
-                                                    prop: {
-                                                        '#width': `<<<.item_icon_width[${id}]`,
-                                                        '#height': `<<<.item_icon_height[${id}]`,
-                                                        '#align': () => $$.$me_align.center,
-                                                    },
-                                                    attr: {
-                                                        src: `<<<.item_icon[${id}]`
-                                                    },
-                                                    style: {
-                                                        filter: $$.$me_atom2_prop(['<<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
-                                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
-                                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
-                                                    },
-                                                }),
-                                            },
-                                        }),
-                                        text: () => ({
-                                            prop: {
-                                                '#alignVer': () => $$.$me_align.center,
-                                                '#height': () => null,
-                                                '#ofsHor': () => 61,
-                                                '#width': () => null,
-                                                '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
-                                            },
-                                            dom: {
-                                                innerText: `<<.item_title[${id}]`,
-                                            },
-                                            style: {
-                                                color: '<.colorText',
-                                                whiteSpace: () => 'nowrap',
-                                                opacity: $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({ to: isShrinked ? 0 : 1 })),
-                                            },
-                                        }),
-                                        separator: $$.$me_atom2_prop(['<.item_id', '.isSelected'], ({ masters: [ids, isSelected] }) => isSelected || !ids.indexOf(id) ? null : {
-                                            prop: {
-                                                '#hidden': $$.$me_atom2_prop(['<.isSelected', '<.#isHover'], $$.$me_atom2_prop_compute_fn_or()),
-                                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                                                    to: isShrinked ? 12 : 16
-                                                })),
-                                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                                            },
-                                            style: {
-                                                borderTop: () => '1px solid #eceff5',
-                                            },
-                                        }),
-                                    },
-                                    event: {
-                                        clickOrTap: () => {
-                                            $$.a('<.selected', id);
-                                            return true;
-                                        },
-                                    },
-                                })),
-                            },
-                        }),
-                    },
-                }),
-            });
-        };
-        const app = (rootElem, elem) => {
             $$.$me_atom2_entity.root().props({
                 em: () => 16,
                 colorText: () => '#313745',
@@ -5880,12 +6166,290 @@ var $;
             $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
             return new $$.$me_atom2_elem({ tail: 'app', cnf: {
                     node: rootElem,
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'tapEffect') {
+                            const point = dispatch_arg;
+                            const elem = $$.a.get('@tapEffect');
+                            elem.node.className = 'tapEffect';
+                            $$.a('@tapEffect.#ofsHor', point.x - $$.a('@tapEffect.#width') / 2);
+                            $$.a('@tapEffect.#ofsVer', point.y - $$.a('@tapEffect.#height') / 2);
+                            setTimeout(() => {
+                                elem.node.className = 'tapEffect on';
+                            });
+                            return true;
+                        }
+                        return false;
+                    },
                     style: {
                         margin: () => 0,
                         background: () => '#D9DCE2',
                     },
-                    elem: elem,
+                    prop: {
+                        isTapEffect: () => false,
+                    },
+                    elem: {
+                        workspace: () => workspace,
+                        menu: () => menu,
+                        tapEffect: () => ({
+                            prop: {
+                                '#width': () => 70,
+                                '#height': () => 70,
+                                '#ofsHor': () => 700,
+                                '#ofsVer': () => 550,
+                            },
+                        }),
+                    },
                 } });
+        };
+        const workspace = {
+            prop: {
+                '#ofsHor': '<@menu.#width',
+                '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.#ofsHor'], ({ masters: [viewportWidth, ofsHor] }) => viewportWidth - ofsHor),
+            },
+            elem: {
+                search: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'search' ? prev || null : {
+                    type: '$nl_elem_search_workspace',
+                    base: $$.$nl_elem_search_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'search'),
+                    },
+                }),
+            },
+            style: {
+                overflow: () => 'hidden',
+            },
+        };
+        const menu = {
+            prop: {
+                isShrinked: $$.$me_atom2_prop_store(false, (val) => typeof val == 'boolean'),
+                '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                    to: isShrinked ? 64 : 290,
+                    path_active: $$.a.get('.isShrinked_animActive').path,
+                })),
+                isShrinked_animActive: $$.$me_atom2_prop([], () => false),
+                '#order': () => ['ear', 'login', 'list'],
+            },
+            elem: {
+                login: () => login,
+                ear: () => ear,
+                list: () => list,
+            },
+        };
+        const login = {
+            prop: {
+                '#height': () => 54,
+                '#cursor': () => 'pointer',
+                'colorBackground': () => '#3c4354',
+            },
+            style: {
+                background: '.colorBackground',
+                overflow: () => 'hidden',
+                userSelect: () => 'none',
+            },
+            elem: {
+                iconSquare: () => ({
+                    prop: {
+                        '#width': () => 28,
+                        '#height': () => 28,
+                        '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                            to: isShrinked ? 18 : 16
+                        })),
+                        '#alignVer': () => $$.$me_align.center,
+                    },
+                    elem: {
+                        icon: () => ({
+                            node: 'img',
+                            prop: {
+                                '#width': () => 20,
+                                '#height': () => 22,
+                                '#align': () => $$.$me_align.center,
+                            },
+                            attr: {
+                                src: () => 'assets/' + 'icons-8-enter-2' + '@2x.png',
+                            },
+                            style: {
+                                filter: () => 'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'
+                            },
+                        }),
+                    },
+                }),
+                text: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsHor': () => 61,
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
+                    },
+                    style: {
+                        color: () => 'white',
+                    },
+                    dom: {
+                        innerText: () => 'Авторизация',
+                    },
+                }),
+            },
+        };
+        const ear = {
+            prop: {
+                '#height': '<@login.#height',
+                '#width': () => 17,
+                '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive] }) => {
+                    if (isHover)
+                        isShrinked = !isShrinked;
+                    return width + (isShrinked ? 0 : 2);
+                }),
+                '#cursor': () => 'pointer',
+            },
+            elem: {
+                img: () => ({
+                    node: 'img',
+                    prop: {
+                        '#height': () => 72,
+                        '#width': () => 35,
+                        '#ofsVer': () => -3,
+                        '#ofsHor': () => -9,
+                    },
+                    attr: {
+                        src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => {
+                            if (isShrinked_animActive)
+                                isShrinked = !isShrinked;
+                            return `assets/light-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
+                        }),
+                    },
+                }),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('<.isShrinked', !$$.a('<.isShrinked'));
+                    return true;
+                },
+            },
+        };
+        const list = {
+            prop: {
+                '#ofsVer': '<@login.#height',
+                '#height': $$.$me_atom2_prop(['.#ofsVer', '<.#height'], ({ masters: [ofsVer, height] }) => height - ofsVer),
+                colorBorder: () => 'blue',
+                items: () => ({
+                    'main': { title: 'Главная', icon: 'icons-8-home', icon_width: 26, icon_height: 23 },
+                    'search': { title: 'Поиск', icon: 'icons-8-search' },
+                    'orders': { title: 'Заказы', icon: 'icons-8-buy' },
+                    'clients': { title: 'Клиенты', icon: 'icons-8-meeting', icon_width: 22 },
+                    'advs': { title: 'Мои объявления', icon: 'icons-8-resume-website', icon_width: 22, icon_height: 22 },
+                    'docs': { title: 'Документы', icon: 'icons-8-wipes' },
+                    'users': { title: 'Пользователи', icon: 'icons-8-add-user-group', icon_width: 27 },
+                    'feedback': { title: 'Обратная связь', icon: 'icons-8-info-popup', icon_width: 22 },
+                    'subscription': { title: 'Подписка', icon: 'icons-8-wallet-copy-2', icon_width: 22, icon_height: 22 },
+                    'settings': { title: 'Настройки', icon: 'icons-8-settings' },
+                    'sma': { title: 'СМА', icon: 'icons-8-sell-property', icon_width: 26, icon_height: 23 },
+                    'history': { title: 'История поиска', icon: 'icons-8-last-hour' },
+                    'favorites': { title: 'Избранное', icon: 'icons-8-star', icon_width: 26, icon_height: 25 },
+                    'archive': { title: 'Архивные данные', icon: 'icons-8-winrar', icon_height: 22, },
+                }),
+                item_id: $$.$me_atom2_prop_keys(['.items']),
+                item: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
+                item_top: $$.$me_atom2_prop({
+                    keys: ['.item_id'],
+                    masters: $$.$me_atom2_prop_masters(['.item_id'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        return !idx ? [] : [`.item_top[${ids[idx - 1]}]`, '.item_height'];
+                    }),
+                }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
+                item_title: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
+                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => 'assets/' + item.icon + '@2x.png'),
+                item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
+                item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
+                item_height: () => 52,
+                selected: $$.$me_atom2_prop_store('', (val) => typeof val == 'string'),
+            },
+            style: {
+                background: () => 'white',
+            },
+            elem: {
+                item: $$.$me_atom2_prop({ keys: ['.item_id'] }, ({ key: [id] }) => ({
+                    prop: {
+                        '#ofsVer': `<.item_top[${id}]`,
+                        '#height': '<.item_height',
+                        '#cursor': () => 'pointer',
+                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => id == selected),
+                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover'], ({ masters: [isSelected, isHover] }) => isSelected ? '#0070a4' :
+                            isHover ? '#cce2ed' :
+                                'white'),
+                        'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
+                    },
+                    style: {
+                        background: '.colorBackground',
+                        overflow: () => 'hidden',
+                        userSelect: () => 'none',
+                    },
+                    elem: {
+                        iconSquare: () => ({
+                            prop: {
+                                '#width': () => 28,
+                                '#height': () => 28,
+                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                                    to: isShrinked ? 18 : 16
+                                })),
+                                '#alignVer': () => $$.$me_align.center,
+                            },
+                            elem: {
+                                icon: () => ({
+                                    node: 'img',
+                                    prop: {
+                                        '#width': `<<<.item_icon_width[${id}]`,
+                                        '#height': `<<<.item_icon_height[${id}]`,
+                                        '#align': () => $$.$me_align.center,
+                                    },
+                                    attr: {
+                                        src: `<<<.item_icon[${id}]`
+                                    },
+                                    style: {
+                                        filter: $$.$me_atom2_prop(['<<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
+                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                    },
+                                }),
+                            },
+                        }),
+                        text: () => ({
+                            prop: {
+                                '#alignVer': () => $$.$me_align.center,
+                                '#height': () => null,
+                                '#ofsHor': () => 61,
+                                '#width': () => null,
+                                '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
+                            },
+                            dom: {
+                                innerText: `<<.item_title[${id}]`,
+                            },
+                            style: {
+                                color: '<.colorText',
+                                whiteSpace: () => 'nowrap',
+                                opacity: $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({ to: isShrinked ? 0 : 1 })),
+                            },
+                        }),
+                        separator: $$.$me_atom2_prop(['<.item_id', '.isSelected'], ({ masters: [ids, isSelected] }) => isSelected || !ids.indexOf(id) ? null : {
+                            prop: {
+                                '#hidden': $$.$me_atom2_prop(['<.isSelected', '<.#isHover'], $$.$me_atom2_prop_compute_fn_or()),
+                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                                    to: isShrinked ? 12 : 16
+                                })),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                            },
+                            style: {
+                                borderTop: () => '1px solid #eceff5',
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('<.selected', id);
+                            return true;
+                        },
+                    },
+                })),
+            },
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
