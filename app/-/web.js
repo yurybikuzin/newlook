@@ -1013,6 +1013,9 @@ var $;
                 const prop_isReady = this._entities.prop['#_isReady'];
                 if (!prop_isReady) {
                     console.error(this.name() + ' has no .#_isReady, but expected');
+                    $$.$me_stop = true;
+                    $$.$me_throw('here');
+                    return;
                     return false;
                 }
                 return prop_isReady.value(val);
@@ -1083,6 +1086,8 @@ var $;
                 const prop_clientRect = this._entities.prop['#clientRect'];
                 if (!prop_clientRect) {
                     console.error(this.name() + ' has no _entities.#clientRect, but expected');
+                    $$.$me_stop = true;
+                    $$.$me_throw('here');
                     return;
                 }
                 if (prop_clientRect.state() === $$.$me_atom2_state_enum.valid)
@@ -2206,7 +2211,6 @@ var $;
                 let count = 0;
                 for (let control of controls) {
                     if (control.render_state === $me_atom2_control_render_state_enum.rendered) {
-                        console.error('render skip for ' + control.name());
                         continue;
                     }
                     count++;
@@ -2315,7 +2319,6 @@ var $;
         ];
         $$.clickRet = new Map();
         let tapTarget;
-        $$.$me_atom2_event_touch_tolerance = 22;
         function _event_add(ec, name_event, events) {
             let name_atom, fn;
             if (events) {
@@ -2340,7 +2343,7 @@ var $;
             else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
                 _do_event_add(ec, 'touchstart', zIndex, p => {
                     const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                    if (dist > $$.$me_atom2_event_touch_tolerance)
+                    if (dist > $$.a('/.#touchTolerance'))
                         return false;
                     if (tapTarget == null) {
                         tapTarget = { ec, dist, event: p.event };
@@ -2357,19 +2360,9 @@ var $;
                         tapTarget.ec == ec) {
                         const deltaX = Math.abs(p.event.touches[0].clientX - tapTarget.event.touches[0].clientX);
                         const deltaY = Math.abs(p.event.touches[0].clientY - tapTarget.event.touches[0].clientY);
-                        if (Math.max(deltaX, deltaY) >= 10) {
+                        if (Math.max(deltaX, deltaY) >= $$.a('/.#tapTolerance')) {
                             p.event.touches[0].clientX - tapTarget.event.touches[0].clientX;
-                            console.error('dropped ' + tapTarget.ec.name() + ' for move', {
-                                x: deltaX,
-                                y: deltaY,
-                            });
                             tapTarget = null;
-                        }
-                        else {
-                            console.warn('near to drop ' + tapTarget.ec.name() + ' for move', {
-                                x: deltaX,
-                                y: deltaY,
-                            });
                         }
                     }
                     return false;
@@ -2402,7 +2395,10 @@ var $;
                 _do_event_add(ec, 'mouseup', zIndex, p => $$.clickRet.has(ec.path) &&
                     (() => {
                         const event = $$.clickRet.get(ec.path);
-                        return p.event.clientX == event.clientX && p.event.clientY == event.clientY;
+                        const clickTolerance = $$.a('/.#clickTolerance');
+                        const result = Math.abs(p.event.clientX - event.clientX) < clickTolerance &&
+                            Math.abs(p.event.clientY - event.clientY) < clickTolerance;
+                        return result;
                     })() &&
                     fn(Object.assign({}, p, { event: { start: $$.clickRet.get(ec.path), end: p.event } })));
             }
@@ -3450,7 +3446,7 @@ var $;
             }
             end(event) {
                 this._end = event;
-                this.accel_k = $$.a('/.wheel_touch_accel_k');
+                this.accel_k = 1;
                 this.mode = $me_atom2_wheel_touch_mode.end;
                 $$.$me_atom2_async();
             }
@@ -3467,7 +3463,7 @@ var $;
                     this.scrollAccuY = 0;
                 }
                 const timeCurr = performance.now();
-                const accel_threshold = $$.a('/.wheel_touch_accel_threshold');
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
                 if (Math.abs(this.scrollAccuX) < accel_threshold) {
                     this.accelX = 0;
                 }
@@ -3495,7 +3491,6 @@ var $;
                 return result;
             }
             rafEnd(t) {
-                const accel_k_k = $$.a('/.wheel_touch_accel_k_k');
                 const tDelta = t - this.tPrev;
                 const scrollAccuX = this.accelX * tDelta;
                 const scrollAccuY = this.accelY * tDelta;
@@ -3513,7 +3508,7 @@ var $;
                     };
                     this.accelX = this.accelX * this.accel_k;
                     this.accelY = this.accelY * this.accel_k;
-                    this.accel_k = this.accel_k * accel_k_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
                     this.tPrev = t;
                     $$.$me_atom2_async();
                     return result;
@@ -3659,6 +3654,19 @@ var $;
                     const count = $$.$me_atom2_elem.reorder_children();
                     return [count, pre];
                 },
+                def_atom: (deadline, last_now) => {
+                    const pre = performance.now() - last_now;
+                    let count = 0;
+                    while ($$.$me_atom2.to_def.length
+                        && performance.now() < deadline) {
+                        const def = $$.$me_atom2.to_def.shift();
+                        if ($$.$me_atom2_entity.root().by_path(def.parent.path)) {
+                            new $$.$me_atom2(def);
+                            count++;
+                        }
+                    }
+                    return [count, pre];
+                },
                 set_node_prop: (deadline, last_now) => {
                     const pre = performance.now() - last_now;
                     const count = $$.$me_atom2_elem.lazy_prop_apply_all();
@@ -3684,19 +3692,6 @@ var $;
                         }
                     }
                     return [0, 0];
-                },
-                def_atom: (deadline, last_now) => {
-                    const pre = performance.now() - last_now;
-                    let count = 0;
-                    while ($$.$me_atom2.to_def.length
-                        && performance.now() < deadline) {
-                        const def = $$.$me_atom2.to_def.shift();
-                        if ($$.$me_atom2_entity.root().by_path(def.parent.path)) {
-                            new $$.$me_atom2(def);
-                            count++;
-                        }
-                    }
-                    return [count, pre];
                 },
                 def_control: (deadline, last_now) => {
                     const pre = performance.now() - last_now;
@@ -3880,6 +3875,11 @@ var $;
             });
             const viewport = _viewport();
             $$.$me_atom2_entity.root().props({
+                '#wheelTouchAccelFactor': () => 0.9,
+                '#wheelTouchAccelThreshold': () => 10,
+                '#touchTolerance': () => 22,
+                '#clickTolerance': () => 2,
+                '#tapTolerance': () => 10,
                 '#isTouch': $$.$me_atom2_prop([], () => 'ontouchstart' in window, ({ val, prev }) => {
                     if (prev != null && prev != val) {
                         if (prev) {
@@ -5195,6 +5195,128 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_spinner = {
+            prop: {
+                color: () => 'white',
+                size: () => 64,
+                period: () => 1.2,
+                qt: () => 12,
+                '#width': '.size',
+                '#height': '.size',
+                '#align': () => $$.$me_align.center,
+                _id: () => null,
+                _styleSheetId: $$.$me_atom2_prop(['._id'], ({ masters: [id] }) => 'spinnerStyleSheet' + id),
+                _idx: $$.$me_atom2_prop(['.qt'], ({ masters: [qt] }) => [...Array(qt).keys()]),
+                _styleSheet: $$.$me_atom2_prop(['._id', '._idx', '.color', '.size', '.qt', '.period', '._styleSheetId'], ({ masters: [id, idx, color, size, qt, period, styleSheetId], atom }) => {
+                    const semiSize = Math.round(size / 2);
+                    const top = Math.round(semiSize / 10);
+                    const left = semiSize - top;
+                    const width = Math.round(semiSize / 32 * 5);
+                    const height = Math.round(semiSize / 32 * 14);
+                    const step = period / qt;
+                    return [
+                        styleSheetId,
+                        `
+            .spinner${id} div {
+              transform-origin: ${semiSize}px ${semiSize}px;
+              animation: spinner ${period.toFixed(1)}s linear infinite;
+            }
+            .spinner${id} div:after {
+              content: " ";
+              display: block;
+              position: absolute;
+              top: ${top}px;
+              left: ${left}px;
+              width: ${width}px;
+              height: ${height}px;
+              border-radius: 20%;
+              background: ${color};
+            }
+          ` + idx.map((idx) => `
+            .spinner${id} div:nth-child(${+idx + 1}) {
+              transform: rotate(${Math.round(+idx * 360 / qt)}deg);
+              animation-delay: ${(-period + step * (+idx + 1)).toFixed(2)}s;
+            }
+          `).join('')
+                    ];
+                }, ({ val: [styleSheetId, innerHTML] }) => {
+                    let sheet;
+                    if (innerHTML == null) {
+                        sheet = document.getElementById(styleSheetId);
+                        if (sheet && sheet.parentElement)
+                            sheet.parentElement.removeChild(sheet);
+                    }
+                    else if (sheet = document.getElementById(styleSheetId)) {
+                        sheet.innerHTML = innerHTML;
+                    }
+                    else {
+                        sheet = document.createElement('style');
+                        sheet.id = styleSheetId;
+                        sheet.innerHTML = innerHTML;
+                        let head = document.head || document.getElementsByTagName('head')[0];
+                        head.appendChild(sheet);
+                    }
+                }),
+            },
+            dom: {
+                className: $$.$me_atom2_prop(['._id'], ({ masters: [id] }) => 'spinner' + id),
+            },
+            elem: {
+                div: $$.$me_atom2_prop({ keys: ['._idx'] }, ({ key: [idx] }) => ({})),
+            },
+            init: (self) => {
+                if (!spinners)
+                    spinners = new Map();
+                const ids = [...spinners].map(([spinner, id]) => id).sort();
+                let id;
+                for (let i = 0; i < ids.length; i++)
+                    if (i != ids[i]) {
+                        id = i;
+                        break;
+                    }
+                if (id === void 0)
+                    id = ids.length;
+                $$.a('._id', id);
+                spinners.set(self, id);
+                if (!document.getElementById(spinnerKeyframeId)) {
+                    let sheet = document.createElement('style');
+                    sheet.id = spinnerKeyframeId;
+                    sheet.innerHTML = `
+        @keyframes spinner {
+          0% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+      `;
+                    let head = document.head || document.getElementsByTagName('head')[0];
+                    head.appendChild(sheet);
+                }
+            },
+            fini: (self) => {
+                $$.a('._styleSheet', [$$.a('._styleSheetId'), null]);
+                spinners.delete(self);
+                if (!spinners.size) {
+                    let sheet = document.getElementById(spinnerKeyframeId);
+                    if (sheet && sheet.parentElement)
+                        sheet.parentElement.removeChild(sheet);
+                    spinners = null;
+                }
+            },
+        };
+        const spinnerKeyframeId = 'spinnerKeyframe';
+        let spinners;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//spinner.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_panel = {
             type: '$me_panel',
             prop: Object.assign({}, $$.$me_atom2_prop_same_def(() => 0, ['borderRadius']), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
@@ -5547,6 +5669,12 @@ var $;
                     grid_wheel(p.event._deltaX),
             },
             elem: {
+                spinner: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => count >= 0 ? null : {
+                    base: $$.$me_spinner,
+                    prop: {
+                        color: () => '#D9DCE2',
+                    },
+                }),
                 cursor: () => ({
                     prop: {
                         '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
@@ -5857,7 +5985,7 @@ var $;
                 }),
                 count: $$.$me_atom2_prop(['.provider_tag'], ({ masters: [tag] }) => {
                     $$.a('.dataWorker').postMessage({ cmd: 'count', tag });
-                    return null;
+                    return -1;
                 }),
                 dataWorker: () => {
                     if (!_dataWorker) {
@@ -5902,7 +6030,9 @@ var $;
                         fontWeight: () => 500,
                     },
                     dom: {
-                        innerText: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => `Показано ${count} предложений`.toUpperCase()),
+                        innerText: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => (count < 0 ?
+                            `Загрузка предложений` :
+                            `Показано ${count} предложений`).toUpperCase()),
                     },
                 }),
                 filter: () => ({
@@ -6291,10 +6421,6 @@ var $;
                 colorText: () => '#313745',
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
-                wheel_factor_y: () => 1 / 2.5,
-                wheel_touch_accel_k: () => 0.95,
-                wheel_touch_accel_k_k: () => 0.9,
-                wheel_touch_accel_threshold: () => 10,
             });
             $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em' });
             $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
