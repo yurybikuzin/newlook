@@ -993,6 +993,16 @@ var $;
                 }
                 this.cnf = p.cnf;
             }
+            get 'wait_for_child()'() {
+                if (!this._wait_for_child)
+                    return null;
+                const result = {};
+                for (const name_entity of this._wait_for_child) {
+                    const entity = $$.$me_atom2_entity.root().by_path_s(name_entity);
+                    result[name_entity] = typeof entity == 'string' ? entity : entity['wait_for_child()'];
+                }
+                return result;
+            }
             _wait_for_child_do(name) {
                 if (!this._wait_for_child)
                     this._wait_for_child = new Set();
@@ -1972,6 +1982,215 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const event_names = [
+            'touchstart',
+            'touchmove',
+            'touchend',
+            'mousedown',
+            'mouseup',
+            'mousemove',
+            'wheel',
+            'wheelTouch',
+            'click',
+            'tap',
+            'clickOrTap',
+            'clickOrTapOutside',
+            'clickOutside',
+            'tapOutside',
+        ];
+        $$.clickRet = new Map();
+        let tapTarget;
+        function _event_add(ec, name_event, events) {
+            let name_atom, fn;
+            if (events) {
+                const event_def = events[name_event];
+                fn = typeof event_def === 'function' ?
+                    event_def :
+                    event_def.fn;
+            }
+            let s;
+            if (!ec._entities)
+                $$.$me_throw(ec.name(), ec.active());
+            if (!ec._entities.prop)
+                $$.$me_throw(ec.name(), ec.active(), ec._entities);
+            if (!ec._entities.prop['#zIndex'])
+                $$.$me_throw(ec.name(), ec.active(), ec._entities.prop);
+            const zIndex = ec._entities.prop['#zIndex'].value();
+            if (name_event === 'hover') {
+                _do_event_add(ec, 'mousemove', zIndex, (p) => p.isInRect(p.event.clientX, p.event.clientY) &&
+                    $$.a('.#isHover', true));
+                _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY) && $$.a('.#isHover', false));
+            }
+            else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
+                _do_event_add(ec, 'touchstart', zIndex, p => {
+                    const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
+                    if (dist > $$.a('/.#touchTolerance'))
+                        return false;
+                    if (tapTarget == null) {
+                        tapTarget = { ec, dist, event: p.event };
+                        console.log(tapTarget.ec.name(), tapTarget.dist);
+                    }
+                    else if (dist < tapTarget.dist) {
+                        tapTarget = { ec, dist, event: p.event };
+                        console.log(tapTarget.ec.name(), tapTarget.dist);
+                    }
+                    return !!tapTarget;
+                });
+                _do_event_add(ec, 'touchmove', zIndex, p => {
+                    if (tapTarget &&
+                        tapTarget.ec == ec) {
+                        const deltaX = Math.abs(p.event.touches[0].clientX - tapTarget.event.touches[0].clientX);
+                        const deltaY = Math.abs(p.event.touches[0].clientY - tapTarget.event.touches[0].clientY);
+                        if (Math.max(deltaX, deltaY) >= $$.a('/.#tapTolerance')) {
+                            p.event.touches[0].clientX - tapTarget.event.touches[0].clientX;
+                            tapTarget = null;
+                        }
+                    }
+                    return false;
+                });
+                _do_event_add(ec, 'touchend', zIndex, p => {
+                    if (!(tapTarget && tapTarget.ec == ec))
+                        return false;
+                    const event = { start: tapTarget.event, end: p.event };
+                    const _tapTarget = tapTarget;
+                    tapTarget = null;
+                    if (!fn(Object.assign({}, p, { event })))
+                        return false;
+                    const app = $$.a.get('/@app');
+                    app.dispatch('tapEffect', _tapTarget);
+                    console.log('tapped ' + _tapTarget.ec.name());
+                    return true;
+                });
+            }
+            else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
+                _do_event_add(ec, 'mousedown', zIndex, p => {
+                    const ret = p.isInRect(p.event.clientX, p.event.clientY);
+                    if (ret) {
+                        $$.clickRet.set(ec.path, p.event);
+                    }
+                    else {
+                        $$.clickRet.delete(ec.path);
+                    }
+                    return ret;
+                });
+                _do_event_add(ec, 'mouseup', zIndex, p => $$.clickRet.has(ec.path) &&
+                    (() => {
+                        const event = $$.clickRet.get(ec.path);
+                        const clickTolerance = $$.a('/.#clickTolerance');
+                        const result = Math.abs(p.event.clientX - event.clientX) < clickTolerance &&
+                            Math.abs(p.event.clientY - event.clientY) < clickTolerance;
+                        return result;
+                    })() &&
+                    fn(Object.assign({}, p, { event: { start: $$.clickRet.get(ec.path), end: p.event } })));
+            }
+            else if (name_event === 'clickOrTapOutside') {
+                $$.$me_throw('TODO');
+            }
+            else
+                _do_event_add(ec, name_event, zIndex, fn);
+        }
+        function _do_event_add(ec, name_event, zIndex, fn) {
+            if (!$$.$me_atom2_event_handlers.has(name_event))
+                $$.$me_atom2_event_handlers.set(name_event, []);
+            const queue = $$.$me_atom2_event_handlers.get(name_event);
+            let i = 0;
+            while (i < queue.length && queue[i].zIndex > zIndex)
+                i++;
+            if (i == queue.length || queue[i].zIndex != zIndex)
+                queue.splice(i, 0, {
+                    zIndex,
+                    handlers: new Map(),
+                });
+            const handlers = queue[i].handlers;
+            if (!handlers.has(ec.path))
+                handlers.set(ec.path, []);
+            handlers.get(ec.path).push(fn);
+        }
+        function _events_add_helper(ec, cnf) {
+            if (!cnf)
+                return;
+            if (cnf.event)
+                for (const name_event of event_names)
+                    if (cnf.event[name_event])
+                        _event_add(ec, name_event, cnf.event);
+            if (cnf.base)
+                _events_add_helper(ec, cnf.base);
+        }
+        function _events_add(ec) {
+            let name_atom;
+            if (ec._entities &&
+                ec._entities.prop &&
+                ec._entities.prop['#isHover']
+                && !ec._entities.prop['#isHover'].masters) {
+                _event_add(ec, 'hover');
+            }
+            _events_add_helper(ec, ec.cnf);
+        }
+        function _events_add_recursive(entity) {
+            const entities = entity._entities;
+            if (entities) {
+                for (const ent of [$$.$me_atom2_entity_enum.key, $$.$me_atom2_entity_enum.elem, $$.$me_atom2_entity_enum.control]) {
+                    const entities_of_type = entities[$$.$me_atom2_entity_enum[ent]];
+                    if (!entities_of_type)
+                        continue;
+                    for (const tail in entities_of_type) {
+                        const ec = entities_of_type[tail];
+                        if (!ec.active())
+                            continue;
+                        _events_add(ec);
+                        _events_add_recursive(ec);
+                    }
+                }
+            }
+        }
+        function $me_atom2_event_process(name_event, event) {
+            if (!event)
+                return;
+            if (!$$.$me_atom2_event_handlers) {
+                $$.$me_atom2_event_handlers = new Map();
+                _events_add_recursive($$.$me_atom2_entity.root());
+            }
+            if (!$$.$me_atom2_event_handlers.has(name_event))
+                return;
+            const queue = $$.$me_atom2_event_handlers.get(name_event);
+            let done = false;
+            for (const item of queue) {
+                for (const [path, fn_array] of item.handlers) {
+                    const ec = $$.$me_atom2_entity.root().by_path(path);
+                    if (!ec)
+                        continue;
+                    if (!ec._entities.prop['#visible'].value())
+                        continue;
+                    const clientRect = ec._entities.prop['#clientRect'].value();
+                    if (!clientRect)
+                        continue;
+                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
+                    const distToRect = (clientX, clientY) => $$.$me_dist_to_rect(clientX, clientY, clientRect);
+                    const prev = $$.a.curr;
+                    $$.a.curr = ec;
+                    for (const fn of fn_array)
+                        if (done = fn({ event, isInRect, distToRect }))
+                            break;
+                    $$.a.curr = prev;
+                }
+                if (done)
+                    break;
+            }
+        }
+        $$.$me_atom2_event_process = $me_atom2_event_process;
+        function $me_atom2_event_keyboard_process(name_event, event) {
+        }
+        $$.$me_atom2_event_keyboard_process = $me_atom2_event_keyboard_process;
+        const isTouch = () => $$.$me_atom2_entity.root()._entities.prop['#isTouch'].value();
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//event.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         let $me_atom2_control_render_state_enum;
         (function ($me_atom2_control_render_state_enum) {
             $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["cleaned"] = 0] = "cleaned";
@@ -2301,215 +2520,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        const event_names = [
-            'touchstart',
-            'touchmove',
-            'touchend',
-            'mousedown',
-            'mouseup',
-            'mousemove',
-            'wheel',
-            'wheelTouch',
-            'click',
-            'tap',
-            'clickOrTap',
-            'clickOrTapOutside',
-            'clickOutside',
-            'tapOutside',
-        ];
-        $$.clickRet = new Map();
-        let tapTarget;
-        function _event_add(ec, name_event, events) {
-            let name_atom, fn;
-            if (events) {
-                const event_def = events[name_event];
-                fn = typeof event_def === 'function' ?
-                    event_def :
-                    event_def.fn;
-            }
-            let s;
-            if (!ec._entities)
-                $$.$me_throw(ec.name(), ec.active());
-            if (!ec._entities.prop)
-                $$.$me_throw(ec.name(), ec.active(), ec._entities);
-            if (!ec._entities.prop['#zIndex'])
-                $$.$me_throw(ec.name(), ec.active(), ec._entities.prop);
-            const zIndex = ec._entities.prop['#zIndex'].value();
-            if (name_event === 'hover') {
-                _do_event_add(ec, 'mousemove', zIndex, (p) => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    $$.a('.#isHover', true));
-                _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY) && $$.a('.#isHover', false));
-            }
-            else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
-                _do_event_add(ec, 'touchstart', zIndex, p => {
-                    const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                    if (dist > $$.a('/.#touchTolerance'))
-                        return false;
-                    if (tapTarget == null) {
-                        tapTarget = { ec, dist, event: p.event };
-                        console.log(tapTarget.ec.name(), tapTarget.dist);
-                    }
-                    else if (dist < tapTarget.dist) {
-                        tapTarget = { ec, dist, event: p.event };
-                        console.log(tapTarget.ec.name(), tapTarget.dist);
-                    }
-                    return !!tapTarget;
-                });
-                _do_event_add(ec, 'touchmove', zIndex, p => {
-                    if (tapTarget &&
-                        tapTarget.ec == ec) {
-                        const deltaX = Math.abs(p.event.touches[0].clientX - tapTarget.event.touches[0].clientX);
-                        const deltaY = Math.abs(p.event.touches[0].clientY - tapTarget.event.touches[0].clientY);
-                        if (Math.max(deltaX, deltaY) >= $$.a('/.#tapTolerance')) {
-                            p.event.touches[0].clientX - tapTarget.event.touches[0].clientX;
-                            tapTarget = null;
-                        }
-                    }
-                    return false;
-                });
-                _do_event_add(ec, 'touchend', zIndex, p => {
-                    if (!(tapTarget && tapTarget.ec == ec))
-                        return false;
-                    const event = { start: tapTarget.event, end: p.event };
-                    const _tapTarget = tapTarget;
-                    tapTarget = null;
-                    if (!fn(Object.assign({}, p, { event })))
-                        return false;
-                    const app = $$.a.get('/@app');
-                    app.dispatch('tapEffect', _tapTarget);
-                    console.log('tapped ' + _tapTarget.ec.name());
-                    return true;
-                });
-            }
-            else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
-                _do_event_add(ec, 'mousedown', zIndex, p => {
-                    const ret = p.isInRect(p.event.clientX, p.event.clientY);
-                    if (ret) {
-                        $$.clickRet.set(ec.path, p.event);
-                    }
-                    else {
-                        $$.clickRet.delete(ec.path);
-                    }
-                    return ret;
-                });
-                _do_event_add(ec, 'mouseup', zIndex, p => $$.clickRet.has(ec.path) &&
-                    (() => {
-                        const event = $$.clickRet.get(ec.path);
-                        const clickTolerance = $$.a('/.#clickTolerance');
-                        const result = Math.abs(p.event.clientX - event.clientX) < clickTolerance &&
-                            Math.abs(p.event.clientY - event.clientY) < clickTolerance;
-                        return result;
-                    })() &&
-                    fn(Object.assign({}, p, { event: { start: $$.clickRet.get(ec.path), end: p.event } })));
-            }
-            else if (name_event === 'clickOrTapOutside') {
-                $$.$me_throw('TODO');
-            }
-            else
-                _do_event_add(ec, name_event, zIndex, fn);
-        }
-        function _do_event_add(ec, name_event, zIndex, fn) {
-            if (!$$.$me_atom2_event_handlers.has(name_event))
-                $$.$me_atom2_event_handlers.set(name_event, []);
-            const queue = $$.$me_atom2_event_handlers.get(name_event);
-            let i = 0;
-            while (i < queue.length && queue[i].zIndex > zIndex)
-                i++;
-            if (i == queue.length || queue[i].zIndex != zIndex)
-                queue.splice(i, 0, {
-                    zIndex,
-                    handlers: new Map(),
-                });
-            const handlers = queue[i].handlers;
-            if (!handlers.has(ec.path))
-                handlers.set(ec.path, []);
-            handlers.get(ec.path).push(fn);
-        }
-        function _events_add_helper(ec, cnf) {
-            if (!cnf)
-                return;
-            if (cnf.event)
-                for (const name_event of event_names)
-                    if (cnf.event[name_event])
-                        _event_add(ec, name_event, cnf.event);
-            if (cnf.base)
-                _events_add_helper(ec, cnf.base);
-        }
-        function _events_add(ec) {
-            let name_atom;
-            if (ec._entities &&
-                ec._entities.prop &&
-                ec._entities.prop['#isHover']
-                && !ec._entities.prop['#isHover'].masters) {
-                _event_add(ec, 'hover');
-            }
-            _events_add_helper(ec, ec.cnf);
-        }
-        function _events_add_recursive(entity) {
-            const entities = entity._entities;
-            if (entities) {
-                for (const ent of [$$.$me_atom2_entity_enum.key, $$.$me_atom2_entity_enum.elem, $$.$me_atom2_entity_enum.control]) {
-                    const entities_of_type = entities[$$.$me_atom2_entity_enum[ent]];
-                    if (!entities_of_type)
-                        continue;
-                    for (const tail in entities_of_type) {
-                        const ec = entities_of_type[tail];
-                        if (!ec.active())
-                            continue;
-                        _events_add(ec);
-                        _events_add_recursive(ec);
-                    }
-                }
-            }
-        }
-        function $me_atom2_event_process(name_event, event) {
-            if (!event)
-                return;
-            if (!$$.$me_atom2_event_handlers) {
-                $$.$me_atom2_event_handlers = new Map();
-                _events_add_recursive($$.$me_atom2_entity.root());
-            }
-            if (!$$.$me_atom2_event_handlers.has(name_event))
-                return;
-            const queue = $$.$me_atom2_event_handlers.get(name_event);
-            let done = false;
-            for (const item of queue) {
-                for (const [path, fn_array] of item.handlers) {
-                    const ec = $$.$me_atom2_entity.root().by_path(path);
-                    if (!ec)
-                        continue;
-                    if (!ec._entities.prop['#visible'].value())
-                        continue;
-                    const clientRect = ec._entities.prop['#clientRect'].value();
-                    if (!clientRect)
-                        continue;
-                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
-                    const distToRect = (clientX, clientY) => $$.$me_dist_to_rect(clientX, clientY, clientRect);
-                    const prev = $$.a.curr;
-                    $$.a.curr = ec;
-                    for (const fn of fn_array)
-                        if (done = fn({ event, isInRect, distToRect }))
-                            break;
-                    $$.a.curr = prev;
-                }
-                if (done)
-                    break;
-            }
-        }
-        $$.$me_atom2_event_process = $me_atom2_event_process;
-        function $me_atom2_event_keyboard_process(name_event, event) {
-        }
-        $$.$me_atom2_event_keyboard_process = $me_atom2_event_keyboard_process;
-        const isTouch = () => $$.$me_atom2_entity.root()._entities.prop['#isTouch'].value();
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//event.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         class $me_atom2 extends $$.$me_atom2_entity {
             constructor(p) {
                 super(Object.assign({}, p, { ent: p.is_key ?
@@ -2547,6 +2557,16 @@ var $;
                                     if (!ss_prev.has(tail))
                                         new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
                             }
+                            if (atom.name() == '/@app@workspace@search@panelResult@grid.@row.#keys')
+                                if (val && !val.length && this.path.tail.startsWith('@')) {
+                                    const ec = this.parent();
+                                    if (ec instanceof $$.$me_atom2_ec) {
+                                        ec._wait_for_child_did(ec.name() + this.path.tail);
+                                    }
+                                    else {
+                                        console.error(ec);
+                                    }
+                                }
                             if (prev && val) {
                                 for (const tail of ss_curr) {
                                     if (ss_prev.has(tail)) {
@@ -4030,6 +4050,59 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_search_tabs = {
+            elem: {
+                new: () => ({
+                    base: tab,
+                    prop: {
+                        idx: () => '',
+                    },
+                    dom: {
+                        innerText: () => 'Новый заказ +'.toUpperCase(),
+                    },
+                }),
+                tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
+                    base: tab,
+                    prop: {
+                        idx: () => idx,
+                    },
+                    dom: {
+                        innerText: `<<.order_title[${idx}]`,
+                    },
+                })),
+            },
+        };
+        const tab = {
+            node: 'span',
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('<<.selected', $$.a('.idx'));
+                    return true;
+                },
+            },
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 10,
+                paddingRight: () => 10,
+                paddingBottom: () => 5,
+                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//tabs.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_panel = {
             style: {
                 background: () => 'white',
@@ -4404,6 +4477,22 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_search_panel = {
+            base: $$.$nl_panel,
+            prop: {
+                '#ofsHor': '.em',
+                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_switch = {
             prop: {
                 '#height': () => 44,
@@ -4450,234 +4539,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //switch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search = {
-            prop: {
-                orders: () => [
-                    {
-                        id: 'id1',
-                        title: 'Заказ 2',
-                        result_mode: 'Таблица',
-                    },
-                    {
-                        id: 'id2',
-                        title: 'Заказ 1',
-                        result_mode: 'Плитка',
-                    },
-                ],
-                order_idx: $$.$me_atom2_prop_keys(['.orders']),
-                order: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.orders'] }, ({ key: [idx], masters: [orders] }) => orders[idx]),
-                order_title: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.order[]'] }, ({ masters: [order] }) => order.title.toUpperCase()),
-                selected: $$.$me_atom2_prop_store('', (val) => $$.a('.order_idx').indexOf(val) >= 0),
-                param_modes: () => ({
-                    Полный: {
-                        height: 627,
-                    },
-                    Основной: {
-                        height: 295,
-                    },
-                    Сжатый: {
-                        height: 123,
-                    },
-                }),
-                param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
-                param_mode: $$.$me_atom2_prop_store('Основной', (val) => $$.a('.param_mode_keys').indexOf(val) >= 0),
-            },
-            elem: {
-                tabs: () => ({
-                    prop: {
-                        '#height': '/@app@menu@login.#height',
-                        '#ofsHor': () => 36,
-                        '#ofsVer': () => 16,
-                    },
-                    elem: {
-                        new: () => ({
-                            base: tab,
-                            prop: {
-                                idx: () => '',
-                            },
-                            dom: {
-                                innerText: () => 'Новый заказ +'.toUpperCase(),
-                            },
-                        }),
-                        tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
-                            base: tab,
-                            prop: {
-                                idx: () => idx,
-                            },
-                            dom: {
-                                innerText: `<<.order_title[${idx}]`,
-                            },
-                        })),
-                    },
-                }),
-                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => selected ? null : {
-                    base: $$.$nl_search_new,
-                    prop: {
-                        '#ofsVer': '<@tabs.#height',
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@tabs.#height'], ({ masters: [height_parent, height_tabs] }) => height_parent - height_tabs),
-                    },
-                }),
-                params: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsVer': '<@tabs.#height',
-                        '#height': $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => $$.$me_atom2_anim({ to: modes[mode].height, duration: 400 })),
-                        '#ofsHor': '.em',
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                    },
-                    elem: {
-                        mode_switcher: () => ({
-                            base: $$.$nl_switch,
-                            prop: {
-                                '#ofsVer': () => 16,
-                                '#alignHor': () => $$.$me_align.right,
-                                'values': '<<.param_mode_keys',
-                                'selected': $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
-                            },
-                        }),
-                        found: () => ({
-                            node: 'span',
-                            prop: {
-                                offerCount: () => 1200,
-                                objCount: () => 800,
-                                '#alignVer': () => $$.$me_align.bottom,
-                                '#height': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                position: () => 'relative',
-                                fontWeight: () => 500,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['.offerCount', '.objCount'], ({ masters: [offerCount, objCount] }) => `Найдено ${objCount} объектов / ${offerCount} предложений`.toUpperCase()),
-                            },
-                        }),
-                    },
-                }),
-                result: $$.$me_atom2_prop(['.selected'], ({ masters: [selected] }) => !selected ? null : {
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsVer': $$.$me_atom2_prop(['<@params.#ofsVer', '<@params.#height', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], ({ masters: [height, ofsVer] }) => height - ofsVer),
-                        '#ofsHor': '.em',
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                    },
-                    elem: {
-                        mode_switcher: () => ({
-                            base: $$.$nl_switch,
-                            prop: {
-                                '#ofsVer': () => 16,
-                                '#alignHor': () => $$.$me_align.right,
-                                values: () => ['Таблица', 'Плитка', 'Карта'],
-                                selected: () => 'Таблица',
-                                paddingHor: () => 16,
-                            },
-                        }),
-                    },
-                }),
-            },
-        };
-        const tab = {
-            node: 'span',
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('<<.selected', $$.a('.idx'));
-                    return true;
-                },
-            },
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 10,
-                paddingRight: () => 10,
-                paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//search.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_tabs = {
-            elem: {
-                new: () => ({
-                    base: tab,
-                    prop: {
-                        idx: () => '',
-                    },
-                    dom: {
-                        innerText: () => 'Новый заказ +'.toUpperCase(),
-                    },
-                }),
-                tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
-                    base: tab,
-                    prop: {
-                        idx: () => idx,
-                    },
-                    dom: {
-                        innerText: `<<.order_title[${idx}]`,
-                    },
-                })),
-            },
-        };
-        const tab = {
-            node: 'span',
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('<<.selected', $$.a('.idx'));
-                    return true;
-                },
-            },
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 10,
-                paddingRight: () => 10,
-                paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//tabs.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_panel = {
-            base: $$.$nl_panel,
-            prop: {
-                '#ofsHor': '.em',
-                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
 ;
 "use strict";
 var $;
@@ -4902,7 +4763,6 @@ var $;
             if (!delta)
                 return;
             if (delta < 0) {
-                console.log({ delta, prev, val, row_i });
                 const top = $$.a(`.row_top[${row_i}]`);
                 const delta_bottom = top + val - $$.a('.#height');
                 if (delta_bottom > 0) {
@@ -5002,10 +4862,11 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ _provider: () => $$.a.curr.parent(true).path, provider_tag: () => null, rec_idx_delta: () => 1, rec_idx_max: $$.$me_atom2_prop(['.rec_count'], ({ masters: [rec_count] }) => rec_count - 1), row_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => 2 + Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min)), ({ prev, val }) => {
-                    if (prev != null && prev > val)
-                        return prev;
-                }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')) }, $$.$me_atom2_prop_same_def(() => null, [
+            prop: Object.assign({ _provider: () => $$.a.curr.parent(true).path, provider_tag: () => null, rec_idx_delta: () => 1, rec_idx_max: $$.$me_atom2_prop(['.rec_count'], ({ masters: [rec_count] }) => rec_count - 1), row_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => rec_count < 0 ? 0 :
+                    2 + Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min)), ({ prev, val }) => {
+                    const result = prev != null && prev > val ? prev : val;
+                    return result;
+                }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')) }, $$.$me_atom2_prop_same_def(() => 0, [
                 ...min_max('row_i'),
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
@@ -5046,13 +4907,21 @@ var $;
                     }),
                 }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0)), row_heights_store: () => new Map(), row_heights: $$.$me_atom2_prop(['.provider_tag', '.row_heights_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Map())), row_height_source: $$.$me_atom2_prop({
                     keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
+                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
                         [`.rec_idx[${row_i}]`, '._provider', '.provider_tag']),
-                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => !len || !_provider || !provider_tag ? -1 : get_row_height(rec_idx, _provider, provider_tag, true), $$.$me_atom2_list_row_height_source_fn_apply), row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_height_source[]', '.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [to, row_i_min, row_i_max], prev }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? null :
-                    to < 0 ? null : prev == null || prev == to ? to : $$.$me_atom2_anim({
-                        to,
-                        fini: () => adjust_rows($$.a('.visible_top')),
-                    }), ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['._provider', '.provider_tag', '.#height', '.rec_count'], null, () => {
+                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => {
+                    const result = !len || !_provider || !provider_tag ? -1 : get_row_height(rec_idx, _provider, provider_tag, true);
+                    return result;
+                }, $$.$me_atom2_list_row_height_source_fn_apply), row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_height_source[]', '.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [to, row_i_min, row_i_max], prev }) => {
+                    const result = $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? null :
+                        to < 0 ? null :
+                            prev == null || prev == to ? to :
+                                $$.$me_atom2_anim({
+                                    to,
+                                    fini: () => adjust_rows($$.a('.visible_top')),
+                                });
+                    return result;
+                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['._provider', '.provider_tag', '.#height', '.rec_count'], null, () => {
                     adjust_rows($$.a('.visible_top'));
                 }), '#order': () => ['row', 'header'] }),
             elem: {
@@ -5133,7 +5002,7 @@ var $;
         function adjust_rows(val, fromBottom = false, row_height) {
             if (!row_height)
                 row_height = get_row_height;
-            if (!$$.a('.rec_count'))
+            if ($$.a('.rec_count') <= 0)
                 return;
             const p = {
                 val,
@@ -5581,9 +5450,12 @@ var $;
                 row_opens: $$.$me_atom2_prop(['.provider_tag', '.row_opens_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Set())),
                 row_open: $$.$me_atom2_prop({
                     keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
+                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
                         [`.rec_idx[${row_i}]`, '._provider', '.provider_tag']),
-                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => !len || !_provider || !provider_tag ? -1 : get_row_open(rec_idx, _provider, provider_tag), ({ key: [row_i], val, prev }) => {
+                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => {
+                    const result = !len || !_provider || !provider_tag ? -1 : get_row_open(rec_idx, _provider, provider_tag);
+                    return result;
+                }, ({ key: [row_i], val, prev }) => {
                     if (val == null || val < 0 ||
                         +row_i >= $$.a('.row_count') ||
                         $$.$me_list_row_i_out_of_range_is(+row_i, $$.a('.row_i_min'), $$.a('.row_i_max')))
@@ -5592,8 +5464,12 @@ var $;
                 }),
                 adjust_row_height_source: $$.$me_atom2_prop({
                     keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.row_open[]'], ({ key: [row_i], masters: [row_open] }) => !row_open ? ['.row_height_min'] : ['.row_height_min', `@row[${row_i}]@content@comment.#height`]),
-                }, null, ({ key: [row_i], val }) => {
+                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_open[]', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_open, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
+                        !row_open ? ['.row_height_min'] :
+                            ['.row_height_min', `@row[${row_i}]@content@comment.#height`]),
+                }, ({ len, masters: [row_height_min, comment_height] }) => !len ? null : len == 1 ? row_height_min : [row_height_min, comment_height], ({ key: [row_i], val, prev }) => {
+                    if (!val)
+                        return;
                     const height = !Array.isArray(val) ? val : val[0] + val[1];
                     $$.a(`.row_height_source[${row_i}]`, height);
                 }),
@@ -5662,11 +5538,9 @@ var $;
             },
             event: {
                 wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    !$$.$me_list_wheel_y_is(p.event) &&
-                    grid_wheel(p.event._deltaX),
+                    !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
                 wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    !$$.$me_list_wheel_y_is(p.event) &&
-                    grid_wheel(p.event._deltaX),
+                    !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
             },
             elem: {
                 spinner: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => count >= 0 ? null : {
@@ -5696,41 +5570,6 @@ var $;
         const grid_wheel = (deltaX) => {
             $$.a('.ofsHor', $$.a('.ofsHor') - deltaX);
             return true;
-        };
-        const cell = {
-            style: {
-                borderRight: () => '1px solid #adb0b8',
-                borderBottom: () => '1px solid #adb0b8',
-                boxSizing: () => 'border-box',
-            },
-        };
-        const header_cell = {
-            base: cell,
-            style: {
-                background: () => '#d8dce3',
-            },
-        };
-        const row_cell = {
-            base: cell,
-            style: {
-                background: () => '#F5F8F8',
-            },
-        };
-        const cell_content = {
-            prop: {
-                '#height': () => null,
-                '#width': () => null,
-            },
-            style: {
-                whiteSpace: () => 'nowrap',
-                overflow: () => 'hidden',
-                textOverflow: () => 'ellipsis',
-                maxWidth: $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 8),
-                fontSize: () => 14,
-                userSelect: () => 'none',
-                paddingLeft: () => 4,
-                paddingRight: () => 4,
-            },
         };
         const get_row_open = (idx, _provider, provider_tag) => {
             const dispatch_arg = { idx, tag: provider_tag };
@@ -5797,6 +5636,14 @@ var $;
                             prop: {
                                 '#width': '<<<<.col_width_sum',
                                 '#ofsHor': '<<<<.ofsHor',
+                                '#cursor': () => 'pointer',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    const row_open = $$.a(`<<<<.row_open[${$$.a('<<.row_i')}]`);
+                                    $$.a(`<<<<.row_open[${$$.a('<<.row_i')}]`, !row_open);
+                                    return true;
+                                },
                             },
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<.col_ids'] }, ({ key: [id] }) => ({
@@ -5822,26 +5669,25 @@ var $;
                         }),
                     },
                 }),
-                comment: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i'], ({ masters: [row_i] }) => [`<<.row_open[${row_i}]`]), ({ masters: [row_open] }) => !row_open ? null :
-                    {
-                        dom: {
-                            innerText: () => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ornare nisl et tortor euismod, ut consequat nunc vehicula. Integer sit amet quam ante. Integer bibendum ante vel semper auctor. Mauris vitae erat gravida, ultrices libero id, pellentesque enim. Phasellus molestie malesuada tellus, in commodo lectus dictum at. Aliquam malesuada venenatis tellus a feugiat. Ut ac.'
-                        },
-                        prop: {
-                            '#ofsVer': '<<<.row_height_min',
-                            '#height': () => null,
-                            '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.col_ids'], ({ masters: [col_ids] }) => {
-                                const col_id_last = col_ids[col_ids.length - 1];
-                                return ['<.#width', `<<<.col_left[${col_id_last}]`, `<<<.col_width[${col_id_last}]`];
-                            }), ({ masters: [width, col_left, col_width] }) => Math.min(width, col_left + col_width)),
-                        },
-                        style: {
-                            fontSize: () => 14,
-                            padding: () => 8,
-                            boxSizing: () => 'border-box',
-                            userSelect: () => 'auto',
-                        },
-                    }),
+                comment: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i'], ({ masters: [row_i] }) => ['<<.rec_count', `<<.row_open[${row_i}]`]), ({ masters: [rec_count, row_open] }) => rec_count <= 0 || !row_open ? null : {
+                    dom: {
+                        innerText: () => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ornare nisl et tortor euismod, ut consequat nunc vehicula. Integer sit amet quam ante. Integer bibendum ante vel semper auctor. Mauris vitae erat gravida, ultrices libero id, pellentesque enim. Phasellus molestie malesuada tellus, in commodo lectus dictum at. Aliquam malesuada venenatis tellus a feugiat. Ut ac.'
+                    },
+                    prop: {
+                        '#ofsVer': '<<<.row_height_min',
+                        '#height': () => null,
+                        '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.col_ids'], ({ masters: [col_ids] }) => {
+                            const col_id_last = col_ids[col_ids.length - 1];
+                            return ['<.#width', `<<<.col_left[${col_id_last}]`, `<<<.col_width[${col_id_last}]`];
+                        }), ({ masters: [width, col_left, col_width] }) => Math.min(width, col_left + col_width)),
+                    },
+                    style: {
+                        fontSize: () => 14,
+                        padding: () => 8,
+                        boxSizing: () => 'border-box',
+                        userSelect: () => 'auto',
+                    },
+                }),
             },
         };
         const header = {
@@ -6074,19 +5920,26 @@ var $;
                         provider: () => $$.a.get('<').path,
                         rec_count: '<.count',
                         row_opens: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.row_opens || (order.row_opens = new Set())),
-                        on_order_changed: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
+                        on_order_changed: $$.$me_atom2_prop(['<.order', '.rec_count'], ({ masters: [order, rec_count] }) => rec_count < 0 ? null : [order, rec_count], ({ val }) => {
                             if (!val)
                                 return;
+                            const [order, rec_count] = val;
                             const ec = $$.a.curr.parent(true);
-                            ec.dispatch('set_view', val);
+                            ec.dispatch('set_view', order);
                         }),
-                        on_change_row_i_min: $$.$me_atom2_prop(['.row_i_min', '<.order'], null, ({ val: [row_i_min, order] }) => {
+                        on_change_row_i_min: $$.$me_atom2_prop(['.row_i_min', '<.order', '.rec_count'], null, ({ val: [row_i_min, order, rec_count] }) => {
+                            if (rec_count < 0)
+                                return;
                             order.row_i_min = row_i_min;
                         }),
-                        on_change_visible_idx_min: $$.$me_atom2_prop(['.visible_idx_min', '<.order'], null, ({ val: [visible_idx_min, order] }) => {
+                        on_change_visible_idx_min: $$.$me_atom2_prop(['.visible_idx_min', '<.order', '.rec_count'], null, ({ val: [visible_idx_min, order, rec_count] }) => {
+                            if (rec_count < 0)
+                                return;
                             order.visible_idx_min = visible_idx_min;
                         }),
-                        on_change_visible_top: $$.$me_atom2_prop(['.visible_top', '<.order'], null, ({ val: [visible_top, order] }) => {
+                        on_change_visible_top: $$.$me_atom2_prop(['.visible_top', '<.order', '.rec_count'], null, ({ val: [visible_top, order, rec_count] }) => {
+                            if (rec_count < 0)
+                                return;
                             order.visible_top = visible_top;
                         }),
                         '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'Таблица'),
@@ -6209,7 +6062,7 @@ var $;
                                 width: 93,
                                 fld: ['meter_price_rub'],
                                 fn: (meter_price_rub) => {
-                                    var x = (meter_price_rub + '').split('.');
+                                    var x = (Math.round(meter_price_rub) + '').split('.');
                                     var x1 = x[0];
                                     var x2 = x.length > 1 ? '.' + x[1] : '';
                                     var rgx = /(\d+)(\d{3})/;
@@ -6310,14 +6163,14 @@ var $;
             prop: {
                 orders: () => [
                     {
-                        id: 'id1',
+                        id: 'id2',
                         title: 'Заказ 2',
                         params: {
                             rmqt: new Set(['1', '2']),
                         },
                     },
                     {
-                        id: 'id2',
+                        id: 'id1',
                         title: 'Заказ 1',
                         params: {
                             rmqt: new Set(['4', '6+']),
