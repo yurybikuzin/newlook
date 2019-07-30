@@ -5989,7 +5989,8 @@ var $;
                 }),
                 dataWorker: () => {
                     if (!_dataWorker) {
-                        _dataWorker = new Worker(window.location.href + 'data/-/web.js');
+                        const base = window.location.href.slice(0, -window.location.search.length);
+                        _dataWorker = new Worker(base + 'data/-/web.js');
                         const curr = $$.a.curr;
                         _dataWorker.onmessage = (event) => {
                             const prev = $$.a.curr;
