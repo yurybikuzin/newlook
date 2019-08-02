@@ -5070,7 +5070,9 @@ var $;
                                     fini: () => adjust_rows($$.a('.visible_top')),
                                 });
                     return result;
-                }, ({ val }) => val == null ? null : Math.round(val)), adjust_top: $$.$me_atom2_prop([], () => null, ({ val }) => {
+                }, ({ val }) => val == null ? null : Math.round(val)), on_height_changed: $$.$me_atom2_prop(['.#height'], null, ({ val }) => {
+                    adjust_rows($$.a('.visible_top'));
+                }), adjust_top: $$.$me_atom2_prop([], () => null, ({ val }) => {
                     adjust_rows(val, true);
                 }), adjust_bottom: $$.$me_atom2_prop([], () => null, ({ val }) => {
                     adjust_rows(val);
