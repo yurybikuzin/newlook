@@ -193,6 +193,13 @@ var $;
             return result;
         };
         const _enum_pairs_cache = new Map();
+        let $me_rect_corners_enum;
+        (function ($me_rect_corners_enum) {
+            $me_rect_corners_enum[$me_rect_corners_enum["leftTop"] = 0] = "leftTop";
+            $me_rect_corners_enum[$me_rect_corners_enum["rightTop"] = 1] = "rightTop";
+            $me_rect_corners_enum[$me_rect_corners_enum["leftBottom"] = 2] = "leftBottom";
+            $me_rect_corners_enum[$me_rect_corners_enum["rightBottom"] = 3] = "rightBottom";
+        })($me_rect_corners_enum = $$.$me_rect_corners_enum || ($$.$me_rect_corners_enum = {}));
         let $me_rect_sides_enum;
         (function ($me_rect_sides_enum) {
             $me_rect_sides_enum[$me_rect_sides_enum["left"] = 0] = "left";
@@ -345,32 +352,30 @@ var $;
         }
         $$.$me_atom2_async_ric = $me_atom2_async_ric;
         let _me_atom2_async_ric_queue = Array();
-        function $me_atom2_async_multi_origin(p) {
-            const _default = p.default;
+        function $me_atom2_async_multi_origin(pp) {
+            const _default = pp.default;
+            const _raf_order = pp.raf_order;
+            let _value;
             let _need_flush = false;
-            let prev;
+            let _prev;
             const _flush = () => {
                 if (!_need_flush)
                     return;
-                p.flush(_value.val, prev, _value);
-                prev = _value.val;
+                pp.flush(_value.val, _prev, _value);
+                _prev = _value.val;
                 _need_flush = false;
             };
-            const raf_order = p.raf_order;
-            if (raf_order !== void 0)
-                $me_atom2_async({ fn: _flush, order: raf_order });
-            let _value;
-            return function (p) {
-                let same_origin;
-                let same_val;
-                let is_default;
-                if ((p !== void 0) && (_value === void 0 ||
-                    ($$.$me_equal(p.origin, _value.origin) ? !$$.$me_equal(p.val, _value.val) : !$$.$me_equal(p.val, _default)))) {
+            if (_raf_order != null)
+                $me_atom2_async({ fn: _flush, order: _raf_order });
+            const result = function (p) {
+                if ((p !== void 0) && (_value == null || ($$.$me_equal(p.origin, _value.origin) ?
+                    !$$.$me_equal(p.val, _value.val) :
+                    !$$.$me_equal(p.val, _default)))) {
                     _value = { origin: p.origin, val: p.val };
                     _need_flush = true;
-                    if (raf_order === void 0 && p.immediatly === false)
+                    if (_raf_order == null && p.immediatly === false)
                         $$.$me_throw('immediatly can not be false whilst raf_order is not set');
-                    if (raf_order === void 0 || p.immediatly) {
+                    if (_raf_order == null || p.immediatly) {
                         _flush();
                     }
                     else {
@@ -379,6 +384,7 @@ var $;
                 }
                 return _value ? _value.val : _default;
             };
+            return result;
         }
         $$.$me_atom2_async_multi_origin = $me_atom2_async_multi_origin;
     })($$ = $.$$ || ($.$$ = {}));
@@ -1285,9 +1291,619 @@ var $;
         $me_atom2_ec._cnf_cache = new Map();
         $me_atom2_ec._prepare_cache = {};
         $$.$me_atom2_ec = $me_atom2_ec;
+        $$.$me_atom2_ec_body_cursor = $$.$me_atom2_async_multi_origin({
+            name: 'cursor',
+            default: null,
+            raf_order: 100,
+            flush: (cursor) => {
+                if (cursor == null)
+                    cursor = 'default';
+                if (document.body.style.cursor != cursor)
+                    document.body.style.cursor = cursor;
+            },
+        });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //ec.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const event_names = [
+            'touchstart',
+            'touchmove',
+            'touchend',
+            'mousemove',
+            'mousedown',
+            'mouseup',
+            'wheel',
+            'wheelTouch',
+            'click',
+            'tap',
+            'clickOrTap',
+            'clickOrTapOutside',
+            'clickOutside',
+            'tapOutside',
+        ];
+        let click;
+        let startClick;
+        let startTap;
+        let hoverCurr;
+        let hoverPrev;
+        function _event_add(ec, name_event, events) {
+            let name_atom, fn;
+            if (events) {
+                const event_def = events[name_event];
+                fn = typeof event_def === 'function' ?
+                    event_def :
+                    event_def.fn;
+            }
+            let s;
+            if (!ec._entities)
+                $$.$me_throw(ec.name(), ec.active());
+            if (!ec._entities.prop)
+                $$.$me_throw(ec.name(), ec.active(), ec._entities);
+            if (!ec._entities.prop['#zIndex'])
+                $$.$me_throw(ec.name(), ec.active(), ec._entities.prop);
+            const zIndex = ec._entities.prop['#zIndex'].value();
+            if (name_event === 'hover') {
+                _do_event_add(ec, 'mousemove', zIndex, { name: 'hover' });
+            }
+            else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
+                _do_event_add(ec, 'touchstart', zIndex, { name: 'tapBegin' });
+                _do_event_add(ec, 'touchmove', zIndex, { name: 'tapTrack' });
+                _do_event_add(ec, 'touchend', zIndex, { name: 'tapDid', fn });
+            }
+            else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
+                _do_event_add(ec, 'mousedown', zIndex, { name: 'clickBegin' });
+                _do_event_add(ec, 'mouseup', zIndex, { name: 'clickDid', fn });
+            }
+            else if (name_event === 'clickOrTapOutside') {
+                $$.$me_throw('TODO');
+            }
+            else
+                _do_event_add(ec, name_event, zIndex, fn);
+        }
+        function _do_event_add(ec, name_event, zIndex, fn) {
+            if (!$$.$me_atom2_event_handlers.has(name_event))
+                $$.$me_atom2_event_handlers.set(name_event, []);
+            const queue = $$.$me_atom2_event_handlers.get(name_event);
+            let i = 0;
+            while (i < queue.length && queue[i].zIndex > zIndex)
+                i++;
+            if (i == queue.length || queue[i].zIndex != zIndex)
+                queue.splice(i, 0, {
+                    zIndex,
+                    handlers: new Map(),
+                });
+            const handlers = queue[i].handlers;
+            if (!handlers.has(ec.path))
+                handlers.set(ec.path, []);
+            handlers.get(ec.path).push(fn);
+        }
+        function _events_add_helper(ec, cnf) {
+            if (!cnf)
+                return;
+            if (cnf.event)
+                for (const name_event of event_names)
+                    if (cnf.event[name_event])
+                        _event_add(ec, name_event, cnf.event);
+            if (cnf.base)
+                _events_add_helper(ec, cnf.base);
+        }
+        function _events_add(ec) {
+            if (ec._entities &&
+                ec._entities.prop &&
+                ec._entities.prop['#isHover']
+                && !ec._entities.prop['#isHover'].masters)
+                _event_add(ec, 'hover');
+            _events_add_helper(ec, ec.cnf);
+        }
+        function _events_add_recursive(entity) {
+            const entities = entity._entities;
+            if (entities) {
+                for (const ent of [$$.$me_atom2_entity_enum.key, $$.$me_atom2_entity_enum.elem, $$.$me_atom2_entity_enum.control]) {
+                    const entities_of_type = entities[$$.$me_atom2_entity_enum[ent]];
+                    if (!entities_of_type)
+                        continue;
+                    for (const tail in entities_of_type) {
+                        const ec = entities_of_type[tail];
+                        if (!ec.active())
+                            continue;
+                        _events_add(ec);
+                        _events_add_recursive(ec);
+                    }
+                }
+            }
+        }
+        function $me_atom2_event_process(name_event, event) {
+            if (!event)
+                return;
+            if (!$$.$me_atom2_event_handlers) {
+                $$.$me_atom2_event_handlers = new Map();
+                _events_add_recursive($$.$me_atom2_entity.root());
+            }
+            if (!$$.$me_atom2_event_handlers.has(name_event))
+                return;
+            const queue = $$.$me_atom2_event_handlers.get(name_event);
+            let done_event = false;
+            for (const item of queue) {
+                for (const [path, fn_array] of item.handlers) {
+                    const ec = $$.$me_atom2_entity.root().by_path(path);
+                    if (!ec)
+                        continue;
+                    if (!ec._entities.prop['#visible'].value())
+                        continue;
+                    const clientRect = ec._entities.prop['#clientRect'].value();
+                    if (!clientRect)
+                        continue;
+                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
+                    const distToRect = (clientX, clientY) => $$.$me_dist_to_rect(clientX, clientY, clientRect);
+                    let done_ec = false;
+                    let done_ec_special = false;
+                    const prev = $$.a.curr;
+                    $$.a.curr = ec;
+                    let clickTolerance;
+                    let touchTolerance;
+                    let tapTolerance;
+                    for (const item of fn_array)
+                        if (typeof item == 'function') {
+                            const fn = item;
+                            if (done_ec = fn({ event, isInRect, distToRect }))
+                                break;
+                        }
+                        else {
+                            const name = item.name;
+                            if (name == 'hover') {
+                                if (isInRect(event.clientX, event.clientY)) {
+                                    ec._entities.prop['#isHover'].value(true);
+                                    if (!hoverCurr)
+                                        hoverCurr = new Set();
+                                    hoverCurr.add(path);
+                                    done_ec_special = true;
+                                }
+                            }
+                            else if (name == 'clickBegin') {
+                                if (isInRect(event.clientX, event.clientY)) {
+                                    if (!click)
+                                        click = new Set();
+                                    click.add(path);
+                                    startClick = event;
+                                    done_ec_special = true;
+                                }
+                            }
+                            else if (name == 'clickDid') {
+                                if (click && click.has(path)) {
+                                    if (clickTolerance === void 0)
+                                        clickTolerance = $$.a('/.#clickTolerance');
+                                    done_ec_special =
+                                        Math.abs(startClick.clientX - event.clientX) <= clickTolerance &&
+                                            Math.abs(startClick.clientY - event.clientY) <= clickTolerance &&
+                                            item.fn({
+                                                isInRect,
+                                                distToRect,
+                                                event: { start: startClick, end: event }
+                                            });
+                                }
+                            }
+                            else if (name == 'tapBegin') {
+                                if (touchTolerance === void 0)
+                                    touchTolerance = $$.a('/.#touchTolerance');
+                                const dist = distToRect(event.touches[0].clientX, event.touches[0].clientY);
+                                if (dist <= touchTolerance) {
+                                    if (!$$.$me_atom2_event_tap) {
+                                        $$.$me_atom2_event_tap = new Map();
+                                    }
+                                    else {
+                                        const dist_eta = dist;
+                                        for (const [path, dist] of $$.$me_atom2_event_tap)
+                                            if (dist > dist_eta)
+                                                $$.$me_atom2_event_tap.delete(path);
+                                    }
+                                    $$.$me_atom2_event_tap.set(ec.path, dist);
+                                    startTap = event;
+                                    done_ec_special = true;
+                                }
+                            }
+                            else if (name == 'tapTrack') {
+                                if ($$.$me_atom2_event_tap && $$.$me_atom2_event_tap.size) {
+                                    const event_curr = event;
+                                    if (tapTolerance == void 0)
+                                        tapTolerance = $$.a('/.#tapTolerance');
+                                    if (Math.abs(event.touches[0].clientX - startTap.touches[0].clientX) > tapTolerance ||
+                                        Math.abs(event.touches[0].clientY - startTap.touches[0].clientY) > tapTolerance)
+                                        $$.$me_atom2_event_tap.clear();
+                                }
+                            }
+                            else if (name == 'tapDid') {
+                                if ($$.$me_atom2_event_tap && $$.$me_atom2_event_tap.has(path)) {
+                                    const fn = item.fn;
+                                    if (fn({
+                                        isInRect,
+                                        distToRect,
+                                        event: { start: startTap, end: event },
+                                    })) {
+                                        const app = $$.a.get('/@app');
+                                        app.dispatch('tapEffect', { ec, event: startTap });
+                                        done_ec_special = true;
+                                    }
+                                }
+                            }
+                            else
+                                $$.$me_throw(name);
+                        }
+                    $$.a.curr = prev;
+                    done_event = done_event || done_ec || done_ec_special;
+                }
+                if (done_event)
+                    break;
+            }
+            if (name_event == 'mousemove') {
+                if (hoverCurr) {
+                    if (hoverPrev && hoverPrev.size) {
+                        for (const path of hoverPrev) {
+                            if (hoverCurr.has(path))
+                                continue;
+                            const ec = $$.$me_atom2_entity.root().by_path(path);
+                            if (!(ec instanceof $$.$me_atom2_ec))
+                                continue;
+                            ec._entities.prop['#isHover'].value(false);
+                        }
+                        hoverPrev.clear();
+                    }
+                    if (!hoverPrev)
+                        hoverPrev = new Set();
+                    for (const path of hoverCurr)
+                        hoverPrev.add(path);
+                    hoverCurr.clear();
+                }
+            }
+            else if (name_event == 'mouseup') {
+                click && click.clear();
+            }
+            else if (name_event == 'touchend') {
+                $$.$me_atom2_event_tap && $$.$me_atom2_event_tap.clear();
+            }
+        }
+        $$.$me_atom2_event_process = $me_atom2_event_process;
+        function $me_atom2_event_keyboard_process(name_event, event) {
+        }
+        $$.$me_atom2_event_keyboard_process = $me_atom2_event_keyboard_process;
+        const isTouch = () => $$.$me_atom2_entity.root()._entities.prop['#isTouch'].value();
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//event.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $me_atom2_control_render_state_enum;
+        (function ($me_atom2_control_render_state_enum) {
+            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["cleaned"] = 0] = "cleaned";
+            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["rendered"] = 1] = "rendered";
+        })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
+        class $me_atom2_control extends $$.$me_atom2_ec {
+            constructor(p) {
+                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
+                this._mk_controls(this.level = p.level || 1);
+                this._mk_props('<'.repeat(this.level));
+            }
+            static pixelRatio() {
+                return $$.$me_atom2_entity.root()._entities.prop['#pixelRatio'].value();
+            }
+            _wait_for_child_did_helper() {
+                const parent = this.parent(true);
+                if (parent)
+                    parent._wait_for_child_did(this.name());
+            }
+            destroy() {
+                if (this.level > 1) {
+                    $me_atom2_control._to_render.add(this.parent(true).path);
+                    $$.$me_atom2_async();
+                }
+                else {
+                    $me_atom2_control.clean([this]);
+                }
+                super.destroy();
+            }
+            _mk_props(s_level) {
+                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_default || {});
+                const prop_render = this.props([
+                    this.cnf_items('prop'),
+                    defaults,
+                    defaults_relative,
+                    {
+                        '#hidden': () => false,
+                        '#zIndex': '<.#zIndex',
+                    },
+                    {
+                        '#_isReady': () => false,
+                        '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
+                            if (val)
+                                $$.$me_atom2_ec._to_init.push(this.path);
+                        }),
+                        '#visible': $$.$me_atom2_prop(['.#hidden', '<.#visible'], ({ masters: [hidden, visible] }) => !hidden && visible, ({ val }) => {
+                            if (val) {
+                                $me_atom2_control._to_render.add(this.path);
+                            }
+                            else if (this.level > 1) {
+                                $me_atom2_control._to_render.add(this.parent(true).path);
+                            }
+                            else {
+                                $me_atom2_control._to_clean.add(this.path);
+                            }
+                            $$.$me_atom2_async();
+                        }),
+                        '#ctxSize': s_level + '.#ctxSize',
+                        '#ctx': s_level + '.#ctx',
+                        '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'].concat(s_level.length < 2 ? [] : ['<.#left']), ({ masters: [alignHor, width_parent, width, ofsHor, left_parent] }) => {
+                            left_parent = left_parent || 0;
+                            const result = alignHor === $$.$me_align.left ? left_parent + ofsHor :
+                                alignHor === $$.$me_align.right ? left_parent + width_parent - ofsHor :
+                                    left_parent + (width_parent - width) / 2 + ofsHor;
+                            return result;
+                        }),
+                        '#top': $$.$me_atom2_prop(['.#alignVer', '<.#height', '.#height', '.#ofsVer'].concat(s_level.length < 2 ? [] : ['<.#top']), ({ masters: [alignVer, height_parent, height, ofsVer, top_parent] }) => {
+                            top_parent = top_parent || 0;
+                            const result = alignVer === $$.$me_align.top ? top_parent + ofsVer :
+                                alignVer === $$.$me_align.bottom ? top_parent + height_parent - ofsVer :
+                                    top_parent + (height_parent - height) / 2 + ofsVer;
+                            return result;
+                        }),
+                    },
+                ], {
+                    dup: ({ tail, prop_defined, idx, len }) => {
+                        if (idx === len - 1)
+                            $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
+                    }
+                });
+                {
+                    const { defaults, defaults_relative } = this._prepare('prop_non_render_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_non_render_default || {});
+                    const prop_non_render = this.props([
+                        this.cnf_items('prop_non_render'),
+                        defaults,
+                        defaults_relative,
+                        {
+                            '#isHover': () => false,
+                        },
+                        {
+                            '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
+                                $$.$me_atom2_ec_body_cursor({ origin: atom.path, val: val });
+                            }),
+                        },
+                    ], {
+                        def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
+                            if (idx === len - 2 && tail == '#isHover') {
+                                if (prop_defined['#cursor'] === void 0)
+                                    return null;
+                            }
+                            else if (idx === len - 1 && tail == '#_cursor') {
+                                if (prop_defined['#cursor'] === void 0)
+                                    return null;
+                            }
+                        },
+                        dup: ({ tail, prop_defined, idx, len }) => {
+                            if (idx === len - 1)
+                                $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
+                        }
+                    });
+                }
+                for (const prop of ['#width', '#height', '#alignHor', '#alignVer', '#ofsHor', '#ofsVer'])
+                    if (prop_render[prop] === void 0)
+                        $$.$me_throw(`${this.name()}: requires .${prop} to be defined`);
+                this.props({
+                    '#render': $$.$me_atom2_prop(Object.keys(prop_render).map((s) => '.' + s), ({ masters }) => !(this.active() && $$.a('.#visible') && $$.a('.#isReady')) ? null : masters, ({ val, prev, atom }) => {
+                        if (!val)
+                            return;
+                        $me_atom2_control._to_render.add(this.path);
+                        $$.$me_atom2_async();
+                    }),
+                    '#offsetRect': () => $$.$me_rect(),
+                    '#clientRect': $$.$me_atom2_prop([s_level + '.#clientRect', '.#offsetRect'], ({ masters: [clientRect, offsetRect] }) => {
+                        return {
+                            left: clientRect.left + offsetRect.left,
+                            top: clientRect.top + offsetRect.top,
+                            right: clientRect.left + offsetRect.right,
+                            bottom: clientRect.top + offsetRect.bottom,
+                        };
+                    }, prop_render['#isHover'] === void 0 ? null :
+                        ({ val, atom }) => {
+                            if ($$.$me_atom2_event_mousemove_last && !$$.$me_atom2_event_mousemove_to_process) {
+                                $$.$me_atom2_event_mousemove_to_process = $$.$me_atom2_event_mousemove_last;
+                                $$.$me_atom2_async();
+                            }
+                        }),
+                });
+            }
+            static font_prepare(ctx, pixelRatio, prefix = '') {
+                const ctxFontSize = Math.round($me_atom2_control.font_size(pixelRatio, prefix));
+                ctx.font = $me_atom2_control._fontWeight(prefix) + ' ' + ctxFontSize + 'px ' + $me_atom2_control._fontFamily(prefix);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                return ctxFontSize;
+            }
+            static font_size(pixelRatio, prefix = '') {
+                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontSize', prefix));
+                if (typeof prop === 'string')
+                    $$.$me_throw(prop);
+                const result = prop.value() * pixelRatio;
+                return result;
+            }
+            static _fontProp(prop, prefix) {
+                const result = '.' + (!prefix ? prop : prefix + prop.slice(0, 1).toUpperCase() + prop.slice(1));
+                return result;
+            }
+            static _fontFamily(prefix = '') {
+                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontFamily', prefix));
+                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontFamily');
+            }
+            static _fontWeight(prefix = '') {
+                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontWeight', prefix));
+                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontWeight');
+            }
+            static clean(controls, force = false) {
+                let count = 0;
+                for (let control of controls) {
+                    if (control.render_state !== $me_atom2_control_render_state_enum.rendered)
+                        continue;
+                    count++;
+                    const ctxRect = control._ctxRect();
+                    const p = {
+                        ctx: control._entities.prop['#ctx'].value(),
+                        ctxRect,
+                    };
+                    if (p.ctx) {
+                        const prev = $$.a.curr;
+                        $$.a.curr = control;
+                        if (!control._clean_helper(p, control.cnf))
+                            p.ctx.clearRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left + 1, p.ctxRect.bottom - p.ctxRect.top + 1);
+                        $$.a.curr = prev;
+                    }
+                    control.render_state = $me_atom2_control_render_state_enum.cleaned;
+                    let controls;
+                    if ($me_atom2_control._fill_controls_cache.has(control)) {
+                        controls = $me_atom2_control._fill_controls_cache.get(control);
+                    }
+                    else {
+                        controls = [];
+                        const entities_control = control._entities.control;
+                        $me_atom2_control._fill_controls(controls, control._entities.control);
+                        $me_atom2_control._fill_controls_cache.set(control, controls);
+                    }
+                    if (controls.length)
+                        $me_atom2_control.clean($me_atom2_control.zIndex_sort(controls), force);
+                }
+                return count;
+            }
+            _ctxRect() {
+                const prop = this._entities.prop;
+                const prop_offsetRect = prop['#offsetRect'];
+                const offsetRect = prop_offsetRect.value();
+                const pixelRatio = $me_atom2_control.pixelRatio();
+                return {
+                    left: offsetRect.left * pixelRatio,
+                    top: offsetRect.top * pixelRatio,
+                    right: offsetRect.right * pixelRatio,
+                    bottom: offsetRect.bottom * pixelRatio,
+                };
+            }
+            _clean_helper(p, cnf) {
+                let result = false;
+                if (cnf) {
+                    if (cnf.clean)
+                        result = cnf.clean(p);
+                    result = this._clean_helper(p, cnf.base) || result;
+                }
+                return result;
+            }
+            static fill_controls_cache_clear() {
+                $me_atom2_control._fill_controls_cache.clear();
+            }
+            static _fill_controls(controls, entities_of_type) {
+                for (const tail in entities_of_type) {
+                    const entity = entities_of_type[tail];
+                    if (!entity._entities.key) {
+                        controls.push(entity);
+                    }
+                    else {
+                        $me_atom2_control._fill_controls(controls, entity._entities.key);
+                    }
+                }
+            }
+            static render(controls, pixelRatio) {
+                if (pixelRatio === void 0)
+                    pixelRatio = $me_atom2_control.pixelRatio();
+                let count = 0;
+                for (let control of controls) {
+                    if (control.render_state === $me_atom2_control_render_state_enum.rendered) {
+                        continue;
+                    }
+                    count++;
+                    const prop = control._entities.prop;
+                    const prop_offsetRect = prop['#offsetRect'];
+                    const prop_width = prop['#width'];
+                    const prop_heght = prop['#height'];
+                    const prop_left = prop['#left'];
+                    const prop_top = prop['#top'];
+                    const ctxWidth = Math.round(prop_width.value() * pixelRatio);
+                    const ctxHeight = Math.round(prop_heght.value() * pixelRatio);
+                    const left = Math.round(prop_left.value() * pixelRatio);
+                    const top = Math.round(prop_top.value() * pixelRatio);
+                    const right = left + ctxWidth;
+                    const bottom = top + ctxHeight;
+                    const ctxRect = { left, top, right, bottom };
+                    prop_offsetRect.value({
+                        left: left / pixelRatio,
+                        top: top / pixelRatio,
+                        right: right / pixelRatio,
+                        bottom: bottom / pixelRatio,
+                    });
+                    const p = {
+                        ctx: control._entities.prop['#ctx'].value(),
+                        ctxSize: control._entities.prop['#ctxSize'].value(),
+                        pixelRatio,
+                        ctxRect,
+                        ctxWidth,
+                        ctxHeight,
+                    };
+                    {
+                        const prev = $$.a.curr;
+                        $$.a.curr = control;
+                        control._render_helper(p, control.cnf);
+                        if (typeof $$.a.curr.by_path_s('.#border') !== 'string') {
+                            p.ctx.strokeStyle = $$.a('.#border');
+                            p.ctx.strokeRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left, p.ctxRect.bottom - p.ctxRect.top);
+                        }
+                        $$.a.curr = prev;
+                    }
+                    let controls;
+                    if ($me_atom2_control._fill_controls_cache.has(control)) {
+                        controls = $me_atom2_control._fill_controls_cache.get(control);
+                    }
+                    else {
+                        controls = [];
+                        const entities_control = control._entities.control;
+                        $me_atom2_control._fill_controls(controls, control._entities.control);
+                        $me_atom2_control._fill_controls_cache.set(control, controls);
+                    }
+                    if (controls.length)
+                        $me_atom2_control.render($me_atom2_control.zIndex_sort(controls), pixelRatio);
+                    control.render_state = $me_atom2_control_render_state_enum.rendered;
+                }
+                return count;
+            }
+            _render_helper(p, cnf) {
+                if (!cnf)
+                    return;
+                this._render_helper(p, cnf.base);
+                if (cnf.render)
+                    cnf.render(p);
+            }
+            static zIndex_sort(ss, to_render = false) {
+                return (Array.isArray(ss) ? ss :
+                    [...ss].map(path => $$.$me_atom2_entity.root().by_path(path)))
+                    .filter(control => control && control.active &&
+                    (() => {
+                        if (!control._entities.prop)
+                            $$.$me_throw(control.name());
+                        return true;
+                    })() &&
+                    (!to_render || control._entities.prop['#visible'].value()));
+            }
+        }
+        $me_atom2_control.to_def = Array();
+        $me_atom2_control._to_render = new Set();
+        $me_atom2_control._to_clean = new Set();
+        $me_atom2_control.prop_non_render_default = {};
+        $me_atom2_control._fill_controls_cache = new Map();
+        $$.$me_atom2_control = $me_atom2_control;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//control.js.map
 ;
 "use strict";
 var $;
@@ -1456,7 +2072,7 @@ var $;
             fn_compute_left(p) {
                 const [alignHor, width_parent, width, ofsHor] = p.masters;
                 const result = alignHor === $$.$me_align.left ? ofsHor :
-                    alignHor === $$.$me_align.right ? width_parent - width + ofsHor :
+                    alignHor === $$.$me_align.right ? width_parent - width - ofsHor :
                         Math.floor((width_parent - width) / 2) + ofsHor;
                 return result;
             }
@@ -1465,7 +2081,6 @@ var $;
                 const result = alignVer === $$.$me_align.top ? ofsVer :
                     alignVer === $$.$me_align.bottom ? height_parent - height - ofsVer :
                         Math.floor((height_parent - height) / 2) + ofsVer;
-                const name = p.atom.name();
                 return result;
             }
             fn_apply_left(p) {
@@ -1545,8 +2160,8 @@ var $;
                     Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
                             if (val)
                                 $$.$me_atom2_ec._to_init.push(this.path);
-                        }), '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? 'default' : cursor, ({ atom, val }) => {
-                            $$.$me_atom2_body_cursor({ origin: atom.path, val: val });
+                        }), '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
+                            $$.$me_atom2_ec_body_cursor({ origin: atom.path, val: val });
                         }), '#visible': $$.$me_atom2_prop(['.#hidden'].concat(!has_parent ? [] : ['<.#visible']), this.fn_compute_visible), '#clientRect': $$.$me_atom2_prop(['.#isReady'], this.fn_compute_clientRect, this.fn_apply_clientRect) }, (!has_control ? {} : {
                         '#ctx': () => this.node.getContext('2d'),
                         '#ctxSize': $$.$me_atom2_prop(['/.#pixelRatio', '.#width', '.#height'], this.fn_compute_ctxSize, this.fn_apply_ctxSize),
@@ -1965,555 +2580,9 @@ var $;
         $me_atom2_elem._lazy_prop_to_apply_clientRect = new Map();
         $me_atom2_elem.children_to_add = new Map();
         $$.$me_atom2_elem = $me_atom2_elem;
-        $$.$me_atom2_body_cursor = $$.$me_atom2_async_multi_origin({
-            default: 'default',
-            raf_order: 100,
-            flush: (cursor) => {
-                if (document.body.style.cursor != cursor)
-                    document.body.style.cursor = cursor;
-            },
-        });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //elem.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const event_names = [
-            'touchstart',
-            'touchmove',
-            'touchend',
-            'mousedown',
-            'mouseup',
-            'mousemove',
-            'wheel',
-            'wheelTouch',
-            'click',
-            'tap',
-            'clickOrTap',
-            'clickOrTapOutside',
-            'clickOutside',
-            'tapOutside',
-        ];
-        $$.clickRet = new Map();
-        let tapTarget;
-        function _event_add(ec, name_event, events) {
-            let name_atom, fn;
-            if (events) {
-                const event_def = events[name_event];
-                fn = typeof event_def === 'function' ?
-                    event_def :
-                    event_def.fn;
-            }
-            let s;
-            if (!ec._entities)
-                $$.$me_throw(ec.name(), ec.active());
-            if (!ec._entities.prop)
-                $$.$me_throw(ec.name(), ec.active(), ec._entities);
-            if (!ec._entities.prop['#zIndex'])
-                $$.$me_throw(ec.name(), ec.active(), ec._entities.prop);
-            const zIndex = ec._entities.prop['#zIndex'].value();
-            if (name_event === 'hover') {
-                _do_event_add(ec, 'mousemove', zIndex, (p) => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    $$.a('.#isHover', true));
-                _do_event_add(ec, 'mousemove', 1000, (p) => !p.isInRect(p.event.clientX, p.event.clientY) && $$.a('.#isHover', false));
-            }
-            else if (name_event === 'tap' || name_event === 'clickOrTap' && isTouch()) {
-                _do_event_add(ec, 'touchstart', zIndex, p => {
-                    const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                    if (dist > $$.a('/.#touchTolerance'))
-                        return false;
-                    if (tapTarget == null) {
-                        tapTarget = { ec, dist, event: p.event };
-                        console.log(tapTarget.ec.name(), tapTarget.dist);
-                    }
-                    else if (dist < tapTarget.dist) {
-                        tapTarget = { ec, dist, event: p.event };
-                        console.log(tapTarget.ec.name(), tapTarget.dist);
-                    }
-                    return !!tapTarget;
-                });
-                _do_event_add(ec, 'touchmove', zIndex, p => {
-                    if (tapTarget &&
-                        tapTarget.ec == ec) {
-                        const deltaX = Math.abs(p.event.touches[0].clientX - tapTarget.event.touches[0].clientX);
-                        const deltaY = Math.abs(p.event.touches[0].clientY - tapTarget.event.touches[0].clientY);
-                        if (Math.max(deltaX, deltaY) >= $$.a('/.#tapTolerance')) {
-                            p.event.touches[0].clientX - tapTarget.event.touches[0].clientX;
-                            tapTarget = null;
-                        }
-                    }
-                    return false;
-                });
-                _do_event_add(ec, 'touchend', zIndex, p => {
-                    if (!(tapTarget && tapTarget.ec == ec))
-                        return false;
-                    const event = { start: tapTarget.event, end: p.event };
-                    const _tapTarget = tapTarget;
-                    tapTarget = null;
-                    if (!fn(Object.assign({}, p, { event })))
-                        return false;
-                    const app = $$.a.get('/@app');
-                    app.dispatch('tapEffect', _tapTarget);
-                    console.log('tapped ' + _tapTarget.ec.name());
-                    return true;
-                });
-            }
-            else if (name_event === 'click' || name_event === 'clickOrTap' && !isTouch()) {
-                _do_event_add(ec, 'mousedown', zIndex, p => {
-                    const ret = p.isInRect(p.event.clientX, p.event.clientY);
-                    if (ret) {
-                        $$.clickRet.set(ec.path, p.event);
-                    }
-                    else {
-                        $$.clickRet.delete(ec.path);
-                    }
-                    return ret;
-                });
-                _do_event_add(ec, 'mouseup', zIndex, p => $$.clickRet.has(ec.path) &&
-                    (() => {
-                        const event = $$.clickRet.get(ec.path);
-                        const clickTolerance = $$.a('/.#clickTolerance');
-                        const result = Math.abs(p.event.clientX - event.clientX) < clickTolerance &&
-                            Math.abs(p.event.clientY - event.clientY) < clickTolerance;
-                        return result;
-                    })() &&
-                    fn(Object.assign({}, p, { event: { start: $$.clickRet.get(ec.path), end: p.event } })));
-            }
-            else if (name_event === 'clickOrTapOutside') {
-                $$.$me_throw('TODO');
-            }
-            else
-                _do_event_add(ec, name_event, zIndex, fn);
-        }
-        function _do_event_add(ec, name_event, zIndex, fn) {
-            if (!$$.$me_atom2_event_handlers.has(name_event))
-                $$.$me_atom2_event_handlers.set(name_event, []);
-            const queue = $$.$me_atom2_event_handlers.get(name_event);
-            let i = 0;
-            while (i < queue.length && queue[i].zIndex > zIndex)
-                i++;
-            if (i == queue.length || queue[i].zIndex != zIndex)
-                queue.splice(i, 0, {
-                    zIndex,
-                    handlers: new Map(),
-                });
-            const handlers = queue[i].handlers;
-            if (!handlers.has(ec.path))
-                handlers.set(ec.path, []);
-            handlers.get(ec.path).push(fn);
-        }
-        function _events_add_helper(ec, cnf) {
-            if (!cnf)
-                return;
-            if (cnf.event)
-                for (const name_event of event_names)
-                    if (cnf.event[name_event])
-                        _event_add(ec, name_event, cnf.event);
-            if (cnf.base)
-                _events_add_helper(ec, cnf.base);
-        }
-        function _events_add(ec) {
-            let name_atom;
-            if (ec._entities &&
-                ec._entities.prop &&
-                ec._entities.prop['#isHover']
-                && !ec._entities.prop['#isHover'].masters) {
-                _event_add(ec, 'hover');
-            }
-            _events_add_helper(ec, ec.cnf);
-        }
-        function _events_add_recursive(entity) {
-            const entities = entity._entities;
-            if (entities) {
-                for (const ent of [$$.$me_atom2_entity_enum.key, $$.$me_atom2_entity_enum.elem, $$.$me_atom2_entity_enum.control]) {
-                    const entities_of_type = entities[$$.$me_atom2_entity_enum[ent]];
-                    if (!entities_of_type)
-                        continue;
-                    for (const tail in entities_of_type) {
-                        const ec = entities_of_type[tail];
-                        if (!ec.active())
-                            continue;
-                        _events_add(ec);
-                        _events_add_recursive(ec);
-                    }
-                }
-            }
-        }
-        function $me_atom2_event_process(name_event, event) {
-            if (!event)
-                return;
-            if (!$$.$me_atom2_event_handlers) {
-                $$.$me_atom2_event_handlers = new Map();
-                _events_add_recursive($$.$me_atom2_entity.root());
-            }
-            if (!$$.$me_atom2_event_handlers.has(name_event))
-                return;
-            const queue = $$.$me_atom2_event_handlers.get(name_event);
-            let done = false;
-            for (const item of queue) {
-                for (const [path, fn_array] of item.handlers) {
-                    const ec = $$.$me_atom2_entity.root().by_path(path);
-                    if (!ec)
-                        continue;
-                    if (!ec._entities.prop['#visible'].value())
-                        continue;
-                    const clientRect = ec._entities.prop['#clientRect'].value();
-                    if (!clientRect)
-                        continue;
-                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
-                    const distToRect = (clientX, clientY) => $$.$me_dist_to_rect(clientX, clientY, clientRect);
-                    const prev = $$.a.curr;
-                    $$.a.curr = ec;
-                    for (const fn of fn_array)
-                        if (done = fn({ event, isInRect, distToRect }))
-                            break;
-                    $$.a.curr = prev;
-                }
-                if (done)
-                    break;
-            }
-        }
-        $$.$me_atom2_event_process = $me_atom2_event_process;
-        function $me_atom2_event_keyboard_process(name_event, event) {
-        }
-        $$.$me_atom2_event_keyboard_process = $me_atom2_event_keyboard_process;
-        const isTouch = () => $$.$me_atom2_entity.root()._entities.prop['#isTouch'].value();
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//event.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        let $me_atom2_control_render_state_enum;
-        (function ($me_atom2_control_render_state_enum) {
-            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["cleaned"] = 0] = "cleaned";
-            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["rendered"] = 1] = "rendered";
-        })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
-        class $me_atom2_control extends $$.$me_atom2_ec {
-            constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
-                this._mk_controls(this.level = p.level || 1);
-                this._mk_props('<'.repeat(this.level));
-            }
-            static pixelRatio() {
-                return $$.$me_atom2_entity.root()._entities.prop['#pixelRatio'].value();
-            }
-            _wait_for_child_did_helper() {
-                const parent = this.parent(true);
-                if (parent)
-                    parent._wait_for_child_did(this.name());
-            }
-            destroy() {
-                if (this.level > 1) {
-                    $me_atom2_control._to_render.add(this.parent(true).path);
-                    $$.$me_atom2_async();
-                }
-                else {
-                    $me_atom2_control.clean([this]);
-                }
-                super.destroy();
-            }
-            _mk_props(s_level) {
-                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_default || {});
-                const prop_render = this.props([
-                    this.cnf_items('prop'),
-                    defaults,
-                    defaults_relative,
-                    {
-                        '#hidden': () => false,
-                        '#zIndex': '<.#zIndex',
-                    },
-                    {
-                        '#_isReady': () => false,
-                        '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
-                            if (val)
-                                $$.$me_atom2_ec._to_init.push(this.path);
-                        }),
-                        '#visible': $$.$me_atom2_prop(['.#hidden', '<.#visible'], ({ masters: [hidden, visible] }) => !hidden && visible, ({ val }) => {
-                            if (val) {
-                                $me_atom2_control._to_render.add(this.path);
-                            }
-                            else if (this.level > 1) {
-                                $me_atom2_control._to_render.add(this.parent(true).path);
-                            }
-                            else {
-                                $me_atom2_control._to_clean.add(this.path);
-                            }
-                            $$.$me_atom2_async();
-                        }),
-                        '#ctxSize': s_level + '.#ctxSize',
-                        '#ctx': s_level + '.#ctx',
-                        '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'].concat(s_level.length < 2 ? [] : ['<.#left']), ({ masters: [alignHor, width_parent, width, ofsHor, left_parent] }) => {
-                            left_parent = left_parent || 0;
-                            const result = alignHor === $$.$me_align.left ? left_parent + ofsHor :
-                                alignHor === $$.$me_align.right ? left_parent + width_parent - ofsHor :
-                                    left_parent + (width_parent - width) / 2 + ofsHor;
-                            return result;
-                        }),
-                        '#top': $$.$me_atom2_prop(['.#alignVer', '<.#height', '.#height', '.#ofsVer'].concat(s_level.length < 2 ? [] : ['<.#top']), ({ masters: [alignVer, height_parent, height, ofsVer, top_parent] }) => {
-                            top_parent = top_parent || 0;
-                            const result = alignVer === $$.$me_align.top ? top_parent + ofsVer :
-                                alignVer === $$.$me_align.bottom ? top_parent + height_parent - ofsVer :
-                                    top_parent + (height_parent - height) / 2 + ofsVer;
-                            return result;
-                        }),
-                    },
-                ], {
-                    dup: ({ tail, prop_defined, idx, len }) => {
-                        if (idx === len - 1)
-                            $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
-                    }
-                });
-                {
-                    const { defaults, defaults_relative } = this._prepare('prop_non_render_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_non_render_default || {});
-                    const prop_non_render = this.props([
-                        this.cnf_items('prop_non_render'),
-                        defaults,
-                        defaults_relative,
-                        {
-                            '#isHover': () => false,
-                        },
-                        {
-                            '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? 'default' : cursor, ({ atom, val }) => {
-                                $$.$me_atom2_body_cursor({ origin: atom.path, val: val });
-                            }),
-                        },
-                    ], {
-                        def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
-                            if (idx === len - 2 && tail == '#isHover') {
-                                if (prop_defined['#cursor'] === void 0)
-                                    return null;
-                            }
-                            else if (idx === len - 1 && tail == '#_cursor') {
-                                if (prop_defined['#cursor'] === void 0)
-                                    return null;
-                            }
-                        },
-                        dup: ({ tail, prop_defined, idx, len }) => {
-                            if (idx === len - 1)
-                                $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
-                        }
-                    });
-                }
-                for (const prop of ['#width', '#height', '#alignHor', '#alignVer', '#ofsHor', '#ofsVer'])
-                    if (prop_render[prop] === void 0)
-                        $$.$me_throw(`${this.name()}: requires .${prop} to be defined`);
-                this.props({
-                    '#render': $$.$me_atom2_prop(Object.keys(prop_render).map((s) => '.' + s), ({ masters }) => !(this.active() && $$.a('.#visible') && $$.a('.#isReady')) ? null : masters, ({ val, prev, atom }) => {
-                        if (!val)
-                            return;
-                        $me_atom2_control._to_render.add(this.path);
-                        $$.$me_atom2_async();
-                    }),
-                    '#offsetRect': () => $$.$me_rect(),
-                    '#clientRect': $$.$me_atom2_prop([s_level + '.#clientRect', '.#offsetRect'], ({ masters: [clientRect, offsetRect] }) => {
-                        return {
-                            left: clientRect.left + offsetRect.left,
-                            top: clientRect.top + offsetRect.top,
-                            right: clientRect.left + offsetRect.right,
-                            bottom: clientRect.top + offsetRect.bottom,
-                        };
-                    }, prop_render['#isHover'] === void 0 ? null :
-                        ({ val, atom }) => {
-                            if ($$.$me_atom2_event_mousemove_last && !$$.$me_atom2_event_mousemove_to_process) {
-                                $$.$me_atom2_event_mousemove_to_process = $$.$me_atom2_event_mousemove_last;
-                                $$.$me_atom2_async();
-                            }
-                        }),
-                });
-            }
-            static font_prepare(ctx, pixelRatio, prefix = '') {
-                const ctxFontSize = Math.round($me_atom2_control.font_size(pixelRatio, prefix));
-                ctx.font = $me_atom2_control._fontWeight(prefix) + ' ' + ctxFontSize + 'px ' + $me_atom2_control._fontFamily(prefix);
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'bottom';
-                return ctxFontSize;
-            }
-            static font_size(pixelRatio, prefix = '') {
-                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontSize', prefix));
-                if (typeof prop === 'string')
-                    $$.$me_throw(prop);
-                const result = prop.value() * pixelRatio;
-                return result;
-            }
-            static _fontProp(prop, prefix) {
-                const result = '.' + (!prefix ? prop : prefix + prop.slice(0, 1).toUpperCase() + prop.slice(1));
-                return result;
-            }
-            static _fontFamily(prefix = '') {
-                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontFamily', prefix));
-                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontFamily');
-            }
-            static _fontWeight(prefix = '') {
-                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontWeight', prefix));
-                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontWeight');
-            }
-            static clean(controls, force = false) {
-                let count = 0;
-                for (let control of controls) {
-                    if (control.render_state !== $me_atom2_control_render_state_enum.rendered)
-                        continue;
-                    count++;
-                    const ctxRect = control._ctxRect();
-                    const p = {
-                        ctx: control._entities.prop['#ctx'].value(),
-                        ctxRect,
-                    };
-                    if (p.ctx) {
-                        const prev = $$.a.curr;
-                        $$.a.curr = control;
-                        if (!control._clean_helper(p, control.cnf))
-                            p.ctx.clearRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left + 1, p.ctxRect.bottom - p.ctxRect.top + 1);
-                        $$.a.curr = prev;
-                    }
-                    control.render_state = $me_atom2_control_render_state_enum.cleaned;
-                    let controls;
-                    if ($me_atom2_control._fill_controls_cache.has(control)) {
-                        controls = $me_atom2_control._fill_controls_cache.get(control);
-                    }
-                    else {
-                        controls = [];
-                        const entities_control = control._entities.control;
-                        $me_atom2_control._fill_controls(controls, control._entities.control);
-                        $me_atom2_control._fill_controls_cache.set(control, controls);
-                    }
-                    if (controls.length)
-                        $me_atom2_control.clean($me_atom2_control.zIndex_sort(controls), force);
-                }
-                return count;
-            }
-            _ctxRect() {
-                const prop = this._entities.prop;
-                const prop_offsetRect = prop['#offsetRect'];
-                const offsetRect = prop_offsetRect.value();
-                const pixelRatio = $me_atom2_control.pixelRatio();
-                return {
-                    left: offsetRect.left * pixelRatio,
-                    top: offsetRect.top * pixelRatio,
-                    right: offsetRect.right * pixelRatio,
-                    bottom: offsetRect.bottom * pixelRatio,
-                };
-            }
-            _clean_helper(p, cnf) {
-                let result = false;
-                if (cnf) {
-                    if (cnf.clean)
-                        result = cnf.clean(p);
-                    result = this._clean_helper(p, cnf.base) || result;
-                }
-                return result;
-            }
-            static fill_controls_cache_clear() {
-                $me_atom2_control._fill_controls_cache.clear();
-            }
-            static _fill_controls(controls, entities_of_type) {
-                for (const tail in entities_of_type) {
-                    const entity = entities_of_type[tail];
-                    if (!entity._entities.key) {
-                        controls.push(entity);
-                    }
-                    else {
-                        $me_atom2_control._fill_controls(controls, entity._entities.key);
-                    }
-                }
-            }
-            static render(controls, pixelRatio) {
-                if (pixelRatio === void 0)
-                    pixelRatio = $me_atom2_control.pixelRatio();
-                let count = 0;
-                for (let control of controls) {
-                    if (control.render_state === $me_atom2_control_render_state_enum.rendered) {
-                        continue;
-                    }
-                    count++;
-                    const prop = control._entities.prop;
-                    const prop_offsetRect = prop['#offsetRect'];
-                    const prop_width = prop['#width'];
-                    const prop_heght = prop['#height'];
-                    const prop_left = prop['#left'];
-                    const prop_top = prop['#top'];
-                    const ctxWidth = Math.round(prop_width.value() * pixelRatio);
-                    const ctxHeight = Math.round(prop_heght.value() * pixelRatio);
-                    const left = Math.round(prop_left.value() * pixelRatio);
-                    const top = Math.round(prop_top.value() * pixelRatio);
-                    const right = left + ctxWidth;
-                    const bottom = top + ctxHeight;
-                    const ctxRect = { left, top, right, bottom };
-                    prop_offsetRect.value({
-                        left: left / pixelRatio,
-                        top: top / pixelRatio,
-                        right: right / pixelRatio,
-                        bottom: bottom / pixelRatio,
-                    });
-                    const p = {
-                        ctx: control._entities.prop['#ctx'].value(),
-                        ctxSize: control._entities.prop['#ctxSize'].value(),
-                        pixelRatio,
-                        ctxRect,
-                        ctxWidth,
-                        ctxHeight,
-                    };
-                    {
-                        const prev = $$.a.curr;
-                        $$.a.curr = control;
-                        control._render_helper(p, control.cnf);
-                        if (typeof $$.a.curr.by_path_s('.#border') !== 'string') {
-                            p.ctx.strokeStyle = $$.a('.#border');
-                            p.ctx.strokeRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left, p.ctxRect.bottom - p.ctxRect.top);
-                        }
-                        $$.a.curr = prev;
-                    }
-                    let controls;
-                    if ($me_atom2_control._fill_controls_cache.has(control)) {
-                        controls = $me_atom2_control._fill_controls_cache.get(control);
-                    }
-                    else {
-                        controls = [];
-                        const entities_control = control._entities.control;
-                        $me_atom2_control._fill_controls(controls, control._entities.control);
-                        $me_atom2_control._fill_controls_cache.set(control, controls);
-                    }
-                    if (controls.length)
-                        $me_atom2_control.render($me_atom2_control.zIndex_sort(controls), pixelRatio);
-                    control.render_state = $me_atom2_control_render_state_enum.rendered;
-                }
-                return count;
-            }
-            _render_helper(p, cnf) {
-                if (!cnf)
-                    return;
-                this._render_helper(p, cnf.base);
-                if (cnf.render)
-                    cnf.render(p);
-            }
-            static zIndex_sort(ss, to_render = false) {
-                return (Array.isArray(ss) ? ss :
-                    [...ss].map(path => $$.$me_atom2_entity.root().by_path(path)))
-                    .filter(control => control && control.active &&
-                    (() => {
-                        if (!control._entities.prop)
-                            $$.$me_throw(control.name());
-                        return true;
-                    })() &&
-                    (!to_render || control._entities.prop['#visible'].value()));
-            }
-        }
-        $me_atom2_control.to_def = Array();
-        $me_atom2_control._to_render = new Set();
-        $me_atom2_control._to_clean = new Set();
-        $me_atom2_control.prop_non_render_default = {};
-        $me_atom2_control._fill_controls_cache = new Map();
-        $$.$me_atom2_control = $me_atom2_control;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//control.js.map
 ;
 "use strict";
 var $;
@@ -2557,16 +2626,15 @@ var $;
                                     if (!ss_prev.has(tail))
                                         new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
                             }
-                            if (atom.name() == '/@app@workspace@search@panelResult@grid.@row.#keys')
-                                if (val && !val.length && this.path.tail.startsWith('@')) {
-                                    const ec = this.parent();
-                                    if (ec instanceof $$.$me_atom2_ec) {
-                                        ec._wait_for_child_did(ec.name() + this.path.tail);
-                                    }
-                                    else {
-                                        console.error(ec);
-                                    }
+                            if (val && !val.length && this.path.tail.startsWith('@')) {
+                                const ec = this.parent();
+                                if (ec instanceof $$.$me_atom2_ec) {
+                                    ec._wait_for_child_did(ec.name() + this.path.tail);
                                 }
+                                else {
+                                    console.error(ec);
+                                }
+                            }
                             if (prev && val) {
                                 for (const tail of ss_curr) {
                                     if (ss_prev.has(tail)) {
@@ -3204,9 +3272,24 @@ var $;
             return atom.value(val, force);
         }, {
             root: () => $$.$me_atom2_entity.root(),
-            get: (path_s) => {
+            get(path_s) {
                 const relative_to = $$.a.curr || $$.$me_atom2_entity.root();
-                return relative_to.by_path_s(path_s);
+                return !path_s ? relative_to : relative_to.by_path_s(path_s);
+            },
+            dispatch(path, dispatch_name, dispatch_arg) {
+                const entity = path instanceof $$.$me_atom2_path ? $$.$me_atom2_entity.root().by_path(path) :
+                    path ? $$.a.get(path) :
+                        $$.a.curr instanceof $$.$me_atom2_ec ? $$.a.curr :
+                            $$.a.curr.parent(true);
+                if (typeof entity == 'string')
+                    $$.$me_throw(`${entity} does not exist`);
+                if (!(entity instanceof $$.$me_atom2_ec))
+                    $$.$me_throw(`${entity.name()} is not $me_atom2_ec`, entity);
+                const ec = entity;
+                const ret = ec.dispatch(dispatch_name, dispatch_arg);
+                if (!ret)
+                    $$.$me_throw(`failed dispatch("${dispatch_name}", ${dispatch_arg}) on ${ec.name()}`);
+                return dispatch_arg;
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -3398,9 +3481,6 @@ var $;
 //ctx.js.map
 ;
 "use strict";
-//pos.js.map
-;
-"use strict";
 var $;
 (function ($) {
     var $$;
@@ -3463,6 +3543,9 @@ var $;
                 this.lastDeltaY = deltaY;
                 this.mode = $me_atom2_wheel_touch_mode.move;
                 $$.$me_atom2_async();
+            }
+            cancel() {
+                this.mode = null;
             }
             end(event) {
                 this._end = event;
@@ -3895,7 +3978,9 @@ var $;
             });
             const viewport = _viewport();
             $$.$me_atom2_entity.root().props({
-                '#wheelTouchAccelFactor': () => 0.9,
+                '#ribbonEffectTimeout': () => 250,
+                '#ribbonAbsorbTimeout': () => 150,
+                '#wheelTouchAccelFactor': () => 0.98,
                 '#wheelTouchAccelThreshold': () => 10,
                 '#touchTolerance': () => 22,
                 '#clickTolerance': () => 2,
@@ -4750,6 +4835,70 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        function $me_ribbon_effect(p) {
+            const flush = () => {
+                delete effect_timers[p.id];
+                locks[p.id] = true;
+                if (p.init)
+                    p.init();
+                prop_adjust.value($$.$me_atom2_anim({
+                    from: !prop_from ? p.from : prop_from.value(),
+                    to: !prop_to ? p.to : prop_to.value(),
+                    fini: p.fini,
+                }));
+                if (absorber_timers[p.id] === void 0)
+                    delete locks[p.id];
+            };
+            const timer = absorber_timers[p.id];
+            if (timer != null)
+                clearTimeout(timer);
+            absorber_timers[p.id] = setTimeout(() => {
+                delete absorber_timers[p.id];
+                if (effect_timers[p.id]) {
+                    flush();
+                }
+                else {
+                    delete locks[p.id];
+                }
+            }, $$.a('/.#ribbonAbsorbTimeout'));
+            if (locks[p.id] !== void 0)
+                return;
+            const prop_from = typeof p.from == 'number' ? null : $$.a.get(p.from);
+            const prop_to = typeof p.to == 'number' ? null : $$.a.get(p.to);
+            const prop_adjust = $$.a.get(p.adjust);
+            if (p.init)
+                p.init();
+            prop_adjust.value($me_ribbon_val({
+                from: !prop_from ? p.from : prop_from.value(),
+                to: !prop_to ? p.to : prop_to.value(),
+                delta: p.delta,
+                fromBack: p.fromBack,
+            }));
+            if (p.fini)
+                p.fini();
+            if (effect_timers[p.id] == null)
+                effect_timers[p.id] = setTimeout(flush, $$.a('/.#ribbonEffectTimeout'));
+        }
+        $$.$me_ribbon_effect = $me_ribbon_effect;
+        const effect_timers = {};
+        const absorber_timers = {};
+        const locks = {};
+        function $me_ribbon_val(p) {
+            if (p.to === void 0)
+                p.to = p.from;
+            const k = 1 + Math.sqrt((p.from - p.delta - p.to) * (p.fromBack ? 1 : -1));
+            return p.from - p.delta / k;
+        }
+        $$.$me_ribbon_val = $me_ribbon_val;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//ribbon.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
         $$.$me_atom2_list_row_height_source_fn_apply = ({ key: [row_i], val, prev }) => {
             if (val == null || val < 0 ||
@@ -4921,8 +5070,10 @@ var $;
                                     fini: () => adjust_rows($$.a('.visible_top')),
                                 });
                     return result;
-                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['._provider', '.provider_tag', '.#height', '.rec_count'], null, () => {
-                    adjust_rows($$.a('.visible_top'));
+                }, ({ val }) => val == null ? null : Math.round(val)), adjust_top: $$.$me_atom2_prop([], () => null, ({ val }) => {
+                    adjust_rows(val, true);
+                }), adjust_bottom: $$.$me_atom2_prop([], () => null, ({ val }) => {
+                    adjust_rows(val);
                 }), '#order': () => ['row', 'header'] }),
             elem: {
                 header: $$.$me_atom2_prop(['.header_content'], ({ masters: [header_content] }) => !header_content ? null : {
@@ -4960,12 +5111,26 @@ var $;
                 const fromBottom = deltaY < 0;
                 if (fromBottom ?
                     $$.a('.visible_idx_min') > 0 || $$.a('.visible_top') < $$.a('.header_height') :
-                    $$.a('.visible_idx_max') < $$.a('.rec_idx_max') || $$.a('.visible_bottom') > $$.a('.#height'))
-                    adjust_rows($$.a(fromBottom ? '.visible_bottom' : '.visible_top') - deltaY, fromBottom);
+                    $$.a('.visible_idx_max') < $$.a('.rec_idx_max') || $$.a('.visible_bottom') > $$.a('.#height')) {
+                    $$.a(fromBottom ? '.adjust_top' : '.adjust_bottom', $$.a(fromBottom ? '.visible_bottom' : '.visible_top') - deltaY);
+                }
+                else {
+                    $$.$me_ribbon_effect({
+                        id: 'list',
+                        init: () => { skip_limit = true; },
+                        fini: () => { skip_limit = false; },
+                        adjust: fromBottom ? '.adjust_bottom' : '.adjust_top',
+                        from: fromBottom ? '.visible_top' : '.visible_bottom',
+                        to: fromBottom ? '.header_height' : '.#height',
+                        delta: deltaY,
+                        fromBack: fromBottom,
+                    });
+                }
                 return true;
             }
             return false;
         };
+        let skip_limit;
         $$.$me_list_row_i_out_of_range_is = (key, row_i_min, row_i_max) => row_i_max == row_i_min ||
             row_i_max > row_i_min && (key < row_i_min || key > row_i_max) ||
             row_i_max < row_i_min && key > row_i_max && key < row_i_min;
@@ -4986,18 +5151,13 @@ var $;
             }
             if (result == null) {
                 const dispatch_arg = { idx, tag: provider_tag };
-                const ec = $$.$me_atom2_entity.root().by_path(_provider);
-                if (!ec.dispatch('get_row_height', dispatch_arg))
-                    $$.$me_throw(`could not get_row_height(${provider_tag}, ${idx}) from ${ec.name()}`);
+                $$.a.dispatch(_provider, 'get_row_height', dispatch_arg);
                 result = dispatch_arg.val;
             }
             return Math.round(result);
         };
         const set_row_height = (idx, _provider, provider_tag, val) => {
-            const dispatch_arg = { idx, val, tag: provider_tag };
-            const ec = $$.$me_atom2_entity.root().by_path(_provider);
-            if (!ec.dispatch('set_row_height', dispatch_arg))
-                $$.$me_throw(`could not set_row_height(${provider_tag}, ${idx}, ${val}) to ${ec.name()}`);
+            $$.a.dispatch(_provider, 'set_row_height', { idx, val, tag: provider_tag });
         };
         function adjust_rows(val, fromBottom = false, row_height) {
             if (!row_height)
@@ -5024,14 +5184,17 @@ var $;
             if (!row_height)
                 row_height = get_row_height;
             compute_visible_helper(p, bottom, row_height);
-            if (bottom) {
-                if (p.val < p.height)
-                    p.val = p.height;
-            }
-            else {
-                if (p.val > p.header_height)
-                    p.val = p.header_height;
-            }
+            if (!skip_limit)
+                if (bottom ?
+                    p.val < p.height :
+                    p.val > p.header_height) {
+                    const from = bottom ? p.height : p.header_height;
+                    p.val = $$.$me_ribbon_val({
+                        from,
+                        delta: from - p.val,
+                        fromBack: !bottom,
+                    });
+                }
             return p;
         }
         function compute_visible_helper(p, bottom, row_height) {
@@ -5064,7 +5227,89 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_stylesheet = {
+            prop: {
+                styleSheetName: () => null,
+                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
+                styleSheetCommon: () => '',
+                instanceId: () => null,
+                styleSheet_apply: $$.$me_atom2_prop(['.styleSheetName', '.instanceId', '.styleSheet'], null, ({ val: [styleSheetName, instanceId, innerHTML] }) => {
+                    let sheet;
+                    const id = styleSheetId(styleSheetName, instanceId);
+                    if (!innerHTML) {
+                        removeStyleSheet(id);
+                    }
+                    else if (sheet = document.getElementById(id)) {
+                        sheet.innerHTML = innerHTML;
+                    }
+                    else {
+                        sheet = document.createElement('style');
+                        sheet.id = id;
+                        sheet.innerHTML = innerHTML;
+                        let head = document.head || document.getElementsByTagName('head')[0];
+                        head.appendChild(sheet);
+                    }
+                }),
+                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
+            },
+            dom: {
+                className: '.className',
+            },
+            init: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                if (!instances[styleSheetName])
+                    instances[styleSheetName] = new Map();
+                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
+                let id;
+                for (let i = 0; i < ids.length; i++)
+                    if (i != ids[i]) {
+                        id = i;
+                        break;
+                    }
+                if (id === void 0)
+                    id = ids.length;
+                $$.a('.instanceId', id);
+                instances[styleSheetName].set(self, id);
+                const styleSheetCommon = $$.a('.styleSheetCommon');
+                if (!styleSheetCommon)
+                    return;
+                const styleSheetCommonId = styleSheetId(styleSheetName);
+                if (document.getElementById(styleSheetCommonId))
+                    return;
+                let sheet = document.createElement('style');
+                sheet.id = styleSheetCommonId;
+                sheet.innerHTML = styleSheetCommon;
+                let head = document.head || document.getElementsByTagName('head')[0];
+                head.appendChild(sheet);
+            },
+            fini: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
+                instances[styleSheetName].delete(self);
+                if (instances[styleSheetName].size)
+                    return;
+                instances[styleSheetName] = null;
+                removeStyleSheet(styleSheetId(styleSheetName));
+            },
+        };
+        function removeStyleSheet(styleSheetId) {
+            let sheet = document.getElementById(styleSheetId);
+            if (sheet && sheet.parentElement)
+                sheet.parentElement.removeChild(sheet);
+        }
+        let instances = {};
+        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//stylesheet.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_spinner = {
+            base: $$.$me_stylesheet,
             prop: {
                 color: () => 'white',
                 size: () => 64,
@@ -5073,24 +5318,31 @@ var $;
                 '#width': '.size',
                 '#height': '.size',
                 '#align': () => $$.$me_align.center,
-                _id: () => null,
-                _styleSheetId: $$.$me_atom2_prop(['._id'], ({ masters: [id] }) => 'spinnerStyleSheet' + id),
-                _idx: $$.$me_atom2_prop(['.qt'], ({ masters: [qt] }) => [...Array(qt).keys()]),
-                _styleSheet: $$.$me_atom2_prop(['._id', '._idx', '.color', '.size', '.qt', '.period', '._styleSheetId'], ({ masters: [id, idx, color, size, qt, period, styleSheetId], atom }) => {
+                idx: $$.$me_atom2_prop(['.qt'], ({ masters: [qt] }) => [...Array(qt).keys()]),
+                styleSheetName: () => 'spinner',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [styleSheetName] }) => `
+        @keyframes ${styleSheetName} {
+          0% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName', '.idx', '.color', '.size', '.qt', '.period'], ({ masters: [className, styleSheetName, idx, color, size, qt, period], atom }) => {
                     const semiSize = Math.round(size / 2);
                     const top = Math.round(semiSize / 10);
                     const left = semiSize - top;
                     const width = Math.round(semiSize / 32 * 5);
                     const height = Math.round(semiSize / 32 * 14);
                     const step = period / qt;
-                    return [
-                        styleSheetId,
-                        `
-            .spinner${id} div {
+                    return (`
+            .${className} div {
               transform-origin: ${semiSize}px ${semiSize}px;
-              animation: spinner ${period.toFixed(1)}s linear infinite;
+              animation: ${styleSheetName} ${period.toFixed(1)}s linear infinite;
             }
-            .spinner${id} div:after {
+            .${className} div:after {
               content: " ";
               display: block;
               position: absolute;
@@ -5102,81 +5354,17 @@ var $;
               background: ${color};
             }
           ` + idx.map((idx) => `
-            .spinner${id} div:nth-child(${+idx + 1}) {
+            .${className} div:nth-child(${+idx + 1}) {
               transform: rotate(${Math.round(+idx * 360 / qt)}deg);
               animation-delay: ${(-period + step * (+idx + 1)).toFixed(2)}s;
             }
-          `).join('')
-                    ];
-                }, ({ val: [styleSheetId, innerHTML] }) => {
-                    let sheet;
-                    if (innerHTML == null) {
-                        sheet = document.getElementById(styleSheetId);
-                        if (sheet && sheet.parentElement)
-                            sheet.parentElement.removeChild(sheet);
-                    }
-                    else if (sheet = document.getElementById(styleSheetId)) {
-                        sheet.innerHTML = innerHTML;
-                    }
-                    else {
-                        sheet = document.createElement('style');
-                        sheet.id = styleSheetId;
-                        sheet.innerHTML = innerHTML;
-                        let head = document.head || document.getElementsByTagName('head')[0];
-                        head.appendChild(sheet);
-                    }
+          `).join(''));
                 }),
             },
-            dom: {
-                className: $$.$me_atom2_prop(['._id'], ({ masters: [id] }) => 'spinner' + id),
-            },
             elem: {
-                div: $$.$me_atom2_prop({ keys: ['._idx'] }, ({ key: [idx] }) => ({})),
-            },
-            init: (self) => {
-                if (!spinners)
-                    spinners = new Map();
-                const ids = [...spinners].map(([spinner, id]) => id).sort();
-                let id;
-                for (let i = 0; i < ids.length; i++)
-                    if (i != ids[i]) {
-                        id = i;
-                        break;
-                    }
-                if (id === void 0)
-                    id = ids.length;
-                $$.a('._id', id);
-                spinners.set(self, id);
-                if (!document.getElementById(spinnerKeyframeId)) {
-                    let sheet = document.createElement('style');
-                    sheet.id = spinnerKeyframeId;
-                    sheet.innerHTML = `
-        @keyframes spinner {
-          0% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0;
-          }
-        }
-      `;
-                    let head = document.head || document.getElementsByTagName('head')[0];
-                    head.appendChild(sheet);
-                }
-            },
-            fini: (self) => {
-                $$.a('._styleSheet', [$$.a('._styleSheetId'), null]);
-                spinners.delete(self);
-                if (!spinners.size) {
-                    let sheet = document.getElementById(spinnerKeyframeId);
-                    if (sheet && sheet.parentElement)
-                        sheet.parentElement.removeChild(sheet);
-                    spinners = null;
-                }
+                div: $$.$me_atom2_prop({ keys: ['.idx'] }, ({ key: [idx] }) => ({})),
             },
         };
-        const spinnerKeyframeId = 'spinnerKeyframe';
-        let spinners;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //spinner.js.map
@@ -5302,10 +5490,493 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_triangle = {
+            prop: {
+                direction: () => $$.$me_rect_sides_enum.bottom,
+                size: '.em',
+                color: '.colorText',
+                height: $$.$me_atom2_prop(['.direction', '.size'], ({ masters: [direction, size] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                    size :
+                    Math.round(size * 2 / Math.sqrt(3))),
+                width: $$.$me_atom2_prop(['.direction', '.size'], ({ masters: [direction, size] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                    size :
+                    Math.round(size * 2 / Math.sqrt(3))),
+                '#width': () => 0,
+                '#height': () => 0,
+            },
+            style: {
+                borderTop: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
+                    direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                        `${height / 2}px solid transparent`),
+                borderLeft: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
+                    direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                        `${width / 2}px solid transparent`),
+                borderRight: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
+                    direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                        `${width / 2}px solid transparent`),
+                borderBottom: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
+                    direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                        `${height / 2}px solid transparent`),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
         let by_idx = {};
         let timerId;
         $$.$nl_search_grid = {
+            prop: {
+                influence: $$.$me_atom2_prop(['.cols'], ({ masters: [cols] }) => {
+                    const result = {};
+                    for (const col_id in cols) {
+                        const col = cols[col_id];
+                        const fld = col.fld;
+                        if (!fld)
+                            continue;
+                        for (const s of fld)
+                            (result[s] || (result[s] = new Set())).add(col_id);
+                    }
+                    return result;
+                }),
+                col_ids: $$.$me_atom2_prop_keys(['.cols']),
+                col_id_last: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => !ids.length ? null : ids[ids.length - 1]),
+                col_id_last_prev: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => ids.length < 2 ? null : ids[ids.length - 2]),
+                col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]),
+                col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.width),
+                col_align: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.align || $$.$me_align.left),
+                col_width_min: () => 24,
+                col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
+                col_fixed_width: () => 37,
+                col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
+                ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev),
+                ofsHor_adjust: $$.$me_atom2_prop(['.#width'], null, ({ val, prev }) => {
+                    if (prev == null || val == prev)
+                        return;
+                    if (val > prev)
+                        $$.a('.ofsHor', Math.min($$.a('.col_fixed_width'), $$.a('.ofsHor') + val - prev));
+                }),
+                col_left: $$.$me_atom2_prop({
+                    keys: ['.col_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        return !idx ? [] : [`.col_left[${ids[idx - 1]}]`, `.col_width[${ids[idx - 1]}]`];
+                    }),
+                }, ({ len, masters: [left, width] }) => !len ? 0 : left + width),
+                header_height: () => 32,
+                row_height_min: () => 28,
+                '#order': () => ['list', 'cursor', 'header'],
+            },
+            event: {
+                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
+                    !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
+                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
+                    !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
+            },
+            elem: {
+                header: () => ({
+                    base: header,
+                    prop: {
+                        '#height': '<.header_height',
+                    },
+                }),
+                list: () => ({
+                    base: list,
+                    prop: {
+                        provider_tag: '<.provider_tag',
+                        provider: '<.provider',
+                        rec_count: '<.rec_count',
+                        '#ofsVer': '<@header.#height',
+                        '#height': $$.$me_atom2_prop(['<.#height', '<@header.#height'], ({ masters: [height_gross, height_header] }) => height_gross - height_header),
+                        row_height_min: '<.row_height_min',
+                    },
+                }),
+                spinner: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => count >= 0 ? null : {
+                    base: $$.$me_spinner,
+                    prop: {
+                        color: () => '#D9DCE2',
+                    },
+                }),
+            }
+        };
+        const grid_wheel = (deltaX) => {
+            const prop_ofsHor = $$.a.get('.ofsHor');
+            const ofsHorNew = prop_ofsHor.value() - deltaX;
+            const min = Math.min($$.a('.col_fixed_width'), $$.a('.#width') - $$.a('.col_width_sum'));
+            const max = $$.a('.col_fixed_width');
+            if (deltaX > 0 && ofsHorNew >= min ||
+                deltaX < 0 && ofsHorNew <= max) {
+                prop_ofsHor.value(ofsHorNew);
+            }
+            else {
+                $$.$me_ribbon_effect({
+                    id: 'grid',
+                    adjust: '.ofsHor',
+                    from: '.ofsHor',
+                    to: ofsHorNew > max ? max : min,
+                    delta: deltaX,
+                    fromBack: deltaX < 0,
+                });
+            }
+            return true;
+        };
+        const get_row_open = (idx, _provider, provider_tag) => {
+            return $$.a.dispatch(_provider, 'get_row_open', { idx, tag: provider_tag }).val;
+        };
+        const set_row_open = (idx, _provider, provider_tag, val) => {
+            $$.a.dispatch(_provider, 'set_row_open', { idx, val, tag: provider_tag });
+        };
+        $$.$nl_search_grid_cursor = $$.$me_atom2_async_multi_origin({
+            default: '',
+            raf_order: 100,
+            flush: (row_i, prev, _value) => {
+                _value.origin.by_path_s('<<.row_cursor').value(row_i);
+            },
+        });
+        const header = {
+            prop: {
+                colsToResize: () => '',
+                resizeCol: $$.$me_atom2_prop(['.colsToResize', '.isRightColResize'], ({ masters: [colsToResize, isRightColResize] }) => !colsToResize ? '' : isRightColResize ? colsToResize.right : colsToResize.left),
+                resizeStart: $$.$me_atom2_prop([], () => -1, ({ val }) => {
+                    if (val != -1)
+                        $$.a('.shownRightColResizer', '');
+                }),
+                resizeInitial: () => null,
+                rightColResizerOpacity: $$.$me_atom2_prop([], () => 0, ({ val }) => {
+                    if (!val)
+                        $$.a('.shownRightColResizer', '');
+                }),
+                shownRightColResizer: $$.$me_atom2_prop([], () => '', ({ val }) => {
+                    if (val)
+                        $$.a('.rightColResizerOpacity', 1);
+                }),
+                showRightColResizerDuration: () => 5000,
+                isRightColResize: () => false,
+                '#isHover': () => false,
+                cursor: $$.$me_atom2_prop(['.#isHover', '.colsToResize', '.resizeStart'], ({ masters: [isHover, colsToResize, resizeStart] }) => {
+                    const result = colsToResize || resizeStart != -1 ? 'col-resize' :
+                        isHover ? 'default' :
+                            null;
+                    return result;
+                }, ({ val, atom }) => {
+                    $$.$me_atom2_ec_body_cursor({ origin: atom.path, val });
+                }),
+                '#order': () => ['wrapper', 'fixed'],
+                '#zIndex': () => 1,
+            },
+            elem: {
+                resizeColHeader: $$.$me_atom2_prop(['.resizeStart', '.resizeCol'], ({ masters: [resizeStart, id] }) => resizeStart == -1 ? null : {
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop([`<<.col_left[${id}]`, '<<.ofsHor', '<<.col_fixed_width'], ({ masters: [left, ofs, min] }) => Math.max(min, left + ofs)),
+                        '#width': $$.$me_atom2_prop([`<<.col_left[${id}]`, '<<.ofsHor', '<<.col_fixed_width', `<<.col_width[${id}]`], ({ masters: [left, ofs, min, width] }) => Math.max(0, width + Math.min(0, left + ofs - min))),
+                    },
+                    style: {
+                        background: () => 'black',
+                        opacity: () => 0.1,
+                        pointerEvents: () => 'none',
+                    },
+                }),
+                colResizer: $$.$me_atom2_prop(['.resizeStart', '.resizeCol', '.isRightColResize'], ({ masters: [resizeStart, id, isRight] }) => resizeStart == -1 ? null : {
+                    base: colResizer,
+                    prop: {
+                        id: () => id,
+                        isRight: () => isRight,
+                        color: () => 'rgba(0,0,0,0.3)',
+                    },
+                }),
+                colResizerTriangle: $$.$me_atom2_prop(['/.#isTouch', '.resizeStart', '.resizeCol', '.isRightColResize'], ({ masters: [isTouch, resizeStart, id, isRight] }) => !isTouch || resizeStart == -1 ? null : {
+                    base: colResizerTriangle,
+                    prop: {
+                        id: () => id,
+                        color: () => 'rgba(0,0,0,0.3)',
+                        isRight: () => isRight,
+                    },
+                }),
+                rightColResizer: $$.$me_atom2_prop(['.shownRightColResizer'], ({ masters: [id] }) => !id ? null : {
+                    base: colResizer,
+                    prop: {
+                        id: () => id,
+                        isRight: () => true,
+                        color: () => 'red',
+                    },
+                    style: {
+                        opacity: '<.rightColResizerOpacity',
+                    },
+                    elem: {
+                        arrow: () => ({
+                            base: arrow,
+                        }),
+                    },
+                }),
+                rightColResizerTriangle: $$.$me_atom2_prop(['/.#isTouch', '.shownRightColResizer'], ({ masters: [isTouch, id] }) => !isTouch || !id ? null : {
+                    base: colResizerTriangle,
+                    prop: {
+                        id: () => id,
+                        isRight: () => true,
+                        color: () => 'red',
+                    },
+                    style: {
+                        opacity: '<.rightColResizerOpacity',
+                    },
+                }),
+                fixed: () => ({
+                    prop: {
+                        '#width': '<<.col_fixed_width',
+                    },
+                    control: {
+                        cell: () => ({
+                            base: $$.$me_panel,
+                            prop: Object.assign({}, cell_borders, { colorBackground: () => '#d8dce3' }),
+                        }),
+                    },
+                }),
+                wrapper: () => ({
+                    style: {
+                        overflow: () => 'hidden',
+                    },
+                    elem: {
+                        cells: () => ({
+                            prop: {
+                                '#width': '<<<.col_width_sum',
+                                '#ofsHor': '<<<.ofsHor',
+                                '#zIndex': () => 1,
+                            },
+                            control: {
+                                cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
+                                    base: $$.$me_label,
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width) }, cell_borders, { colorBackground: () => '#d8dce3', '#width': `<<<<.col_width[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', align: () => $$.$me_align.center, text: `<<<<.col_caption[${id}]`, fontSize: () => 14, paddingHor: () => 4 }),
+                                })),
+                            },
+                        }),
+                    }
+                }),
+            },
+            event: {
+                mousemove: p => {
+                    const resizeStart = $$.a('.resizeStart');
+                    const clientX = p.event.clientX;
+                    if (!p.event.buttons
+                        && resizeStart != clientX) {
+                        resizeStop();
+                        if (p.isInRect(clientX, p.event.clientY)) {
+                            colsToResize_compute(clientX, 2 * $$.a('/.#clickTolerance'));
+                            return true;
+                        }
+                    }
+                    else {
+                        return resizeDo(clientX);
+                    }
+                    return false;
+                },
+                mousedown: p => {
+                    if (!p.isInRect(p.event.clientX, p.event.clientY))
+                        return false;
+                    if ($$.a('.colsToResize'))
+                        colsToResize_apply(p.event.clientX);
+                    return true;
+                },
+                mouseup: () => {
+                    if (resizeStop())
+                        resizeFini();
+                    return false;
+                },
+                touchstart: p => {
+                    const clientX = p.event.touches[0].clientX;
+                    if (!p.isInRect(clientX, p.event.touches[0].clientY))
+                        return false;
+                    if (colsToResize_compute(clientX, $$.a('/.#touchTolerance') / 2))
+                        colsToResize_apply(clientX);
+                    return true;
+                },
+                touchend: p => {
+                    if (resizeStop()) {
+                        resizeFini();
+                        if ($$.$me_atom2_event_tap) {
+                            const ec = $$.a.get('@cells');
+                            $$.$me_atom2_event_tap.delete(ec.path);
+                        }
+                    }
+                    return false;
+                },
+                touchmove: p => {
+                    if (!resizeDo(p.event.touches[0].clientX))
+                        return false;
+                    if ($$.$me_atom2_wheel_touch)
+                        $$.$me_atom2_wheel_touch.cancel();
+                    return true;
+                },
+            },
+        };
+        const arrow = {
+            base: $$.$me_stylesheet,
+            prop: {
+                dist: () => 37,
+                duration: () => 1200,
+                styleSheetName: () => 'slide-in-right',
+                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName', '.dist', '.duration'], ({ masters: [className, styleSheetName, dist, duration] }) => {
+                    const animationName = className;
+                    return `
+          .${className} {
+            -webkit-animation: ${animationName} ${duration}ms linear infinite forwards;
+                    animation: ${animationName} ${duration}ms linear infinite forwards;
+          }
+          @-webkit-keyframes ${animationName} {
+            0% {
+              -webkit-transform: translateX(0);
+                      transform: translateX(0);
+              opacity: 1;
+            }
+            100% {
+              -webkit-transform: translateX(-${dist}px);
+                      transform: translateX(-${dist}px);
+              opacity: 0;
+            }
+          }
+          @keyframes ${animationName} {
+            0% {
+              -webkit-transform: translateX(0);
+                      transform: translateX(0);
+              opacity: 1;
+            }
+            100% {
+              -webkit-transform: translateX(-${dist}px);
+                      transform: translateX(-${dist}px);
+              opacity: 0;
+            }
+          }
+        `;
+                }),
+            },
+            elem: {
+                triangle: () => ({
+                    base: $$.$me_triangle,
+                    prop: {
+                        size: () => 15,
+                        direction: () => $$.$me_rect_sides_enum.left,
+                        color: () => 'red',
+                        space: () => 2,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#ofsVer': $$.$me_atom2_prop(['.height'], ({ masters: [size] }) => -size / 2),
+                        '#ofsHor': $$.$me_atom2_prop(['.width', '.space'], ({ masters: [width, space] }) => -width - space),
+                    },
+                }),
+            },
+        };
+        function colsToResize_compute(clientX, delta) {
+            const clientRect = $$.a(`<.#clientRect`);
+            const limit_min = clientRect.left + $$.a('<.col_fixed_width');
+            const limit_max = clientRect.right;
+            const ids = $$.a('<.col_ids');
+            let result = null;
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                const clientRect = $$.a(`@wrapper@cells^cell[${id}].#clientRect`);
+                if (limit_min <= clientRect.right && clientRect.right <= limit_max &&
+                    clientRect.right - delta <= clientX && clientX <= clientRect.right + delta) {
+                    result = {
+                        left: id,
+                        right: i >= ids.length - 1 ? null : ids[i + 1]
+                    };
+                    break;
+                }
+            }
+            $$.a('.colsToResize', result || '');
+            return result;
+        }
+        function colsToResize_apply(clientX) {
+            if ($$.a('.colsToResize').right != $$.a('.shownRightColResizer'))
+                $$.a('.shownRightColResizer', '');
+            $$.a('.isRightColResize', !!$$.a('.shownRightColResizer'));
+            $$.a('.resizeStart', clientX);
+            $$.a('.resizeInitial', $$.a(`<.col_width[${$$.a('.resizeCol')}]`));
+        }
+        function resizeDo(clientX) {
+            const resizeStart = $$.a('.resizeStart');
+            if (resizeStart == -1)
+                return false;
+            const isRightColResize = $$.a('.isRightColResize');
+            const id = $$.a('.resizeCol');
+            const delta = (resizeStart - clientX) * (isRightColResize ? 1 : -1);
+            let width = Math.max($$.a('<.col_width_min'), $$.a('.resizeInitial') + delta);
+            width = isRightColResize ?
+                Math.min(width, $$.a('<.#width') - $$.a(`<.col_fixed_width`)) :
+                Math.max(width, $$.a('<.col_fixed_width') - $$.a(`<.col_left[${id}]`) - $$.a('<.ofsHor'));
+            if (!isRightColResize) {
+                const limit_max = $$.a('<.#width') - $$.a(`<.col_left[${id}]`) - $$.a('<.ofsHor');
+                if (width < limit_max) {
+                    $$.a('.shownRightColResizer', '');
+                }
+                else if (width > limit_max) {
+                    width = limit_max;
+                    if (width < $$.a('<.#width') - $$.a(`<.col_fixed_width`))
+                        $$.a('.shownRightColResizer', id);
+                }
+            }
+            $$.a(`<.col_width[${id}]`, width);
+            if (isRightColResize)
+                $$.a('<.ofsHor', $$.a('<.#width') - $$.a(`<.col_left[${id}]`) - $$.a(`<.col_width[${id}]`));
+            return true;
+        }
+        function resizeStop() {
+            const resizeStart = $$.a('.resizeStart');
+            if (resizeStart == -1)
+                return false;
+            $$.a('.resizeStart', -1);
+            $$.a('.resizeInitial', null);
+            $$.a('.colsToResize', '');
+            const id = $$.a('.shownRightColResizer');
+            if (id)
+                $$.a('.rightColResizerOpacity', $$.$me_atom2_anim({
+                    from: 1,
+                    to: 0,
+                    duration: $$.a('.showRightColResizerDuration'),
+                }));
+            return true;
+        }
+        function resizeFini() {
+            const id = $$.a('<.col_id_last');
+            const col_fixed_width = $$.a('<.col_fixed_width');
+            const ofsHor = $$.a('<.ofsHor');
+            const delta = Math.max(0, Math.min(col_fixed_width - ofsHor, $$.a('.#width') - ($$.a(`<.col_left[${id}]`) + $$.a(`<.col_width[${id}]`) + ofsHor)));
+            const to = delta > 0 ? ofsHor + delta :
+                ofsHor > col_fixed_width ? col_fixed_width :
+                    null;
+            if (to != null)
+                $$.a('<.ofsHor', $$.$me_atom2_anim({ to }));
+        }
+        const colResizer = {
+            prop: {
+                '#width': () => 4,
+                '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.id', '.isRight'], ({ masters: [id, isRight] }) => ['.isRight', `<<.col_left[${id}]`, '<<.ofsHor', '.#width', '<.#width', '<<.col_fixed_width'].concat(isRight ? [] : `<<.col_width[${id}]`)), ({ len, masters: [isRight, col_left, ofs, width, width_gross, col_fixed_width, col_width] }) => {
+                    return Math.round(Math.max(col_fixed_width, Math.min(col_left + ofs - width / 2 + (isRight ? 0 : col_width), width_gross - width)));
+                }),
+            },
+            style: {
+                background: '.color',
+                pointerEvents: () => 'none',
+            },
+        };
+        const colResizerTriangle = {
+            base: $$.$me_triangle,
+            prop: {
+                size: () => 12,
+                space: () => 1,
+                '#ofsVer': $$.$me_atom2_prop(['.height', '.space'], ({ masters: [height, space] }) => -height - space),
+                '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.id', '.isRight'], ({ masters: [id, isRight] }) => ['.isRight', `<<.col_left[${id}]`, '<<.ofsHor', '.width', '<@colResizer.#width', '<.#width', '<<.col_fixed_width'].concat(isRight ? [] : `<<.col_width[${id}]`)), ({ len, masters: [isRight, col_left, ofs, width, width_colResizer, width_gross, col_fixed_width, col_width] }) => {
+                    return Math.round(Math.max(col_fixed_width - width / 2 + width_colResizer / 2, Math.min(col_left + ofs - width / 2 + (isRight ? 0 : col_width), width_gross - width_colResizer / 2 - width / 2)));
+                }),
+            },
+            style: {
+                pointerEvents: () => 'none',
+            },
+        };
+        const list = {
             base: $$.$me_list,
             dispatch: (dispatch_name, dispatch_arg) => {
                 if (dispatch_name == 'get_row_open') {
@@ -5334,7 +6005,7 @@ var $;
                             return true;
                         }
                     }
-                    const col = $$.a(`.col[${col_id}]`);
+                    const col = $$.a(`<.col[${col_id}]`);
                     if (col.fld) {
                         const rec = by_idx[rec_idx] || (by_idx[rec_idx] = new Set());
                         for (const s of col.fld)
@@ -5346,7 +6017,6 @@ var $;
                             const rec_idx_max = $$.a('.rec_idx_max');
                             timerId = setTimeout(() => {
                                 timerId = null;
-                                const ec = $$.$me_atom2_entity.root().by_path(path);
                                 let idx_min, idx_max;
                                 const ss = new Set();
                                 for (const idx in by_idx) {
@@ -5360,7 +6030,7 @@ var $;
                                 const to = Math.min(rec_idx_max, idx_max + Math.max(10, row_count));
                                 for (let idx = Math.max(0, idx_min - Math.max(10, row_count)); idx <= to; idx++)
                                     by_idx[idx] = ss;
-                                ec.dispatch('get_recs', { by_idx });
+                                $$.a.dispatch(path, 'get_recs', { by_idx });
                             });
                         }
                     }
@@ -5370,9 +6040,9 @@ var $;
                 else if (dispatch_name == 'recs') {
                     const cell_text_store = $$.a('.cell_text_store');
                     const rec_fld_store = $$.a('.rec_fld_store');
-                    const influence = $$.a('.influence');
+                    const influence = $$.a('<.influence');
                     const by_idx = dispatch_arg.by_idx;
-                    const cols = $$.a('.cols');
+                    const cols = $$.a('<.cols');
                     const changed = {};
                     let changed_did = false;
                     for (const idx in by_idx) {
@@ -5410,10 +6080,9 @@ var $;
                         }
                     }
                     if (changed_did) {
-                        const elem = $$.a.curr;
                         let i = 0;
                         let idx_min, idx_max;
-                        elem.dispatch('iterate_rows', (row_i) => {
+                        $$.a.dispatch('', 'iterate_rows', (row_i) => {
                             const idx = $$.a(`.rec_idx[${row_i}]`);
                             if (idx_min == null || idx_min > +idx)
                                 idx_min = +idx;
@@ -5446,6 +6115,8 @@ var $;
                 return false;
             },
             prop: {
+                rec_fld_store: () => ({}),
+                cell_text_store: () => ({}),
                 row_opens_store: () => new Map(),
                 row_opens: $$.$me_atom2_prop(['.provider_tag', '.row_opens_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Set())),
                 row_open: $$.$me_atom2_prop({
@@ -5473,125 +6144,39 @@ var $;
                     const height = !Array.isArray(val) ? val : val[0] + val[1];
                     $$.a(`.row_height_source[${row_i}]`, height);
                 }),
-                influence: $$.$me_atom2_prop(['.cols'], ({ masters: [cols] }) => {
-                    const result = {};
-                    for (const col_id in cols) {
-                        const col = cols[col_id];
-                        const fld = col.fld;
-                        if (!fld)
-                            continue;
-                        for (const s of fld)
-                            (result[s] || (result[s] = new Set())).add(col_id);
-                    }
-                    return result;
+                cell_text: $$.$me_atom2_prop({ keys: ['.row_i', '<.col_ids'], masters: ['.rec_idx[]', '._provider', '.provider_tag'] }, ({ key: [row_i, col_id], masters: [rec_idx, _provider, tag] }) => {
+                    const dispatch_arg = { tag, rec_idx, col_id };
+                    $$.a.dispatch(_provider, 'get_cell_text', dispatch_arg);
+                    return dispatch_arg.val;
                 }),
-                cell_text_store: () => ({}),
-                rec_fld_store: () => ({}),
-                col_ids: $$.$me_atom2_prop_keys(['.cols']),
-                col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]),
-                col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.width),
-                col_align: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.align || $$.$me_align.left),
-                col_width_min: () => 8,
-                col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
-                col_fixed_width: () => 37,
-                col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev, ({ val, atom }) => Math.min(Math.max(val, ($$.a('.#width') + $$.a('.col_fixed_width')) / 2 - $$.a('.col_width_sum')), $$.a('.col_fixed_width'))),
-                ofsHor_adjust: $$.$me_atom2_prop(['.#width'], null, ({ val, prev }) => {
-                    if (prev == null || val == prev)
-                        return;
-                    if (val > prev)
-                        $$.a('.ofsHor', $$.a('.ofsHor') + val - prev);
-                }),
-                col_left: $$.$me_atom2_prop({
-                    keys: ['.col_ids'],
-                    masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
-                        const idx = ids.indexOf(id);
-                        return !idx ? [] : [`.col_left[${ids[idx - 1]}]`, `.col_width[${ids[idx - 1]}]`];
-                    }),
-                }, ({ len, masters: [left, width] }) => !len ? 0 : left + width),
-                header_height: () => 32,
-                row_height_min: () => 28,
-                header_content: () => header,
+                header_height: () => 0,
+                header_content: () => ({}),
                 row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
                     base: row,
                     prop: {
                         row_i: () => row_i,
                     },
                 })),
-                cell_text: $$.$me_atom2_prop({ keys: ['.row_i', '.col_ids'], masters: ['.rec_idx[]', '._provider', '.provider_tag'] }, ({ key: [row_i, col_id], masters: [rec_idx, _provider, tag] }) => {
-                    const dispatch_arg = { tag, rec_idx, col_id };
-                    const ec = $$.$me_atom2_entity.root().by_path(_provider);
-                    if (!ec.dispatch('get_cell_text', dispatch_arg))
-                        $$.$me_throw(`could not obtain cell_text[${rec_idx}][${col_id}] from ${ec.name()}`);
-                    return dispatch_arg.val;
-                }),
                 row_cursor: () => '',
-                '#order': () => ['row', 'cursor', 'header'],
-                touchStart: () => null,
-                lastDrag: $$.$me_atom2_prop([], () => null, ({ atom, val }) => {
-                    $$.$me_atom2_body_cursor({ origin: atom.path, val: val ? 'grabbing' : 'default' });
-                }),
-                lastDelta: () => null,
-                accel: () => null,
-                prevTime: () => null,
-                scrollAccu: () => null,
-            },
-            event: {
-                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
-                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
+                '#order': () => ['row', 'cursor'],
             },
             elem: {
-                spinner: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => count >= 0 ? null : {
-                    base: $$.$me_spinner,
-                    prop: {
-                        color: () => '#D9DCE2',
-                    },
-                }),
+                header: () => null,
                 cursor: () => ({
                     prop: {
                         '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
-                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`]), ({ len, masters: [val] }) => !len ? null : val),
+                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`]), ({ len, masters: [top] }) => !len ? null : top),
                         '#ofsHor': () => 2,
                         '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`]), ({ len, masters: [val] }) => !len ? null : val),
-                        '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.col_ids'], ({ masters: [col_ids] }) => {
-                            const col_id_last = col_ids[col_ids.length - 1];
-                            return [`<.col_left[${col_id_last}]`, `<.col_width[${col_id_last}]`, '<.ofsHor'];
-                        }), $$.$me_atom2_prop_compute_fn_sum(-4)),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
                     },
                     style: {
                         boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
                         pointerEvents: () => 'none',
                     },
                 }),
-            }
-        };
-        const grid_wheel = (deltaX) => {
-            $$.a('.ofsHor', $$.a('.ofsHor') - deltaX);
-            return true;
-        };
-        const get_row_open = (idx, _provider, provider_tag) => {
-            const dispatch_arg = { idx, tag: provider_tag };
-            const ec = $$.$me_atom2_entity.root().by_path(_provider);
-            if (!ec.dispatch('get_row_open', dispatch_arg))
-                $$.$me_throw(`could not get_row_open(${provider_tag}, ${idx}) from ${ec.name()}`);
-            return dispatch_arg.val;
-        };
-        const set_row_open = (idx, _provider, provider_tag, val) => {
-            const dispatch_arg = { idx, val, tag: provider_tag };
-            const ec = $$.$me_atom2_entity.root().by_path(_provider);
-            if (!ec.dispatch('set_row_open', dispatch_arg))
-                $$.$me_throw(`could not set_row_open(${provider_tag}, ${idx}, ${val}) to ${ec.name()}`);
-        };
-        $$.$nl_search_grid_cursor = $$.$me_atom2_async_multi_origin({
-            default: '',
-            raf_order: 100,
-            flush: (row_i, prev, _value) => {
-                _value.origin.by_path_s('<<.row_cursor').value(row_i);
             },
-        });
-        const use_control = true;
+        };
         const row = {
             prop: {
                 '#order': () => ['cell', 'fixed'],
@@ -5612,30 +6197,19 @@ var $;
                     elem: {
                         fixed: () => ({
                             prop: {
-                                '#width': '<<<<.col_fixed_width',
+                                '#width': '<<<<<.col_fixed_width',
                             },
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: {
-                                        '#width': '<.#width',
-                                        '#height': '<.#height',
-                                        borderWidthRight: () => 1,
-                                        colorBorderRight: () => '#adb0b8',
-                                        borderWidthBottom: () => 1,
-                                        colorBorderBottom: () => '#adb0b8',
-                                        colorBackground: () => '#d8dce3',
-                                        text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])),
-                                        align: () => $$.$me_align.center,
-                                        fontSize: () => 14,
-                                    },
+                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: () => '#d8dce3', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])), align: () => $$.$me_align.center, fontSize: () => 14 }),
                                 }),
                             },
                         }),
                         cells: () => ({
                             prop: {
-                                '#width': '<<<<.col_width_sum',
-                                '#ofsHor': '<<<<.ofsHor',
+                                '#width': '<<<<<.col_width_sum',
+                                '#ofsHor': '<<<<<.ofsHor',
                                 '#cursor': () => 'pointer',
                             },
                             event: {
@@ -5646,24 +6220,9 @@ var $;
                                 },
                             },
                             control: {
-                                cell: $$.$me_atom2_prop({ keys: ['<<<<.col_ids'] }, ({ key: [id] }) => ({
+                                cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: {
-                                        '#hidden': $$.$me_atom2_prop([`<<<<<.col_left[${id}]`, `<<<<<.col_width[${id}]`, `<<<<<.col_fixed_width`, `<<<<<.#width`, `<<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width),
-                                        borderWidthRight: () => 1,
-                                        colorBorderRight: () => '#adb0b8',
-                                        borderWidthBottom: () => 1,
-                                        colorBorderBottom: () => '#adb0b8',
-                                        colorBackground: () => '#F5F8F8',
-                                        '#width': `<<<<<.col_width[${id}]`,
-                                        '#ofsHor': `<<<<<.col_left[${id}]`,
-                                        '#height': '<<<<<.row_height_min',
-                                        alignVer: () => $$.$me_align.center,
-                                        alignHor: `<<<<<.col_align[${id}]`,
-                                        text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])),
-                                        fontSize: () => 14,
-                                        paddingHor: () => 4,
-                                    },
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width) }, cell_borders, { colorBackground: () => '#F5F8F8', '#width': `<<<<<<.col_width[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])), fontSize: () => 14, paddingHor: () => 4 }),
                                 })),
                             },
                         }),
@@ -5676,128 +6235,25 @@ var $;
                     prop: {
                         '#ofsVer': '<<<.row_height_min',
                         '#height': () => null,
-                        '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.col_ids'], ({ masters: [col_ids] }) => {
+                        '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<<.col_ids'], ({ masters: [col_ids] }) => {
                             const col_id_last = col_ids[col_ids.length - 1];
-                            return ['<.#width', `<<<.col_left[${col_id_last}]`, `<<<.col_width[${col_id_last}]`];
+                            return ['<.#width', `<<<<.col_left[${col_id_last}]`, `<<<<.col_width[${col_id_last}]`];
                         }), ({ masters: [width, col_left, col_width] }) => Math.min(width, col_left + col_width)),
                     },
                     style: {
                         fontSize: () => 14,
                         padding: () => 8,
                         boxSizing: () => 'border-box',
-                        userSelect: () => 'auto',
+                        userSelect: () => 'text',
                     },
                 }),
             },
         };
-        const header = {
-            prop: {
-                readyToResize: () => '',
-                resizeStart: () => -1,
-                resizeInitial: () => null,
-                'cursor': $$.$me_atom2_prop(['.readyToResize', '.resizeStart'], ({ masters: [readyToResize, resizeStart] }) => {
-                    const result = !readyToResize && resizeStart == -1 ? 'default' : 'col-resize';
-                    return result;
-                }, ({ atom, val }) => {
-                    $$.$me_atom2_body_cursor({ origin: atom.path, val: val });
-                }),
-                '#height': '<<.header_height',
-                '#order': () => ['cells', 'fixed'],
-            },
-            style: {
-                overflow: () => 'hidden',
-            },
-            elem: {
-                fixed: () => ({
-                    prop: {
-                        '#width': '<<<.col_fixed_width',
-                    },
-                    control: {
-                        cell: () => ({
-                            base: $$.$me_panel,
-                            prop: {
-                                borderWidthRight: () => 1,
-                                colorBorderRight: () => '#adb0b8',
-                                borderWidthBottom: () => 1,
-                                colorBorderBottom: () => '#adb0b8',
-                                colorBackground: () => '#d8dce3',
-                            },
-                        }),
-                    },
-                }),
-                cells: () => ({
-                    prop: {
-                        '#width': '<<<.col_width_sum',
-                        '#ofsHor': '<<<.ofsHor',
-                    },
-                    control: {
-                        cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
-                            base: $$.$me_label,
-                            prop: {
-                                '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width),
-                                borderWidthRight: () => 1,
-                                colorBorderRight: () => '#adb0b8',
-                                borderWidthBottom: () => 1,
-                                colorBorderBottom: () => '#adb0b8',
-                                colorBackground: () => '#d8dce3',
-                                '#width': `<<<<.col_width[${id}]`,
-                                '#ofsHor': `<<<<.col_left[${id}]`,
-                                '#height': '<.#height',
-                                align: () => $$.$me_align.center,
-                                text: `<<<<.col_caption[${id}]`,
-                                fontSize: () => 14,
-                                paddingHor: () => 4,
-                            },
-                        })),
-                    },
-                }),
-            },
-            event: {
-                mousemove: p => {
-                    const resizeStart = $$.a('.resizeStart');
-                    if (resizeStart != -1) {
-                        const width = Math.max($$.a('<<.col_width_min'), $$.a('.resizeInitial') + p.event.clientX - resizeStart);
-                        const id = $$.a('.readyToResize');
-                        $$.a(`<<.col_width[${id}]`, width);
-                        return true;
-                    }
-                    else {
-                        let id_found = '';
-                        if (p.isInRect(p.event.clientX, p.event.clientY)) {
-                            const cells = $$.a.get('@cells^cell')._entities.key;
-                            const delta = 4;
-                            for (const id in cells) {
-                                const clientRect = cells[id]._entities.prop['#clientRect'].value();
-                                if (clientRect.right - delta <= p.event.clientX && p.event.clientX <= clientRect.right + delta) {
-                                    id_found = id;
-                                    break;
-                                }
-                            }
-                        }
-                        $$.a('.readyToResize', id_found);
-                    }
-                    return true;
-                },
-                mousedown: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    const id = $$.a('.readyToResize');
-                    if (id) {
-                        $$.a('.resizeStart', p.event.clientX);
-                        $$.a('.resizeInitial', $$.a(`<<.col_width[${id}]`));
-                    }
-                    return true;
-                },
-                mouseup: p => {
-                    const resizeStart = $$.a('.resizeStart');
-                    if (resizeStart != -1) {
-                        $$.a('.resizeStart', -1);
-                        $$.a('.resizeInitial', null);
-                        $$.a('.readyToResize', '');
-                    }
-                    return false;
-                },
-            },
+        const cell_borders = {
+            borderWidthRight: () => 1,
+            colorBorderRight: () => '#adb0b8',
+            borderWidthBottom: () => 1,
+            colorBorderBottom: () => '#adb0b8',
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -5817,8 +6273,7 @@ var $;
                     return true;
                 }
                 else if (dispatch_name == 'recs') {
-                    const ec = $$.a.get('@grid');
-                    ec.dispatch(dispatch_name, dispatch_arg);
+                    $$.a.dispatch('@grid@list', dispatch_name, dispatch_arg);
                     return true;
                 }
                 return false;
@@ -5851,8 +6306,7 @@ var $;
                                 $$.a('.count', event.data.count);
                             }
                             else if (event.data.cmd == 'recs') {
-                                const ec = $$.a.curr.parent(true);
-                                ec.dispatch(event.data.cmd, event.data);
+                                $$.a.dispatch('', event.data.cmd, event.data);
                             }
                             else {
                                 console.error(event.data);
@@ -5862,6 +6316,9 @@ var $;
                     }
                     return _dataWorker;
                 },
+            },
+            style: {
+                userSelect: () => 'none',
             },
             elem: {
                 shown: () => ({
@@ -5875,6 +6332,7 @@ var $;
                     style: {
                         position: () => 'relative',
                         fontWeight: () => 500,
+                        userSelect: () => 'none',
                     },
                     dom: {
                         innerText: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => (count < 0 ?
@@ -5890,6 +6348,9 @@ var $;
                         '#ofsVer': () => 18,
                         '#ofsHor': $$.$me_atom2_prop(['<@shown.#ofsHor', '<@shown.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
                         '#cursor': () => 'pointer',
+                    },
+                    style: {
+                        userSelect: () => 'none',
                     },
                     attr: {
                         src: () => 'assets/icons-8-filter@2x.png'
@@ -5924,20 +6385,19 @@ var $;
                             if (!val)
                                 return;
                             const [order, rec_count] = val;
-                            const ec = $$.a.curr.parent(true);
-                            ec.dispatch('set_view', order);
+                            $$.a.dispatch('@list', 'set_view', order);
                         }),
-                        on_change_row_i_min: $$.$me_atom2_prop(['.row_i_min', '<.order', '.rec_count'], null, ({ val: [row_i_min, order, rec_count] }) => {
+                        on_change_row_i_min: $$.$me_atom2_prop(['@list.row_i_min', '<.order', '.rec_count'], null, ({ val: [row_i_min, order, rec_count] }) => {
                             if (rec_count < 0)
                                 return;
                             order.row_i_min = row_i_min;
                         }),
-                        on_change_visible_idx_min: $$.$me_atom2_prop(['.visible_idx_min', '<.order', '.rec_count'], null, ({ val: [visible_idx_min, order, rec_count] }) => {
+                        on_change_visible_idx_min: $$.$me_atom2_prop(['@list.visible_idx_min', '<.order', '.rec_count'], null, ({ val: [visible_idx_min, order, rec_count] }) => {
                             if (rec_count < 0)
                                 return;
                             order.visible_idx_min = visible_idx_min;
                         }),
-                        on_change_visible_top: $$.$me_atom2_prop(['.visible_top', '<.order', '.rec_count'], null, ({ val: [visible_top, order, rec_count] }) => {
+                        on_change_visible_top: $$.$me_atom2_prop(['@list.visible_top', '<.order', '.rec_count'], null, ({ val: [visible_top, order, rec_count] }) => {
                             if (rec_count < 0)
                                 return;
                             order.visible_top = visible_top;
