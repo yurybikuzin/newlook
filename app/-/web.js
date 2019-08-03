@@ -1320,6 +1320,7 @@ var $;
             'mouseup',
             'wheel',
             'wheelTouch',
+            'wheelDrag',
             'click',
             'tap',
             'clickOrTap',
@@ -3628,6 +3629,149 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let $me_atom2_wheel_drag_mode;
+        (function ($me_atom2_wheel_drag_mode) {
+            $me_atom2_wheel_drag_mode[$me_atom2_wheel_drag_mode["move"] = 0] = "move";
+            $me_atom2_wheel_drag_mode[$me_atom2_wheel_drag_mode["end"] = 1] = "end";
+        })($me_atom2_wheel_drag_mode = $$.$me_atom2_wheel_drag_mode || ($$.$me_atom2_wheel_drag_mode = {}));
+        class $me_atom2_wheel_drag_class {
+            constructor() {
+                this.scrollAccuX = 0;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+            }
+            start(event) {
+                this.mode = null;
+                this._start = event;
+                this.scrollAccuX = 0;
+                this.clientX = event.clientX;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.clientY = event.clientY;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+                this.timePrevX = null;
+                this.timePrevY = null;
+            }
+            move(event) {
+                this._end = event;
+                const deltaX = this.clientX - event.clientX;
+                if (deltaX)
+                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
+                        this.scrollAccuX = deltaX;
+                        this.timePrevX = performance.now();
+                    }
+                    else {
+                        if (this.timePrevX == null)
+                            this.timePrevX = performance.now();
+                        this.scrollAccuX += deltaX;
+                    }
+                this.clientX = event.clientX;
+                this.lastDeltaX = deltaX;
+                const deltaY = this.clientY - event.clientY;
+                if (deltaY)
+                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
+                        this.scrollAccuY = deltaY;
+                        this.timePrevY = performance.now();
+                    }
+                    else {
+                        if (this.timePrevY == null)
+                            this.timePrevY = performance.now();
+                        this.scrollAccuY += deltaY;
+                    }
+                this.clientY = event.clientY;
+                this.lastDeltaY = deltaY;
+                this.mode = $me_atom2_wheel_drag_mode.move;
+                $$.$me_atom2_async();
+            }
+            cancel() {
+                this.mode = null;
+            }
+            end(event) {
+                this._end = event;
+                this.accel_k = 1;
+                this.mode = $me_atom2_wheel_drag_mode.end;
+                $$.$me_atom2_async();
+            }
+            raf(t) {
+                return (this.mode == $me_atom2_wheel_drag_mode.move ? this.rafMove(t) :
+                    this.mode == $me_atom2_wheel_drag_mode.end ? this.rafEnd(t) :
+                        null);
+            }
+            rafMove(t) {
+                if (Math.abs(this.scrollAccuY) > Math.abs(this.scrollAccuX)) {
+                    this.scrollAccuX = 0;
+                }
+                else {
+                    this.scrollAccuY = 0;
+                }
+                const timeCurr = performance.now();
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
+                if (Math.abs(this.scrollAccuX) < accel_threshold) {
+                    this.accelX = 0;
+                }
+                else if (this.timePrevX != null) {
+                    this.tPrev = t;
+                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
+                    this.timePrevX = timeCurr;
+                }
+                if (Math.abs(this.scrollAccuY) < accel_threshold) {
+                    this.accelY = 0;
+                }
+                else if (this.timePrevY != null) {
+                    this.tPrev = t;
+                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
+                    this.timePrevY = timeCurr;
+                }
+                const result = {
+                    start: this._start,
+                    end: this._end,
+                    _deltaX: this.scrollAccuX,
+                    _deltaY: this.scrollAccuY,
+                };
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                return result;
+            }
+            rafEnd(t) {
+                const tDelta = t - this.tPrev;
+                const scrollAccuX = this.accelX * tDelta;
+                const scrollAccuY = this.accelY * tDelta;
+                if (!(Math.abs(scrollAccuX) >= 1 ||
+                    Math.abs(scrollAccuY) >= 1)) {
+                    this.mode = null;
+                    return null;
+                }
+                else {
+                    const result = {
+                        start: this._start,
+                        end: this._end,
+                        _deltaX: scrollAccuX,
+                        _deltaY: scrollAccuY,
+                    };
+                    this.accelX = this.accelX * this.accel_k;
+                    this.accelY = this.accelY * this.accel_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
+                    this.tPrev = t;
+                    $$.$me_atom2_async();
+                    return result;
+                }
+            }
+        }
+        $$.$me_atom2_wheel_drag_class = $me_atom2_wheel_drag_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_drag.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_atom2_async_raf = (t) => {
             const start = performance.now();
             const stat = new Map();
@@ -3707,11 +3851,23 @@ var $;
             wheelTouch: (last_now, t) => {
                 const pre = performance.now() - last_now;
                 let count = 0;
+                let event_wheel_touch_to_process;
                 if ($$.$me_atom2_wheel_touch)
-                    $$.$me_atom2_event_wheel_touch_to_process = $$.$me_atom2_wheel_touch.raf(t);
-                if ($$.$me_atom2_event_wheel_touch_to_process) {
-                    $$.$me_atom2_event_process('wheelTouch', $$.$me_atom2_event_wheel_touch_to_process);
-                    $$.$me_atom2_event_wheel_touch_to_process = null;
+                    event_wheel_touch_to_process = $$.$me_atom2_wheel_touch.raf(t);
+                if (event_wheel_touch_to_process) {
+                    $$.$me_atom2_event_process('wheelTouch', event_wheel_touch_to_process);
+                    count = 1;
+                }
+                return [count, pre];
+            },
+            wheelDrag: (last_now, t) => {
+                const pre = performance.now() - last_now;
+                let count = 0;
+                let event_wheel_drag_to_process;
+                if ($$.$me_atom2_wheel_drag)
+                    event_wheel_drag_to_process = $$.$me_atom2_wheel_drag.raf(t);
+                if (event_wheel_drag_to_process) {
+                    $$.$me_atom2_event_process('wheelDrag', event_wheel_drag_to_process);
                     count = 1;
                 }
                 return [count, pre];
@@ -3927,7 +4083,6 @@ var $;
             including_anim && $$.$me_atom2.anim_to_play.size ||
             $$.$me_atom2_event_mousemove_to_process ||
             $$.$me_atom2_event_wheel_to_process ||
-            $$.$me_atom2_event_wheel_touch_to_process ||
             false);
         const touchstart = (event) => {
             if (!$$.$me_atom2_wheel_touch)
@@ -3946,11 +4101,22 @@ var $;
                 $$.$me_atom2_wheel_touch.end(event);
             return $$.$me_atom2_event_process('touchend', event);
         };
-        const mousedown = (event) => $$.$me_atom2_event_process('mousedown', event);
-        const mouseup = (event) => $$.$me_atom2_event_process('mouseup', event);
+        const mousedown = (event) => {
+            if (!$$.$me_atom2_wheel_drag)
+                $$.$me_atom2_wheel_drag = new $$.$me_atom2_wheel_drag_class();
+            $$.$me_atom2_wheel_drag.start(event);
+            $$.$me_atom2_event_process('mousedown', event);
+        };
         const mousemove = (event) => {
             $$.$me_atom2_event_mousemove_last = $$.$me_atom2_event_mousemove_to_process = event;
+            if ($$.$me_atom2_wheel_drag && event.buttons == 1)
+                $$.$me_atom2_wheel_drag.move(event);
             $$.$me_atom2_async();
+        };
+        const mouseup = (event) => {
+            if ($$.$me_atom2_wheel_drag)
+                $$.$me_atom2_wheel_drag.end(event);
+            $$.$me_atom2_event_process('mouseup', event);
         };
         const wheel = (event) => {
             if (!$$.$me_atom2_event_wheel_to_process) {
@@ -5103,6 +5269,8 @@ var $;
             event: {
                 wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
                     $$.$me_list_wheel(p.event._deltaX, p.event._deltaY, $$.$me_list_wheel_y_is(p.event)),
+                wheelDrag: p => p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
+                    $$.$me_list_wheel(p.event._deltaX, p.event._deltaY, $$.$me_list_wheel_y_is(p.event)),
                 wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
                     $$.$me_list_wheel(p.event._deltaX, p.event._deltaY, $$.$me_list_wheel_y_is(p.event)),
             },
@@ -5578,6 +5746,8 @@ var $;
             event: {
                 wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
                     !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
+                wheelDrag: p => p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
+                    !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
                 wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
                     !$$.$me_list_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
             },
@@ -5772,7 +5942,11 @@ var $;
                         }
                     }
                     else {
-                        return resizeDo(clientX);
+                        if (!resizeDo(clientX))
+                            return false;
+                        if ($$.$me_atom2_wheel_drag)
+                            $$.$me_atom2_wheel_drag.cancel();
+                        return true;
                     }
                     return false;
                 },
