@@ -5914,11 +5914,16 @@ var $;
                     },
                     style: {
                         background: () => 'white',
+                        opacity: '<.colSelectedHeaderOpacity',
                     },
                 }),
                 colSelected: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
                     type: id || id_was,
                     prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<.colSelected'], ({ masters: [id] }) => $$.$me_atom2_anim({
+                            from: id ? 0 : null,
+                            to: id ? -5 : 0,
+                        })),
                         '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.isMoving', '<.isMovingAnim'], ({ masters: [isMoving, isMovingAnim] }) => isMoving || isMovingAnim ? [] : [`<<.col_left[${id || id_was}]`, '<<.ofsHor']), ({ len, masters: [left, ofs], prev }) => !len ? prev : left + ofs),
                         '#width': `<<.col_width[${id || id_was}]`,
                         on_chaned_width: $$.$me_atom2_prop(['.#width'], null),
@@ -5930,9 +5935,9 @@ var $;
                         start_clientX: () => -1,
                     },
                     style: {
-                        background: () => 'rgba(0,0,0,0.1)',
                         opacity: '<.colSelectedHeaderOpacity',
                         pointerEvents: $$.$me_atom2_prop(['.colSelected'], ({ masters: [colSelected] }) => colSelected ? 'auto' : 'none'),
+                        boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
                     },
                     init: () => {
                         const left = $$.a(`<<.col_left[${id || id_was}]`);
@@ -5947,17 +5952,17 @@ var $;
                     control: {
                         header: () => ({
                             base: $$.$me_label,
-                            prop: {
-                                '#width': `<<<.col_width[${id}]`,
-                                '#height': '<<<.header_height',
-                                align: () => $$.$me_align.center,
-                                text: `<<<.col_caption[${id}]`,
-                                fontSize: () => 14,
-                                paddingHor: () => 4,
-                                colorBackground: () => 'red',
-                                colorText: () => 'white',
-                            },
+                            prop: Object.assign({ '#width': `<<<.col_width[${id}]`, '#height': '<<<.header_height', text: `<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4 }),
                         }),
+                        cell: $$.$me_atom2_prop({
+                            keys: ['<<@list.row_i'],
+                            masters: ['<<@list.row_i_min', '<<@list.row_i_max'],
+                        }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ?
+                            null :
+                            {
+                                base: $$.$me_label,
+                                prop: Object.assign({ '#ofsVer': $$.$me_atom2_prop(['<^header.#height', `<<<@list.row_top[${row_i}]`], ({ masters: [ofs, top] }) => ofs + top), '#height': '<<<@list.row_height_min', '#width': '<.#width', text: `<<<@list.cell_text[${row_i}][${id}]` }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<.col_align[${id}]` }),
+                            }),
                     },
                     event: {
                         clickOrTapOutside: () => {
@@ -6024,6 +6029,7 @@ var $;
                 colResizerLeft: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim'], ({ masters: [id, isMoving, isMovingAnim] }) => !id || isMoving || isMovingAnim ? null : {
                     base: colResizer,
                     prop: {
+                        '#ofsVer': '<@colSelected.#ofsVer',
                         id: () => id,
                         isRight: () => false,
                     },
@@ -6031,6 +6037,7 @@ var $;
                 colResizerRight: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim'], ({ masters: [id, isMoving, isMovingAnim] }) => !id || isMoving || isMovingAnim ? null : {
                     base: colResizer,
                     prop: {
+                        '#ofsVer': '<@colSelected.#ofsVer',
                         id: () => id,
                         isRight: () => true,
                     },
@@ -6060,7 +6067,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width) }, cell_borders, { colorBackground: () => '#d8dce3', '#width': `<<<<.col_width[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', align: () => $$.$me_align.center, text: `<<<<.col_caption[${id}]`, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width), '#width': `<<<<.col_width[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
@@ -6091,7 +6098,6 @@ var $;
                     }
                 }),
             },
-            event: {},
         };
         function colSelected_mousemove(clientX, sign) {
             if (!$$.a('<.isMoving'))
@@ -6229,34 +6235,6 @@ var $;
                 }),
             },
         };
-        function colsToResize_compute(clientX, delta) {
-            const clientRect = $$.a(`<.#clientRect`);
-            const limit_min = clientRect.left + $$.a('<.col_fixed_width');
-            const limit_max = clientRect.right;
-            const ids = $$.a('<.col_ids');
-            let result = null;
-            for (let i = 0; i < ids.length; i++) {
-                const id = ids[i];
-                const clientRect = $$.a(`@wrapper@cells^cell[${id}].#clientRect`);
-                if (limit_min <= clientRect.right && clientRect.right <= limit_max &&
-                    clientRect.right - delta <= clientX && clientX <= clientRect.right + delta) {
-                    result = {
-                        left: id,
-                        right: i >= ids.length - 1 ? null : ids[i + 1]
-                    };
-                    break;
-                }
-            }
-            $$.a('.colsToResize', result || '');
-            return result;
-        }
-        function colsToResize_apply(clientX) {
-            if ($$.a('.colsToResize').right != $$.a('.shownRightColResizer'))
-                $$.a('.shownRightColResizer', '');
-            $$.a('.isRightColResize', !!$$.a('.shownRightColResizer'));
-            $$.a('.resizeStart', clientX);
-            $$.a('.resizeInitial', $$.a(`<.col_width[${$$.a('.resizeCol')}]`));
-        }
         function resizeStop() {
             const clientX = $$.a('.start_clientX');
             if (clientX == -1)
@@ -6287,7 +6265,7 @@ var $;
         }
         const colResizer = {
             prop: {
-                '#width': () => 10,
+                '#width': () => 12,
                 '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.id', '.isRight'], ({ masters: [id, isRight] }) => ['.isRight', `<<.col_left[${id}]`, '<<.ofsHor', '.#width', '<.#width', '<<.col_fixed_width'].concat(!isRight ? [] : `<<.col_width[${id}]`)), ({ len, masters: [isRight, col_left, ofs, width, width_gross, col_fixed_width, col_width] }) => {
                     return Math.round(Math.max(col_fixed_width, col_left + ofs + (!isRight ? 0 : col_width)) - (isRight ? 0 : width));
                 }),
@@ -6296,9 +6274,25 @@ var $;
                 start_clientX: () => -1,
                 start_width: () => -1,
                 start_ofsHor: () => -1,
+                grayLevel: () => 150,
             },
             style: {
-                background: () => 'rgba(0,0,0,0.3)',
+                background: $$.$me_atom2_prop(['.grayLevel'], ({ masters: [grayLevel] }) => `rgb(${grayLevel},${grayLevel},${grayLevel})`),
+                boxSizing: () => 'border-box',
+            },
+            elem: {
+                line: () => ({
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => Math.floor((width - 2) / 3) + 2),
+                        '#height': $$.$me_atom2_prop(['<.#height'], ({ masters: [height] }) => Math.floor(height / 3 * 2)),
+                        '#align': () => $$.$me_align.center,
+                    },
+                    style: {
+                        borderLeft: () => '1px solid white',
+                        borderRight: () => '1px solid white',
+                        boxSizing: () => 'border-box',
+                    },
+                }),
             },
             event: {
                 touchstart: p => {
@@ -6628,7 +6622,7 @@ var $;
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: () => '#d8dce3', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])), align: () => $$.$me_align.center, fontSize: () => 14 }),
+                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
                                 }),
                             },
                         }),
@@ -6648,7 +6642,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width) }, cell_borders, { colorBackground: () => '#F5F8F8', '#width': `<<<<<<.col_width[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])), fontSize: () => 14, paddingHor: () => 4 }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width) }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
