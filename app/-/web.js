@@ -242,7 +242,7 @@ var $;
                     if ($$.$me_stop)
                         return;
                     const start_raf = performance.now();
-                    const deadline = start_raf + 3000;
+                    const deadline = start_raf + 60000;
                     for (const { fn } of $$._me_atom2_async_raf_queue)
                         fn(t);
                     {
@@ -1500,6 +1500,18 @@ var $;
                                                 event: { start: startClick, end: event }
                                             });
                                 }
+                            }
+                            else if (name == 'tapOutside') {
+                                if (touchTolerance === void 0)
+                                    touchTolerance = $$.a('/.#touchTolerance');
+                                const dist = distToRect(event.touches[0].clientX, event.touches[0].clientY);
+                                done_ec_special =
+                                    (dist > touchTolerance) &&
+                                        item.fn({
+                                            isInRect,
+                                            distToRect,
+                                            event,
+                                        });
                             }
                             else if (name == 'tapBegin') {
                                 if (touchTolerance === void 0)
@@ -5506,10 +5518,12 @@ var $;
                 size: () => 64,
                 period: () => 1.2,
                 qt: () => 12,
+                k_height: () => 14 / 32,
+                k_width: () => 5 / 32,
                 '#width': '.size',
                 '#height': '.size',
                 '#align': () => $$.$me_align.center,
-                idx: $$.$me_atom2_prop(['.qt'], ({ masters: [qt] }) => [...Array(qt).keys()]),
+                idx: $$.$me_atom2_prop(['.qt'], ({ masters: [qt] }) => [...Array(Math.floor(qt)).keys()]),
                 styleSheetName: () => 'spinner',
                 styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [styleSheetName] }) => `
         @keyframes ${styleSheetName} {
@@ -5521,12 +5535,12 @@ var $;
           }
         }
       `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName', '.idx', '.color', '.size', '.qt', '.period'], ({ masters: [className, styleSheetName, idx, color, size, qt, period], atom }) => {
+                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName', '.idx', '.color', '.size', '.qt', '.period', '.k_height', '.k_width'], ({ masters: [className, styleSheetName, idx, color, size, qt, period, k_height, k_width], atom }) => {
                     const semiSize = Math.round(size / 2);
                     const top = Math.round(semiSize / 10);
                     const left = semiSize - top;
-                    const width = Math.round(semiSize / 32 * 5);
-                    const height = Math.round(semiSize / 32 * 14);
+                    const width = Math.round(semiSize * k_width);
+                    const height = Math.round(semiSize * k_height);
                     const step = period / qt;
                     return (`
             .${className} div {
@@ -5553,7 +5567,7 @@ var $;
                 }),
             },
             elem: {
-                div: $$.$me_atom2_prop({ keys: ['.idx'] }, ({ key: [idx] }) => ({})),
+                div: $$.$me_atom2_prop({ keys: ['.idx'] }, () => ({})),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -5728,7 +5742,7 @@ var $;
                     const val = dispatch_arg || {};
                     const col_width_store = val.col_width || {};
                     const col_ids = val.col_ids || Object.keys($$.a('.cols'));
-                    const min = $$.a('.#width') - $$.a('.col_fixed_width') - $$.a('.col_width_sum');
+                    const min = $$.a('.#width') - $$.a('.col_width_sum') - $$.a('.col_fixed_width');
                     const ofsHor = Math.min(0, Math.max(min, val.ofsHor || 0)) + $$.a('.col_fixed_width');
                     for (const id of $$.a('.col_ids'))
                         $$.a(`.col_width[${id}]`, null);
@@ -5767,10 +5781,8 @@ var $;
                 col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
                 ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev),
                 ofsHor_adjust: $$.$me_atom2_prop(['.#width'], null, ({ val, prev }) => {
-                    if (prev == null || val == prev)
-                        return;
-                    if (val > prev)
-                        $$.a('.ofsHor', Math.min($$.a('.col_fixed_width'), $$.a('.ofsHor') + val - prev));
+                    const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum'), val);
+                    $$.a('.ofsHor', ofsHor_adjusted($$.a('.ofsHor'), min, max));
                 }),
                 col_left: $$.$me_atom2_prop({
                     keys: ['.col_ids'],
@@ -5823,8 +5835,7 @@ var $;
         const grid_wheel = (deltaX) => {
             const prop_ofsHor = $$.a.get('.ofsHor');
             const ofsHorNew = prop_ofsHor.value() - deltaX;
-            const min = Math.min($$.a('.col_fixed_width'), $$.a('.#width') - $$.a('.col_width_sum'));
-            const max = $$.a('.col_fixed_width');
+            const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum'), $$.a('.#width'));
             if (deltaX > 0 && ofsHorNew >= min ||
                 deltaX < 0 && ofsHorNew <= max) {
                 prop_ofsHor.value(ofsHorNew);
@@ -5841,6 +5852,14 @@ var $;
             }
             return true;
         };
+        function ofsHor_min_max(col_fixed_width, col_width_sum, width) {
+            const max = col_fixed_width;
+            const min = Math.min(max, width - col_width_sum);
+            return [min, max];
+        }
+        function ofsHor_adjusted(ofsHor, min, max) {
+            return Math.min(max, Math.max(min, ofsHor));
+        }
         const get_row_open = (idx, _provider, provider_tag) => {
             return $$.a.dispatch(_provider, 'get_row_open', { idx, tag: provider_tag }).val;
         };
@@ -5867,16 +5886,21 @@ var $;
                 colSelectedWas: () => '',
                 colSelectedHeaderOpacity: () => 0,
                 colSelectedHeaderVisible: $$.$me_atom2_prop(['.colSelectedHeaderOpacity'], ({ masters: [opacity] }) => !!opacity),
+                isResizing: () => false,
                 isMoving: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
                     if (!val && prev) {
                         const id = $$.a('.colSelected');
                         const left = $$.a(`<.col_left[${id}]`);
-                        const ofs = $$.a('<.ofsHor');
+                        const prop_ofsHor = $$.a.get('<.ofsHor');
+                        const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
+                            $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
+                            prop_ofsHor.value();
                         const min = $$.a('<.col_fixed_width');
                         const to = Math.max(min, left + ofs);
-                        $$.a('@colSelected.#ofsHor', $$.$me_atom2_anim({ to }));
+                        $$.a('@colSelected.#ofsHor', $$.$me_atom2_anim({ to, path_active: $$.a.get('.isMovingAnim').path }));
                     }
                 }),
+                isMovingAnim: () => false,
                 '#order': () => ['wrapper', 'fixed', 'colSelectedStub', 'colSelected', 'colResizerLeft', 'colResizerRight'],
                 '#zIndex': () => 1,
             },
@@ -5895,9 +5919,9 @@ var $;
                 colSelected: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
                     type: id || id_was,
                     prop: {
-                        '#ofsHor': () => null,
+                        '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.isMoving', '<.isMovingAnim'], ({ masters: [isMoving, isMovingAnim] }) => isMoving || isMovingAnim ? [] : [`<<.col_left[${id || id_was}]`, '<<.ofsHor']), ({ len, masters: [left, ofs], prev }) => !len ? prev : left + ofs),
                         '#width': `<<.col_width[${id || id_was}]`,
-                        on_chaned_width: $$.$me_atom2_prop(['.#width'], null, ({ val }) => console.log({ val })),
+                        on_chaned_width: $$.$me_atom2_prop(['.#width'], null),
                         '#height': '<<.#height',
                         '#cursor': $$.$me_atom2_prop(['<.isMoving'], ({ masters: [isMoving] }) => isMoving ? 'grabbing' : 'grab'),
                         '#zIndex': () => 3,
@@ -5912,10 +5936,13 @@ var $;
                     },
                     init: () => {
                         const left = $$.a(`<<.col_left[${id || id_was}]`);
-                        const ofs = $$.a('<<.ofsHor');
+                        const prop_ofsHor = $$.a.get('<<.ofsHor');
+                        const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
+                            $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
+                            prop_ofsHor.value();
                         const min = $$.a('<<.col_fixed_width');
-                        $$.a('.#ofsHor', Math.max(min, left + ofs));
-                        console.warn({ id });
+                        const val = Math.max(min, left + ofs);
+                        $$.a('.#ofsHor', val);
                     },
                     control: {
                         header: () => ({
@@ -5940,6 +5967,31 @@ var $;
                             $$.a('<.colSelected', '');
                             return true;
                         },
+                        touchstart: p => {
+                            const touchTolerance = $$.a('/.#touchTolerance');
+                            const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
+                            if (dist > touchTolerance)
+                                return false;
+                            $$.a('<.isMoving', true);
+                            $$.a('.last_clientX', p.event.touches[0].clientX);
+                            $$.a('.ofs', p.event.touches[0].clientX - $$.a('.#clientRect').left);
+                            $$.a('.start_clientX', p.event.touches[0].clientX);
+                            return true;
+                        },
+                        touchend: () => {
+                            $$.a('<.isMoving', false);
+                            return true;
+                        },
+                        touchmove: p => {
+                            const delta = p.event.touches[0].clientX - $$.a('.last_clientX');
+                            if (!delta)
+                                return false;
+                            if (!colSelected_mousemove(p.event.touches[0].clientX, Math.sign(delta)))
+                                return false;
+                            $$.a('.#ofsHor', $$.a('.#ofsHor') + delta);
+                            $$.a('.last_clientX', p.event.touches[0].clientX);
+                            return true;
+                        },
                         mousedown: p => {
                             if (!p.isInRect(p.event.clientX, p.event.clientY))
                                 return false;
@@ -5949,7 +6001,7 @@ var $;
                             $$.a('.start_clientX', p.event.clientX);
                             return true;
                         },
-                        mouseup: p => {
+                        mouseup: () => {
                             $$.a('<.isMoving', false);
                             return true;
                         },
@@ -5957,118 +6009,26 @@ var $;
                             const delta = p.event.clientX - $$.a('.last_clientX');
                             if (!delta)
                                 return false;
-                            if (!$$.a('<.isMoving'))
-                                return false;
                             if (p.event.buttons != 1) {
                                 $$.a('<.isMoving', false);
                                 return false;
                             }
-                            const sign = Math.sign(delta);
-                            const is_valid_idx = (idx) => 0 <= idx && idx < col_ids.length;
-                            const col_ids = $$.a('<<.col_ids');
-                            const id = $$.a('<.colSelected');
-                            const idx = col_ids.indexOf(id);
-                            let idx_replace;
-                            let col_ids_new;
-                            let ofsHor;
-                            let need_reorder = false;
-                            if (delta > 0 && idx < col_ids.length - 1 || delta < 0 && idx) {
-                                const overlap_border = p.event.clientX - $$.a('.ofs') - $$.a(`<@wrapper.#clientRect`).left - $$.a('<<.ofsHor') +
-                                    (delta < 0 ? 0 : $$.a(`<<.col_width[${id}]`));
-                                let i = 0;
-                                const threshold = $$.a('<<.col_width_min') / 4;
-                                let overlap;
-                                while (is_valid_idx(idx + (i + 1) * sign)) {
-                                    const id = col_ids[idx + (i + 1) * sign];
-                                    const left = $$.a(`<<.col_left[${id}]`);
-                                    const val = (overlap_border - left) * sign + (delta > 0 ? 0 : $$.a(`<<.col_width[${id}]`));
-                                    if (val >= threshold) {
-                                        i++;
-                                        overlap = val;
-                                    }
-                                    else
-                                        break;
-                                }
-                                if (i) {
-                                    idx_replace = idx + i * sign;
-                                    const limit = sign > 0 ?
-                                        $$.a('<<.#width') - $$.a('<<.ofsHor') :
-                                        $$.a('<<.col_fixed_width') - $$.a('<<.ofsHor');
-                                    const need_scroll = sign > 0 ?
-                                        $$.a(`<<.col_left[${col_ids[idx + i]}]`) + $$.a(`<<.col_width[${col_ids[idx + i]}]`) > limit
-                                        :
-                                            $$.a(`<<.col_left[${col_ids[idx_replace]}]`) < limit;
-                                    if (need_scroll) {
-                                        idx_replace = Math.max(0, Math.min(col_ids.length - 1, idx_replace + sign * Math.floor(overlap / threshold * 2)));
-                                        if (idx_replace == 0) {
-                                            ofsHor = $$.a('<<.col_fixed_width');
-                                        }
-                                        else if (idx_replace == col_ids.length - 1) {
-                                            ofsHor = Math.min($$.a('<<.col_fixed_width'), $$.a('<<.#width') - $$.a('<<.col_width_sum'));
-                                            console.warn({ ofsHor });
-                                        }
-                                        else {
-                                            ofsHor = $$.a('<<.ofsHor') + sign * (idx_replace == 0 || idx_replace == col_ids.length - 1 ? 0 : threshold / 2);
-                                            ofsHor = threshold / 2;
-                                            for (let j = idx + sign; sign > 0 ? (j <= idx_replace) : (j >= idx_replace); j += sign) {
-                                                ofsHor -= sign * $$.a(`<<.col_width[${col_ids[j]}]`);
-                                                console.log(col_ids[j]);
-                                            }
-                                        }
-                                        console.warn({ ofsHor }, col_ids[idx_replace]);
-                                    }
-                                }
-                            }
-                            let reorder = null;
-                            if (idx_replace !== void 0) {
-                                col_ids_new = col_ids.slice();
-                                col_ids_new.splice(idx, 1);
-                                col_ids_new.splice(idx_replace, 0, id);
-                                $$.a('<<.col_ids', col_ids_new);
-                            }
-                            if (ofsHor !== void 0) {
-                                const min = Math.min($$.a('<<.col_fixed_width'), $$.a('<<.#width') - $$.a('<<.col_width_sum'));
-                                const max = $$.a('<<.col_fixed_width');
-                                const val = Math.round(Math.max(min, Math.min(max, ofsHor)));
-                                console.log($$.a('<<.ofsHor'), { val });
-                                if (val != $$.a('<<.ofsHor')) {
-                                    $$.a('<<.ofsHor', $$.$me_atom2_anim({
-                                        to: val,
-                                        fini: () => {
-                                            if (reorder)
-                                                reorder();
-                                            console.error('HERE!');
-                                            const id = $$.a('@header.colSelected');
-                                            const left = $$.a(`.col_left[${id}]`);
-                                            const ofs = $$.a('.ofsHor');
-                                            const min = $$.a('.col_fixed_width');
-                                            const to = Math.max(min, left + ofs);
-                                            $$.a('@header@colSelected.#ofsHor', $$.$me_atom2_anim({ to }));
-                                        }
-                                    }));
-                                }
-                                else if (reorder) {
-                                    reorder();
-                                }
-                            }
-                            else if (reorder) {
-                                reorder();
-                            }
+                            if (!colSelected_mousemove(p.event.clientX, Math.sign(delta)))
+                                return false;
                             $$.a('.#ofsHor', $$.a('.#ofsHor') + delta);
                             $$.a('.last_clientX', p.event.clientX);
                             return true;
                         },
                     },
                 }),
-                colResizerLeft: $$.$me_atom2_prop(['.colSelected', '.isMoving'], ({ masters: [id, isMoving] }) => !id || isMoving ? null : {
+                colResizerLeft: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim'], ({ masters: [id, isMoving, isMovingAnim] }) => !id || isMoving || isMovingAnim ? null : {
                     base: colResizer,
                     prop: {
                         id: () => id,
                         isRight: () => false,
-                        '#cursor': () => 'col-resize',
                     },
                 }),
-                colResizerRight: $$.$me_atom2_prop(['.colSelected', '.isMoving'], ({ masters: [id, isMoving] }) => !id || isMoving ? null : {
+                colResizerRight: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim'], ({ masters: [id, isMoving, isMovingAnim] }) => !id || isMoving || isMovingAnim ? null : {
                     base: colResizer,
                     prop: {
                         id: () => id,
@@ -6106,7 +6066,22 @@ var $;
                                     },
                                     event: {
                                         clickOrTap: () => {
-                                            $$.a('<<<.colSelected', id);
+                                            const ofsHor = $$.a('<<<<.ofsHor');
+                                            const left = $$.a(`<<<<.col_left[${id}]`);
+                                            const min = $$.a('<<<<.col_fixed_width') - left;
+                                            const max = $$.a('<<<.#width') - $$.a(`<<<<.col_width[${id}]`) - left;
+                                            const to = Math.max(min, Math.min(max, ofsHor));
+                                            const prop_colSelected = $$.a.get('<<<.colSelected');
+                                            if (to == ofsHor) {
+                                                prop_colSelected.value(id);
+                                            }
+                                            else {
+                                                $$.a('<<<<.ofsHor', $$.$me_atom2_anim({ to,
+                                                    fini: () => {
+                                                        prop_colSelected.value(id);
+                                                    }
+                                                }));
+                                            }
                                             return true;
                                         },
                                     },
@@ -6118,6 +6093,87 @@ var $;
             },
             event: {},
         };
+        function colSelected_mousemove(clientX, sign) {
+            if (!$$.a('<.isMoving'))
+                return false;
+            const is_valid_idx = (idx) => 0 <= idx && idx < col_ids.length;
+            const col_ids = $$.a('<<.col_ids');
+            const id = $$.a('<.colSelected');
+            const idx = col_ids.indexOf(id);
+            let idx_replace;
+            let col_ids_new;
+            let ofsHor;
+            let need_reorder = false;
+            if (sign > 0 && idx < col_ids.length - 1 || sign < 0 && idx) {
+                const overlap_border = clientX - $$.a('.ofs') - $$.a(`<@wrapper.#clientRect`).left - $$.a('<<.ofsHor') +
+                    (sign < 0 ? 0 : $$.a(`<<.col_width[${id}]`));
+                let i = 0;
+                const threshold = $$.a('<<.col_width_min') / 2;
+                let overlap;
+                while (is_valid_idx(idx + (i + 1) * sign)) {
+                    const id = col_ids[idx + (i + 1) * sign];
+                    const left = $$.a(`<<.col_left[${id}]`);
+                    const val = (overlap_border - left) * sign + (sign > 0 ? 0 : $$.a(`<<.col_width[${id}]`));
+                    if (val >= threshold) {
+                        i++;
+                        overlap = val;
+                    }
+                    else
+                        break;
+                }
+                if (i) {
+                    idx_replace = idx + i * sign;
+                    const limit = sign > 0 ?
+                        $$.a('<<.#width') - $$.a('<<.ofsHor') - threshold * 2 :
+                        $$.a('<<.col_fixed_width') - $$.a('<<.ofsHor') + threshold * 2;
+                    const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum'), $$.a('<<.#width'));
+                    if (idx_replace == col_ids.length - 1) {
+                        ofsHor = min;
+                    }
+                    else if (idx_replace == 0) {
+                        ofsHor = max;
+                    }
+                    else {
+                        const need_scroll = sign > 0 ?
+                            $$.a(`<<.col_left[${col_ids[idx + i]}]`) + $$.a(`<<.col_width[${col_ids[idx + i]}]`) >= limit :
+                            $$.a(`<<.col_left[${col_ids[idx_replace]}]`) <= limit;
+                        if (need_scroll) {
+                            const prop_ofsHor = $$.a.get('<<.ofsHor');
+                            ofsHor =
+                                $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
+                                    $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
+                                    prop_ofsHor.value();
+                            ofsHor += sign * threshold / 2;
+                            for (let j = idx + sign; j * sign <= (idx_replace) * sign; j += sign)
+                                ofsHor -= sign * $$.a(`<<.col_width[${col_ids[j]}]`);
+                        }
+                    }
+                }
+            }
+            if (idx_replace !== void 0) {
+                col_ids_new = col_ids.slice();
+                col_ids_new.splice(idx, 1);
+                col_ids_new.splice(idx_replace, 0, id);
+                $$.a('<<.col_ids', col_ids_new);
+            }
+            if (ofsHor !== void 0) {
+                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum'), $$.a('<<.#width'));
+                const val = ofsHor_adjusted(ofsHor, min, max);
+                const curr = $$.a.curr;
+                if (val != $$.a('<<.ofsHor')) {
+                    $$.a('<<.ofsHor', $$.$me_atom2_anim({
+                        to: val,
+                        fini: () => {
+                            const prev = $$.a.curr;
+                            $$.a.curr = curr;
+                            colSelected_mousemove(clientX, sign);
+                            $$.a.curr = prev;
+                        }
+                    }));
+                }
+            }
+            return true;
+        }
         const arrow = {
             base: $$.$me_stylesheet,
             prop: {
@@ -6201,33 +6257,6 @@ var $;
             $$.a('.resizeStart', clientX);
             $$.a('.resizeInitial', $$.a(`<.col_width[${$$.a('.resizeCol')}]`));
         }
-        function resizeDo(clientX) {
-            const resizeStart = $$.a('.resizeStart');
-            if (resizeStart == -1)
-                return false;
-            const isRightColResize = $$.a('.isRightColResize');
-            const id = $$.a('.resizeCol');
-            const delta = (resizeStart - clientX) * (isRightColResize ? 1 : -1);
-            let width = Math.max($$.a('<.col_width_min'), $$.a('.resizeInitial') + delta);
-            width = isRightColResize ?
-                Math.min(width, $$.a('<.#width') - $$.a(`<.col_fixed_width`)) :
-                Math.max(width, $$.a('<.col_fixed_width') - $$.a(`<.col_left[${id}]`) - $$.a('<.ofsHor'));
-            if (!isRightColResize) {
-                const limit_max = $$.a('<.#width') - $$.a(`<.col_left[${id}]`) - $$.a('<.ofsHor');
-                if (width < limit_max) {
-                    $$.a('.shownRightColResizer', '');
-                }
-                else if (width > limit_max) {
-                    width = limit_max;
-                    if (width < $$.a('<.#width') - $$.a(`<.col_fixed_width`))
-                        $$.a('.shownRightColResizer', id);
-                }
-            }
-            $$.a(`<.col_width[${id}]`, width);
-            if (isRightColResize)
-                $$.a('<.ofsHor', $$.a('<.#width') - $$.a(`<.col_left[${id}]`) - $$.a(`<.col_width[${id}]`));
-            return true;
-        }
         function resizeStop() {
             const clientX = $$.a('.start_clientX');
             if (clientX == -1)
@@ -6243,8 +6272,18 @@ var $;
             const to = delta > 0 ? ofsHor + delta :
                 ofsHor > col_fixed_width ? col_fixed_width :
                     null;
-            if (to != null)
-                $$.a('<<.ofsHor', $$.$me_atom2_anim({ to }));
+            const prop_isResizing = $$.a.get('<.isResizing');
+            if (to == null) {
+                prop_isResizing.value(false);
+            }
+            else {
+                $$.a('<<.ofsHor', $$.$me_atom2_anim({
+                    to,
+                    fini: () => {
+                        prop_isResizing.value(false);
+                    },
+                }));
+            }
         }
         const colResizer = {
             prop: {
@@ -6262,6 +6301,44 @@ var $;
                 background: () => 'rgba(0,0,0,0.3)',
             },
             event: {
+                touchstart: p => {
+                    const touchTolerance = $$.a('/.#touchTolerance');
+                    const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
+                    if (dist > touchTolerance)
+                        return false;
+                    $$.a('.start_clientX', p.event.touches[0].clientX);
+                    const id = $$.a('.id');
+                    $$.a('.start_width', $$.a(`<<.col_width[${id}]`));
+                    const isRight = $$.a('.isRight');
+                    if (!isRight)
+                        $$.a('.start_ofsHor', $$.a('<<.ofsHor'));
+                    $$.a('<.isResizing', true);
+                    return true;
+                },
+                touchmove: p => {
+                    const start_clientX = $$.a('.start_clientX');
+                    if (start_clientX == -1)
+                        return false;
+                    const clientX = p.event.touches[0].clientX;
+                    const isRight = $$.a('.isRight');
+                    const id = $$.a('.id');
+                    const start_width = $$.a('.start_width');
+                    const max = isRight ?
+                        $$.a('<<.#width') - $$.a(`<<.col_left[${id}]`) - $$.a('<<.ofsHor') - start_width :
+                        $$.a(`<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<.col_fixed_width');
+                    const min = $$.a('<<.col_width_min') - start_width;
+                    const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
+                    if (!isRight)
+                        $$.a('<<.ofsHor', $$.a('.start_ofsHor') - delta);
+                    $$.a(`<<.col_width[${$$.a('.id')}]`, start_width + delta);
+                    return true;
+                },
+                touchend: () => {
+                    if (!resizeStop())
+                        return false;
+                    resizeFini();
+                    return true;
+                },
                 mousedown: p => {
                     if (!p.isInRect(p.event.clientX, p.event.clientY))
                         return false;
@@ -6271,6 +6348,7 @@ var $;
                     const isRight = $$.a('.isRight');
                     if (!isRight)
                         $$.a('.start_ofsHor', $$.a('<<.ofsHor'));
+                    $$.a('<.isResizing', true);
                     return true;
                 },
                 mousemove: p => {
@@ -6290,13 +6368,13 @@ var $;
                         $$.a('<<.#width') - $$.a(`<<.col_left[${id}]`) - $$.a('<<.ofsHor') - start_width :
                         $$.a(`<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<.col_fixed_width');
                     const min = $$.a('<<.col_width_min') - start_width;
-                    const delta = Math.min(max, Math.max(min, (p.event.clientX - start_clientX) * (isRight ? 1 : -1)));
+                    const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
                     if (!isRight)
                         $$.a('<<.ofsHor', $$.a('.start_ofsHor') - delta);
                     $$.a(`<<.col_width[${$$.a('.id')}]`, start_width + delta);
                     return true;
                 },
-                mouseup: p => {
+                mouseup: () => {
                     if (!resizeStop())
                         return false;
                     resizeFini();

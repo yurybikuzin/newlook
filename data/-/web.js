@@ -42,7 +42,7 @@ var $;
                     };
                     openCursor.onsuccess = function (event) {
                         var cursor = event.target.result;
-                        const size = 50;
+                        const size = 500;
                         if (cursor) {
                             count++;
                             cursor.continue();
