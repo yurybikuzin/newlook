@@ -5914,7 +5914,7 @@ var $;
                     },
                     style: {
                         background: () => 'white',
-                        opacity: '<.colSelectedHeaderOpacity',
+                        opacity: id == 'Адрес' || id == 'Балкон' ? null : '<.colSelectedHeaderOpacity',
                     },
                 }),
                 colSelected: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
