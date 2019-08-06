@@ -5935,6 +5935,7 @@ var $;
                         start_clientX: () => -1,
                     },
                     style: {
+                        background: () => 'rgb(250,250,250)',
                         opacity: '<.colSelectedHeaderOpacity',
                         pointerEvents: $$.$me_atom2_prop(['.colSelected'], ({ masters: [colSelected] }) => colSelected ? 'auto' : 'none'),
                         boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
