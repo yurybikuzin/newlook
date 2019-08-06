@@ -2404,7 +2404,7 @@ var $;
             static _lazy_prop_style_px(prop) {
                 if (!$me_atom2_elem._lazy_prop_style_px_cache) {
                     $me_atom2_elem._lazy_prop_style_px_cache = {};
-                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth'];
+                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius'];
                     const sides = ['left', 'top', 'right', 'bottom'];
                     pxStyleProps.push(...sides);
                     pxStyleProps.push('margin');
@@ -5579,6 +5579,45 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_triangle = {
+            prop: {
+                direction: () => $$.$me_rect_sides_enum.bottom,
+                size: '.em',
+                color: '.colorText',
+                k: () => 2 / Math.sqrt(3),
+                height: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                    size :
+                    Math.round(size * 2 / Math.sqrt(3))),
+                width: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                    size :
+                    Math.round(size * k)),
+                '#width': () => 0,
+                '#height': () => 0,
+            },
+            style: {
+                borderTop: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
+                    direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                        `${height / 2}px solid transparent`),
+                borderLeft: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
+                    direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                        `${width / 2}px solid transparent`),
+                borderRight: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
+                    direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                        `${width / 2}px solid transparent`),
+                borderBottom: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
+                    direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                        `${height / 2}px solid transparent`),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_panel = {
             type: '$me_panel',
             prop: Object.assign({}, $$.$me_atom2_prop_same_def(() => 0, ['borderRadius']), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
@@ -5695,38 +5734,94 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$me_triangle = {
+        $$.$me_iosmenu = {
             prop: {
-                direction: () => $$.$me_rect_sides_enum.bottom,
-                size: '.em',
-                color: '.colorText',
-                height: $$.$me_atom2_prop(['.direction', '.size'], ({ masters: [direction, size] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
-                    size :
-                    Math.round(size * 2 / Math.sqrt(3))),
-                width: $$.$me_atom2_prop(['.direction', '.size'], ({ masters: [direction, size] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
-                    size :
-                    Math.round(size * 2 / Math.sqrt(3))),
+                limitRight: '/.#viewportWidth',
+                limitLeft: () => 0,
+                triangleSize: () => 15,
+                paddingHor: () => 6,
+                borderRadius: () => 8,
+                colorBackground: () => 'black',
                 '#width': () => 0,
-                '#height': () => 0,
+                lambda: () => .5,
+                '#height': () => 34,
+                '#ofsVer': $$.$me_atom2_prop(['.triangleSize', '.#height'], ({ masters: [triangleSize, height] }) => -(triangleSize + height)),
+            },
+            elem: {
+                triangle: () => ({
+                    base: $$.$me_triangle,
+                    prop: {
+                        k: () => 2,
+                        size: '<.triangleSize',
+                        color: '<.colorBackground',
+                        '#ofsVer': '<.#height',
+                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.width', '<.lambda', '<.paddingHor'], ({ masters: [width_parent, width_own, lambda, paddingHor] }) => paddingHor + Math.round((width_parent - 2 * paddingHor - width_own) * lambda)),
+                    },
+                }),
+                items: () => ({
+                    control: {
+                        item: $$.$me_atom2_prop({ keys: ['<.items'] }, ({ key: [item] }) => ({
+                            base: $$.$me_label,
+                            prop_non_render: {
+                                '#cursor': () => 'pointer',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    const target = $$.a.get('<<<');
+                                    if (!target)
+                                        return false;
+                                    $$.a.dispatch(target.path, 'iosmenu', item);
+                                    return true;
+                                },
+                            },
+                            prop: {
+                                '#height': '<.#height',
+                                alignVer: () => $$.$me_align.center,
+                                '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.items'], ({ masters: [items] }) => {
+                                    const idx = items.indexOf(item);
+                                    const result = !idx ? ['<<.paddingHor'] :
+                                        [`<^item[${items[idx - 1]}].#ofsHor`, `<^item[${items[idx - 1]}].#width`
+                                        ];
+                                    return result;
+                                }), ({ len, masters: [left, width, space] }) => len == 1 ? left : left + width),
+                                borderWidthLeft: $$.$me_atom2_prop(['<<.items'], ({ masters: [items] }) => {
+                                    const idx = items.indexOf(item);
+                                    return !idx ? 0 : 1;
+                                }),
+                                colorBorderLeft: () => 'rgba(255,255,255,0.5)',
+                                paddingHor: () => 10,
+                                text: () => item,
+                                fontSize: () => 14,
+                                fontWeight: () => 400,
+                                fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+                                colorText: () => 'white',
+                            },
+                        })),
+                    },
+                }),
+            },
+            init: () => {
+                const items = $$.a('.items');
+                const item_last = items[items.length - 1];
+                const width = $$.a(`@items^item[${item_last}].#ofsHor`) + $$.a(`@items^item[${item_last}].#width`) + $$.a('.paddingHor');
+                const ofsHor = Math.round(($$.a('<.#width') - width) / 2);
+                const clientRect = $$.a('<.#clientRect');
+                const limitRight = $$.a('.limitRight') - clientRect.left - width;
+                const limitLeft = $$.a('.limitLeft') - clientRect.left;
+                const ofsHor_valid = Math.max(limitLeft, Math.min(ofsHor, limitRight));
+                const lambda = .5 + Math.min(.5, (ofsHor - ofsHor_valid) / (width - 2 * $$.a('.paddingHor') - $$.a('@triangle.width')));
+                $$.a('.#ofsHor', ofsHor_valid);
+                $$.a('.#width', width);
+                $$.a('.lambda', lambda);
             },
             style: {
-                borderTop: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
-                    direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
-                borderLeft: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
-                    direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderRight: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
-                    direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderBottom: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
-                    direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
+                background: '.colorBackground',
+                borderRadius: '.borderRadius',
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//triangle.js.map
+//iosmenu.js.map
 ;
 "use strict";
 var $;
@@ -5876,7 +5971,7 @@ var $;
         const header = {
             prop: {
                 colSelected: $$.$me_atom2_prop([], () => '', ({ val, prev }) => {
-                    $$.a('.colSelectedHeaderOpacity', val ? 1 : $$.$me_atom2_anim({ to: 0 }));
+                    $$.a('.colSelectedOpacity', val ? 1 : $$.$me_atom2_anim({ to: 0 }));
                     if (!val && prev)
                         $$.a('.colSelectedWas', prev);
                 }),
@@ -5884,8 +5979,8 @@ var $;
                 replaceToRight: () => false,
                 col_ids_new: () => [],
                 colSelectedWas: () => '',
-                colSelectedHeaderOpacity: () => 0,
-                colSelectedHeaderVisible: $$.$me_atom2_prop(['.colSelectedHeaderOpacity'], ({ masters: [opacity] }) => !!opacity),
+                colSelectedOpacity: () => 0,
+                colSelectedHeaderVisible: $$.$me_atom2_prop(['.colSelectedOpacity'], ({ masters: [opacity] }) => !!opacity),
                 isResizing: () => false,
                 isMoving: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
                     if (!val && prev) {
@@ -5914,7 +6009,7 @@ var $;
                     },
                     style: {
                         background: () => 'white',
-                        opacity: id == 'Адрес' || id == 'Балкон' ? null : '<.colSelectedHeaderOpacity',
+                        opacity: id == 'Адрес' || id == 'Балкон' ? null : '<.colSelectedOpacity',
                     },
                 }),
                 colSelected: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
@@ -5933,10 +6028,11 @@ var $;
                         last_clientX: () => -1,
                         ofs: () => -1,
                         start_clientX: () => -1,
+                        '#order': () => ['cells', 'header', 'menu'],
                     },
                     style: {
                         background: () => 'rgb(250,250,250)',
-                        opacity: '<.colSelectedHeaderOpacity',
+                        opacity: '<.colSelectedOpacity',
                         pointerEvents: $$.$me_atom2_prop(['.colSelected'], ({ masters: [colSelected] }) => colSelected ? 'auto' : 'none'),
                         boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
                     },
@@ -5950,20 +6046,72 @@ var $;
                         const val = Math.max(min, left + ofs);
                         $$.a('.#ofsHor', val);
                     },
-                    control: {
-                        header: () => ({
-                            base: $$.$me_label,
-                            prop: Object.assign({ '#width': `<<<.col_width[${id}]`, '#height': '<<<.header_height', text: `<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4 }),
+                    dispatch: (dispatch_name, dispatch_arg) => {
+                        if (dispatch_name == 'iosmenu') {
+                            if (dispatch_arg == 'Скрыть') {
+                                $$.a('<.colSelectedOpacity', $$.$me_atom2_anim({ to: 0,
+                                    fini: () => {
+                                        if (id != 'Метро/ЖД') {
+                                            $$.a('.colSelected', '');
+                                            const col_ids = $$.a('<.col_ids');
+                                            const col_ids_new = col_ids.slice();
+                                            const idx = col_ids.indexOf(id);
+                                            col_ids_new.splice(idx, 1);
+                                            $$.a('<.col_ids', col_ids_new);
+                                        }
+                                        else {
+                                            $$.a(`<.col_width[${id}]`, $$.$me_atom2_anim({
+                                                to: 0,
+                                                fini: () => {
+                                                    $$.a('@header.colSelected', '');
+                                                    const col_ids = $$.a('.col_ids');
+                                                    const col_ids_new = col_ids.slice();
+                                                    const idx = col_ids.indexOf(id);
+                                                    col_ids_new.splice(idx, 1);
+                                                    $$.a('.col_ids', col_ids_new);
+                                                    console.log('here');
+                                                },
+                                            }));
+                                        }
+                                    },
+                                }));
+                            }
+                            return true;
+                        }
+                        return false;
+                    },
+                    elem: {
+                        menu: () => ({
+                            base: $$.$me_iosmenu,
+                            prop: {
+                                items: () => ['Скрыть', 'Добавить...'],
+                                '#zIndex': () => 6,
+                            },
                         }),
-                        cell: $$.$me_atom2_prop({
-                            keys: ['<<@list.row_i'],
-                            masters: ['<<@list.row_i_min', '<<@list.row_i_max'],
-                        }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ?
-                            null :
-                            {
-                                base: $$.$me_label,
-                                prop: Object.assign({ '#ofsVer': $$.$me_atom2_prop(['<^header.#height', `<<<@list.row_top[${row_i}]`], ({ masters: [ofs, top] }) => ofs + top), '#height': '<<<@list.row_height_min', '#width': '<.#width', text: `<<<@list.cell_text[${row_i}][${id}]` }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<.col_align[${id}]` }),
-                            }),
+                        header: () => ({
+                            prop: {
+                                '#height': '<<<.header_height',
+                            },
+                            control: {
+                                content: () => ({
+                                    base: $$.$me_label,
+                                    prop: Object.assign({ '#width': `<<<<.col_width[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4 }),
+                                }),
+                            },
+                        }),
+                        cells: () => ({
+                            control: {
+                                cell: $$.$me_atom2_prop({
+                                    keys: ['<<<@list.row_i'],
+                                    masters: ['<<<@list.row_i_min', '<<<@list.row_i_max'],
+                                }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ?
+                                    null :
+                                    {
+                                        base: $$.$me_label,
+                                        prop: Object.assign({ '#ofsVer': $$.$me_atom2_prop(['<<@header.#height', `<<<<@list.row_top[${row_i}]`], ({ masters: [ofs, top] }) => ofs + top), '#height': '<<<<@list.row_height_min', '#width': '<.#width', text: `<<<<@list.cell_text[${row_i}][${id}]` }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<.col_align[${id}]` }),
+                                    }),
+                            },
+                        }),
                     },
                     event: {
                         clickOrTapOutside: () => {
@@ -6027,7 +6175,7 @@ var $;
                         },
                     },
                 }),
-                colResizerLeft: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim'], ({ masters: [id, isMoving, isMovingAnim] }) => !id || isMoving || isMovingAnim ? null : {
+                colResizerLeft: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim', '.colSelectedOpacity'], ({ masters: [id, isMoving, isMovingAnim, colSelectedOpacity] }) => !id || isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
                     base: colResizer,
                     prop: {
                         '#ofsVer': '<@colSelected.#ofsVer',
@@ -6035,7 +6183,7 @@ var $;
                         isRight: () => false,
                     },
                 }),
-                colResizerRight: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim'], ({ masters: [id, isMoving, isMovingAnim] }) => !id || isMoving || isMovingAnim ? null : {
+                colResizerRight: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim', '.colSelectedOpacity'], ({ masters: [id, isMoving, isMovingAnim, colSelectedOpacity] }) => !id || isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
                     base: colResizer,
                     prop: {
                         '#ofsVer': '<@colSelected.#ofsVer',
@@ -6821,6 +6969,8 @@ var $;
                             order.ofsHor = ofsHor - col_fixed_width;
                         }),
                         on_change_col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.cols', '<.order'] }, null, ({ key: [id], val }) => {
+                            if (val == null)
+                                return;
                             const [width, cols, order] = val;
                             if (width != cols[id].width) {
                                 if (!order.col_width)
