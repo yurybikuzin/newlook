@@ -6126,18 +6126,6 @@ var $;
                                 col_ids_visible: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [ids] }) => ids.slice(10)),
                             },
                         }),
-                        moveMarkLeft: () => ({
-                            base: moveMark,
-                            prop: {
-                                isRight: () => false,
-                            },
-                        }),
-                        moveMarkRight: () => ({
-                            base: moveMark,
-                            prop: {
-                                isRight: () => true,
-                            },
-                        }),
                         header: () => ({
                             prop: {
                                 '#height': $$.$me_atom2_prop(['<<<.header_height'], ({ masters: [height] }) => height + 2),
@@ -6386,20 +6374,6 @@ var $;
         function reorderEnd() {
             $$.a('.isMoving', false);
         }
-        const moveMark = {
-            node: 'img',
-            prop: {
-                '#width': () => 9,
-                '#height': () => 17,
-                '#alignHor': $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.left : $$.$me_align.right),
-                '#ofsHor': () => 6,
-                '#ofsVer': () => 8,
-            },
-            attr: {
-                src: () => 'assets/move@2x.png',
-                draggable: () => false,
-            },
-        };
         const colResizer = {
             node: 'img',
             prop: {
@@ -6502,7 +6476,7 @@ var $;
             return true;
         }
         function resizeFini() {
-            const [min, max] = ofsHor_min_max($$.a('<<<.col_fixed_width'), $$.a(`<<<.col_width_sum`), $$.a('<.#width'));
+            const [min, max] = ofsHor_min_max($$.a('<<<.col_fixed_width'), $$.a(`<<<.col_width_sum`), $$.a('<<<.#width'));
             const to = ofsHor_adjusted($$.a('<<<.ofsHor'), min, max);
             const prop_isResizing = $$.a.get('<.isResizing');
             $$.a('<<<.ofsHor', $$.$me_atom2_anim({
