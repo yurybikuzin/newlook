@@ -1874,6 +1874,7 @@ var $;
                         bottom: bottom / pixelRatio,
                     });
                     const p = {
+                        self: control,
                         ctx: control._entities.prop['#ctx'].value(),
                         ctxSize: control._entities.prop['#ctxSize'].value(),
                         pixelRatio,
@@ -2854,56 +2855,54 @@ var $;
                 return !(val == null || Number.isNaN(val));
             }
             update(val, force = false) {
-                const start = performance.now();
-                try {
-                    if (val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
-                        this._state === $me_atom2_state_enum.need_check))
+                if (val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
+                    this._state === $me_atom2_state_enum.need_check))
+                    return;
+                const true_set = val !== void 0;
+                if (val === void 0) {
+                    const start = performance.now();
+                    const compute_result = this._compute();
+                    $me_atom2.compute_timing += performance.now() - start;
+                    $me_atom2.compute_count++;
+                    if (!compute_result)
                         return;
-                    const true_set = val !== void 0;
-                    if (val === void 0) {
-                        const start = performance.now();
-                        const compute_result = this._compute();
-                        $me_atom2.compute_timing += performance.now() - start;
-                        $me_atom2.compute_count++;
-                        if (!compute_result)
-                            return;
-                        const { ret, state } = compute_result;
-                        if (state !== void 0) {
-                            this.set_state(state);
-                            return;
-                        }
-                        val = ret;
-                    }
-                    let just_set_anim = false;
-                    let next_value = null;
-                    if (!(val instanceof $me_atom2_anim_class)) {
-                        next_value = val;
-                    }
-                    else {
-                        const anim = val._anim;
-                        if ($me_atom2.is_valid_value(anim.to)) {
-                            if (!$me_atom2.is_valid_value(anim.from)) {
-                                const value = typeof this._state == 'number' ? this._value : null;
-                                anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
-                            }
-                            if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
-                                $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
-                                $me_atom2.anim_active(anim, true);
-                                $$.$me_atom2_async();
-                            }
-                            next_value = anim.delay > 0 ? void 0 : anim.from;
-                        }
-                    }
-                    if (next_value === void 0)
+                    const { ret, state } = compute_result;
+                    if (state !== void 0) {
+                        this.set_state(state);
                         return;
-                    if (!just_set_anim)
-                        $me_atom2.anim_stop(this.path);
-                    this.set_value(next_value, true_set, force);
+                    }
+                    val = ret;
                 }
-                finally {
-                    $me_atom2.update_timing += performance.now() - start;
-                    $me_atom2.update_count++;
+                let just_set_anim = false;
+                let next_value = null;
+                let anim_to_fini;
+                if (!(val instanceof $me_atom2_anim_class)) {
+                    next_value = val;
                 }
+                else {
+                    const anim = val._anim;
+                    if ($me_atom2.is_valid_value(anim.to)) {
+                        if (!$me_atom2.is_valid_value(anim.from)) {
+                            const value = typeof this._state == 'number' ? this._value : null;
+                            anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
+                        }
+                        if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
+                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
+                            $me_atom2.anim_active(anim, true);
+                            $$.$me_atom2_async();
+                        }
+                        next_value = anim.delay > 0 ? void 0 : anim.from;
+                        if (!just_set_anim)
+                            anim_to_fini = anim;
+                    }
+                }
+                if (next_value === void 0)
+                    return;
+                if (!just_set_anim)
+                    $me_atom2.anim_stop(this.path);
+                this.set_value(next_value, true_set, force);
+                if (anim_to_fini)
+                    $me_atom2.anim_fini(anim_to_fini, this.path);
             }
             set_value(next_value, true_set = true, force = false) {
                 const prev_value = this._value;
@@ -3235,6 +3234,9 @@ var $;
                 const anim = $me_atom2.anim_to_play.get(path);
                 $me_atom2.anim_to_play.delete(path);
                 $me_atom2.anim_active(anim, false);
+                $me_atom2.anim_fini(anim, path);
+            }
+            static anim_fini(anim, path) {
                 if (anim.fini) {
                     const atom = $$.$me_atom2_entity.root().by_path(path);
                     if (atom instanceof $me_atom2) {
@@ -5712,7 +5714,7 @@ var $;
                 else {
                     const ctxPeriodWidth = p.ctx.measureText(period).width;
                     if (ctxWidth < ctxPeriodWidth) {
-                        console.error({ ctxWidth, ctxPeriodWidth });
+                        console.error(p.self.name(), { ctxWidth, ctxPeriodWidth });
                         return;
                     }
                     let len = text.length, wi = ctxTextWidth, s;
@@ -6009,7 +6011,7 @@ var $;
                     },
                     style: {
                         background: () => 'white',
-                        opacity: id == 'Адрес' || id == 'Балкон' ? null : '<.colSelectedOpacity',
+                        opacity: '<.colSelectedOpacity',
                     },
                 }),
                 colSelected: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
@@ -6049,45 +6051,33 @@ var $;
                     dispatch: (dispatch_name, dispatch_arg) => {
                         if (dispatch_name == 'iosmenu') {
                             if (dispatch_arg == 'Скрыть') {
-                                $$.a('<.colSelectedOpacity', $$.$me_atom2_anim({ to: 0,
-                                    fini: () => {
-                                        if (id != 'Метро/ЖД') {
-                                            $$.a('.colSelected', '');
-                                            const col_ids = $$.a('<.col_ids');
-                                            const col_ids_new = col_ids.slice();
-                                            const idx = col_ids.indexOf(id);
-                                            col_ids_new.splice(idx, 1);
-                                            $$.a('<.col_ids', col_ids_new);
-                                        }
-                                        else {
-                                            $$.a(`<.col_width[${id}]`, $$.$me_atom2_anim({
-                                                to: 0,
-                                                fini: () => {
-                                                    $$.a('@header.colSelected', '');
-                                                    const col_ids = $$.a('.col_ids');
-                                                    const col_ids_new = col_ids.slice();
-                                                    const idx = col_ids.indexOf(id);
-                                                    col_ids_new.splice(idx, 1);
-                                                    $$.a('.col_ids', col_ids_new);
-                                                    console.log('here');
-                                                },
-                                            }));
-                                        }
-                                    },
-                                }));
+                                $$.a('<.colSelected', '');
+                                const col_ids = $$.a('<<.col_ids');
+                                const col_ids_new = col_ids.slice();
+                                const idx = col_ids.indexOf(id);
+                                col_ids_new.splice(idx, 1);
+                                $$.a('<<.col_ids', col_ids_new);
+                                resizeFini();
                             }
                             return true;
                         }
                         return false;
                     },
                     elem: {
-                        menu: () => ({
-                            base: $$.$me_iosmenu,
-                            prop: {
-                                items: () => ['Скрыть', 'Добавить...'],
-                                '#zIndex': () => 6,
-                            },
-                        }),
+                        menu: $$.$me_atom2_prop(['<.isMoving', '<.isMovingAnim', '<.isResizing'], ({ masters: [isMoving, isMovingAnim, isResizing] }) => isMoving || isMovingAnim || isResizing ?
+                            null :
+                            {
+                                base: $$.$me_iosmenu,
+                                prop: {
+                                    items: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [col_ids] }) => {
+                                        const result = ['Показать...'];
+                                        if (col_ids.length > 1)
+                                            result.unshift('Скрыть');
+                                        return result;
+                                    }),
+                                    '#zIndex': () => 6,
+                                },
+                            }),
                         header: () => ({
                             prop: {
                                 '#height': '<<<.header_height',
@@ -6126,51 +6116,33 @@ var $;
                             const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
                             if (dist > touchTolerance)
                                 return false;
-                            $$.a('<.isMoving', true);
-                            $$.a('.last_clientX', p.event.touches[0].clientX);
-                            $$.a('.ofs', p.event.touches[0].clientX - $$.a('.#clientRect').left);
-                            $$.a('.start_clientX', p.event.touches[0].clientX);
+                            reorderStart(p.event.touches[0].clientX);
                             return true;
                         },
                         touchend: () => {
-                            $$.a('<.isMoving', false);
+                            reorderEnd();
                             return true;
                         },
                         touchmove: p => {
-                            const delta = p.event.touches[0].clientX - $$.a('.last_clientX');
-                            if (!delta)
-                                return false;
-                            if (!colSelected_mousemove(p.event.touches[0].clientX, Math.sign(delta)))
-                                return false;
-                            $$.a('.#ofsHor', $$.a('.#ofsHor') + delta);
-                            $$.a('.last_clientX', p.event.touches[0].clientX);
+                            reorderDo(p.event.touches[0].clientX);
                             return true;
                         },
                         mousedown: p => {
                             if (!p.isInRect(p.event.clientX, p.event.clientY))
                                 return false;
-                            $$.a('<.isMoving', true);
-                            $$.a('.last_clientX', p.event.clientX);
-                            $$.a('.ofs', p.event.clientX - $$.a('.#clientRect').left);
-                            $$.a('.start_clientX', p.event.clientX);
+                            reorderStart(p.event.clientX);
                             return true;
                         },
                         mouseup: () => {
-                            $$.a('<.isMoving', false);
+                            reorderEnd();
                             return true;
                         },
                         mousemove: p => {
-                            const delta = p.event.clientX - $$.a('.last_clientX');
-                            if (!delta)
-                                return false;
                             if (p.event.buttons != 1) {
                                 $$.a('<.isMoving', false);
                                 return false;
                             }
-                            if (!colSelected_mousemove(p.event.clientX, Math.sign(delta)))
-                                return false;
-                            $$.a('.#ofsHor', $$.a('.#ofsHor') + delta);
-                            $$.a('.last_clientX', p.event.clientX);
+                            reorderDo(p.event.clientX);
                             return true;
                         },
                     },
@@ -6248,7 +6220,22 @@ var $;
                 }),
             },
         };
-        function colSelected_mousemove(clientX, sign) {
+        function reorderStart(clientX) {
+            $$.a('<.isMoving', true);
+            $$.a('.last_clientX', clientX);
+            $$.a('.ofs', clientX - $$.a('.#clientRect').left);
+            $$.a('.start_clientX', clientX);
+        }
+        function reorderDo(clientX) {
+            const delta = clientX - $$.a('.last_clientX');
+            if (!delta)
+                return;
+            if (!reorderDo_helper(clientX, Math.sign(delta)))
+                return;
+            $$.a('.#ofsHor', $$.a('.#ofsHor') + delta);
+            $$.a('.last_clientX', clientX);
+        }
+        function reorderDo_helper(clientX, sign) {
             if (!$$.a('<.isMoving'))
                 return false;
             const is_valid_idx = (idx) => 0 <= idx && idx < col_ids.length;
@@ -6321,7 +6308,7 @@ var $;
                         fini: () => {
                             const prev = $$.a.curr;
                             $$.a.curr = curr;
-                            colSelected_mousemove(clientX, sign);
+                            reorderDo_helper(clientX, sign);
                             $$.a.curr = prev;
                         }
                     }));
@@ -6329,61 +6316,9 @@ var $;
             }
             return true;
         }
-        const arrow = {
-            base: $$.$me_stylesheet,
-            prop: {
-                dist: () => 37,
-                duration: () => 1200,
-                styleSheetName: () => 'slide-in-right',
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName', '.dist', '.duration'], ({ masters: [className, styleSheetName, dist, duration] }) => {
-                    const animationName = className;
-                    return `
-          .${className} {
-            -webkit-animation: ${animationName} ${duration}ms linear infinite forwards;
-                    animation: ${animationName} ${duration}ms linear infinite forwards;
-          }
-          @-webkit-keyframes ${animationName} {
-            0% {
-              -webkit-transform: translateX(0);
-                      transform: translateX(0);
-              opacity: 1;
-            }
-            100% {
-              -webkit-transform: translateX(-${dist}px);
-                      transform: translateX(-${dist}px);
-              opacity: 0;
-            }
-          }
-          @keyframes ${animationName} {
-            0% {
-              -webkit-transform: translateX(0);
-                      transform: translateX(0);
-              opacity: 1;
-            }
-            100% {
-              -webkit-transform: translateX(-${dist}px);
-                      transform: translateX(-${dist}px);
-              opacity: 0;
-            }
-          }
-        `;
-                }),
-            },
-            elem: {
-                triangle: () => ({
-                    base: $$.$me_triangle,
-                    prop: {
-                        size: () => 15,
-                        direction: () => $$.$me_rect_sides_enum.left,
-                        color: () => 'red',
-                        space: () => 2,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#ofsVer': $$.$me_atom2_prop(['.height'], ({ masters: [size] }) => -size / 2),
-                        '#ofsHor': $$.$me_atom2_prop(['.width', '.space'], ({ masters: [width, space] }) => -width - space),
-                    },
-                }),
-            },
-        };
+        function reorderEnd() {
+            $$.a('<.isMoving', false);
+        }
         function resizeStop() {
             const clientX = $$.a('.start_clientX');
             if (clientX == -1)
@@ -6392,25 +6327,15 @@ var $;
             return true;
         }
         function resizeFini() {
-            const id = $$.a('<<.col_id_last');
-            const col_fixed_width = $$.a('<<.col_fixed_width');
-            const ofsHor = $$.a('<<.ofsHor');
-            const delta = Math.max(0, Math.min(col_fixed_width - ofsHor, $$.a('<.#width') - ($$.a(`<<.col_left[${id}]`) + $$.a(`<<.col_width[${id}]`) + ofsHor)));
-            const to = delta > 0 ? ofsHor + delta :
-                ofsHor > col_fixed_width ? col_fixed_width :
-                    null;
+            const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a(`<<.col_width_sum`), $$.a('<.#width'));
+            const to = ofsHor_adjusted($$.a('<<.ofsHor'), min, max);
             const prop_isResizing = $$.a.get('<.isResizing');
-            if (to == null) {
-                prop_isResizing.value(false);
-            }
-            else {
-                $$.a('<<.ofsHor', $$.$me_atom2_anim({
-                    to,
-                    fini: () => {
-                        prop_isResizing.value(false);
-                    },
-                }));
-            }
+            $$.a('<<.ofsHor', $$.$me_atom2_anim({
+                to,
+                fini: () => {
+                    prop_isResizing.value(false);
+                },
+            }));
         }
         const colResizer = {
             prop: {
