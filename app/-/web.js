@@ -5983,22 +5983,7 @@ var $;
                 colSelectedWas: () => '',
                 colSelectedOpacity: () => 0,
                 colSelectedHeaderVisible: $$.$me_atom2_prop(['.colSelectedOpacity'], ({ masters: [opacity] }) => !!opacity),
-                isResizing: () => false,
-                isMoving: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
-                    if (!val && prev) {
-                        const id = $$.a('.colSelected');
-                        const left = $$.a(`<.col_left[${id}]`);
-                        const prop_ofsHor = $$.a.get('<.ofsHor');
-                        const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
-                            $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
-                            prop_ofsHor.value();
-                        const min = $$.a('<.col_fixed_width');
-                        const to = Math.max(min, left + ofs);
-                        $$.a('@colSelected.#ofsHor', $$.$me_atom2_anim({ to, path_active: $$.a.get('.isMovingAnim').path }));
-                    }
-                }),
-                isMovingAnim: () => false,
-                '#order': () => ['wrapper', 'fixed', 'colSelectedStub', 'colSelected', 'colResizerLeft', 'colResizerRight'],
+                '#order': () => ['wrapper', 'fixed', 'colSelectedStub', 'colResizerLeft', 'colResizerRight', 'colSelected'],
                 '#zIndex': () => 1,
             },
             elem: {
@@ -6019,24 +6004,40 @@ var $;
                     prop: {
                         '#ofsVer': $$.$me_atom2_prop(['<.colSelected'], ({ masters: [id] }) => $$.$me_atom2_anim({
                             from: id ? 0 : null,
-                            to: id ? -5 : 0,
+                            to: id ? -20 : 0,
                         })),
-                        '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.isMoving', '<.isMovingAnim'], ({ masters: [isMoving, isMovingAnim] }) => isMoving || isMovingAnim ? [] : [`<<.col_left[${id || id_was}]`, '<<.ofsHor']), ({ len, masters: [left, ofs], prev }) => !len ? prev : left + ofs),
+                        '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isMoving', '.isMovingAnim'], ({ masters: [isMoving, isMovingAnim] }) => isMoving || isMovingAnim ? [] : [`<<.col_left[${id || id_was}]`, '<<.ofsHor']), ({ len, masters: [left, ofs], prev }) => !len ? prev : left + ofs),
                         '#width': `<<.col_width[${id || id_was}]`,
                         on_chaned_width: $$.$me_atom2_prop(['.#width'], null),
                         '#height': '<<.#height',
-                        '#cursor': $$.$me_atom2_prop(['<.isMoving'], ({ masters: [isMoving] }) => isMoving ? 'grabbing' : 'grab'),
+                        '#cursor': $$.$me_atom2_prop(['.isMoving'], ({ masters: [isMoving] }) => isMoving ? 'grabbing' : 'grab'),
                         '#zIndex': () => 3,
                         last_clientX: () => -1,
                         ofs: () => -1,
                         start_clientX: () => -1,
-                        '#order': () => ['cells', 'header', 'menu'],
+                        isShownDialog: () => false,
+                        isResizing: () => false,
+                        isMoving: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
+                            if (!val && prev) {
+                                const id = $$.a('<.colSelected');
+                                const left = $$.a(`<<.col_left[${id}]`);
+                                const prop_ofsHor = $$.a.get('<<.ofsHor');
+                                const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
+                                    $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
+                                    prop_ofsHor.value();
+                                const min = $$.a('<<.col_fixed_width');
+                                const to = Math.max(min, left + ofs);
+                                $$.a('.#ofsHor', $$.$me_atom2_anim({ to, path_active: $$.a.get('.isMovingAnim').path }));
+                            }
+                        }),
+                        isMovingAnim: () => false,
+                        '#order': () => ['colResizerLeft', 'colResizerRight', 'cells', 'header', 'menu'],
                     },
                     style: {
                         background: () => 'rgb(250,250,250)',
                         opacity: '<.colSelectedOpacity',
                         pointerEvents: $$.$me_atom2_prop(['.colSelected'], ({ masters: [colSelected] }) => colSelected ? 'auto' : 'none'),
-                        boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
+                        boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.5)',
                     },
                     init: () => {
                         const left = $$.a(`<<.col_left[${id || id_was}]`);
@@ -6057,14 +6058,41 @@ var $;
                                 const idx = col_ids.indexOf(id);
                                 col_ids_new.splice(idx, 1);
                                 $$.a('<<.col_ids', col_ids_new);
-                                resizeFini();
+                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a(`<<.col_width_sum`), $$.a('<.#width'));
+                                const to = ofsHor_adjusted($$.a('<<.ofsHor'), min, max);
+                                const prop_isResizing = $$.a.get('.isResizing');
+                                $$.a('<<.ofsHor', $$.$me_atom2_anim({
+                                    to,
+                                    fini: () => {
+                                        prop_isResizing.value(false);
+                                    },
+                                }));
                             }
+                            else if (dispatch_arg == 'Показать...') {
+                                $$.a('.isShownDialog', true);
+                            }
+                            else
+                                return false;
                             return true;
                         }
                         return false;
                     },
                     elem: {
-                        menu: $$.$me_atom2_prop(['<.isMoving', '<.isMovingAnim', '<.isResizing'], ({ masters: [isMoving, isMovingAnim, isResizing] }) => isMoving || isMovingAnim || isResizing ?
+                        colResizerLeft: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '<.colSelectedOpacity'], ({ masters: [isMoving, isMovingAnim, colSelectedOpacity] }) => isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
+                            base: colResizer,
+                            prop: {
+                                id: () => id,
+                                isRight: () => false,
+                            },
+                        }),
+                        colResizerRight: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '<.colSelectedOpacity'], ({ masters: [isMoving, isMovingAnim, colSelectedOpacity] }) => isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
+                            base: colResizer,
+                            prop: {
+                                id: () => id,
+                                isRight: () => true,
+                            },
+                        }),
+                        menu: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '.isResizing'], ({ masters: [isMoving, isMovingAnim, isResizing] }) => isMoving || isMovingAnim || isResizing ?
                             null :
                             {
                                 base: $$.$me_iosmenu,
@@ -6078,14 +6106,61 @@ var $;
                                     '#zIndex': () => 6,
                                 },
                             }),
+                        dialog: $$.$me_atom2_prop(['.isShownDialog'], ({ masters: [isShownDialog] }) => !isShownDialog ? null : {
+                            prop: {
+                                '#width': () => 800,
+                                '#height': () => 600,
+                                '#ofsHor': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportWidth', '.#width'], ({ masters: [clientRect, viewportWidth, width] }) => Math.round((viewportWidth - width) / 2 - clientRect.left)),
+                                '#ofsVer': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportHeight', '.#height'], ({ masters: [clientRect, viewportHeight, height] }) => Math.round((viewportHeight - height) / 2 - clientRect.top)),
+                                '#zIndex': () => 10,
+                                '#cursor': () => 'default',
+                            },
+                            style: {
+                                background: () => 'white',
+                                border: () => '2px solid red',
+                            },
+                            event: {
+                                mousemove: () => {
+                                    return true;
+                                },
+                                mousedown: () => {
+                                    return true;
+                                },
+                                touchstart: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        moveMarkLeft: () => ({
+                            base: moveMark,
+                            prop: {
+                                isRight: () => false,
+                            },
+                        }),
+                        moveMarkRight: () => ({
+                            base: moveMark,
+                            prop: {
+                                isRight: () => true,
+                            },
+                        }),
                         header: () => ({
                             prop: {
-                                '#height': '<<<.header_height',
+                                '#height': $$.$me_atom2_prop(['<<<.header_height'], ({ masters: [height] }) => height + 2),
                             },
                             control: {
                                 content: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#width': `<<<<.col_width[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4 }),
+                                    prop: {
+                                        '#width': `<<<<.col_width[${id}]`,
+                                        '#height': '<.#height',
+                                        text: `<<<<.col_caption[${id}]`,
+                                        borderWidth: () => 1,
+                                        colorBorder: () => '#adb0b8',
+                                        colorBackground: () => '#d8dce3',
+                                        align: () => $$.$me_align.center,
+                                        fontSize: () => 14,
+                                        paddingHor: () => 4,
+                                    },
                                 }),
                             },
                         }),
@@ -6098,7 +6173,20 @@ var $;
                                     null :
                                     {
                                         base: $$.$me_label,
-                                        prop: Object.assign({ '#ofsVer': $$.$me_atom2_prop(['<<@header.#height', `<<<<@list.row_top[${row_i}]`], ({ masters: [ofs, top] }) => ofs + top), '#height': '<<<<@list.row_height_min', '#width': '<.#width', text: `<<<<@list.cell_text[${row_i}][${id}]` }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<.col_align[${id}]` }),
+                                        prop: {
+                                            '#ofsVer': $$.$me_atom2_prop(['<<@header.#height', `<<<<@list.row_top[${row_i}]`], ({ masters: [ofs, top] }) => ofs + top),
+                                            '#height': '<<<<@list.row_height_min',
+                                            '#width': '<.#width',
+                                            text: `<<<<@list.cell_text[${row_i}][${id}]`,
+                                            borderWidth: () => 1,
+                                            colorBorder: () => '#adb0b8',
+                                            borderWidthTop: () => 0,
+                                            colorBackground: () => '#F5F8F8',
+                                            fontSize: () => 14,
+                                            paddingHor: () => 4,
+                                            alignVer: () => $$.$me_align.center,
+                                            alignHor: `<<<<.col_align[${id}]`,
+                                        },
                                     }),
                             },
                         }),
@@ -6139,28 +6227,12 @@ var $;
                         },
                         mousemove: p => {
                             if (p.event.buttons != 1) {
-                                $$.a('<.isMoving', false);
+                                $$.a('.isMoving', false);
                                 return false;
                             }
                             reorderDo(p.event.clientX);
                             return true;
                         },
-                    },
-                }),
-                colResizerLeft: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim', '.colSelectedOpacity'], ({ masters: [id, isMoving, isMovingAnim, colSelectedOpacity] }) => !id || isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
-                    base: colResizer,
-                    prop: {
-                        '#ofsVer': '<@colSelected.#ofsVer',
-                        id: () => id,
-                        isRight: () => false,
-                    },
-                }),
-                colResizerRight: $$.$me_atom2_prop(['.colSelected', '.isMoving', '.isMovingAnim', '.colSelectedOpacity'], ({ masters: [id, isMoving, isMovingAnim, colSelectedOpacity] }) => !id || isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
-                    base: colResizer,
-                    prop: {
-                        '#ofsVer': '<@colSelected.#ofsVer',
-                        id: () => id,
-                        isRight: () => true,
                     },
                 }),
                 fixed: () => ({
@@ -6221,7 +6293,7 @@ var $;
             },
         };
         function reorderStart(clientX) {
-            $$.a('<.isMoving', true);
+            $$.a('.isMoving', true);
             $$.a('.last_clientX', clientX);
             $$.a('.ofs', clientX - $$.a('.#clientRect').left);
             $$.a('.start_clientX', clientX);
@@ -6236,7 +6308,7 @@ var $;
             $$.a('.last_clientX', clientX);
         }
         function reorderDo_helper(clientX, sign) {
-            if (!$$.a('<.isMoving'))
+            if (!$$.a('.isMoving'))
                 return false;
             const is_valid_idx = (idx) => 0 <= idx && idx < col_ids.length;
             const col_ids = $$.a('<<.col_ids');
@@ -6317,56 +6389,43 @@ var $;
             return true;
         }
         function reorderEnd() {
-            $$.a('<.isMoving', false);
+            $$.a('.isMoving', false);
         }
-        function resizeStop() {
-            const clientX = $$.a('.start_clientX');
-            if (clientX == -1)
-                return false;
-            $$.a('.start_clientX', -1);
-            return true;
-        }
-        function resizeFini() {
-            const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a(`<<.col_width_sum`), $$.a('<.#width'));
-            const to = ofsHor_adjusted($$.a('<<.ofsHor'), min, max);
-            const prop_isResizing = $$.a.get('<.isResizing');
-            $$.a('<<.ofsHor', $$.$me_atom2_anim({
-                to,
-                fini: () => {
-                    prop_isResizing.value(false);
-                },
-            }));
-        }
-        const colResizer = {
+        const moveMark = {
+            node: 'img',
             prop: {
-                '#width': () => 12,
-                '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.id', '.isRight'], ({ masters: [id, isRight] }) => ['.isRight', `<<.col_left[${id}]`, '<<.ofsHor', '.#width', '<.#width', '<<.col_fixed_width'].concat(!isRight ? [] : `<<.col_width[${id}]`)), ({ len, masters: [isRight, col_left, ofs, width, width_gross, col_fixed_width, col_width] }) => {
-                    return Math.round(Math.max(col_fixed_width, col_left + ofs + (!isRight ? 0 : col_width)) - (isRight ? 0 : width));
-                }),
+                '#width': () => 9,
+                '#height': () => 17,
+                '#alignHor': $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.left : $$.$me_align.right),
+                '#ofsHor': () => 6,
+                '#ofsVer': () => 8,
+            },
+            attr: {
+                src: () => 'assets/move@2x.png',
+                draggable: () => false,
+            },
+        };
+        const colResizer = {
+            node: 'img',
+            prop: {
+                '#width': () => 27,
+                '#height': () => 50,
                 '#cursor': () => 'col-resize',
                 '#zIndex': () => 5,
                 start_clientX: () => -1,
                 start_width: () => -1,
                 start_ofsHor: () => -1,
-                grayLevel: () => 150,
+                '#alignHor': $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.left : $$.$me_align.right),
+                '#ofsHor': () => -19,
+                '#ofsVer': () => -4,
+            },
+            attr: {
+                src: () => 'assets/stretch@2x.png',
+                draggable: () => false,
             },
             style: {
-                background: $$.$me_atom2_prop(['.grayLevel'], ({ masters: [grayLevel] }) => `rgb(${grayLevel},${grayLevel},${grayLevel})`),
                 boxSizing: () => 'border-box',
-            },
-            elem: {
-                line: () => ({
-                    prop: {
-                        '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => Math.floor((width - 2) / 3) + 2),
-                        '#height': $$.$me_atom2_prop(['<.#height'], ({ masters: [height] }) => Math.floor(height / 3 * 2)),
-                        '#align': () => $$.$me_align.center,
-                    },
-                    style: {
-                        borderLeft: () => '1px solid white',
-                        borderRight: () => '1px solid white',
-                        boxSizing: () => 'border-box',
-                    },
-                }),
+                transform: $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? '' : 'scaleX(-1)'),
             },
             event: {
                 touchstart: p => {
@@ -6374,31 +6433,14 @@ var $;
                     const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
                     if (dist > touchTolerance)
                         return false;
-                    $$.a('.start_clientX', p.event.touches[0].clientX);
-                    const id = $$.a('.id');
-                    $$.a('.start_width', $$.a(`<<.col_width[${id}]`));
-                    const isRight = $$.a('.isRight');
-                    if (!isRight)
-                        $$.a('.start_ofsHor', $$.a('<<.ofsHor'));
-                    $$.a('<.isResizing', true);
+                    resizeStart(p.event.touches[0].clientX);
                     return true;
                 },
                 touchmove: p => {
                     const start_clientX = $$.a('.start_clientX');
                     if (start_clientX == -1)
                         return false;
-                    const clientX = p.event.touches[0].clientX;
-                    const isRight = $$.a('.isRight');
-                    const id = $$.a('.id');
-                    const start_width = $$.a('.start_width');
-                    const max = isRight ?
-                        $$.a('<<.#width') - $$.a(`<<.col_left[${id}]`) - $$.a('<<.ofsHor') - start_width :
-                        $$.a(`<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<.col_fixed_width');
-                    const min = $$.a('<<.col_width_min') - start_width;
-                    const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
-                    if (!isRight)
-                        $$.a('<<.ofsHor', $$.a('.start_ofsHor') - delta);
-                    $$.a(`<<.col_width[${$$.a('.id')}]`, start_width + delta);
+                    resizeDo(p.event.touches[0].clientX);
                     return true;
                 },
                 touchend: () => {
@@ -6410,13 +6452,7 @@ var $;
                 mousedown: p => {
                     if (!p.isInRect(p.event.clientX, p.event.clientY))
                         return false;
-                    $$.a('.start_clientX', p.event.clientX);
-                    const id = $$.a('.id');
-                    $$.a('.start_width', $$.a(`<<.col_width[${id}]`));
-                    const isRight = $$.a('.isRight');
-                    if (!isRight)
-                        $$.a('.start_ofsHor', $$.a('<<.ofsHor'));
-                    $$.a('<.isResizing', true);
+                    resizeStart(p.event.clientX);
                     return true;
                 },
                 mousemove: p => {
@@ -6429,17 +6465,7 @@ var $;
                         resizeStop();
                         return false;
                     }
-                    const isRight = $$.a('.isRight');
-                    const id = $$.a('.id');
-                    const start_width = $$.a('.start_width');
-                    const max = isRight ?
-                        $$.a('<<.#width') - $$.a(`<<.col_left[${id}]`) - $$.a('<<.ofsHor') - start_width :
-                        $$.a(`<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<.col_fixed_width');
-                    const min = $$.a('<<.col_width_min') - start_width;
-                    const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
-                    if (!isRight)
-                        $$.a('<<.ofsHor', $$.a('.start_ofsHor') - delta);
-                    $$.a(`<<.col_width[${$$.a('.id')}]`, start_width + delta);
+                    resizeDo(p.event.clientX);
                     return true;
                 },
                 mouseup: () => {
@@ -6450,6 +6476,47 @@ var $;
                 },
             },
         };
+        function resizeStart(clientX) {
+            $$.a('.start_clientX', clientX);
+            const id = $$.a('.id');
+            $$.a('.start_width', $$.a(`<<<.col_width[${id}]`));
+            const isRight = $$.a('.isRight');
+            if (!isRight)
+                $$.a('.start_ofsHor', $$.a('<<<.ofsHor'));
+            $$.a('<.isResizing', true);
+        }
+        function resizeDo(clientX) {
+            const start_clientX = $$.a('.start_clientX');
+            const isRight = $$.a('.isRight');
+            const id = $$.a('.id');
+            const start_width = $$.a('.start_width');
+            const max = isRight ?
+                $$.a('<<<.#width') - $$.a(`<<<.col_left[${id}]`) - $$.a('<<<.ofsHor') - start_width :
+                $$.a(`<<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<<.col_fixed_width');
+            const min = $$.a('<<<.col_width_min') - start_width;
+            const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
+            if (!isRight)
+                $$.a('<<<.ofsHor', $$.a('.start_ofsHor') - delta);
+            $$.a(`<<<.col_width[${$$.a('.id')}]`, start_width + delta);
+        }
+        function resizeStop() {
+            const clientX = $$.a('.start_clientX');
+            if (clientX == -1)
+                return false;
+            $$.a('.start_clientX', -1);
+            return true;
+        }
+        function resizeFini() {
+            const [min, max] = ofsHor_min_max($$.a('<<<.col_fixed_width'), $$.a(`<<<.col_width_sum`), $$.a('<.#width'));
+            const to = ofsHor_adjusted($$.a('<<<.ofsHor'), min, max);
+            const prop_isResizing = $$.a.get('<.isResizing');
+            $$.a('<<<.ofsHor', $$.$me_atom2_anim({
+                to,
+                fini: () => {
+                    prop_isResizing.value(false);
+                },
+            }));
+        }
         const colResizerTriangle = {
             base: $$.$me_triangle,
             prop: {
@@ -7270,10 +7337,11 @@ var $;
                     },
                     prop: {
                         tapTarget: () => 0,
+                        '#order': () => ['menu', 'workspace', 'tapEffect'],
                     },
                     elem: {
-                        workspace: () => workspace,
                         menu: () => menu,
+                        workspace: () => workspace,
                         tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
                             if (!tapTarget)
                                 return null;
@@ -7325,9 +7393,7 @@ var $;
                     },
                 }),
             },
-            style: {
-                overflow: () => 'hidden',
-            },
+            style: {},
         };
         const menu = {
             prop: {
