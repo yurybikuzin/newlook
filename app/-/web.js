@@ -2156,6 +2156,10 @@ var $;
             fn_apply_height(p) {
                 this.parent().style({ height: p.val == null ? 'auto' : p.val });
             }
+            fn_apply_zIndex(p) {
+                if (p.prev != null)
+                    $$.$me_atom2_event_handlers = null;
+            }
             fn_compute_style_visible(p) {
                 const [visible] = p.masters;
                 return visible ? 'visible' : 'hidden';
@@ -2211,6 +2215,10 @@ var $;
                         }
                         else if (tail == '#height') {
                             p.fn_apply = this.fn_apply_height;
+                            return $$.$me_atom2_prop_def_prepare(prop_def, p);
+                        }
+                        else if (tail == '#zIndex') {
+                            p.fn_apply = this.fn_apply_zIndex;
                             return $$.$me_atom2_prop_def_prepare(prop_def, p);
                         }
                         else if (idx === len - 2 && tail == '#isHover') {
@@ -5705,7 +5713,9 @@ var $;
                     console.error({ ctxHeight, ctxFontSize });
                     return;
                 }
-                const bottom = p.ctxRect.bottom - ctxPaddingBottom - $$.$me_align_correction($$.a('.alignVer'), () => ctxHeight - ctxFontSize);
+                const align = $$.a('.alignVer');
+                const correction = align == $$.$me_align.bottom ? 0 : (ctxHeight - ctxFontSize) / (!align ? 1 : align);
+                const bottom = p.ctxRect.bottom - ctxPaddingBottom - correction;
                 const _left = (ctxTextWidth) => p.ctxRect.left + ctxPaddingLeft + $$.$me_align_correction($$.a('.alignHor'), () => ctxWidth - ctxTextWidth);
                 p.ctx.fillStyle = $$.a('.colorText');
                 if (ctxTextWidth <= ctxWidth) {
@@ -6075,6 +6085,10 @@ var $;
                                 return false;
                             return true;
                         }
+                        else if (dispatch_name == 'nl_search_grid_dialog') {
+                            $$.a('.isShownDialog', false);
+                            return true;
+                        }
                         return false;
                     },
                     elem: {
@@ -6107,28 +6121,9 @@ var $;
                                 },
                             }),
                         dialog: $$.$me_atom2_prop(['.isShownDialog'], ({ masters: [isShownDialog] }) => !isShownDialog ? null : {
+                            base: $$.$nl_search_grid_dialog,
                             prop: {
-                                '#width': () => 800,
-                                '#height': () => 600,
-                                '#ofsHor': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportWidth', '.#width'], ({ masters: [clientRect, viewportWidth, width] }) => Math.round((viewportWidth - width) / 2 - clientRect.left)),
-                                '#ofsVer': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportHeight', '.#height'], ({ masters: [clientRect, viewportHeight, height] }) => Math.round((viewportHeight - height) / 2 - clientRect.top)),
-                                '#zIndex': () => 10,
-                                '#cursor': () => 'default',
-                            },
-                            style: {
-                                background: () => 'white',
-                                border: () => '2px solid red',
-                            },
-                            event: {
-                                mousemove: () => {
-                                    return true;
-                                },
-                                mousedown: () => {
-                                    return true;
-                                },
-                                touchstart: () => {
-                                    return true;
-                                },
+                                col_ids_visible: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [ids] }) => ids.slice(10)),
                             },
                         }),
                         moveMarkLeft: () => ({
@@ -6819,6 +6814,355 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //grid.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const width_compute_fn = (p) => {
+            const [maxWidth, minWidth, minMarginHor, viewportWidth] = p.masters;
+            return Math.max(minWidth, Math.min(maxWidth, viewportWidth - minMarginHor * 2));
+        };
+        $$.$nl_search_grid_dialog = {
+            prop: {
+                minMarginVer: () => 50,
+                minMarginHor: () => 50,
+                maxWidth: '/.#viewportWidth',
+                maxHeight: '/.#viewportHeight',
+                minWidth: () => 400,
+                minHeight: () => 600,
+                '#width': $$.$me_atom2_prop(['.maxWidth', '.minWidth', '.minMarginHor', '/.#viewportWidth'], width_compute_fn),
+                '#height': $$.$me_atom2_prop(['.maxHeight', '.minHeight', '.minMarginVer', '/.#viewportHeight'], width_compute_fn),
+                '#ofsHor': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportWidth', '.#width'], ({ masters: [clientRect, viewportWidth, width] }) => Math.round((viewportWidth - width) / 2 - clientRect.left)),
+                '#ofsVer': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportHeight', '.#height'], ({ masters: [clientRect, viewportHeight, height] }) => Math.round((viewportHeight - height) / 2 - clientRect.top)),
+                '#zIndex': () => 10,
+                '#cursor': () => 'default',
+                paddingHor: () => 30,
+                listWidth: $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => width / 400 * 150),
+                headerHeight: () => 30,
+                listHeight: $$.$me_atom2_prop(['.#height'], ({ masters: [height] }) => height - 200),
+                listOfsVer: () => 70,
+                listOfsHor: $$.$me_atom2_prop(['.#width', '.listWidth'], ({ masters: [width, listWidth] }) => (width - 2 * listWidth) / 3),
+                col_ids_visible: () => ["photo", "Комнат", "Метро/ЖД", "От станции", "Адрес", "Дом", "Балкон", "Санузел", "Парковка", "Территория", "Окна", "Ремонт", "Лифт", "Площадь", "Площадь комнат", "Ипотека", "Цена", "Цена за кв.м.", "Дата", "Источник", "Телефон"].slice(10),
+                col_ids_invisible: () => ['Год постройки', 'Дата создания', '$/м²', 'Цена $'],
+            },
+            style: {
+                background: () => 'white',
+                border: () => '2px solid red',
+            },
+            elem: {
+                invisible: () => ({
+                    base: list,
+                    prop: {
+                        source: () => 'invisible',
+                        target: () => 'visible',
+                        col_ids: '<.col_ids_invisible',
+                    },
+                }),
+                invisibleHeader: () => ({
+                    base: header,
+                    prop: {
+                        text: () => 'Скрытые поля',
+                    },
+                }),
+                visible: () => ({
+                    base: list,
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        source: () => 'visible',
+                        target: () => 'invisible',
+                        col_ids: '<.col_ids_visible',
+                    },
+                }),
+                visibleHeader: () => ({
+                    base: header,
+                    prop: {
+                        text: () => 'Видимые поля',
+                        '#alignHor': () => $$.$me_align.right,
+                    },
+                }),
+                buttonCancel: () => ({
+                    node: 'img',
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': () => 40,
+                        '#ofsVer': () => 34,
+                        '#width': () => 15,
+                        '#height': () => 15,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': () => 'pointer',
+                    },
+                    attr: {
+                        src: () => 'assets/close-btn@2x.png',
+                        draggable: () => false,
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a.dispatch('<<', 'nl_search_grid_dialog', 'cancel');
+                            return true;
+                        },
+                    },
+                }),
+                buttonApply: () => ({
+                    prop: {
+                        '#width': () => 200,
+                        '#height': () => 40,
+                        '#alignVer': () => $$.$me_align.bottom,
+                        '#alignHor': () => $$.$me_align.center,
+                        '#ofsVer': () => 24,
+                        '#cursor': () => 'pointer',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    control: {
+                        label: () => ({
+                            base: $$.$me_label,
+                            prop: {
+                                text: () => 'Применить',
+                                colorText: () => 'white',
+                                padding: () => 0,
+                                align: () => $$.$me_align.center,
+                                '#height': '<.#height',
+                                '#width': '<.#width',
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a.dispatch('<<', 'nl_search_grid_dialog', 'apply');
+                            return true;
+                        },
+                    },
+                    style: {
+                        background: () => '#0070a4',
+                        borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
+                    },
+                }),
+            },
+            event: {
+                mousemove: () => {
+                    return true;
+                },
+                mousedown: () => {
+                    return true;
+                },
+                touchstart: () => {
+                    return true;
+                },
+            },
+        };
+        const header = {
+            prop: {
+                '#width': '<.listWidth',
+                '#height': '<.headerHeight',
+                '#ofsVer': $$.$me_atom2_prop(['<.listOfsVer'], ({ masters: [ofs] }) => ofs - 30),
+                '#ofsHor': '<.listOfsHor',
+            },
+            control: {
+                label: () => ({
+                    base: $$.$me_label,
+                    prop: {
+                        text: '<.text',
+                        padding: () => 0,
+                        alignVer: () => $$.$me_align.top,
+                        '#height': '<.#height',
+                        '#width': '<.#width',
+                    },
+                }),
+            },
+        };
+        const target_ofsHor_compute_fn = (prop) => (p) => {
+            if (p.len == 1) {
+                const [start_ofsHor] = p.masters;
+                return start_ofsHor;
+            }
+            else {
+                const [start_client, ofs_client, startOfs, clientRectTarget] = p.masters;
+                const result = clientRectTarget[prop] - (start_client + ofs_client) + startOfs;
+                return result;
+            }
+        };
+        const list = {
+            prop: {
+                '#width': '<.listWidth',
+                '#height': '<.listHeight',
+                '#ofsVer': '<.listOfsVer',
+                '#ofsHor': '<.listOfsHor',
+                col_ids_target: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.target'], ({ masters: [target] }) => [`<.col_ids_${target}`])),
+                itemHeight: () => 36,
+                itemSpace: () => 8,
+                itemMarginHor: () => 8,
+                itemTop: $$.$me_atom2_prop({
+                    keys: ['.col_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        return !idx ? [] : [`.itemTop[${ids[idx - 1]}]`, '.itemHeight', '.itemSpace'];
+                    }),
+                }, ({ len, masters: [top, height, space] }) => !len ? 0 : top + height + space),
+                ofsVer: () => 0,
+            },
+            style: {
+                border: () => '1px dotted red',
+            },
+            elem: {
+                item: $$.$me_atom2_prop({ keys: ['.col_ids'] }, ({ key: [id] }) => ({
+                    prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<.ofsVer', `<.itemTop[${id}]`], $$.$me_atom2_prop_compute_fn_sum(0)),
+                        '#ofsHor': '<.itemMarginHor',
+                        '#height': '<.itemHeight',
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.itemMarginHor'], ({ masters: [width, margin] }) => width - 2 * margin),
+                        isMoving: $$.$me_atom2_prop([], () => false),
+                        ofs_clientX: () => -1,
+                        ofs_clientY: () => -1,
+                        start_clientX: () => -1,
+                        start_clientY: () => -1,
+                        start_ofsHor: () => -1,
+                        start_ofsVer: () => -1,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMoving'], ({ masters: [zIndex, isMoving] }) => zIndex + 1 + (isMoving ? 1 : 0)),
+                        '#cursor': $$.$me_atom2_prop(['.isMoving'], ({ masters: [isMoving] }) => !isMoving ? 'grab' : 'grabbing'),
+                        target_ofsHor: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.col_ids_target', '<.target'], ({ masters: [ids, target] }) => {
+                            const idx = ids.indexOf('stub');
+                            return !~idx ? ['.start_ofsHor'] : ['.start_clientX', '.ofs_clientX', '.start_ofsHor', `<<@${target}@item[stub].#clientRect`];
+                        }), target_ofsHor_compute_fn('left')),
+                        target_ofsVer: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.col_ids_target', '<.target'], ({ masters: [ids, target] }) => {
+                            const idx = ids.indexOf('stub');
+                            return !~idx ? ['.start_ofsVer'] : ['.start_clientY', '.ofs_clientY', '.start_ofsVer', `<<@${target}@item[stub].#clientRect`];
+                        }), target_ofsHor_compute_fn('top')),
+                    },
+                    control: {
+                        label: id == 'stub' ? null : () => ({
+                            base: $$.$me_label,
+                            prop: {
+                                text: () => id,
+                                alignVer: () => $$.$me_align.center,
+                                '#height': '<.#height',
+                                '#width': '<.#width',
+                                paddingHor: () => 8,
+                            },
+                        }),
+                    },
+                    style: {
+                        border: id == 'stub' ? null : () => '1px dotted blue',
+                        pointerEvents: $$.$me_atom2_prop(['<<.moving'], ({ masters: [moving] }) => {
+                            const result = moving && moving != id ? 'none' : 'auto';
+                            console.log(id, result);
+                            return result;
+                        }),
+                    },
+                    event: {
+                        mousedown: p => {
+                            if (!p.isInRect(p.event.clientX, p.event.clientY))
+                                return false;
+                            dragStart(p.event.clientX, p.event.clientY);
+                            return true;
+                        },
+                        mousemove: p => dragDo(p.event.clientX, p.event.clientY),
+                        mouseup: () => dragEnd(id),
+                        touchstart: p => {
+                            const touchTolerance = $$.a('/.#touchTolerance');
+                            const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
+                            if (dist > touchTolerance)
+                                return false;
+                            dragStart(p.event.touches[0].clientX, p.event.touches[0].clientY);
+                            return true;
+                        },
+                        touchmove: p => dragDo(p.event.touches[0].clientX, p.event.touches[0].clientY),
+                        touchend: () => dragEnd(id),
+                    },
+                })),
+            },
+        };
+        function dragStart(clientX, clientY) {
+            $$.a('.isMoving', true);
+            $$.a('.start_clientX', clientX);
+            $$.a('.start_clientY', clientY);
+            $$.a('.start_ofsHor', $$.a('.#ofsHor'));
+            $$.a('.start_ofsVer', $$.a('.#ofsVer'));
+            const clientRect = $$.a('.#clientRect');
+            $$.a('.ofs_clientX', clientRect.left - clientX);
+            $$.a('.ofs_clientY', clientRect.top - clientY);
+        }
+        function dragDo(clientX, clientY) {
+            if (!$$.a('.isMoving'))
+                return false;
+            $$.a('.#ofsHor', clientX - $$.a('.start_clientX') + $$.a('.start_ofsHor'));
+            $$.a('.#ofsVer', clientY - $$.a('.start_clientY') + $$.a('.start_ofsVer'));
+            const left = clientX + $$.a('.ofs_clientX');
+            const right = left + $$.a('.#width');
+            const top = clientY + $$.a('.ofs_clientY');
+            const bottom = top + $$.a('.#height');
+            const target = $$.a('<.target');
+            const clientRect = $$.a(`<<@${target}.#clientRect`);
+            const ids = $$.a('<.col_ids_target');
+            if (intersects(left, right, clientRect.left, clientRect.right) &&
+                intersects(top, bottom, clientRect.top, clientRect.bottom)) {
+                let i_found = ids.length;
+                for (let i = ids.length - 1; i >= 0; i--) {
+                    const clientRect = $$.a(`<<@${target}@item[${ids[i]}].#clientRect`);
+                    if (intersects(top, bottom, clientRect.top, clientRect.bottom)) {
+                        if (i == ids.length - 1 && top > clientRect.top)
+                            i++;
+                        i_found = i;
+                        break;
+                    }
+                }
+                if (ids[i_found] != 'stub') {
+                    const ids_new = ids.slice();
+                    const idx = ids.indexOf('stub');
+                    if (~idx) {
+                        ids_new.splice(idx, 1);
+                        if (i_found > idx)
+                            i_found--;
+                    }
+                    ids_new.splice(i_found, 0, 'stub');
+                    $$.a(`<<.col_ids_${target}`, ids_new);
+                }
+                return true;
+            }
+            const idx = ids.indexOf('stub');
+            if (~idx) {
+                const ids_new = ids.slice();
+                ids_new.splice(idx, 1);
+                $$.a(`<<.col_ids_${target}`, ids_new);
+            }
+            return true;
+        }
+        function dragEnd(id) {
+            if (!$$.a('.isMoving'))
+                return false;
+            $$.a('.isMoving', false);
+            let count = 2;
+            const target = $$.a('<.target');
+            const fini = () => {
+                if (!--count) {
+                    const ids = $$.a(`<<.col_ids_${target}`);
+                    const idx = ids.indexOf('stub');
+                    if (~idx) {
+                        const ids_new = ids.slice();
+                        ids_new.splice(idx, 1, id);
+                        $$.a(`<<.col_ids_${target}`, ids_new);
+                        {
+                            const source = $$.a('<.source');
+                            const ids = $$.a(`<<.col_ids_${source}`);
+                            const idx = ids.indexOf(id);
+                            const ids_new = ids.slice();
+                            ids_new.splice(idx, 1);
+                            $$.a(`<<.col_ids_${source}`, ids_new);
+                        }
+                    }
+                }
+            };
+            $$.a('.#ofsHor', $$.$me_atom2_anim({ to: $$.a('.target_ofsHor'), fini }));
+            $$.a('.#ofsVer', $$.$me_atom2_anim({ to: $$.a('.target_ofsVer'), fini }));
+            return true;
+        }
+        const intersects = (leftA, rightA, leftB, rightB) => leftB <= leftA && leftA <= rightB ||
+            leftB <= rightA && rightA <= rightB ||
+            leftA <= leftB && rightA >= leftB ||
+            leftA <= rightB && rightA >= rightB;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//dialog.js.map
 ;
 "use strict";
 var $;
