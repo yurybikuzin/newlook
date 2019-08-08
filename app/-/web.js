@@ -2968,6 +2968,8 @@ var $;
                                             this._state instanceof Set ?
                                                 this._state :
                                                 new Set();
+                                    if (this.name() == '/@demo@dialog@invisible@row[3]@content@wrapper@item.#hidden')
+                                        console.error(this.name(), name_master);
                                     state.add(name_master);
                                 }
                             }
@@ -2986,7 +2988,8 @@ var $;
                                 state.add(name_master);
                                 continue;
                             }
-                            master_values.push(atom_master.value());
+                            let value = atom_master.value();
+                            master_values.push(value);
                             if (atom_master._state !== $me_atom2_state_enum.valid) {
                                 if (!state)
                                     state = new Set();
@@ -3010,6 +3013,8 @@ var $;
                     try {
                         const start = performance.now();
                         result.ret = fn_compute.call(this, Object.assign({ atom: this, prev: this._value, len: !master_values ? 0 : master_values.length, masters: master_values }, key_provider_ret));
+                        if (result.ret === void 0)
+                            console.error(this.name(), 'compute returned void 0');
                         $me_atom2.pure_compute_timing += performance.now() - start;
                         $me_atom2.pure_compute_count++;
                     }
@@ -5219,10 +5224,12 @@ var $;
                 else if (dispatch_name == 'iterate_rows') {
                     const row_count = $$.a('.row_count');
                     if (row_count) {
-                        let row_i = $$.a('.row_i_min');
                         const row_i_max = $$.a('.row_i_max');
-                        while (dispatch_arg(row_i) !== false && row_i != row_i_max)
-                            row_i = next_i(1, row_i, row_count);
+                        if (row_i_max >= 0) {
+                            let row_i = $$.a('.row_i_min');
+                            while (dispatch_arg(row_i) !== false && row_i != row_i_max)
+                                row_i = next_i(1, row_i, row_count);
+                        }
                     }
                     return true;
                 }
@@ -5232,7 +5239,10 @@ var $;
                     2 + Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min)), ({ prev, val }) => {
                     const result = prev != null && prev > val ? prev : val;
                     return result;
-                }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')) }, $$.$me_atom2_prop_same_def(() => 0, [
+                }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')) }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop([], () => -1, ({ val, atom }) => {
+                if (atom.path.tail == 'visible_top')
+                    console.warn(atom.name(), val);
+            }), [
                 ...min_max('row_i'),
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
@@ -5255,6 +5265,13 @@ var $;
                 }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0), ({ key: [row_i], val }) => {
                     $$.a(`.row_height_source[${row_i}]`, null);
                     $$.a(`.row_height[${row_i}]`, null);
+                }), on_change_rec_count: $$.$me_atom2_prop(['.rec_count'], null, ({ val, prev }) => {
+                    if (val == null || prev == null)
+                        return;
+                    for (let i = 0; i < $$.a('.row_count'); i++) {
+                        $$.a(`.row_height_source[${i}]`, null);
+                        $$.a(`.row_height[${i}]`, null);
+                    }
                 }), row_top: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
@@ -5287,8 +5304,11 @@ var $;
                                     fini: () => adjust_rows($$.a('.visible_top')),
                                 });
                     return result;
-                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.#height', '.rec_count'], null, ({ val }) => {
+                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.#height', '.rec_count'], null, ({ val, atom }) => {
+                    if (atom.name() == '/@demo@dialog@visible.adjust_rows' && val[1] == 12)
+                        $$.$me_debug = true;
                     adjust_rows($$.a('.visible_top'));
+                    $$.$me_debug = false;
                 }), adjust_top: $$.$me_atom2_prop([], () => null, ({ val }) => {
                     if (val == null)
                         return;
@@ -5297,7 +5317,9 @@ var $;
                     if (val == null)
                         return;
                     adjust_rows(val);
-                }), height_actual: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.rec_count', '.row_i_max', '.row_i_min'], ({ masters: [rec_count, row_i_max] }) => {
+                }), adjust_height_actual: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.rec_count', '.row_i_max'], ({ masters: [rec_count, row_i_max] }) => {
+                    if (!rec_count || row_i_max < 0)
+                        return ['.#height'];
                     const result = ['.#height'];
                     if (row_i_max == rec_count - 1) {
                         result.push('.header_height');
@@ -5306,6 +5328,8 @@ var $;
                     }
                     return result;
                 }), ({ len, masters, prev }) => {
+                    if (!len)
+                        return 0;
                     const [height] = masters;
                     if (len == 1)
                         return height;
@@ -5318,7 +5342,10 @@ var $;
                             return height;
                     }
                     return result;
-                }), disabledScroll: () => false, '#order': () => ['row', 'header'] }),
+                }, ({ val, atom }) => {
+                    $$.a('.height_actual', val);
+                    console.log(atom.name(), val);
+                }), height_actual: '.#height', disabledScroll: () => false, '#order': () => ['row', 'header'] }),
             elem: {
                 header: $$.$me_atom2_prop(['.header_content'], ({ masters: [header_content] }) => !header_content ? null : {
                     prop: {
@@ -5328,16 +5355,17 @@ var $;
                         content: () => header_content
                     },
                 }),
-                row: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? null :
-                    {
-                        prop: {
-                            '#ofsVer': `<.row_top[${row_i}]`,
-                            '#height': `<.row_height[${row_i}]`,
-                        },
-                        elem: {
-                            content: `<.row_content[${row_i}]`,
-                        },
-                    }),
+                row: $$.$me_atom2_prop({ keys: ['.row_i']
+                }, ({ key: [row_i] }) => ({
+                    prop: {
+                        '#ofsVer': `<.row_top[${row_i}]`,
+                        '#height': `<.row_height[${row_i}]`,
+                        '#hidden': `<.row_hidden[${row_i}]`,
+                    },
+                    elem: {
+                        content: `<.row_content[${row_i}]`,
+                    },
+                })),
             },
             style: {
                 overflow: () => 'hidden',
@@ -5380,8 +5408,8 @@ var $;
             return false;
         };
         let skip_limit;
-        $$.$me_list_row_i_out_of_range_is = (key, row_i_min, row_i_max) => row_i_max == row_i_min ||
-            row_i_max > row_i_min && (key < row_i_min || key > row_i_max) ||
+        $$.$me_list_row_i_out_of_range_is = (key, row_i_min, row_i_max) => row_i_min < 0 || row_i_max < 0 ||
+            row_i_max >= row_i_min && (key < row_i_min || key > row_i_max) ||
             row_i_max < row_i_min && key > row_i_max && key < row_i_min;
         const next_i = (inc, i, len) => {
             if (!len)
@@ -5403,6 +5431,8 @@ var $;
                 $$.a.dispatch(_provider, 'get_row_height', dispatch_arg);
                 result = dispatch_arg.val;
             }
+            if ($$.$me_debug)
+                console.error({ idx, result });
             return Math.round(result);
         };
         const set_row_height = (idx, _provider, provider_tag, val) => {
@@ -5411,47 +5441,52 @@ var $;
         function adjust_rows(val, fromBottom = false, row_height) {
             if (!row_height)
                 row_height = get_row_height;
-            if ($$.a('.rec_count') <= 0)
-                return;
-            const p = {
-                val,
-                idx_max: $$.a('.rec_idx_max'),
-                i: $$.a(fromBottom ? '.row_i_max' : '.row_i_min'),
-                idx: $$.a(fromBottom ? '.visible_idx_max' : '.visible_idx_min'),
-                len: $$.a('.row_count'),
-                _provider: $$.a('._provider'),
-                provider_tag: $$.a('.provider_tag'),
-                height: $$.a('.height_actual'),
-                header_height: $$.a('.header_height'),
-            };
-            if ($$.$me_debug)
-                console.log(Object.assign({}, p));
-            compute_visible(p, !fromBottom, row_height);
-            if ($$.$me_debug)
-                console.log(Object.assign({}, p));
-            set_visible(p, !fromBottom);
-            compute_visible(p, fromBottom, row_height);
-            if ($$.$me_debug)
-                console.log(Object.assign({}, p));
-            set_visible(p, fromBottom);
+            if ($$.a('.rec_count') <= 0) {
+                $$.a('.row_i_max', -1);
+            }
+            else {
+                const p = {
+                    val,
+                    idx_max: $$.a('.rec_idx_max'),
+                    i: $$.a(fromBottom ? '.row_i_max' : '.row_i_min'),
+                    idx: $$.a(fromBottom ? '.visible_idx_max' : '.visible_idx_min'),
+                    len: $$.a('.row_count'),
+                    _provider: $$.a('._provider'),
+                    provider_tag: $$.a('.provider_tag'),
+                    height: $$.a('.height_actual'),
+                    header_height: $$.a('.header_height'),
+                };
+                if ($$.$me_debug)
+                    console.log(Object.assign({}, p));
+                compute_visible(p, !fromBottom, row_height);
+                if ($$.$me_debug)
+                    console.log(Object.assign({}, p));
+                set_visible(p, !fromBottom);
+                compute_visible(p, fromBottom, row_height);
+                if ($$.$me_debug)
+                    console.log(Object.assign({}, p));
+                set_visible(p, fromBottom);
+            }
         }
         function compute_visible(p, bottom = false, row_height) {
             if (!row_height)
                 row_height = get_row_height;
             compute_visible_helper(p, bottom, row_height);
             if (!skip_limit)
-                if (!bottom ?
-                    p.val > p.header_height :
-                    (p.val < p.height) && p.i != $$.a('.rec_count') - 1) {
-                    const from = bottom ? p.height : p.header_height;
-                    if ($$.$me_debug)
-                        console.warn({ from, delta: from - p.val });
-                    p.val = $$.$me_ribbon_val({
-                        from,
-                        delta: from - p.val,
-                        fromBack: !bottom,
-                    });
-                }
+                if (bottom && p.val < p.height)
+                    console.error(p.val, p.height);
+            if (!bottom ?
+                p.val > p.header_height :
+                (p.val < p.height) && p.i != $$.a('.rec_count') - 1) {
+                const from = bottom ? p.height : p.header_height;
+                if ($$.$me_debug)
+                    console.warn({ from, delta: from - p.val });
+                p.val = $$.$me_ribbon_val({
+                    from,
+                    delta: from - p.val,
+                    fromBack: !bottom,
+                });
+            }
             return p;
         }
         function compute_visible_helper(p, bottom, row_height) {
@@ -5892,7 +5927,10 @@ var $;
                 if (dispatch_name == 'set_view') {
                     const val = dispatch_arg || {};
                     const col_width_store = val.col_width || {};
-                    const col_ids = val.col_ids || Object.keys($$.a('.cols'));
+                    const col_ids = val.col_ids || (() => {
+                        const cols = $$.a('.cols');
+                        return Object.keys(cols).filter(id => !cols[id].hidden);
+                    })();
                     const min = $$.a('.#width') - $$.a('.col_width_sum') - $$.a('.col_fixed_width');
                     const ofsHor = Math.min(0, Math.max(min, val.ofsHor || 0)) + $$.a('.col_fixed_width');
                     for (const id of $$.a('.col_ids'))
@@ -6130,6 +6168,10 @@ var $;
                             return true;
                         }
                         else if (dispatch_name == 'nl_search_grid_dialog') {
+                            if (dispatch_arg == 'apply') {
+                                $$.a('<.colSelected', '');
+                                $$.a('<<.col_ids', $$.a('@dialog.col_ids_visible'));
+                            }
                             $$.a('.isShownDialog', false);
                             return true;
                         }
@@ -6168,6 +6210,10 @@ var $;
                             base: $$.$nl_search_grid_dialog,
                             prop: {
                                 col_ids_visible: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [ids] }) => ids),
+                                col_ids_invisible: $$.$me_atom2_prop(['<<<.col_ids', '<<<.cols'], ({ masters: [ids, cols] }) => {
+                                    const ids_all = Object.keys(cols);
+                                    return ids_all.filter(id => !~ids.indexOf(id));
+                                }),
                             },
                         }),
                         header: () => ({
@@ -6860,8 +6906,8 @@ var $;
                 listOfsVer: () => 94,
                 headerHeight: () => 30,
                 listHeight: $$.$me_atom2_prop(['.#height', '.listOfsVer', '.paddingVer', '@buttonApply.#height'], ({ masters: [height, listOfsVer, paddingVer, buttonApplyHeight] }) => height - listOfsVer - 2 * paddingVer - buttonApplyHeight),
-                col_ids_visible: () => ["photo", "Комнат", "Метро/ЖД", "От станции", "Адрес", "Дом", "Балкон", "Санузел", "Парковка", "Территория", "Окна", "Ремонт", "Лифт", "Площадь", "Площадь комнат", "Ипотека", "Цена", "Цена за кв.м.", "Дата", "Источник", "Телефон"],
-                col_ids_invisible: () => ['Год постройки', 'Дата создания', '$/м²', 'Цена $'],
+                col_ids_visible: () => ["photo", "Парковка", "Территория", "Окна", "Ремонт", "Лифт", "Площадь", "Площадь комнат", "Ипотека", "Цена", "Цена за кв.м.", "Дата", "Источник", "Телефон"],
+                col_ids_invisible: () => ["Комнат", "Метро/ЖД", "От станции", "Адрес", "Дом", "Балкон", "Санузел", 'Год постройки', 'Дата создания', '$/м²', 'Цена $'],
                 row_height: $$.$me_atom2_prop(['.itemHeight', '.itemMarginVer'], ({ masters: [itemHeight, itemMarginVer] }) => itemHeight + 2 * itemMarginVer),
                 itemMarginVerFirst: () => 16,
                 itemMarginVer: () => 6,
@@ -6907,13 +6953,13 @@ var $;
                     },
                 }),
                 invisibleHeader: () => ({
-                    base: headerList,
+                    base: header_list,
                     prop: {
                         text: () => 'Скрытые поля',
                     },
                 }),
                 visibleHeader: () => ({
-                    base: headerList,
+                    base: header_list,
                     prop: {
                         text: () => 'Видимые поля',
                         '#alignHor': () => $$.$me_align.right,
@@ -7029,7 +7075,7 @@ var $;
                 },
             },
         };
-        const headerList = {
+        const header_list = {
             prop: {
                 '#width': '<.listWidth',
                 '#height': '<.headerHeight',
@@ -7050,6 +7096,9 @@ var $;
                 }),
             },
         };
+        const row_height_default = (idx) => $$.a('.row_height_min') + (!idx ? $$.a('<.itemMarginVerFirst') - $$.a('<.itemMarginVer') :
+            idx == $$.a('.rec_count') - 1 ? $$.a('<.itemMarginVer') :
+                0);
         const list = {
             base: $$.$me_list,
             dispatch: (dispatch_name, dispatch_arg) => {
@@ -7058,9 +7107,17 @@ var $;
                     dispatch_arg.val =
                         row_heights.has(dispatch_arg.idx) ?
                             row_heights.get(dispatch_arg.idx) :
-                            $$.a('.row_height_min') + (!dispatch_arg.idx ? $$.a('<.itemMarginVerFirst') - $$.a('<.itemMarginVer') :
-                                dispatch_arg.idx == $$.a('.rec_count') - 1 ? $$.a('<.itemMarginVer') :
-                                    0);
+                            row_height_default(dispatch_arg.idx);
+                    return true;
+                }
+                else if (dispatch_name == 'set_row_height') {
+                    const row_heights = $$.a('.row_heights');
+                    if (dispatch_arg.val != row_height_default(dispatch_arg.idx)) {
+                        row_heights.set(dispatch_arg.idx, dispatch_arg.val);
+                    }
+                    else if (row_heights.has(dispatch_arg.idx)) {
+                        row_heights.delete(dispatch_arg.idx);
+                    }
                     return true;
                 }
                 return false;
@@ -7085,15 +7142,15 @@ var $;
                     base: row,
                     prop: {
                         row_i: () => row_i,
-                        rec_idx: `<<.rec_idx[${row_i}]`,
-                        id: $$.$me_atom2_prop(['<<.col_ids', `.rec_idx`], ({ masters: [ids, idx] }) => {
-                            return ids[idx];
+                        rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
+                        id: $$.$me_atom2_prop(['<<.col_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
+                            return !~idx || idx >= rec_count ? '' : ids[idx];
                         }),
                     },
                 })),
             },
             elem: {
-                header: null,
+                header: () => null,
             },
             style: {
                 background: () => '#f0f1f4',
@@ -7139,7 +7196,10 @@ var $;
                             },
                             prop: {
                                 isRight: '<<<<.isRight',
-                                '#hidden': $$.$me_atom2_prop(['<<<<<.moving', '<<.id'], ({ masters: [moving, id] }) => id == 'stub' || id && id == moving),
+                                '#hidden': $$.$me_atom2_prop(['<.#visible', '<<<<<.moving', '<<.id'], ({ masters: [visible, moving, id] }) => !visible || id == 'stub' || id && id == moving, ({ val, atom }) => {
+                                    if (val == null)
+                                        console.error(atom.name());
+                                }),
                                 '#zIndex': $$.$me_atom2_prop(['<<<<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                                 '#cursor': () => 'drag',
                                 text: '<<.id',
@@ -7589,8 +7649,40 @@ var $;
                                 caption: 'Цена ₽',
                                 width: 96,
                                 fld: ['price_rub'],
-                                fn: (price_rub) => {
-                                    var x = (price_rub + '').split('.');
+                                fn: (val) => {
+                                    var x = (val + '').split('.');
+                                    var x1 = x[0];
+                                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                                    var rgx = /(\d+)(\d{3})/;
+                                    while (rgx.test(x1))
+                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                                    return x1 + x2;
+                                },
+                            },
+                            'Цена, $': {
+                                hidden: true,
+                                align: $$.$me_align.right,
+                                caption: 'Цена $',
+                                width: 96,
+                                fld: ['price_usd'],
+                                fn: (val) => {
+                                    var x = (val + '').split('.');
+                                    var x1 = x[0];
+                                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                                    var rgx = /(\d+)(\d{3})/;
+                                    while (rgx.test(x1))
+                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                                    return x1 + x2;
+                                },
+                            },
+                            'Цена, €': {
+                                hidden: true,
+                                align: $$.$me_align.right,
+                                caption: 'Цена €',
+                                width: 96,
+                                fld: ['price_eur'],
+                                fn: (val) => {
+                                    var x = (val + '').split('.');
                                     var x1 = x[0];
                                     var x2 = x.length > 1 ? '.' + x[1] : '';
                                     var rgx = /(\d+)(\d{3})/;
@@ -7614,13 +7706,64 @@ var $;
                                     return x1 + x2;
                                 },
                             },
+                            'Цена $ за кв.м.': {
+                                hidden: true,
+                                align: $$.$me_align.right,
+                                caption: '$/м²',
+                                width: 93,
+                                fld: ['meter_price_usd'],
+                                fn: (val) => {
+                                    var x = (Math.round(val) + '').split('.');
+                                    var x1 = x[0];
+                                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                                    var rgx = /(\d+)(\d{3})/;
+                                    while (rgx.test(x1))
+                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                                    return x1 + x2;
+                                },
+                            },
+                            'Цена € за кв.м.': {
+                                hidden: true,
+                                align: $$.$me_align.right,
+                                caption: '€/м²',
+                                width: 93,
+                                fld: ['meter_price_eur'],
+                                fn: (val) => {
+                                    var x = (Math.round(val) + '').split('.');
+                                    var x1 = x[0];
+                                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                                    var rgx = /(\d+)(\d{3})/;
+                                    while (rgx.test(x1))
+                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                                    return x1 + x2;
+                                },
+                            },
                             'Дата': {
-                                align: $$.$me_align.center,
+                                align: $$.$me_align.right,
                                 width: 85,
                                 fld: ['pub_datetime'],
-                                fn: (pub_datetime) => {
-                                    const dt = new Date(pub_datetime);
+                                fn: (val) => {
+                                    const dt = new Date(val);
                                     return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                                },
+                            },
+                            'Дата создания': {
+                                hidden: true,
+                                align: $$.$me_align.right,
+                                width: 85,
+                                fld: ['creation_datetime'],
+                                fn: (val) => {
+                                    const dt = new Date(val);
+                                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                                },
+                            },
+                            'Год постройки': {
+                                hidden: true,
+                                align: $$.$me_align.center,
+                                width: 85,
+                                fld: ['built_year'],
+                                fn: (val) => {
+                                    return val;
                                 },
                             },
                             'Источник': {
