@@ -7178,7 +7178,7 @@ var $;
                                         console.error(atom.name());
                                 }),
                                 '#zIndex': $$.$me_atom2_prop(['<<<<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': () => 'grab',
+                                '#cursor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<<.source'], ({ masters: [source] }) => source != 'visible' ? [] : [`<<<<<.col_ids_${source}`]), ({ len, masters: [ids] }) => !len || ids.length >= 2 ? 'grab' : 'not-allowed'),
                                 text: '<<.id',
                             },
                         }),
