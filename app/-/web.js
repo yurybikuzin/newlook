@@ -5302,7 +5302,7 @@ var $;
                                     fini: () => adjust_rows($$.a('.visible_top')),
                                 });
                     return result;
-                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.#height', '._rec_count'], null, ({ val, atom }) => {
+                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.height_actual', '._rec_count'], null, ({ val, atom }) => {
                     adjust_rows($$.a('.visible_top'));
                 }), adjust_top: $$.$me_atom2_prop([], () => null, ({ val }) => {
                     if (val == null)
