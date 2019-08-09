@@ -5090,12 +5090,13 @@ var $;
             const prop_adjust = $$.a.get(p.adjust);
             if (p.init)
                 p.init();
-            prop_adjust.value($me_ribbon_val({
+            const val = $me_ribbon_val({
                 from: !prop_from ? p.from : prop_from.value(),
                 to: !prop_to ? p.to : prop_to.value(),
                 delta: p.delta,
                 fromBack: p.fromBack,
-            }));
+            });
+            prop_adjust.value(val);
             if (p.fini)
                 p.fini();
             if (effect_timers[p.id] == null)
@@ -5122,7 +5123,7 @@ var $;
     var $$;
     (function ($$) {
         const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
-        $$.$me_atom2_list_row_height_source_fn_apply = ({ key: [row_i], val, prev }) => {
+        $$.$me_atom2_list_row_height_source_fn_apply = ({ key: [row_i], val, prev, atom }) => {
             if (val == null || val < 0 ||
                 +row_i >= $$.a('.row_count') ||
                 $$.$me_list_row_i_out_of_range_is(+row_i, $$.a('.row_i_min'), $$.a('.row_i_max')))
@@ -5134,6 +5135,7 @@ var $;
             if (!delta)
                 return;
             if (delta < 0) {
+                console.error(atom.name(), { delta, prev, val });
                 const top = $$.a(`.row_top[${row_i}]`);
                 const delta_bottom = top + val - $$.a('.height_actual');
                 if (delta_bottom > 0) {
@@ -5235,15 +5237,18 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ _provider: () => $$.a.curr.parent(true).path, provider_tag: () => null, rec_idx_delta: () => 1, rec_idx_max: $$.$me_atom2_prop(['.rec_count'], ({ masters: [rec_count] }) => rec_count - 1), row_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => rec_count < 0 ? 0 :
+            prop: Object.assign({ _provider: () => $$.a.curr.parent(true).path, provider_tag: () => null, rec_idx_delta: () => 1, rec_idx_max: $$.$me_atom2_prop(['._rec_count'], ({ masters: [rec_count] }) => rec_count - 1), row_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => rec_count < 0 ? 0 :
                     2 + Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min)), ({ prev, val }) => {
                     const result = prev != null && prev > val ? prev : val;
                     return result;
-                }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')) }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop([], () => -1, ({ val, atom }) => {
-                if (atom.path.tail == 'visible_top')
-                    console.warn(atom.name(), val);
-            }), [
-                ...min_max('row_i'),
+                }), _rec_count: $$.$me_atom2_prop(['.rec_count'], null, ({ val, prev, atom }) => {
+                    if (val == null || prev == null)
+                        return;
+                    for (let i = 0; i < $$.a('.row_count'); i++) {
+                        $$.a(`.row_height_source[${i}]`, null);
+                        $$.a(`.row_height[${i}]`, null);
+                    }
+                }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')), row_i_min: () => 0, row_i_max: () => -1 }, $$.$me_atom2_prop_same_def(() => 0, [
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
             ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
@@ -5265,13 +5270,6 @@ var $;
                 }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0), ({ key: [row_i], val }) => {
                     $$.a(`.row_height_source[${row_i}]`, null);
                     $$.a(`.row_height[${row_i}]`, null);
-                }), on_change_rec_count: $$.$me_atom2_prop(['.rec_count'], null, ({ val, prev }) => {
-                    if (val == null || prev == null)
-                        return;
-                    for (let i = 0; i < $$.a('.row_count'); i++) {
-                        $$.a(`.row_height_source[${i}]`, null);
-                        $$.a(`.row_height[${i}]`, null);
-                    }
                 }), row_top: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
@@ -5290,7 +5288,7 @@ var $;
                     }),
                 }, ({ len, masters }) => !len ? null : masters.reduce((sum, val) => sum + val, 0)), row_heights_store: () => new Map(), row_heights: $$.$me_atom2_prop(['.provider_tag', '.row_heights_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Map())), row_height_source: $$.$me_atom2_prop({
                     keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
+                    masters: $$.$me_atom2_prop_masters(['._rec_count', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
                         [`.rec_idx[${row_i}]`, '._provider', '.provider_tag']),
                 }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => {
                     const result = !len || !_provider || !provider_tag ? -1 : get_row_height(rec_idx, _provider, provider_tag, true);
@@ -5304,11 +5302,8 @@ var $;
                                     fini: () => adjust_rows($$.a('.visible_top')),
                                 });
                     return result;
-                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.#height', '.rec_count'], null, ({ val, atom }) => {
-                    if (atom.name() == '/@demo@dialog@visible.adjust_rows' && val[1] == 12)
-                        $$.$me_debug = true;
+                }, ({ val }) => val == null ? null : Math.round(val)), adjust_rows: $$.$me_atom2_prop(['.#height', '._rec_count'], null, ({ val, atom }) => {
                     adjust_rows($$.a('.visible_top'));
-                    $$.$me_debug = false;
                 }), adjust_top: $$.$me_atom2_prop([], () => null, ({ val }) => {
                     if (val == null)
                         return;
@@ -5317,7 +5312,7 @@ var $;
                     if (val == null)
                         return;
                     adjust_rows(val);
-                }), adjust_height_actual: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.rec_count', '.row_i_max'], ({ masters: [rec_count, row_i_max] }) => {
+                }), adjust_height_actual: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['._rec_count', '.row_i_max'], ({ masters: [rec_count, row_i_max] }) => {
                     if (!rec_count || row_i_max < 0)
                         return ['.#height'];
                     const result = ['.#height'];
@@ -5344,7 +5339,6 @@ var $;
                     return result;
                 }, ({ val, atom }) => {
                     $$.a('.height_actual', val);
-                    console.log(atom.name(), val);
                 }), height_actual: '.#height', disabledScroll: () => false, '#order': () => ['row', 'header'] }),
             elem: {
                 header: $$.$me_atom2_prop(['.header_content'], ({ masters: [header_content] }) => !header_content ? null : {
@@ -5407,7 +5401,7 @@ var $;
             }
             return false;
         };
-        let skip_limit;
+        let skip_limit = false;
         $$.$me_list_row_i_out_of_range_is = (key, row_i_min, row_i_max) => row_i_min < 0 || row_i_max < 0 ||
             row_i_max >= row_i_min && (key < row_i_min || key > row_i_max) ||
             row_i_max < row_i_min && key > row_i_max && key < row_i_min;
@@ -5431,8 +5425,6 @@ var $;
                 $$.a.dispatch(_provider, 'get_row_height', dispatch_arg);
                 result = dispatch_arg.val;
             }
-            if ($$.$me_debug)
-                console.error({ idx, result });
             return Math.round(result);
         };
         const set_row_height = (idx, _provider, provider_tag, val) => {
@@ -5441,7 +5433,7 @@ var $;
         function adjust_rows(val, fromBottom = false, row_height) {
             if (!row_height)
                 row_height = get_row_height;
-            if ($$.a('.rec_count') <= 0) {
+            if ($$.a('._rec_count') <= 0) {
                 $$.a('.row_i_max', -1);
             }
             else {
@@ -5456,15 +5448,9 @@ var $;
                     height: $$.a('.height_actual'),
                     header_height: $$.a('.header_height'),
                 };
-                if ($$.$me_debug)
-                    console.log(Object.assign({}, p));
                 compute_visible(p, !fromBottom, row_height);
-                if ($$.$me_debug)
-                    console.log(Object.assign({}, p));
                 set_visible(p, !fromBottom);
                 compute_visible(p, fromBottom, row_height);
-                if ($$.$me_debug)
-                    console.log(Object.assign({}, p));
                 set_visible(p, fromBottom);
             }
         }
@@ -5472,20 +5458,17 @@ var $;
             if (!row_height)
                 row_height = get_row_height;
             compute_visible_helper(p, bottom, row_height);
-            if (!skip_limit)
-                if (bottom && p.val < p.height)
-                    console.error(p.val, p.height);
-            if (!bottom ?
-                p.val > p.header_height :
-                (p.val < p.height) && p.i != $$.a('.rec_count') - 1) {
-                const from = bottom ? p.height : p.header_height;
-                if ($$.$me_debug)
-                    console.warn({ from, delta: from - p.val });
-                p.val = $$.$me_ribbon_val({
-                    from,
-                    delta: from - p.val,
-                    fromBack: !bottom,
-                });
+            if (!skip_limit) {
+                if (!bottom ?
+                    p.val > p.header_height :
+                    (p.val < p.height) && p.i != $$.a('.rec_count') - 1) {
+                    const from = bottom ? p.height : p.header_height;
+                    p.val = $$.$me_ribbon_val({
+                        from,
+                        delta: from - p.val,
+                        fromBack: !bottom,
+                    });
+                }
             }
             return p;
         }
@@ -6906,8 +6889,8 @@ var $;
                 listOfsVer: () => 94,
                 headerHeight: () => 30,
                 listHeight: $$.$me_atom2_prop(['.#height', '.listOfsVer', '.paddingVer', '@buttonApply.#height'], ({ masters: [height, listOfsVer, paddingVer, buttonApplyHeight] }) => height - listOfsVer - 2 * paddingVer - buttonApplyHeight),
-                col_ids_visible: () => ["photo", "Парковка", "Территория", "Окна", "Ремонт", "Лифт", "Площадь", "Площадь комнат", "Ипотека", "Цена", "Цена за кв.м.", "Дата", "Источник", "Телефон"],
-                col_ids_invisible: () => ["Комнат", "Метро/ЖД", "От станции", "Адрес", "Дом", "Балкон", "Санузел", 'Год постройки', 'Дата создания', '$/м²', 'Цена $'],
+                col_ids_visible: () => ["photo", "Комнат", "Метро/ЖД", "От станции", "Адрес", "Дом", "Балкон", "Санузел", "Парковка", "Территория", "Окна", "Ремонт", "Лифт", "Площадь", "Площадь комнат", "Ипотека", "Цена", "Цена за кв.м.", "Дата", "Источник", "Телефон"],
+                col_ids_invisible: () => ['Год постройки', 'Дата создания', '$/м²', 'Цена $'],
                 row_height: $$.$me_atom2_prop(['.itemHeight', '.itemMarginVer'], ({ masters: [itemHeight, itemMarginVer] }) => itemHeight + 2 * itemMarginVer),
                 itemMarginVerFirst: () => 16,
                 itemMarginVer: () => 6,
@@ -7172,27 +7155,21 @@ var $;
                             base: item,
                             event: {
                                 wheelDrag: p => {
-                                    if ($$.a('<<<<<.moving') || $$.a('<<<<<.movingAnim'))
-                                        return false;
                                     if ($$.$me_list_wheel_y_is(p.event))
                                         return false;
                                     if (!p.isInRect(p.event.start.clientX, p.event.start.clientY))
                                         return false;
-                                    dragStart($$.a('<<.id'), p.event.start.clientX, p.event.start.clientY);
-                                    return true;
+                                    return dragStart($$.a('<<.id'), p.event.start.clientX, p.event.start.clientY);
                                 },
                                 wheelTouch: p => {
-                                    if ($$.a('<<<<<.moving'))
-                                        return false;
                                     if ($$.$me_list_wheel_y_is(p.event))
                                         return false;
                                     const touchTolerance = $$.a('/.#touchTolerance');
                                     const dist = p.distToRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY);
                                     if (dist > touchTolerance)
                                         return false;
-                                    dragStart($$.a('<<.id'), p.event.start.touches[0].clientX, p.event.start.touches[0].clientY);
-                                    return true;
-                                }
+                                    return dragStart($$.a('<<.id'), p.event.start.touches[0].clientX, p.event.start.touches[0].clientY);
+                                },
                             },
                             prop: {
                                 isRight: '<<<<.isRight',
@@ -7201,7 +7178,7 @@ var $;
                                         console.error(atom.name());
                                 }),
                                 '#zIndex': $$.$me_atom2_prop(['<<<<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': () => 'drag',
+                                '#cursor': () => 'grab',
                                 text: '<<.id',
                             },
                         }),
@@ -7258,9 +7235,14 @@ var $;
             },
         };
         function dragStart(id, clientX, clientY) {
+            if ($$.a('<<<<<.moving') || $$.a('<<<<<.movingAnim'))
+                return false;
+            const source = $$.a('<<<<.source');
+            if (source == 'visible' && $$.a(`<<<<<.col_ids_${source}`).length < 2)
+                return false;
             $$.a('<<<<<.moving', id);
             $$.a('<<<<<.isRight', $$.a('.isRight'));
-            $$.a('<<<<<.source', $$.a('<<<<.source'));
+            $$.a('<<<<<.source', source);
             $$.a('<<<<<.target', $$.a('<<<<.target'));
             $$.a('<<<<<.start_clientX', clientX);
             $$.a('<<<<<.start_clientY', clientY);
@@ -7270,6 +7252,7 @@ var $;
             const clientRectDialog = $$.a('<<<<<.#clientRect');
             $$.a('<<<<<.start_ofsHor', clientRect.left - clientRectDialog.left);
             $$.a('<<<<<.start_ofsVer', clientRect.top - clientRectDialog.top);
+            return true;
         }
         function dragDo(clientX, clientY) {
             if (!$$.a('<.moving'))
