@@ -850,6 +850,7 @@ var $;
             return result;
         }
         $$.$me_atom2_prop = $me_atom2_prop;
+        $$.$me_atom2_prop_abstract = () => $me_atom2_prop([], () => null, ({ atom }) => { $$.$me_throw(`ABSTRACT: ${atom.name()}`); });
         function $me_atom2_prop_def_prepare(prop_def, p) {
             if (!prop_def)
                 $$.$me_throw(`prop_def is null`);
@@ -886,6 +887,9 @@ var $;
         $$.$me_atom2_prop_compute_fn_sum = (initial) => initial === void 0 ? compute_fn_sum :
             (p) => compute_fn_sum(p, initial);
         const compute_fn_sum = (p, initial) => p.masters.reduce((result, val) => result + val, initial === void 0 ? 0 : initial);
+        $$.$me_atom2_prop_compute_fn_diff = (initial) => initial === void 0 ? compute_fn_diff :
+            (p) => compute_fn_diff(p, initial);
+        const compute_fn_diff = (p, initial) => p.masters.reduce((result, val, idx) => result + (!idx ? val : -val), initial === void 0 ? 0 : initial);
         $$.$me_atom2_prop_keys = (masters) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]));
         function $me_atom2_prop_same_def(prop_def, props) {
             const result = {};
@@ -3338,6 +3342,8 @@ var $;
                 if (!(entity instanceof $$.$me_atom2_ec))
                     $$.$me_throw(`${entity.name()} is not $me_atom2_ec`, entity);
                 const ec = entity;
+                if (!dispatch_name)
+                    dispatch_name = $$.a.curr.name();
                 const ret = ec.dispatch(dispatch_name, dispatch_arg);
                 if (!ret)
                     $$.$me_throw(`failed dispatch("${dispatch_name}", ${dispatch_arg}) on ${ec.name()}`);
@@ -3600,10 +3606,15 @@ var $;
                 this.mode = null;
             }
             end(event) {
-                this._end = event;
-                this.accel_k = 1;
-                this.mode = $me_atom2_wheel_touch_mode.end;
-                $$.$me_atom2_async();
+                if (this.mode != $me_atom2_wheel_touch_mode.move) {
+                    this.cancel();
+                }
+                else {
+                    this._end = event;
+                    this.accel_k = 1;
+                    this.mode = $me_atom2_wheel_touch_mode.end;
+                    $$.$me_atom2_async();
+                }
             }
             raf(t) {
                 return (this.mode == $me_atom2_wheel_touch_mode.move ? this.rafMove(t) :
@@ -5180,14 +5191,21 @@ var $;
         };
         $$.$me_list = {
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_row_height') {
+                if (dispatch_name == 'row_height_default') {
+                    dispatch_arg.val = $$.a('.row_height_min');
+                    return true;
+                }
+                else if (dispatch_name == 'get_row_height') {
                     const row_heights = $$.a('.row_heights');
-                    dispatch_arg.val = row_heights.has(dispatch_arg.idx) ? row_heights.get(dispatch_arg.idx) : $$.a('.row_height_min');
+                    dispatch_arg.val =
+                        row_heights.has(dispatch_arg.idx) ?
+                            row_heights.get(dispatch_arg.idx) :
+                            $$.a.dispatch('', 'row_height_default', { idx: dispatch_arg.idx, val: 0 }).val;
                     return true;
                 }
                 else if (dispatch_name == 'set_row_height') {
                     const row_heights = $$.a('.row_heights');
-                    if (dispatch_arg.val != $$.a('.row_height_min')) {
+                    if (dispatch_arg.val != $$.a.dispatch('', 'row_height_default', { idx: dispatch_arg.idx, val: 0 }).val) {
                         row_heights.set(dispatch_arg.idx, dispatch_arg.val);
                     }
                     else if (row_heights.has(dispatch_arg.idx)) {
@@ -5237,7 +5255,26 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ _provider: () => $$.a.curr.parent(true).path, provider_tag: () => null, rec_idx_delta: () => 1, rec_idx_max: $$.$me_atom2_prop(['._rec_count'], ({ masters: [rec_count] }) => rec_count - 1), row_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => rec_count < 0 ? 0 :
+            prop: Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
+                    keys: ['.curtain'],
+                    masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
+                        if (curtain == 'top') {
+                            return ['.visible_idx_min', '.visible_top', '.header_height'];
+                        }
+                        else {
+                            return ['.visible_idx_max', '.rec_idx_max', '.visible_bottom', '.#height'];
+                        }
+                    }),
+                }, ({ key: [curtain], masters }) => {
+                    if (curtain == 'top') {
+                        const [visible_idx_min, visible_top, header_height] = masters;
+                        return visible_idx_min || visible_top < header_height;
+                    }
+                    else {
+                        const [visible_idx_max, rec_idx_max, visible_bottom, height] = masters;
+                        return visible_idx_max < rec_idx_max || visible_bottom > height;
+                    }
+                }), _provider: () => $$.a.curr.parent(true).path, rec_idx_delta: () => 1, rec_idx_max: $$.$me_atom2_prop(['._rec_count'], ({ masters: [rec_count] }) => rec_count - 1), row_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => rec_count < 0 ? 0 :
                     2 + Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min)), ({ prev, val }) => {
                     const result = prev != null && prev > val ? prev : val;
                     return result;
@@ -5349,8 +5386,7 @@ var $;
                         content: () => header_content
                     },
                 }),
-                row: $$.$me_atom2_prop({ keys: ['.row_i']
-                }, ({ key: [row_i] }) => ({
+                row: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
                     prop: {
                         '#ofsVer': `<.row_top[${row_i}]`,
                         '#height': `<.row_height[${row_i}]`,
@@ -5360,6 +5396,19 @@ var $;
                         content: `<.row_content[${row_i}]`,
                     },
                 })),
+                curtain: $$.$me_atom2_prop({ keys: ['.curtain'], masters: ['.hidden_curtain', '.curtainVisible[]'] }, ({ key: [curtain], masters: [hidden_curtain, curtainVisible] }) => hidden_curtain || !curtainVisible ? null : {
+                    prop: {
+                        '#height': '<.height_curtain',
+                        '#width': '<.width_curtain',
+                        '#alignVer': () => $$.$me_align[curtain],
+                    },
+                    style: {
+                        background: $$.$me_atom2_prop(['<.curtain_kind'], ({ masters: [kind] }) => kind == 'black' ?
+                            `linear-gradient(${curtain == 'bottom' ? 0 : 180}deg, rgba(0,0,0,.24) 0%, rgba(0,0,0,.1) 33%, rgba(0,0,0,0) 100%)` :
+                            `linear-gradient(${curtain == 'bottom' ? 0 : 180}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%)`),
+                        pointerEvents: () => 'none',
+                    },
+                }),
             },
             style: {
                 overflow: () => 'hidden',
@@ -5402,7 +5451,7 @@ var $;
             return false;
         };
         let skip_limit = false;
-        $$.$me_list_row_i_out_of_range_is = (key, row_i_min, row_i_max) => row_i_min < 0 || row_i_max < 0 ||
+        $$.$me_list_row_i_out_of_range_is = (key, row_i_min, row_i_max) => row_i_max < 0 ||
             row_i_max >= row_i_min && (key < row_i_min || key > row_i_max) ||
             row_i_max < row_i_min && key > row_i_max && key < row_i_min;
         const next_i = (inc, i, len) => {
@@ -5810,6 +5859,7 @@ var $;
     (function ($$) {
         $$.$me_iosmenu = {
             prop: {
+                target: $$.$me_atom2_prop_abstract(),
                 limitRight: '/.#viewportWidth',
                 limitLeft: () => 0,
                 triangleSize: () => 15,
@@ -5841,10 +5891,7 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    const target = $$.a.get('<<<');
-                                    if (!target)
-                                        return false;
-                                    $$.a.dispatch(target.path, 'iosmenu', item);
+                                    $$.a.dispatch('<<' + $$.a('<<.target'));
                                     return true;
                                 },
                             },
@@ -5909,15 +5956,15 @@ var $;
             dispatch: (dispatch_name, dispatch_arg) => {
                 if (dispatch_name == 'set_view') {
                     const val = dispatch_arg || {};
-                    const col_width_store = val.col_width || {};
+                    const col_width_store = val.col_width_actual || {};
                     const col_ids = val.col_ids || (() => {
                         const cols = $$.a('.cols');
                         return Object.keys(cols).filter(id => !cols[id].hidden);
                     })();
-                    const min = $$.a('.#width') - $$.a('.col_width_sum') - $$.a('.col_fixed_width');
+                    const min = $$.a('.#width') - $$.a('.col_width_sum_actual') - $$.a('.col_fixed_width');
                     const ofsHor = Math.min(0, Math.max(min, val.ofsHor || 0)) + $$.a('.col_fixed_width');
                     for (const id of $$.a('.col_ids'))
-                        $$.a(`.col_width[${id}]`, null);
+                        $$.a(`.col_width_actual[${id}]`, null);
                     $$.a('.col_width_store', col_width_store);
                     $$.a('.col_ids', col_ids);
                     $$.a('.ofsHor', ofsHor);
@@ -5946,25 +5993,54 @@ var $;
                 col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]', '.col_width_store'] }, ({ key: [id], masters: [col, col_width_store] }) => {
                     return col_width_store[id] || col.width;
                 }),
+                col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
+                col_width_excess: $$.$me_atom2_prop(['.#width', '.col_fixed_width', '.col_width_sum'], $$.$me_atom2_prop_compute_fn_diff()),
+                col_width_actual: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.col_width_sum', '.col_width_excess'] }, ({ key: [id], masters: [col_width, col_width_sum, col_width_excess] }) => {
+                    return col_width + (col_width_excess <= 0 ? 0 : col_width / col_width_sum * col_width_excess);
+                }),
+                col_width_sum_actual: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width_actual[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
                 col_align: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.align || $$.$me_align.left),
                 col_width_min: () => 24,
                 col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
                 col_fixed_width: () => 37,
-                col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
                 ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev),
                 ofsHor_adjust: $$.$me_atom2_prop(['.#width'], null, ({ val, prev }) => {
-                    const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum'), val);
+                    const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum_actual'), val);
                     $$.a('.ofsHor', ofsHor_adjusted($$.a('.ofsHor'), min, max));
                 }),
                 col_left: $$.$me_atom2_prop({
                     keys: ['.col_ids'],
                     masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
                         const idx = ids.indexOf(id);
-                        return !idx ? [] : [`.col_left[${ids[idx - 1]}]`, `.col_width[${ids[idx - 1]}]`];
+                        return !idx ? [] : [`.col_left[${ids[idx - 1]}]`, `.col_width_actual[${ids[idx - 1]}]`];
                     }),
                 }, ({ len, masters: [left, width] }) => !len ? 0 : left + width),
                 header_height: () => 32,
                 row_height_min: () => 28,
+                hidden_curtain: $$.$me_atom2_prop(['@header.colSelected'], ({ masters: [colSelected] }) => !!colSelected),
+                width_curtain: () => 40,
+                curtain_kind: () => 'black',
+                curtain: () => ['left', 'right'],
+                curtainVisible: $$.$me_atom2_prop({
+                    keys: ['.curtain'],
+                    masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
+                        if (curtain == 'left') {
+                            return ['.ofsHor', '.col_fixed_width'];
+                        }
+                        else {
+                            return ['.ofsHor', '.col_width_sum_actual', '.#width'];
+                        }
+                    }),
+                }, ({ key: [curtain], masters }) => {
+                    if (curtain == 'left') {
+                        const [ofsHor, col_fixed_width] = masters;
+                        return ofsHor < col_fixed_width;
+                    }
+                    else {
+                        const [ofsHor, col_width_sum_actual, width] = masters;
+                        return ofsHor + col_width_sum_actual > width;
+                    }
+                }),
                 '#order': () => ['list', 'cursor', 'header'],
             },
             event: {
@@ -5994,6 +6070,23 @@ var $;
                         '#ofsVer': '<@header.#height',
                         '#height': $$.$me_atom2_prop(['<.#height', '<@header.#height'], ({ masters: [height_gross, height_header] }) => height_gross - height_header),
                         row_height_min: '<.row_height_min',
+                        width_curtain: $$.$me_atom2_prop(['<.ofsHor', '<.col_width_sum_actual', '<.#width'], ({ masters: [ofsHor, col_width_sum_actual, width] }) => Math.min(width, ofsHor + col_width_sum_actual)),
+                    },
+                }),
+                curtain: $$.$me_atom2_prop({ keys: ['.curtain'], masters: ['.hidden_curtain', '.curtainVisible[]'] }, ({ key: [curtain], masters: [hidden_curtain, curtainVisible] }) => hidden_curtain || !curtainVisible ? null : {
+                    prop: {
+                        '#width': '<.width_curtain',
+                        '#height': $$.$me_atom2_prop(['<.header_height', '<@list.curtainVisible[bottom]', '<@list.#height', '<@list.visible_bottom'], ({ masters: [header_height, curtainVisible, height, visible_bottom] }) => {
+                            return header_height + (curtainVisible ? height : visible_bottom);
+                        }),
+                        '#ofsHor': curtain == 'right' ? null : '<.col_fixed_width',
+                        '#alignHor': () => $$.$me_align[curtain],
+                    },
+                    style: {
+                        background: $$.$me_atom2_prop(['<.curtain_kind'], ({ masters: [kind] }) => kind == 'black' ?
+                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(0,0,0,.24) 0%, rgba(0,0,0,.1) 33%, rgba(0,0,0,0) 100%)` :
+                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%)`),
+                        pointerEvents: () => 'none',
                     },
                 }),
                 spinner: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => count >= 0 ? null : {
@@ -6007,7 +6100,7 @@ var $;
         const grid_wheel = (deltaX) => {
             const prop_ofsHor = $$.a.get('.ofsHor');
             const ofsHorNew = prop_ofsHor.value() - deltaX;
-            const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum'), $$.a('.#width'));
+            const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum_actual'), $$.a('.#width'));
             if (deltaX > 0 && ofsHorNew >= min ||
                 deltaX < 0 && ofsHorNew <= max) {
                 prop_ofsHor.value(ofsHorNew);
@@ -6024,9 +6117,9 @@ var $;
             }
             return true;
         };
-        function ofsHor_min_max(col_fixed_width, col_width_sum, width) {
+        function ofsHor_min_max(col_fixed_width, col_width_sum_actual, width) {
             const max = col_fixed_width;
-            const min = Math.min(max, width - col_width_sum);
+            const min = Math.min(max, width - col_width_sum_actual);
             return [min, max];
         }
         function ofsHor_adjusted(ofsHor, min, max) {
@@ -6066,7 +6159,7 @@ var $;
                     type: id || id_was,
                     prop: {
                         '#ofsHor': $$.$me_atom2_prop([`<<.col_left[${id || id_was}]`, '<<.ofsHor', '<<.col_fixed_width'], ({ masters: [left, ofs, min] }) => Math.max(min, left + ofs)),
-                        '#width': $$.$me_atom2_prop([`<<.col_left[${id || id_was}]`, '<<.ofsHor', '<<.col_fixed_width', `<<.col_width[${id || id_was}]`], ({ masters: [left, ofs, min, width] }) => Math.max(0, width + Math.min(0, left + ofs - min))),
+                        '#width': $$.$me_atom2_prop([`<<.col_left[${id || id_was}]`, '<<.ofsHor', '<<.col_fixed_width', `<<.col_width_actual[${id || id_was}]`], ({ masters: [left, ofs, min, width] }) => Math.max(0, width + Math.min(0, left + ofs - min))),
                         '#height': '<<.#height',
                     },
                     style: {
@@ -6082,7 +6175,7 @@ var $;
                             to: id ? -20 : 0,
                         })),
                         '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isMoving', '.isMovingAnim'], ({ masters: [isMoving, isMovingAnim] }) => isMoving || isMovingAnim ? [] : [`<<.col_left[${id || id_was}]`, '<<.ofsHor']), ({ len, masters: [left, ofs], prev }) => !len ? prev : left + ofs),
-                        '#width': `<<.col_width[${id || id_was}]`,
+                        '#width': `<<.col_width_actual[${id || id_was}]`,
                         on_chaned_width: $$.$me_atom2_prop(['.#width'], null),
                         '#height': '<<.#height',
                         '#cursor': $$.$me_atom2_prop(['.isMoving'], ({ masters: [isMoving] }) => isMoving ? 'grabbing' : 'grab'),
@@ -6125,15 +6218,19 @@ var $;
                         $$.a('.#ofsHor', val);
                     },
                     dispatch: (dispatch_name, dispatch_arg) => {
-                        if (dispatch_name == 'iosmenu') {
-                            if (dispatch_arg == 'Скрыть') {
+                        const s = $$.a.curr.name();
+                        if (!dispatch_name.startsWith(s))
+                            return false;
+                        dispatch_name = dispatch_name.slice(s.length);
+                        if (dispatch_name.startsWith('@menu')) {
+                            if (dispatch_name.endsWith('[Скрыть]')) {
                                 $$.a('<.colSelected', '');
                                 const col_ids = $$.a('<<.col_ids');
                                 const col_ids_new = col_ids.slice();
                                 const idx = col_ids.indexOf(id);
                                 col_ids_new.splice(idx, 1);
                                 $$.a('<<.col_ids', col_ids_new);
-                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a(`<<.col_width_sum`), $$.a('<.#width'));
+                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a(`<<.col_width_sum_actual`), $$.a('<.#width'));
                                 const to = ofsHor_adjusted($$.a('<<.ofsHor'), min, max);
                                 const prop_isResizing = $$.a.get('.isResizing');
                                 $$.a('<<.ofsHor', $$.$me_atom2_anim({
@@ -6143,17 +6240,20 @@ var $;
                                     },
                                 }));
                             }
-                            else if (dispatch_arg == 'Показать...') {
+                            else if (dispatch_name.endsWith('[Показать...]')) {
                                 $$.a('.isShownDialog', true);
                             }
                             else
                                 return false;
                             return true;
                         }
-                        else if (dispatch_name == 'nl_search_grid_dialog') {
-                            if (dispatch_arg == 'apply') {
+                        else if (dispatch_name.startsWith('@dialog')) {
+                            console.log(dispatch_name);
+                            if (dispatch_name.endsWith('Apply')) {
                                 $$.a('<.colSelected', '');
                                 $$.a('<<.col_ids', $$.a('@dialog.col_ids_visible'));
+                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
+                                $$.a('<<.ofsHor', ofsHor_adjusted($$.a('<<.ofsHor'), min, max));
                             }
                             $$.a('.isShownDialog', false);
                             return true;
@@ -6180,6 +6280,7 @@ var $;
                             {
                                 base: $$.$me_iosmenu,
                                 prop: {
+                                    target: () => '<',
                                     items: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [col_ids] }) => {
                                         const result = ['Показать...'];
                                         if (col_ids.length > 1)
@@ -6192,6 +6293,8 @@ var $;
                         dialog: $$.$me_atom2_prop(['.isShownDialog'], ({ masters: [isShownDialog] }) => !isShownDialog ? null : {
                             base: $$.$nl_search_grid_dialog,
                             prop: {
+                                target: () => '<',
+                                cols: '<<<.cols',
                                 col_ids_visible: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [ids] }) => ids),
                                 col_ids_invisible: $$.$me_atom2_prop(['<<<.col_ids', '<<<.cols'], ({ masters: [ids, cols] }) => {
                                     const ids_all = Object.keys(cols);
@@ -6207,7 +6310,7 @@ var $;
                                 content: () => ({
                                     base: $$.$me_label,
                                     prop: {
-                                        '#width': `<<<<.col_width[${id}]`,
+                                        '#width': `<<<<.col_width_actual[${id}]`,
                                         '#height': '<.#height',
                                         text: `<<<<.col_caption[${id}]`,
                                         borderWidth: () => 1,
@@ -6309,14 +6412,14 @@ var $;
                     elem: {
                         cells: () => ({
                             prop: {
-                                '#width': '<<<.col_width_sum',
+                                '#width': '<<<.col_width_sum_actual',
                                 '#ofsHor': '<<<.ofsHor',
                                 '#zIndex': () => 1,
                             },
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width), '#width': `<<<<.col_width[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
@@ -6325,7 +6428,7 @@ var $;
                                             const ofsHor = $$.a('<<<<.ofsHor');
                                             const left = $$.a(`<<<<.col_left[${id}]`);
                                             const min = $$.a('<<<<.col_fixed_width') - left;
-                                            const max = $$.a('<<<.#width') - $$.a(`<<<<.col_width[${id}]`) - left;
+                                            const max = $$.a('<<<.#width') - $$.a(`<<<<.col_width_actual[${id}]`) - left;
                                             const to = Math.max(min, Math.min(max, ofsHor));
                                             const prop_colSelected = $$.a.get('<<<.colSelected');
                                             if (to == ofsHor) {
@@ -6376,14 +6479,14 @@ var $;
             let need_reorder = false;
             if (sign > 0 && idx < col_ids.length - 1 || sign < 0 && idx) {
                 const overlap_border = clientX - $$.a('.ofs') - $$.a(`<@wrapper.#clientRect`).left - $$.a('<<.ofsHor') +
-                    (sign < 0 ? 0 : $$.a(`<<.col_width[${id}]`));
+                    (sign < 0 ? 0 : $$.a(`<<.col_width_actual[${id}]`));
                 let i = 0;
                 const threshold = $$.a('<<.col_width_min') / 2;
                 let overlap;
                 while (is_valid_idx(idx + (i + 1) * sign)) {
                     const id = col_ids[idx + (i + 1) * sign];
                     const left = $$.a(`<<.col_left[${id}]`);
-                    const val = (overlap_border - left) * sign + (sign > 0 ? 0 : $$.a(`<<.col_width[${id}]`));
+                    const val = (overlap_border - left) * sign + (sign > 0 ? 0 : $$.a(`<<.col_width_actual[${id}]`));
                     if (val >= threshold) {
                         i++;
                         overlap = val;
@@ -6396,7 +6499,7 @@ var $;
                     const limit = sign > 0 ?
                         $$.a('<<.#width') - $$.a('<<.ofsHor') - threshold * 2 :
                         $$.a('<<.col_fixed_width') - $$.a('<<.ofsHor') + threshold * 2;
-                    const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum'), $$.a('<<.#width'));
+                    const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
                     if (idx_replace == col_ids.length - 1) {
                         ofsHor = min;
                     }
@@ -6405,7 +6508,7 @@ var $;
                     }
                     else {
                         const need_scroll = sign > 0 ?
-                            $$.a(`<<.col_left[${col_ids[idx + i]}]`) + $$.a(`<<.col_width[${col_ids[idx + i]}]`) >= limit :
+                            $$.a(`<<.col_left[${col_ids[idx + i]}]`) + $$.a(`<<.col_width_actual[${col_ids[idx + i]}]`) >= limit :
                             $$.a(`<<.col_left[${col_ids[idx_replace]}]`) <= limit;
                         if (need_scroll) {
                             const prop_ofsHor = $$.a.get('<<.ofsHor');
@@ -6415,7 +6518,7 @@ var $;
                                     prop_ofsHor.value();
                             ofsHor += sign * threshold / 2;
                             for (let j = idx + sign; j * sign <= (idx_replace) * sign; j += sign)
-                                ofsHor -= sign * $$.a(`<<.col_width[${col_ids[j]}]`);
+                                ofsHor -= sign * $$.a(`<<.col_width_actual[${col_ids[j]}]`);
                         }
                     }
                 }
@@ -6427,7 +6530,7 @@ var $;
                 $$.a('<<.col_ids', col_ids_new);
             }
             if (ofsHor !== void 0) {
-                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum'), $$.a('<<.#width'));
+                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
                 const val = ofsHor_adjusted(ofsHor, min, max);
                 const curr = $$.a.curr;
                 if (val != $$.a('<<.ofsHor')) {
@@ -6455,6 +6558,7 @@ var $;
                 '#cursor': () => 'col-resize',
                 '#zIndex': () => 5,
                 start_clientX: () => -1,
+                start_width_actual: () => -1,
                 start_width: () => -1,
                 start_ofsHor: () => -1,
                 '#alignHor': $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.left : $$.$me_align.right),
@@ -6485,12 +6589,7 @@ var $;
                     resizeDo(p.event.touches[0].clientX);
                     return true;
                 },
-                touchend: () => {
-                    if (!resizeStop())
-                        return false;
-                    resizeFini();
-                    return true;
-                },
+                touchend: () => resizeFini(),
                 mousedown: p => {
                     if (!p.isInRect(p.event.clientX, p.event.clientY))
                         return false;
@@ -6504,24 +6603,20 @@ var $;
                         return false;
                     if (!p.event.buttons
                         && start_clientX != clientX) {
-                        resizeStop();
-                        return false;
+                        return resizeFini(false);
                     }
                     resizeDo(p.event.clientX);
                     return true;
                 },
-                mouseup: () => {
-                    if (!resizeStop())
-                        return false;
-                    resizeFini();
-                    return true;
-                },
+                mouseup: () => resizeFini(),
             },
         };
         function resizeStart(clientX) {
             $$.a('.start_clientX', clientX);
             const id = $$.a('.id');
+            $$.a('.start_width_actual', $$.a(`<<<.col_width_actual[${id}]`));
             $$.a('.start_width', $$.a(`<<<.col_width[${id}]`));
+            $$.a(`<<<.col_width_actual[${id}]`);
             const isRight = $$.a('.isRight');
             if (!isRight)
                 $$.a('.start_ofsHor', $$.a('<<<.ofsHor'));
@@ -6531,48 +6626,50 @@ var $;
             const start_clientX = $$.a('.start_clientX');
             const isRight = $$.a('.isRight');
             const id = $$.a('.id');
-            const start_width = $$.a('.start_width');
+            const start_width_actual = $$.a('.start_width_actual');
             const max = isRight ?
-                $$.a('<<<.#width') - $$.a(`<<<.col_left[${id}]`) - $$.a('<<<.ofsHor') - start_width :
+                $$.a('<<<.#width') - $$.a(`<<<.col_left[${id}]`) - $$.a('<<<.ofsHor') - start_width_actual :
                 $$.a(`<<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<<.col_fixed_width');
-            const min = $$.a('<<<.col_width_min') - start_width;
+            const min = $$.a('<<<.col_width_min') - start_width_actual;
             const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
             if (!isRight)
                 $$.a('<<<.ofsHor', $$.a('.start_ofsHor') - delta);
-            $$.a(`<<<.col_width[${$$.a('.id')}]`, start_width + delta);
+            $$.a(`<<<.col_width_actual[${id}]`, start_width_actual + delta);
         }
-        function resizeStop() {
+        function resizeFini(dontSkip = true) {
             const clientX = $$.a('.start_clientX');
             if (clientX == -1)
                 return false;
+            if (dontSkip) {
+                const id = $$.a('.id');
+                const col_width_excess = $$.a('<<<.col_width_excess');
+                let width;
+                if (col_width_excess <= 0) {
+                    width = $$.a(`<<<.col_width_actual[${id}]`);
+                }
+                else {
+                    const delta = $$.a(`<<<.col_width_actual[${id}]`) - $$.a('.start_width_actual');
+                    const col_width_sum = $$.a('<<<.col_width_sum');
+                    const col_width = $$.a(`<<<.col_width[${id}]`);
+                    const k = col_width_excess / col_width_sum * col_width + delta;
+                    const gamma = (col_width_sum * k - col_width * col_width_excess) / ((col_width_sum - k) - (col_width - col_width_excess));
+                    width = $$.a('.start_width') + Math.min(gamma, col_width_excess);
+                }
+                $$.a(`<<<.col_width[${id}]`, width);
+                $$.a(`<<<.col_width_actual[${id}]`, null);
+                const [min, max] = ofsHor_min_max($$.a('<<<.col_fixed_width'), $$.a(`<<<.col_width_sum_actual`), $$.a('<<<.#width'));
+                const to = ofsHor_adjusted($$.a('<<<.ofsHor'), min, max);
+                const prop_isResizing = $$.a.get('<.isResizing');
+                $$.a('<<<.ofsHor', $$.$me_atom2_anim({
+                    to,
+                    fini: () => {
+                        prop_isResizing.value(false);
+                    },
+                }));
+            }
             $$.a('.start_clientX', -1);
-            return true;
+            return dontSkip;
         }
-        function resizeFini() {
-            const [min, max] = ofsHor_min_max($$.a('<<<.col_fixed_width'), $$.a(`<<<.col_width_sum`), $$.a('<<<.#width'));
-            const to = ofsHor_adjusted($$.a('<<<.ofsHor'), min, max);
-            const prop_isResizing = $$.a.get('<.isResizing');
-            $$.a('<<<.ofsHor', $$.$me_atom2_anim({
-                to,
-                fini: () => {
-                    prop_isResizing.value(false);
-                },
-            }));
-        }
-        const colResizerTriangle = {
-            base: $$.$me_triangle,
-            prop: {
-                size: () => 12,
-                space: () => 1,
-                '#ofsVer': $$.$me_atom2_prop(['.height', '.space'], ({ masters: [height, space] }) => -height - space),
-                '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.id', '.isRight'], ({ masters: [id, isRight] }) => ['.isRight', `<<.col_left[${id}]`, '<<.ofsHor', '.width', '<@colResizer.#width', '<.#width', '<<.col_fixed_width'].concat(isRight ? [] : `<<.col_width[${id}]`)), ({ len, masters: [isRight, col_left, ofs, width, width_colResizer, width_gross, col_fixed_width, col_width] }) => {
-                    return Math.round(Math.max(col_fixed_width - width / 2 + width_colResizer / 2, Math.min(col_left + ofs - width / 2 + (isRight ? 0 : col_width), width_gross - width_colResizer / 2 - width / 2)));
-                }),
-            },
-            style: {
-                pointerEvents: () => 'none',
-            },
-        };
         const list = {
             base: $$.$me_list,
             dispatch: (dispatch_name, dispatch_arg) => {
@@ -6714,6 +6811,7 @@ var $;
             prop: {
                 rec_fld_store: () => ({}),
                 disabledScroll: '<@header.colSelected',
+                hidden_curtain: '<@header.colSelected',
                 cell_text_store: () => ({}),
                 row_opens_store: () => new Map(),
                 row_opens: $$.$me_atom2_prop(['.provider_tag', '.row_opens_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Set())),
@@ -6811,7 +6909,7 @@ var $;
                         }),
                         cells: () => ({
                             prop: {
-                                '#width': '<<<<<.col_width_sum',
+                                '#width': '<<<<<.col_width_sum_actual',
                                 '#ofsHor': '<<<<<.ofsHor',
                                 '#cursor': () => 'pointer',
                             },
@@ -6825,7 +6923,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width <= col_fixed_width) }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
@@ -6838,10 +6936,7 @@ var $;
                     prop: {
                         '#ofsVer': '<<<.row_height_min',
                         '#height': () => null,
-                        '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<<.col_ids'], ({ masters: [col_ids] }) => {
-                            const col_id_last = col_ids[col_ids.length - 1];
-                            return ['<.#width', `<<<<.col_left[${col_id_last}]`, `<<<<.col_width[${col_id_last}]`];
-                        }), ({ masters: [width, col_left, col_width] }) => Math.min(width, col_left + col_width)),
+                        '#width': '<.#width',
                     },
                     style: {
                         fontSize: () => 14,
@@ -6871,180 +6966,22 @@ var $;
             const [maxWidth, minWidth, minMarginHor, viewportWidth] = p.masters;
             return Math.max(minWidth, Math.min(maxWidth, viewportWidth - minMarginHor * 2));
         };
-        $$.$nl_search_grid_dialog = {
+        $$.$me_dialog = {
             prop: {
+                content: $$.$me_atom2_prop_abstract(),
+                target: $$.$me_atom2_prop_abstract(),
+                minMarginVer: () => 50,
                 minMarginHor: () => 50,
-                maxWidth: () => 872,
-                minWidth: () => 600,
-                '#width': $$.$me_atom2_prop(['.maxWidth', '.minWidth', '.minMarginHor', '/.#viewportWidth'], width_compute_fn),
-                '#ofsHor': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportWidth', '.#width'], ({ masters: [clientRect, viewportWidth, width] }) => Math.round((viewportWidth - width) / 2 - clientRect.left)),
-                marginBottom: () => 28,
-                marginTop: () => 54,
-                '#height': $$.$me_atom2_prop(['/.#viewportHeight', '.marginTop', '.marginBottom'], ({ masters: [viewportHeight, marginTop, marginBottom] }) => viewportHeight - marginTop - marginBottom),
-                '#ofsVer': $$.$me_atom2_prop(['<.#clientRect', '/.#viewportHeight', '.#height', '.marginTop'], ({ masters: [clientRect, viewportHeight, height, marginTop] }) => marginTop - clientRect.top),
+                maxWidth: '/.#viewportWidth',
+                maxHeight: '/.#viewportHeight',
+                minWidth: () => 100,
+                minHeight: () => 100,
+                '#width': '/.#viewportWidth',
+                '#height': '/.#viewportHeight',
+                '#ofsHor': $$.$me_atom2_prop(['<.#clientRect'], ({ masters: [clientRect] }) => -clientRect.left),
+                '#ofsVer': $$.$me_atom2_prop(['<.#clientRect'], ({ masters: [clientRect] }) => -clientRect.top),
                 '#zIndex': () => 10,
-                '#cursor': () => 'default',
-                listSpace: () => 24,
-                listWidth: $$.$me_atom2_prop(['.#width', '.paddingHor', '.listSpace'], ({ masters: [width, paddingHor, listSpace] }) => Math.round((width - 2 * paddingHor - listSpace) / 2)),
-                listOfsVer: () => 94,
-                headerHeight: () => 30,
-                listHeight: $$.$me_atom2_prop(['.#height', '.listOfsVer', '.paddingVer', '@buttonApply.#height'], ({ masters: [height, listOfsVer, paddingVer, buttonApplyHeight] }) => height - listOfsVer - 2 * paddingVer - buttonApplyHeight),
-                col_ids_visible: () => ["photo", "Комнат", "Метро/ЖД", "От станции", "Адрес", "Дом", "Балкон", "Санузел", "Парковка", "Территория", "Окна", "Ремонт", "Лифт", "Площадь", "Площадь комнат", "Ипотека", "Цена", "Цена за кв.м.", "Дата", "Источник", "Телефон"],
-                col_ids_invisible: () => ['Год постройки', 'Дата создания', '$/м²', 'Цена $'],
-                row_height: $$.$me_atom2_prop(['.itemHeight', '.itemMarginVer'], ({ masters: [itemHeight, itemMarginVer] }) => itemHeight + 2 * itemMarginVer),
-                itemMarginVerFirst: () => 16,
-                itemMarginVer: () => 6,
-                itemHeight: () => 37,
-                itemSpace: () => 8,
-                itemMarginHor: () => 16,
-                moving: () => '',
-                movingAnim: () => false,
-                source: () => '',
-                target: () => '',
-                ofs_clientX: () => -1,
-                ofs_clientY: () => -1,
-                start_clientX: () => -1,
-                start_clientY: () => -1,
-                start_ofsHor: () => -1,
-                start_ofsVer: () => -1,
-                isRight: () => false,
-                paddingHor: () => 32,
-                paddingVer: () => 32,
-            },
-            style: {
-                background: () => 'white',
-                boxShadow: () => '0 12px 12px 0 rgba(0, 0, 0, 0.5)',
-            },
-            elem: {
-                header: () => ({
-                    prop: {
-                        '#ofsHor': '<.paddingHor',
-                        '#ofsVer': '<.paddingVer',
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                        '#height': () => 19,
-                    },
-                    control: {
-                        label: () => ({
-                            base: $$.$me_label,
-                            prop: {
-                                '#width': '<.#width',
-                                '#height': '<.#height',
-                                text: () => 'Настройка таблицы'.toUpperCase(),
-                                alignVer: () => $$.$me_align.center,
-                            },
-                        }),
-                    },
-                }),
-                invisibleHeader: () => ({
-                    base: header_list,
-                    prop: {
-                        text: () => 'Скрытые поля',
-                    },
-                }),
-                visibleHeader: () => ({
-                    base: header_list,
-                    prop: {
-                        text: () => 'Видимые поля',
-                        '#alignHor': () => $$.$me_align.right,
-                    },
-                }),
-                invisible: () => ({
-                    base: list,
-                    prop: {
-                        source: () => 'invisible',
-                        target: () => 'visible',
-                    },
-                }),
-                visible: () => ({
-                    base: list,
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        source: () => 'visible',
-                        target: () => 'invisible',
-                        isRight: () => true,
-                    },
-                }),
-                buttonCancel: () => ({
-                    node: 'img',
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#ofsHor': '<.paddingHor',
-                        '#ofsVer': '<.paddingVer',
-                        '#width': () => 15,
-                        '#height': () => 15,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        '#cursor': () => 'pointer',
-                    },
-                    attr: {
-                        src: () => 'assets/close-btn@2x.png',
-                        draggable: () => false,
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a.dispatch('<<', 'nl_search_grid_dialog', 'cancel');
-                            return true;
-                        },
-                    },
-                }),
-                buttonApply: () => ({
-                    prop: {
-                        '#width': () => 200,
-                        '#height': () => 40,
-                        '#alignVer': () => $$.$me_align.bottom,
-                        '#alignHor': () => $$.$me_align.center,
-                        '#ofsVer': () => 24,
-                        '#cursor': () => 'pointer',
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                    },
-                    control: {
-                        label: () => ({
-                            base: $$.$me_label,
-                            prop: {
-                                text: () => 'Применить',
-                                colorText: () => 'white',
-                                padding: () => 0,
-                                align: () => $$.$me_align.center,
-                                '#height': '<.#height',
-                                '#width': '<.#width',
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a.dispatch('<<', 'nl_search_grid_dialog', 'apply');
-                            return true;
-                        },
-                    },
-                    style: {
-                        background: () => '#0070a4',
-                        borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
-                    },
-                }),
-                moving: $$.$me_atom2_prop(['.moving'], ({ masters: [id] }) => !id ? null : {
-                    base: item,
-                    prop: {
-                        '#ofsHor': '<.start_ofsHor',
-                        '#ofsVer': '<.start_ofsVer',
-                        '#height': '<.itemHeight',
-                        '#width': $$.$me_atom2_prop(['<.listWidth', '<.itemMarginHor'], ({ masters: [width, margin] }) => {
-                            const result = width - 2 * margin;
-                            return result;
-                        }),
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex, isMoving] }) => zIndex + 2),
-                        '#cursor': () => 'grabbing',
-                        isRight: '<.isRight',
-                        text: () => id,
-                    },
-                    style: {
-                        boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)'
-                    },
-                    event: {
-                        mousemove: p => dragDo(p.event.clientX, p.event.clientY),
-                        mouseup: () => dragEnd(),
-                        touchmove: p => dragDo(p.event.touches[0].clientX, p.event.touches[0].clientY),
-                        touchend: () => dragEnd(),
-                    },
-                }),
+                '#cursor': () => 'not-allowed',
             },
             event: {
                 mousemove: () => {
@@ -7056,6 +6993,238 @@ var $;
                 touchstart: () => {
                     return true;
                 },
+            },
+            style: {
+                background: () => 'rgba(0,0,0,.1)'
+            },
+            elem: {
+                wrapper: () => ({
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.maxWidth', '<.minWidth', '<.minMarginHor', '<.#width'], width_compute_fn),
+                        '#height': $$.$me_atom2_prop(['<.maxHeight', '<.minHeight', '<.minMarginVer', '<.#height'], width_compute_fn),
+                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.#width'], ({ masters: [width_upper, width] }) => (width_upper - width) / 2),
+                        '#ofsVer': $$.$me_atom2_prop(['<.#height', '.#height'], ({ masters: [height_upper, height] }) => (height_upper - height) / 2),
+                        '#cursor': () => null,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    style: {
+                        background: () => 'white',
+                        boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
+                    },
+                    elem: {
+                        content: '<.content',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//dialog.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_button = {
+            prop: {
+                caption: $$.$me_atom2_prop_abstract(),
+                target: $$.$me_atom2_prop_abstract(),
+                cmd: () => null,
+                '#width': () => 200,
+                '#height': () => 40,
+                '#cursor': () => 'pointer',
+                source: () => null,
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+            },
+            control: {
+                label: () => ({
+                    base: $$.$me_label,
+                    prop: {
+                        text: '<.caption',
+                        colorText: () => 'white',
+                        padding: () => 0,
+                        align: () => $$.$me_align.center,
+                        '#height': '<.#height',
+                        '#width': '<.#width',
+                    },
+                }),
+            },
+            style: {
+                background: () => '#0070a4',
+                borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
+                    return true;
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//button.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_search_grid_dialog = {
+            base: $$.$me_dialog,
+            prop: {
+                cols: $$.$me_atom2_prop_abstract(),
+                col_ids_visible: $$.$me_atom2_prop_abstract(),
+                col_ids_invisible: $$.$me_atom2_prop(['.col_ids_visible', '.cols'], ({ masters: [ids, cols] }) => {
+                    const ids_all = Object.keys(cols);
+                    return ids_all.filter(id => !~ids.indexOf(id));
+                }),
+                maxWidth: () => 872,
+                minWidth: () => 600,
+                minHeight: () => 600,
+                content: () => ({
+                    prop: {
+                        listSpace: () => 24,
+                        listWidth: $$.$me_atom2_prop(['.#width', '.paddingHor', '.listSpace'], ({ masters: [width, paddingHor, listSpace] }) => Math.round((width - 2 * paddingHor - listSpace) / 2)),
+                        listOfsVer: () => 94,
+                        headerHeight: () => 30,
+                        listHeight: $$.$me_atom2_prop(['.#height', '.listOfsVer', '.paddingVer', '@buttonApply.#height'], ({ masters: [height, listOfsVer, paddingVer, buttonApplyHeight] }) => height - listOfsVer - 2 * paddingVer - buttonApplyHeight),
+                        row_height: $$.$me_atom2_prop(['.itemHeight', '.itemMarginVer'], ({ masters: [itemHeight, itemMarginVer] }) => itemHeight + 2 * itemMarginVer),
+                        itemMarginTopFirst: $$.$me_atom2_prop(['.itemMarginVer'], $$.$me_atom2_prop_compute_fn_mul(16 / 6)),
+                        itemMarginBottomLast: $$.$me_atom2_prop(['.itemMarginVer'], $$.$me_atom2_prop_compute_fn_mul(16 / 6)),
+                        itemMarginVer: () => 6,
+                        itemHeight: () => 37,
+                        itemSpace: () => 8,
+                        itemMarginHor: () => 16,
+                        moving: () => '',
+                        movingAnim: () => false,
+                        source: () => '',
+                        target: () => '',
+                        ofs_clientX: () => -1,
+                        ofs_clientY: () => -1,
+                        start_clientX: () => -1,
+                        start_clientY: () => -1,
+                        start_ofsHor: () => -1,
+                        start_ofsVer: () => -1,
+                        isRight: () => false,
+                        paddingHor: () => 32,
+                        paddingVer: () => 32,
+                    },
+                    style: {
+                        background: () => 'white',
+                        boxShadow: () => '0 12px 12px 0 rgba(0, 0, 0, 0.5)',
+                    },
+                    elem: {
+                        header: () => ({
+                            prop: {
+                                '#ofsHor': '<.paddingHor',
+                                '#ofsVer': '<.paddingVer',
+                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                                '#height': () => 19,
+                            },
+                            control: {
+                                label: () => ({
+                                    base: $$.$me_label,
+                                    prop: {
+                                        '#width': '<.#width',
+                                        '#height': '<.#height',
+                                        text: () => 'Настройка таблицы'.toUpperCase(),
+                                        alignVer: () => $$.$me_align.center,
+                                    },
+                                }),
+                            },
+                        }),
+                        invisibleHeader: () => ({
+                            base: header_list,
+                            prop: {
+                                text: () => 'Скрытые поля',
+                            },
+                        }),
+                        visibleHeader: () => ({
+                            base: header_list,
+                            prop: {
+                                text: () => 'Видимые поля',
+                                '#alignHor': () => $$.$me_align.right,
+                            },
+                        }),
+                        invisible: () => ({
+                            base: list,
+                            prop: {
+                                source: () => 'invisible',
+                                target: () => 'visible',
+                            },
+                        }),
+                        visible: () => ({
+                            base: list,
+                            prop: {
+                                '#alignHor': () => $$.$me_align.right,
+                                source: () => 'visible',
+                                target: () => 'invisible',
+                                isRight: () => true,
+                            },
+                        }),
+                        buttonCancel: () => ({
+                            node: 'img',
+                            prop: {
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': '<.paddingHor',
+                                '#ofsVer': '<.paddingVer',
+                                '#width': () => 15,
+                                '#height': () => 15,
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                '#cursor': () => 'pointer',
+                            },
+                            attr: {
+                                src: () => 'assets/close-btn@2x.png',
+                                draggable: () => false,
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a.dispatch('<<<' + $$.a('<<<.target'));
+                                    return true;
+                                },
+                            },
+                        }),
+                        buttonApply: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 200,
+                                '#alignVer': () => $$.$me_align.bottom,
+                                '#alignHor': () => $$.$me_align.center,
+                                '#ofsVer': () => 24,
+                                caption: () => 'Применить',
+                                target: $$.$me_atom2_prop(['<<<.target'], ({ masters: [target] }) => '<<<' + target),
+                            },
+                        }),
+                        moving: $$.$me_atom2_prop(['.moving'], ({ masters: [id] }) => !id ? null : {
+                            base: item,
+                            prop: {
+                                '#ofsHor': '<.start_ofsHor',
+                                '#ofsVer': '<.start_ofsVer',
+                                '#height': '<.itemHeight',
+                                '#width': $$.$me_atom2_prop(['<.listWidth', '<.itemMarginHor'], ({ masters: [width, margin] }) => {
+                                    const result = width - 2 * margin;
+                                    return result;
+                                }),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex, isMoving] }) => zIndex + 2),
+                                '#cursor': () => 'grabbing',
+                                isRight: '<.isRight',
+                                text: $$.$me_atom2_prop(['<<<.cols'], ({ masters: [cols] }) => {
+                                    return cols[id].caption || id;
+                                }),
+                            },
+                            style: {
+                                boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)'
+                            },
+                            event: {
+                                mousemove: p => dragDo(p.event.clientX, p.event.clientY),
+                                mouseup: () => dragEnd(),
+                                touchmove: p => dragDo(p.event.touches[0].clientX, p.event.touches[0].clientY),
+                                touchend: () => dragEnd(),
+                            },
+                        }),
+                    },
+                }),
             },
         };
         const header_list = {
@@ -7079,28 +7248,13 @@ var $;
                 }),
             },
         };
-        const row_height_default = (idx) => $$.a('.row_height_min') + (!idx ? $$.a('<.itemMarginVerFirst') - $$.a('<.itemMarginVer') :
-            idx == $$.a('.rec_count') - 1 ? $$.a('<.itemMarginVer') :
-                0);
         const list = {
             base: $$.$me_list,
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_row_height') {
-                    const row_heights = $$.a('.row_heights');
-                    dispatch_arg.val =
-                        row_heights.has(dispatch_arg.idx) ?
-                            row_heights.get(dispatch_arg.idx) :
-                            row_height_default(dispatch_arg.idx);
-                    return true;
-                }
-                else if (dispatch_name == 'set_row_height') {
-                    const row_heights = $$.a('.row_heights');
-                    if (dispatch_arg.val != row_height_default(dispatch_arg.idx)) {
-                        row_heights.set(dispatch_arg.idx, dispatch_arg.val);
-                    }
-                    else if (row_heights.has(dispatch_arg.idx)) {
-                        row_heights.delete(dispatch_arg.idx);
-                    }
+                if (dispatch_name == 'row_height_default') {
+                    const idx = dispatch_arg.idx;
+                    dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
+                        (!idx ? $$.a('<.itemMarginTopFirst') : $$.a('<.itemMarginBottomLast')) - $$.a('<.itemMarginVer'));
                     return true;
                 }
                 return false;
@@ -7111,12 +7265,13 @@ var $;
                 '#height': '<.listHeight',
                 '#ofsVer': '<.listOfsVer',
                 '#ofsHor': '<.paddingHor',
-                col_ids: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.source'], ({ masters: [source] }) => [`<.col_ids_${source}`])),
+                col_ids: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.source'], ({ masters: [source] }) => [`<<<.col_ids_${source}`])),
                 rec_count: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => {
                     const result = ids.length;
                     return result;
                 }),
                 disabledScroll: $$.$me_atom2_prop(['<.moving'], ({ masters: [moving] }) => !!moving),
+                curtain_kind: () => 'white',
                 row_height_min: '<.row_height',
                 header_height: () => 0,
                 provider_tag: '.source',
@@ -7148,7 +7303,7 @@ var $;
                         '#ofsHor': '<<<<.itemMarginHor',
                         '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.rec_idx'], ({ masters: [rec_idx] }) => rec_idx ?
                             ['<<<<.itemMarginVer'] :
-                            ['<<<<.itemMarginVerFirst'])),
+                            ['<<<<.itemMarginTopFirst'])),
                     },
                     elem: {
                         item: () => ({
@@ -7178,8 +7333,10 @@ var $;
                                         console.error(atom.name());
                                 }),
                                 '#zIndex': $$.$me_atom2_prop(['<<<<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<<.source'], ({ masters: [source] }) => source != 'visible' ? [] : [`<<<<<.col_ids_${source}`]), ({ len, masters: [ids] }) => !len || ids.length >= 2 ? 'grab' : 'not-allowed'),
-                                text: '<<.id',
+                                '#cursor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<<.source'], ({ masters: [source] }) => source != 'visible' ? [] : [`<<<<<<<.col_ids_${source}`]), ({ len, masters: [ids] }) => !len || ids.length >= 2 ? 'grab' : 'not-allowed'),
+                                text: $$.$me_atom2_prop(['<<.id', '<<<<<<<.cols'], ({ masters: [id, cols] }) => {
+                                    return id && id != 'stub' && (cols[id].caption || id);
+                                }),
                             },
                         }),
                     }
@@ -7238,7 +7395,7 @@ var $;
             if ($$.a('<<<<<.moving') || $$.a('<<<<<.movingAnim'))
                 return false;
             const source = $$.a('<<<<.source');
-            if (source == 'visible' && $$.a(`<<<<<.col_ids_${source}`).length < 2)
+            if (source == 'visible' && $$.a(`<<<<<<<.col_ids_${source}`).length < 2)
                 return false;
             $$.a('<<<<<.moving', id);
             $$.a('<<<<<.isRight', $$.a('.isRight'));
@@ -7267,7 +7424,7 @@ var $;
             const bottom = top + $$.a('.#height');
             const target = $$.a('<.target');
             const clientRect = $$.a(`<@${target}.#clientRect`);
-            const ids = $$.a(`<.col_ids_${target}`);
+            const ids = $$.a(`<<<.col_ids_${target}`);
             if (intersects(left, right, clientRect.left, clientRect.right) &&
                 intersects(top, bottom, clientRect.top, clientRect.bottom)) {
                 let idx_found = ids.length;
@@ -7288,7 +7445,7 @@ var $;
                             idx_found--;
                     }
                     ids_new.splice(idx_found, 0, 'stub');
-                    $$.a(`<.col_ids_${target}`, ids_new);
+                    $$.a(`<<<.col_ids_${target}`, ids_new);
                 }
                 return true;
             }
@@ -7296,7 +7453,7 @@ var $;
             if (~idx) {
                 const ids_new = ids.slice();
                 ids_new.splice(idx, 1);
-                $$.a(`<.col_ids_${target}`, ids_new);
+                $$.a(`<<<.col_ids_${target}`, ids_new);
             }
             return true;
         }
@@ -7314,19 +7471,19 @@ var $;
                 if (!--count) {
                     $$.a('<.moving', '');
                     $$.a('<.movingAnim', false);
-                    const ids = $$.a(`<.col_ids_${target}`);
+                    const ids = $$.a(`<<<.col_ids_${target}`);
                     const idx = ids.indexOf('stub');
                     if (~idx) {
                         const ids_new = ids.slice();
                         ids_new.splice(idx, 1, id);
-                        $$.a(`<.col_ids_${target}`, ids_new);
+                        $$.a(`<<<.col_ids_${target}`, ids_new);
                         {
                             const source = $$.a('<.source');
-                            const ids = $$.a(`<.col_ids_${source}`);
+                            const ids = $$.a(`<<<.col_ids_${source}`);
                             const idx = ids.indexOf(id);
                             const ids_new = ids.slice();
                             ids_new.splice(idx, 1);
-                            $$.a(`<.col_ids_${source}`, ids_new);
+                            $$.a(`<<<.col_ids_${source}`, ids_new);
                         }
                     }
                 }
