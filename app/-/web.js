@@ -4878,6 +4878,124 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_panel = {
+            type: '$me_panel',
+            prop: Object.assign({}, $$.$me_atom2_prop_same_def(() => 0, ['borderRadius']), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+                ['paddingHor', ['paddingLeft', 'paddingRight']],
+                ['paddingVer', ['paddingTop', 'paddingBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
+                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
+                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
+            ])),
+            render: p => {
+                let borderHasWidth = false;
+                let borderHasWidthSame = true;
+                let borderHasColor = false;
+                let borderHasColorSame = true;
+                let prevWidth, prevColor;
+                const colorBorder = {};
+                const borderWidth = {};
+                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
+                    const side = s.toLowerCase();
+                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
+                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
+                    borderHasWidth = borderHasWidth || (currWidth > 0);
+                    borderHasColor = borderHasColor || currColor && (currColor != 'transparent');
+                    if (void 0 !== prevWidth) {
+                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
+                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
+                    }
+                    prevWidth = currWidth;
+                    prevColor = currColor;
+                }
+                const colorBackground = $$.a('.colorBackground');
+                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
+                    $$.$me_atom2_ctx_rect({
+                        ctx: p.ctx,
+                        ctxTop: p.ctxRect.top,
+                        ctxLeft: p.ctxRect.left,
+                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
+                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
+                        ctxBorderRadius: p.pixelRatio * $$.a('.borderRadius'),
+                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
+                        stroke: !borderHasWidth || !borderHasColor ? null : {
+                            style: borderHasColorSame ? prevColor : colorBorder,
+                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
+                        }
+                    });
+                }
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_label = {
+            type: '$me_label',
+            base: $$.$me_panel,
+            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), { _width_text: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio'], ({ masters: [ctx, text, pixelRatio] }) => {
+                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                    return Math.ceil(ctx.measureText(text).width / pixelRatio);
+                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                '#width': ['._width_text', '.paddingLeft', '.paddingRight'],
+                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
+            }), { text: () => '' }),
+            render: p => {
+                let { ctxWidth, ctxHeight } = p;
+                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
+                const text = $$.a('.text');
+                const ctxTextWidth = Math.round(p.ctx.measureText(text).width);
+                const ctxPaddingLeft = Math.round(p.pixelRatio * $$.a('.paddingLeft'));
+                const ctxPaddingRight = Math.round(p.pixelRatio * $$.a('.paddingRight'));
+                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
+                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
+                ctxWidth -= ctxPaddingLeft + ctxPaddingRight;
+                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
+                if (ctxHeight < ctxFontSize - 1) {
+                    console.error({ ctxHeight, ctxFontSize });
+                    return;
+                }
+                const align = $$.a('.alignVer');
+                const correction = align == $$.$me_align.bottom ? 0 : (ctxHeight - ctxFontSize) / (!align ? 1 : align);
+                const bottom = p.ctxRect.bottom - ctxPaddingBottom - correction;
+                const _left = (ctxTextWidth) => p.ctxRect.left + ctxPaddingLeft + $$.$me_align_correction($$.a('.alignHor'), () => ctxWidth - ctxTextWidth);
+                p.ctx.fillStyle = $$.a('.colorText');
+                if (ctxTextWidth <= ctxWidth) {
+                    p.ctx.fillText(text, _left(ctxTextWidth), bottom);
+                }
+                else {
+                    const ctxPeriodWidth = p.ctx.measureText(period).width;
+                    if (ctxWidth < ctxPeriodWidth) {
+                        console.error(p.self.name(), { ctxWidth, ctxPeriodWidth });
+                        return;
+                    }
+                    let len = text.length, wi = ctxTextWidth, s;
+                    while (len && wi > ctxWidth - ctxPeriodWidth)
+                        wi = p.ctx.measureText(s = text.slice(0, --len)).width;
+                    const left = _left(wi + ctxPeriodWidth);
+                    p.ctx.fillText(s, left, bottom);
+                    p.ctx.fillText(period, left + wi, bottom);
+                }
+            },
+        };
+        const period = '...';
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//label.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_switch = {
             prop: {
                 '#height': () => 44,
@@ -5340,12 +5458,32 @@ var $;
                 label: label(def),
             },
         });
+        const label_useControl = true;
         const label = (def, prop = {}) => !def.label ? null : () => ({
-            prop: Object.assign({ '#width': () => col_width - ctrl_width, '#height': () => null, '#alignVer': () => $$.$me_align.center, '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width), fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)) }, prop),
-            style: {
-                whiteSpace: () => 'nowrap',
+            prop: Object.assign({ '#width': () => col_width - ctrl_width }, (label_useControl ? {
+                '#height': () => row_height,
+            } : {
+                '#height': () => null,
+                '#alignVer': () => $$.$me_align.center,
+            }), { '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width), fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)) }, prop),
+            control: !label_useControl ? null : {
+                label: () => ({
+                    base: $$.$me_label,
+                    prop: {
+                        '#width': '<.#width',
+                        '#height': '<.#height',
+                        alignVer: () => $$.$me_align.center,
+                        text: def.label,
+                        fontSize: '<.fontSize',
+                        fontWeight: '<.fontWeight',
+                    },
+                }),
             },
-            dom: {
+            style: label_useControl ? null : {
+                whiteSpace: () => 'nowrap',
+                userSelect: () => 'none',
+            },
+            dom: label_useControl ? null : {
                 innerText: def.label,
             },
         });
@@ -5802,9 +5940,7 @@ var $;
                             break;
                         }
                         case 'diap': {
-                            return Object.assign({ prop: Object.assign({}, prop_common(def)) }, cnf_common(def, {
-                                background: () => 'red',
-                            }));
+                            return Object.assign({ base: diap, prop: Object.assign({}, prop_common(def)) }, cnf_common(def, {}));
                             break;
                         }
                         case 'picker': {
@@ -6016,38 +6152,62 @@ var $;
                 }),
             },
         };
-        const input_with_button = {
+        const diap = {
+            prop: {
+                ids: () => ['min', 'max'],
+            },
+            elem: {
+                input: $$.$me_atom2_prop({ keys: ['.ids'] }, ({ key: [id] }) => ({
+                    base: input,
+                    prop: {
+                        '#alignHor': () => id == 'min' ? $$.$me_align.left : $$.$me_align.right,
+                        '#width': () => ctrl_col_width,
+                        placeholder: () => id == 'min' ? 'от' : 'до',
+                    },
+                })),
+            },
+        };
+        const input = {
             base: $$.$me_stylesheet,
+            node: 'input',
             prop: {
                 styleSheetName: () => 'param_input',
                 className: '.styleSheetName',
                 styleSheet: () => '',
                 styleSheetCommon: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
                     return (`
-          .${className} input::placeholder {
+          .${className}::placeholder {
             color: rgba(49,55,69,0.5);
           }
-          .${className} input {
+          .${className} {
             border: solid 1px #bdc3d1;
           }
-          .${className} input:focus {
+          .${className}:focus {
             outline: none;
             border: 2px solid #313745;
           }
         `);
                 }),
-                '#height': () => 24,
+                '#height': () => row_height,
+            },
+            style: {
+                borderRadius: () => 3,
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                paddingLeft: () => 8,
+                boxSizing: () => 'border-box',
+            },
+            attr: {
+                placeholder: '.placeholder',
+            },
+        };
+        const input_with_button = {
+            prop: {
+                '#height': () => row_height,
             },
             elem: {
                 input: () => ({
-                    node: 'input',
-                    style: {
-                        borderRadius: () => 3,
-                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                        paddingLeft: () => 8,
-                        boxSizing: () => 'border-box',
-                    },
-                    attr: {
+                    base: input,
+                    prop: {
                         placeholder: '<.placeholder',
                     },
                 }),
@@ -6185,124 +6345,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //triangle.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_panel = {
-            type: '$me_panel',
-            prop: Object.assign({}, $$.$me_atom2_prop_same_def(() => 0, ['borderRadius']), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
-                ['paddingHor', ['paddingLeft', 'paddingRight']],
-                ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
-                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
-                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
-                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
-                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
-            ])),
-            render: p => {
-                let borderHasWidth = false;
-                let borderHasWidthSame = true;
-                let borderHasColor = false;
-                let borderHasColorSame = true;
-                let prevWidth, prevColor;
-                const colorBorder = {};
-                const borderWidth = {};
-                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
-                    const side = s.toLowerCase();
-                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
-                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
-                    borderHasWidth = borderHasWidth || (currWidth > 0);
-                    borderHasColor = borderHasColor || currColor && (currColor != 'transparent');
-                    if (void 0 !== prevWidth) {
-                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
-                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
-                    }
-                    prevWidth = currWidth;
-                    prevColor = currColor;
-                }
-                const colorBackground = $$.a('.colorBackground');
-                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
-                    $$.$me_atom2_ctx_rect({
-                        ctx: p.ctx,
-                        ctxTop: p.ctxRect.top,
-                        ctxLeft: p.ctxRect.left,
-                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
-                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
-                        ctxBorderRadius: p.pixelRatio * $$.a('.borderRadius'),
-                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
-                        stroke: !borderHasWidth || !borderHasColor ? null : {
-                            style: borderHasColorSame ? prevColor : colorBorder,
-                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
-                        }
-                    });
-                }
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_label = {
-            type: '$me_label',
-            base: $$.$me_panel,
-            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), { _width_text: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio'], ({ masters: [ctx, text, pixelRatio] }) => {
-                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-                    return Math.ceil(ctx.measureText(text).width / pixelRatio);
-                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
-                '#width': ['._width_text', '.paddingLeft', '.paddingRight'],
-                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
-            }), { text: () => '' }),
-            render: p => {
-                let { ctxWidth, ctxHeight } = p;
-                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
-                const text = $$.a('.text');
-                const ctxTextWidth = Math.round(p.ctx.measureText(text).width);
-                const ctxPaddingLeft = Math.round(p.pixelRatio * $$.a('.paddingLeft'));
-                const ctxPaddingRight = Math.round(p.pixelRatio * $$.a('.paddingRight'));
-                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
-                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
-                ctxWidth -= ctxPaddingLeft + ctxPaddingRight;
-                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
-                if (ctxHeight < ctxFontSize - 1) {
-                    console.error({ ctxHeight, ctxFontSize });
-                    return;
-                }
-                const align = $$.a('.alignVer');
-                const correction = align == $$.$me_align.bottom ? 0 : (ctxHeight - ctxFontSize) / (!align ? 1 : align);
-                const bottom = p.ctxRect.bottom - ctxPaddingBottom - correction;
-                const _left = (ctxTextWidth) => p.ctxRect.left + ctxPaddingLeft + $$.$me_align_correction($$.a('.alignHor'), () => ctxWidth - ctxTextWidth);
-                p.ctx.fillStyle = $$.a('.colorText');
-                if (ctxTextWidth <= ctxWidth) {
-                    p.ctx.fillText(text, _left(ctxTextWidth), bottom);
-                }
-                else {
-                    const ctxPeriodWidth = p.ctx.measureText(period).width;
-                    if (ctxWidth < ctxPeriodWidth) {
-                        console.error(p.self.name(), { ctxWidth, ctxPeriodWidth });
-                        return;
-                    }
-                    let len = text.length, wi = ctxTextWidth, s;
-                    while (len && wi > ctxWidth - ctxPeriodWidth)
-                        wi = p.ctx.measureText(s = text.slice(0, --len)).width;
-                    const left = _left(wi + ctxPeriodWidth);
-                    p.ctx.fillText(s, left, bottom);
-                    p.ctx.fillText(period, left + wi, bottom);
-                }
-            },
-        };
-        const period = '...';
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//label.js.map
 ;
 "use strict";
 var $;
