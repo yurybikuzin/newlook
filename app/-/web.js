@@ -2419,7 +2419,7 @@ var $;
             static _lazy_prop_style_px(prop) {
                 if (!$me_atom2_elem._lazy_prop_style_px_cache) {
                     $me_atom2_elem._lazy_prop_style_px_cache = {};
-                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius'];
+                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius', 'borderWidth'];
                     const sides = ['left', 'top', 'right', 'bottom'];
                     pxStyleProps.push(...sides);
                     pxStyleProps.push('margin');
@@ -5016,6 +5016,87 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_stylesheet = {
+            prop: {
+                styleSheetName: () => null,
+                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
+                styleSheetCommon: () => '',
+                instanceId: () => null,
+                styleSheet_apply: $$.$me_atom2_prop(['.styleSheetName', '.instanceId', '.styleSheet'], null, ({ val: [styleSheetName, instanceId, innerHTML] }) => {
+                    let sheet;
+                    const id = styleSheetId(styleSheetName, instanceId);
+                    if (!innerHTML) {
+                        removeStyleSheet(id);
+                    }
+                    else if (sheet = document.getElementById(id)) {
+                        sheet.innerHTML = innerHTML;
+                    }
+                    else {
+                        sheet = document.createElement('style');
+                        sheet.id = id;
+                        sheet.innerHTML = innerHTML;
+                        let head = document.head || document.getElementsByTagName('head')[0];
+                        head.appendChild(sheet);
+                    }
+                }),
+                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
+            },
+            dom: {
+                className: '.className',
+            },
+            init: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                if (!instances[styleSheetName])
+                    instances[styleSheetName] = new Map();
+                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
+                let id;
+                for (let i = 0; i < ids.length; i++)
+                    if (i != ids[i]) {
+                        id = i;
+                        break;
+                    }
+                if (id === void 0)
+                    id = ids.length;
+                $$.a('.instanceId', id);
+                instances[styleSheetName].set(self, id);
+                const styleSheetCommon = $$.a('.styleSheetCommon');
+                if (!styleSheetCommon)
+                    return;
+                const styleSheetCommonId = styleSheetId(styleSheetName);
+                if (document.getElementById(styleSheetCommonId))
+                    return;
+                let sheet = document.createElement('style');
+                sheet.id = styleSheetCommonId;
+                sheet.innerHTML = styleSheetCommon;
+                let head = document.head || document.getElementsByTagName('head')[0];
+                head.appendChild(sheet);
+            },
+            fini: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
+                instances[styleSheetName].delete(self);
+                if (instances[styleSheetName].size)
+                    return;
+                instances[styleSheetName] = null;
+                removeStyleSheet(styleSheetId(styleSheetName));
+            },
+        };
+        function removeStyleSheet(styleSheetId) {
+            let sheet = document.getElementById(styleSheetId);
+            if (sheet && sheet.parentElement)
+                sheet.parentElement.removeChild(sheet);
+        }
+        let instances = {};
+        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//stylesheet.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         const ctrl_width = 218;
         const col_width = 61 + 37 + ctrl_width;
         const col_space = 400 - col_width;
@@ -5084,6 +5165,16 @@ var $;
                     }
                 }),
                 params: () => ({
+                    address: {
+                        visible: {
+                            'Полный': true,
+                            'Основной': true,
+                        },
+                        label: 'Адрес',
+                        type: 'address',
+                        col: 1,
+                        row: 1,
+                    },
                     rmqt: {
                         visible: {
                             'Полный': true,
@@ -5371,6 +5462,15 @@ var $;
                         'selected': $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
                     },
                 }),
+                common: () => ({
+                    base: input_with_button,
+                    prop: {
+                        '#width': () => col_width,
+                        '#ofsHor': () => 16,
+                        '#ofsVer': () => 16,
+                        placeholder: () => 'Параметры',
+                    },
+                }),
                 param: $$.$me_atom2_prop({ keys: ['.param_names'], masters: ['.params', '<.param_mode', '.height_anim_is'] }, ({ key: [param_name], masters: [params, param_mode, height_anim_is], prev }) => {
                     const def = params[param_name];
                     const visible_prev = !!prev;
@@ -5427,6 +5527,25 @@ var $;
                                 },
                             };
                             break;
+                        }
+                        case 'address': {
+                            return {
+                                base: input_with_button,
+                                prop: {
+                                    '#width': () => 2 * col_width + col_space,
+                                    '#height': () => row_height,
+                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], $$.$me_atom2_prop_compute_fn_sum(col_margin_hor + def.col * (col_width + col_space))),
+                                    '#ofsVer': () => row_margin_top + def.row * (row_height + row_space),
+                                    show: () => false,
+                                    placeholder: () => 'Город, район, адрес, метро, название ЖК',
+                                },
+                                style: {
+                                    opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })),
+                                },
+                                init: () => {
+                                    $$.a('.show', true);
+                                },
+                            };
                         }
                         case 'include_exclude': {
                             return {
@@ -5599,54 +5718,49 @@ var $;
                         }
                         default: $$.$me_throw(def.type);
                     }
-                    if (def.label) {
-                        const row_is_prop = (param_mode) => {
-                            const visible = def.visible[param_mode];
-                            const result = typeof visible == 'object' && visible != null;
-                            return result;
-                        };
-                        const ofsVer = (row) => row_margin_top + row * (row_height + row_space);
-                        return {
-                            prop: {
-                                '#width': () => col_width,
-                                '#height': () => row_height,
-                                '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], $$.$me_atom2_prop_compute_fn_sum(col_margin_hor + def.col * (col_width + col_space))),
-                                row: !row_is_prop('Основной') ? null : $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [param_mode] }) => !row_is_prop(param_mode) ?
-                                    def.row :
-                                    def.visible[param_mode].row, ({ val, prev }) => {
-                                    if (prev != null)
-                                        $$.a('.style.opacity', $$.$me_atom2_anim({ from: 0, to: 1, duration: 400 }));
-                                }),
-                                '#ofsVer': !row_is_prop('Основной') ?
-                                    () => ofsVer(def.row) :
-                                    $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => ofsVer(row)),
-                                show: () => false,
-                            },
-                            elem: {
-                                label: () => ({
-                                    prop: {
-                                        '#width': () => null,
-                                        '#height': () => null,
-                                        '#alignVer': () => $$.$me_align.center,
-                                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                    },
-                                    dom: {
-                                        innerText: () => def.label,
-                                    },
-                                }),
-                                ctrl: () => ctrl,
-                            },
-                            style: {
-                                opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })),
-                            },
-                            init: () => {
-                                $$.a('.show', true);
-                            }
-                        };
-                    }
-                    else {
-                        $$.$me_throw('TODO');
-                    }
+                    const row_is_prop = (param_mode) => {
+                        const visible = def.visible[param_mode];
+                        const result = typeof visible == 'object' && visible != null;
+                        return result;
+                    };
+                    const ofsVer = (row) => row_margin_top + row * (row_height + row_space);
+                    return {
+                        prop: {
+                            '#width': () => col_width,
+                            '#height': () => row_height,
+                            '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], $$.$me_atom2_prop_compute_fn_sum(col_margin_hor + def.col * (col_width + col_space))),
+                            row: !row_is_prop('Основной') ? null : $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [param_mode] }) => !row_is_prop(param_mode) ?
+                                def.row :
+                                def.visible[param_mode].row, ({ val, prev }) => {
+                                if (prev != null)
+                                    $$.a('.style.opacity', $$.$me_atom2_anim({ from: 0, to: 1, duration: 400 }));
+                            }),
+                            '#ofsVer': !row_is_prop('Основной') ?
+                                () => ofsVer(def.row) :
+                                $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => ofsVer(row)),
+                            show: () => false,
+                        },
+                        elem: {
+                            label: () => ({
+                                prop: {
+                                    '#width': () => null,
+                                    '#height': () => null,
+                                    '#alignVer': () => $$.$me_align.center,
+                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                },
+                                dom: {
+                                    innerText: () => def.label,
+                                },
+                            }),
+                            ctrl: () => ctrl,
+                        },
+                        style: {
+                            opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })),
+                        },
+                        init: () => {
+                            $$.a('.show', true);
+                        }
+                    };
                 }),
                 curtain: $$.$me_atom2_prop({ keys: ['.curtain'], masters: ['.hidden_curtain', '.curtainVisible[]'] }, ({ key: [curtain], masters: [hidden_curtain, curtainVisible] }) => hidden_curtain || !curtainVisible ? null : {
                     prop: {
@@ -5682,90 +5796,66 @@ var $;
                 }),
             },
         };
+        const input_with_button = {
+            base: $$.$me_stylesheet,
+            prop: {
+                styleSheetName: () => 'param_input',
+                styleSheet: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
+                    return (`
+          .${className} input::placeholder {
+            color: rgba(49,55,69,0.5);
+          }
+          .${className} input {
+            border: solid 1px #bdc3d1;
+          }
+          .${className} input:focus {
+            outline: none;
+            border: 2px solid #313745;
+          }
+        `);
+                }),
+                '#height': () => 24,
+            },
+            elem: {
+                input: () => ({
+                    node: 'input',
+                    style: {
+                        borderRadius: () => 3,
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                        paddingLeft: () => 8,
+                        boxSizing: () => 'border-box',
+                    },
+                    attr: {
+                        placeholder: '<.placeholder',
+                    },
+                }),
+                button: () => ({
+                    node: 'img',
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': () => 8,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#width': () => 16,
+                        '#height': () => 16,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': () => 'pointer',
+                    },
+                    attr: {
+                        src: () => 'assets/icons-8-plus-2-math@2x.png',
+                        draggable: () => false,
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log($$.a.curr.name());
+                            return true;
+                        },
+                    },
+                }),
+            },
+        };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //param.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_stylesheet = {
-            prop: {
-                styleSheetName: () => null,
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
-                styleSheetCommon: () => '',
-                instanceId: () => null,
-                styleSheet_apply: $$.$me_atom2_prop(['.styleSheetName', '.instanceId', '.styleSheet'], null, ({ val: [styleSheetName, instanceId, innerHTML] }) => {
-                    let sheet;
-                    const id = styleSheetId(styleSheetName, instanceId);
-                    if (!innerHTML) {
-                        removeStyleSheet(id);
-                    }
-                    else if (sheet = document.getElementById(id)) {
-                        sheet.innerHTML = innerHTML;
-                    }
-                    else {
-                        sheet = document.createElement('style');
-                        sheet.id = id;
-                        sheet.innerHTML = innerHTML;
-                        let head = document.head || document.getElementsByTagName('head')[0];
-                        head.appendChild(sheet);
-                    }
-                }),
-                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
-            },
-            dom: {
-                className: '.className',
-            },
-            init: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                if (!instances[styleSheetName])
-                    instances[styleSheetName] = new Map();
-                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
-                let id;
-                for (let i = 0; i < ids.length; i++)
-                    if (i != ids[i]) {
-                        id = i;
-                        break;
-                    }
-                if (id === void 0)
-                    id = ids.length;
-                $$.a('.instanceId', id);
-                instances[styleSheetName].set(self, id);
-                const styleSheetCommon = $$.a('.styleSheetCommon');
-                if (!styleSheetCommon)
-                    return;
-                const styleSheetCommonId = styleSheetId(styleSheetName);
-                if (document.getElementById(styleSheetCommonId))
-                    return;
-                let sheet = document.createElement('style');
-                sheet.id = styleSheetCommonId;
-                sheet.innerHTML = styleSheetCommon;
-                let head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(sheet);
-            },
-            fini: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
-                instances[styleSheetName].delete(self);
-                if (instances[styleSheetName].size)
-                    return;
-                instances[styleSheetName] = null;
-                removeStyleSheet(styleSheetId(styleSheetName));
-            },
-        };
-        function removeStyleSheet(styleSheetId) {
-            let sheet = document.getElementById(styleSheetId);
-            if (sheet && sheet.parentElement)
-                sheet.parentElement.removeChild(sheet);
-        }
-        let instances = {};
-        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//stylesheet.js.map
 ;
 "use strict";
 var $;
