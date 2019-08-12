@@ -6254,9 +6254,16 @@ var $;
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
                 paddingLeft: () => 8,
                 boxSizing: () => 'border-box',
+                '-webkit-appearance': () => 'none',
             },
             attr: {
                 placeholder: '.placeholder',
+            },
+            event: {
+                clickOrTapOutside: () => {
+                    $$.a.curr.node.blur();
+                    return false;
+                },
             },
         };
         const input_with_button = {
