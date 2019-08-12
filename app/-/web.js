@@ -5018,7 +5018,7 @@ var $;
     (function ($$) {
         $$.$me_stylesheet = {
             prop: {
-                styleSheetName: () => null,
+                styleSheetName: $$.$me_atom2_prop_abstract(),
                 styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
                 styleSheetCommon: () => '',
                 instanceId: () => null,
@@ -5097,7 +5097,177 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        const ctrl_width = 218;
+        $$.$nl_checkbox = {
+            base: $$.$me_stylesheet,
+            prop: {
+                caption: $$.$me_atom2_prop_abstract(),
+                checked: () => false,
+                space: () => 8,
+                fontSize: () => 14,
+                boxSize: () => 14,
+                styleSheetName: () => 'checkbox',
+                className: '.styleSheetName',
+                styleSheet: () => '',
+                styleSheetCommon: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
+                    return (`
+          .${className} .box {
+            box-sizing: border-box;
+          }
+          .${className}[checked=false] .box {
+            border: solid 1px #313745;
+            background-color: white;
+          }
+          .${className}[checked=true] .box {
+            background: #0070a4;
+          }
+        `);
+                }),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                '#cursor': () => 'pointer',
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.checked', !$$.a('.checked'));
+                    return true;
+                },
+            },
+            attr: {
+                checked: '.checked',
+            },
+            style: {
+                userSelect: () => 'none',
+            },
+            elem: {
+                box: () => ({
+                    prop: {
+                        '#width': '<.boxSize',
+                        '#height': '<.boxSize',
+                        '#alignVer': () => $$.$me_align.center,
+                    },
+                    style: {
+                        borderRadius: $$.$me_atom2_prop(['<.boxSize'], ({ masters: [boxSize] }) => boxSize * 2 / 14),
+                    },
+                    dom: {
+                        className: () => 'box',
+                    },
+                    elem: {
+                        check: () => ({
+                            node: 'img',
+                            prop: {
+                                '#hidden': $$.$me_atom2_prop(['<<.checked'], ({ masters: [checked] }) => !checked),
+                                '#width': () => 10,
+                                '#height': () => 9,
+                                '#align': () => $$.$me_align.center,
+                                '#ofsVer': () => 1,
+                            },
+                            attr: {
+                                src: () => 'assets/path-4-copy-2@2x.png',
+                                draggable: () => false,
+                            },
+                        }),
+                    },
+                }),
+                caption: () => ({
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<@box.#width', '<.space'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                    },
+                    style: {
+                        fontSize: '<.fontSize',
+                        whiteSpace: () => 'nowrap',
+                    },
+                    dom: {
+                        innerHTML: '<.caption',
+                        className: () => 'caption',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//checkbox.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_checkbox_list = {
+            prop: {
+                col_ofs: $$.$me_atom2_prop_abstract(),
+                row_space: $$.$me_atom2_prop_abstract(),
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                fontSize: () => 14,
+                boxSize: () => 14,
+                row_height: $$.$me_atom2_prop(['.fontSize', '.boxSize'], ({ masters }) => Math.max(...masters)),
+                '#height': $$.$me_atom2_prop(['.options', '.col_ofs', '.row_height', '.row_space'], ({ masters: [options, col_ofs, row_height, row_space] }) => {
+                    const row_count = Math.ceil(Object.keys(options).length / col_ofs.length);
+                    const result = (row_count - 1) * (row_height + row_space) + row_height;
+                    return result;
+                }),
+                ids: $$.$me_atom2_prop_keys(['.options']),
+                item_pos: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.ids', '.col_ofs', '.row_height', '.row_space', '.#width'] }, ({ key: [id], masters: [ids, col_ofs, row_height, row_space, width] }) => {
+                    const idx = ids.indexOf(id);
+                    const row_i = Math.floor(idx / col_ofs.length);
+                    const col_i = idx - row_i * col_ofs.length;
+                    const result = {
+                        left: col_ofs[col_i],
+                        top: (row_height + row_space) * row_i,
+                        width: col_i < col_ofs.length - 1 ? col_ofs[col_i + 1] - col_ofs[col_i] : width - col_ofs[col_i],
+                    };
+                    return result;
+                }),
+                item_top: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.item_pos[]'] }, ({ masters: [item_pos] }) => item_pos.top),
+                item_left: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.item_pos[]'] }, ({ masters: [item_pos] }) => item_pos.left),
+                item_width: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.item_pos[]'] }, ({ masters: [item_pos] }) => item_pos.width),
+            },
+            elem: {
+                item: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.options'] }, ({ key: [id], masters: [options] }) => ({
+                    base: $$.$nl_checkbox,
+                    prop: {
+                        '#ofsHor': `<.item_left[${id}]`,
+                        '#ofsVer': `<.item_top[${id}]`,
+                        '#height': '<.row_height',
+                        '#width': `<.item_width[${id}]`,
+                        caption: typeof options[id].caption == 'function' ? options[id].caption :
+                            () => options[id].caption || id,
+                        checked: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value.has(id), ({ val }) => {
+                            const value = $$.a('<.value');
+                            let need_update = false;
+                            if (val) {
+                                if (!value.has(id)) {
+                                    value.add(id);
+                                    need_update = true;
+                                }
+                            }
+                            else {
+                                if (value.has(id)) {
+                                    value.delete(id);
+                                    need_update = true;
+                                }
+                            }
+                            if (need_update)
+                                $$.a('<.value', value, true);
+                        })
+                    },
+                })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//list.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const ctrl_col_width = 100;
+        const ctrl_col_space = 18;
+        const ctrl_width = 2 * ctrl_col_width + ctrl_col_space;
         const col_width = 61 + 37 + ctrl_width;
         const col_space = 400 - col_width;
         const row_height = 24;
@@ -5165,288 +5335,359 @@ var $;
                     }
                 }),
                 params: () => ({
+                    studio: {
+                        col: () => 0.33,
+                        row: () => 1,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Квартира',
+                        type: 'checkbox',
+                        caption: () => 'Студия',
+                        space: () => 12,
+                        width: () => .33,
+                    },
+                    free_plan: {
+                        col: () => 0.67,
+                        row: () => 1,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        type: 'checkbox',
+                        caption: () => 'Св. планировка',
+                        space: () => 12,
+                        width: () => .33,
+                    },
+                    photo: {
+                        col: () => 0.33,
+                        row: () => 2,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Только с',
+                        type: 'checkbox',
+                        caption: () => 'Фото',
+                        space: () => 12,
+                        width: () => .33,
+                    },
+                    video: {
+                        col: () => 0.67,
+                        row: () => 2,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        type: 'checkbox',
+                        caption: () => 'Видео',
+                        space: () => 12,
+                        width: () => .33,
+                    },
                     address: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'Адрес',
+                        col: () => 1,
+                        row: () => 1,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Адрес',
                         type: 'address',
-                        col: 1,
-                        row: 1,
+                    },
+                    without_new_moscow: {
+                        col: () => 3,
+                        row: () => 1,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        type: 'checkbox',
+                        caption: () => 'Без Новой Москвы',
+                        space: () => 8,
+                        width: () => .5,
+                    },
+                    only_new_moscow: {
+                        col: () => 3.5,
+                        row: () => 1,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        type: 'checkbox',
+                        caption: () => 'Только Новая Москва',
+                        space: () => 8,
+                        width: () => .5,
                     },
                     rmqt: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'Комнаты',
+                        col: () => 0,
+                        row: () => 3,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Комнаты',
                         type: 'multiselector',
-                        values: ['1', '2', '3', '4', '5', '6+'],
-                        col: 0,
-                        row: 3,
+                        values: () => ['1', '2', '3', '4', '5', '6+'],
                     },
                     total_sq: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'Площадь',
+                        col: () => 0,
+                        row: () => 4,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Площадь',
                         type: 'diap',
-                        col: 0,
-                        row: 4,
                     },
                     life_sq: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Жилая',
+                        col: () => 0,
+                        row: () => 5,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Жилая',
                         type: 'diap',
-                        col: 0,
-                        row: 5,
                     },
                     kitchen_sq: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Кухня',
+                        col: () => 0,
+                        row: () => 6,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Кухня',
                         type: 'diap',
-                        col: 0,
-                        row: 6,
                     },
                     storey_count: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Этажность',
+                        col: () => 0,
+                        row: () => 7,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Этажность',
                         type: 'diap',
-                        col: 0,
-                        row: 7,
                     },
                     storey: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': {
-                                col: 0,
-                                row: 5,
-                            },
-                        },
-                        label: 'Этаж',
+                        col: () => 0,
+                        row: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' ? 8 : 5, ({ val, prev }) => {
+                            if (prev != null)
+                                $$.a('.style.opacity', $$.$me_atom2_anim({ from: 0, to: 1, duration: 400 }));
+                        }),
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Этаж',
                         type: 'diap',
-                        col: 0,
-                        row: 8,
+                    },
+                    exceptFirst: {
+                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0 : 0.33),
+                        row: () => 9,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        type: 'checkbox',
+                        caption: () => 'Кроме первого',
+                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
+                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
+                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
+                    },
+                    exceptLast: {
+                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0.5 : 0.67),
+                        row: () => 9,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        type: 'checkbox',
+                        caption: () => 'Кроме последнего',
+                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
+                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
+                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
+                    },
+                    onlyFirst: {
+                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0 : 0.33),
+                        row: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 10 : 9.8),
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        type: 'checkbox',
+                        caption: () => 'Только первый',
+                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
+                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
+                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
+                    },
+                    onlyLast: {
+                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0.5 : 0.67),
+                        row: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 10 : 9.8),
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        type: 'checkbox',
+                        caption: () => 'Только последний',
+                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
+                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
+                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
+                    },
+                    source: {
+                        col: () => 0,
+                        row: () => 11,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Источник',
+                        type: 'checklist',
+                        options: () => ({
+                            winner: {
+                                caption: () => 'WinNER',
+                            },
+                            winnerPro: {
+                                caption: () => 'WinNER <span style="color: #ffc200">PRO</span>',
+                            },
+                            sob: {
+                                caption: () => 'Sob.ru',
+                            },
+                            avito: {
+                                caption: () => 'Avito.ru',
+                            },
+                            cian: {
+                                caption: () => 'Cian.ru',
+                            },
+                            irr: {
+                                caption: () => 'Irr.ru',
+                            },
+                            other: {
+                                caption: () => 'Прочие',
+                            },
+                            yandex: {
+                                caption: () => 'Яндекс',
+                            },
+                        }),
+                        col_ofs: () => [0, ctrl_col_width + ctrl_col_space],
+                        row_space: () => 16,
                     },
                     deal_type: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'Тип сделки',
+                        col: () => 1,
+                        row: () => 3,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Тип сделки',
                         type: 'picker',
-                        col: 1,
-                        row: 3,
                     },
                     price: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'Цена',
+                        col: () => 1,
+                        row: () => 4,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Цена',
                         type: 'diap',
-                        col: 1,
-                        row: 4,
                     },
                     price_per_sq: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'Цена за м²',
+                        col: () => 1,
+                        row: () => 5,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Цена за м²',
                         type: 'diap',
-                        col: 1,
-                        row: 5,
                     },
                     build_type: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Тип дома',
+                        col: () => 1,
+                        row: () => 6,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Тип дома',
                         type: 'picker',
-                        col: 1,
-                        row: 6,
                     },
                     habit_class: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Класс жилья',
+                        col: () => 1,
+                        row: () => 7,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Класс жилья',
                         type: 'picker',
-                        col: 1,
-                        row: 7,
                     },
                     remont: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Ремонт',
+                        col: () => 1,
+                        row: () => 8,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Ремонт',
                         type: 'picker',
-                        col: 1,
-                        row: 8,
                     },
                     territory: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Территория',
+                        col: () => 1,
+                        row: () => 9,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Территория',
                         type: 'picker',
-                        col: 1,
-                        row: 9,
                     },
                     parking: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Парковка',
+                        col: () => 1,
+                        row: () => 10,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Парковка',
                         type: 'picker',
-                        col: 1,
-                        row: 10,
                     },
                     avaria: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Аварийность',
+                        col: () => 1,
+                        row: () => 11,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Аварийность',
                         type: 'picker',
-                        col: 1,
-                        row: 11,
                     },
                     built_year: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Год постройки',
+                        col: () => 1,
+                        row: () => 12,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Год постройки',
                         type: 'diap',
-                        col: 1,
-                        row: 12,
                     },
                     area: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'Область',
+                        col: () => 2,
+                        row: () => 3,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'Область',
                         type: 'picker',
-                        col: 2,
-                        row: 3,
                     },
                     far: {
-                        visible: {
-                            'Полный': true,
-                            'Основной': true,
-                        },
-                        label: 'От станции',
+                        col: () => 2,
+                        row: () => 4,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
+                        label: () => 'От станции',
                         type: 'picker',
-                        col: 2,
-                        row: 4,
                     },
                     nova: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Новостройки',
+                        col: () => 2,
+                        row: () => 6,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Новостройки',
                         type: 'picker',
-                        col: 2,
-                        row: 6,
                     },
                     apart: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Апартаменты',
+                        col: () => 2,
+                        row: () => 7,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Апартаменты',
                         type: 'picker',
-                        col: 2,
-                        row: 7,
                     },
                     actual: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Актуальность',
+                        col: () => 2,
+                        row: () => 8,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Актуальность',
                         type: 'picker',
-                        col: 2,
-                        row: 8,
                     },
                     spy: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Слежение',
+                        col: () => 2,
+                        row: () => 9,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Слежение',
                         type: 'picker',
-                        col: 2,
-                        row: 9,
                     },
                     dyna: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Динамика цен',
+                        col: () => 2,
+                        row: () => 10,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Динамика цен',
                         type: 'picker',
-                        col: 2,
-                        row: 10,
                     },
                     plan: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Планировка',
+                        col: () => 2,
+                        row: () => 11,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Планировка',
                         type: 'picker',
-                        col: 2,
-                        row: 11,
                     },
                     param: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Параметры',
+                        col: () => 2,
+                        row: () => 12,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Параметры',
                         type: 'picker',
-                        col: 2,
-                        row: 12,
                     },
                     note: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Поиск по примечанию',
+                        col: () => 3,
+                        row: () => 3,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Поиск по примечанию',
                         type: 'include_exclude',
-                        col: 3,
-                        row: 3,
                     },
                     phone: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Поиск по телефону',
+                        col: () => 3,
+                        row: () => 6,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Поиск по телефону',
                         type: 'include_exclude',
-                        col: 3,
-                        row: 6,
                     },
                     phone_black: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Включая',
+                        col: () => 3,
+                        row: () => 9,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Включая',
                         type: 'picker',
-                        col: 3,
-                        row: 9,
                     },
                     deep: {
-                        visible: {
-                            'Полный': true,
-                        },
-                        label: 'Глубина поиска',
+                        col: () => 3,
+                        row: () => 10,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        label: () => 'Глубина поиска',
                         type: 'deep',
-                        col: 3,
-                        row: 10,
+                    },
+                    brand_new: {
+                        col: () => 3,
+                        row: () => 12,
+                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
+                        caption: () => 'Только новые (впервые опубликованные)',
+                        space: () => 21,
+                        type: 'checkbox',
+                        width: () => 1,
                     },
                 }),
                 param_names: $$.$me_atom2_prop_keys(['.params']),
@@ -5473,16 +5714,6 @@ var $;
                 }),
                 param: $$.$me_atom2_prop({ keys: ['.param_names'], masters: ['.params', '<.param_mode', '.height_anim_is'] }, ({ key: [param_name], masters: [params, param_mode, height_anim_is], prev }) => {
                     const def = params[param_name];
-                    const visible_prev = !!prev;
-                    const visible_curr = def.visible[param_mode];
-                    if (!visible_curr)
-                        if (!height_anim_is || !prev) {
-                            return null;
-                        }
-                        else {
-                            $$.a(`@param[${param_name}].show`, false);
-                            return prev;
-                        }
                     let ctrl;
                     switch (def.type) {
                         case 'multiselector': {
@@ -5492,8 +5723,8 @@ var $;
                                     '#width': () => ctrl_width,
                                     '#height': () => row_height,
                                     '#alignHor': () => $$.$me_align.right,
-                                    items: () => def.values,
-                                    selected: $$.$me_atom2_prop([`<<.order`], ({ masters: [order] }) => order.params.rmqt || new Set(), ({ val }) => {
+                                    items: def.values,
+                                    selected: $$.$me_atom2_prop([`<<.order`], ({ masters: [order] }) => order.params[param_name] || new Set(), ({ val }) => {
                                         const order = $$.a(`<<.order`);
                                         order.params[param_name] = val;
                                         $$.a(`<<.order`, order, true);
@@ -5528,14 +5759,112 @@ var $;
                             };
                             break;
                         }
+                        case 'checklist': {
+                            return {
+                                base: $$.$nl_checkbox_list,
+                                prop: {
+                                    '#width': () => ctrl_width,
+                                    '#height': () => 105,
+                                    col: def.col,
+                                    row: def.row,
+                                    '#ofsVer': $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => row_margin_top + row * (row_height + row_space)),
+                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], ({ masters: [ofsHor] }) => col_margin_hor +
+                                        ofsHor +
+                                        col_width - ctrl_width),
+                                    options: def.options,
+                                    col_ofs: def.col_ofs,
+                                    row_space: def.row_space,
+                                    value: $$.$me_atom2_prop([`<.order`], ({ masters: [order] }) => order.params[param_name] || new Set(), ({ val }) => {
+                                        const order = $$.a(`<.order`);
+                                        order.params[param_name] = val;
+                                        $$.a(`<<.order`, order, true);
+                                    }),
+                                    show: () => false,
+                                },
+                                elem: {
+                                    label: !def.label ? null : () => ({
+                                        prop: {
+                                            '#width': () => col_width - ctrl_width,
+                                            '#height': '.em',
+                                            '#ofsVer': () => 1,
+                                            '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width),
+                                            fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                        },
+                                        dom: {
+                                            innerText: def.label,
+                                        },
+                                    }),
+                                },
+                            };
+                            break;
+                        }
+                        case 'checkbox': {
+                            return {
+                                base: $$.$nl_checkbox,
+                                prop: {
+                                    space: def.space,
+                                    caption: def.caption,
+                                    width: def.width,
+                                    '#width': !def.width ? () => col_width :
+                                        $$.$me_atom2_prop(['.width'], ({ masters: [width] }) => width == .5 ? Math.round(col_width / 2) :
+                                            width == .33 ? Math.round(ctrl_width / 2) :
+                                                col_width),
+                                    '#height': () => row_height,
+                                    col: def.col,
+                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor', '.col'], ({ masters: [ofsHor, col] }) => col_margin_hor +
+                                        ofsHor +
+                                        Math.floor(col) * (col_width + col_space) +
+                                        (col - Math.floor(col) == .5 ?
+                                            Math.round(col_width / 2) :
+                                            col - Math.floor(col) == .33 ?
+                                                Math.round(col_width - ctrl_width) :
+                                                col - Math.floor(col) == .67 ?
+                                                    Math.round(col_width - ctrl_col_width) :
+                                                    0)),
+                                    fontSize_k: def.fontSize_k ? def.fontSize_k : () => 14 / 16,
+                                    fontSize: $$.$me_atom2_prop(['.em', '.fontSize_k'], $$.$me_atom2_prop_compute_fn_mul()),
+                                    row: def.row,
+                                    '#ofsVer': $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => row_margin_top + row * (row_height + row_space)),
+                                    checked: $$.$me_atom2_prop([`<.order`], ({ masters: [order] }) => order.params[param_name] || false, ({ val }) => {
+                                        const order = $$.a(`<.order`);
+                                        order.params[param_name] = val;
+                                        $$.a(`<.order`, order, true);
+                                    }),
+                                    show: () => false,
+                                },
+                                style: {
+                                    opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })),
+                                },
+                                init: () => {
+                                    $$.a('.show', true);
+                                },
+                                elem: {
+                                    label: !def.label ? null : () => ({
+                                        prop: {
+                                            '#width': () => col_width - ctrl_width,
+                                            '#height': () => null,
+                                            '#alignVer': () => $$.$me_align.center,
+                                            '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width),
+                                            fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                        },
+                                        dom: {
+                                            innerText: def.label,
+                                        },
+                                    }),
+                                },
+                            };
+                            break;
+                        }
                         case 'address': {
                             return {
                                 base: input_with_button,
                                 prop: {
                                     '#width': () => 2 * col_width + col_space,
                                     '#height': () => row_height,
-                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], $$.$me_atom2_prop_compute_fn_sum(col_margin_hor + def.col * (col_width + col_space))),
-                                    '#ofsVer': () => row_margin_top + def.row * (row_height + row_space),
+                                    col: def.col,
+                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor', '.col'], ({ masters: [ofsHor, col] }) => ofsHor + col_margin_hor + col * (col_width + col_space)),
+                                    row: def.row,
+                                    '#ofsVer': $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => row_margin_top + row * (row_height + row_space)),
                                     show: () => false,
                                     placeholder: () => 'Город, район, адрес, метро, название ЖК',
                                 },
@@ -5552,8 +5881,10 @@ var $;
                                 prop: {
                                     '#width': () => col_width,
                                     '#height': () => row_height + (row_height + row_space) * 2,
-                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], $$.$me_atom2_prop_compute_fn_sum(col_margin_hor + def.col * (col_width + col_space))),
-                                    '#ofsVer': () => row_margin_top + def.row * (row_height + row_space),
+                                    col: def.col,
+                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor', '.col'], ({ masters: [ofsHor, col] }) => ofsHor + col_margin_hor + col * (col_width + col_space)),
+                                    row: def.row,
+                                    '#ofsVer': $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => row_margin_top + row * (row_height + row_space)),
                                     show: () => false,
                                 },
                                 elem: {
@@ -5566,7 +5897,7 @@ var $;
                                             fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
                                         },
                                         dom: {
-                                            innerText: () => def.label,
+                                            innerText: def.label,
                                         },
                                     }),
                                     include: () => ({
@@ -5645,8 +5976,10 @@ var $;
                                 prop: {
                                     '#width': () => col_width,
                                     '#height': () => row_height + row_height + row_space,
-                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], $$.$me_atom2_prop_compute_fn_sum(col_margin_hor + def.col * (col_width + col_space))),
-                                    '#ofsVer': () => row_margin_top + def.row * (row_height + row_space),
+                                    col: def.col,
+                                    '#ofsHor': $$.$me_atom2_prop(['<.ofsHor', '.col'], ({ masters: [ofsHor, col] }) => ofsHor + col_margin_hor + col * (col_width + col_space)),
+                                    row: def.row,
+                                    '#ofsVer': $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => row_margin_top + row * (row_height + row_space)),
                                     show: () => false,
                                 },
                                 elem: {
@@ -5659,7 +5992,7 @@ var $;
                                             fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
                                         },
                                         dom: {
-                                            innerText: () => def.label,
+                                            innerText: def.label,
                                         },
                                     }),
                                     ctrl: () => ({
@@ -5718,26 +6051,20 @@ var $;
                         }
                         default: $$.$me_throw(def.type);
                     }
-                    const row_is_prop = (param_mode) => {
-                        const visible = def.visible[param_mode];
-                        const result = typeof visible == 'object' && visible != null;
-                        return result;
-                    };
                     const ofsVer = (row) => row_margin_top + row * (row_height + row_space);
                     return {
                         prop: {
+                            visible: def.visible,
+                            on_change_visible: $$.$me_atom2_prop(['.visible'], null, ({ val }) => {
+                                $$.a(`.show`, !!val);
+                            }),
+                            '#hidden': $$.$me_atom2_prop(['.visible', '<.height_anim_is'], ({ masters: [visible, height_anim_is] }) => !visible && !height_anim_is),
                             '#width': () => col_width,
                             '#height': () => row_height,
-                            '#ofsHor': $$.$me_atom2_prop(['<.ofsHor'], $$.$me_atom2_prop_compute_fn_sum(col_margin_hor + def.col * (col_width + col_space))),
-                            row: !row_is_prop('Основной') ? null : $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [param_mode] }) => !row_is_prop(param_mode) ?
-                                def.row :
-                                def.visible[param_mode].row, ({ val, prev }) => {
-                                if (prev != null)
-                                    $$.a('.style.opacity', $$.$me_atom2_anim({ from: 0, to: 1, duration: 400 }));
-                            }),
-                            '#ofsVer': !row_is_prop('Основной') ?
-                                () => ofsVer(def.row) :
-                                $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => ofsVer(row)),
+                            col: def.col,
+                            '#ofsHor': $$.$me_atom2_prop(['<.ofsHor', '.col'], ({ masters: [ofsHor, col] }) => ofsHor + col_margin_hor + col * (col_width + col_space)),
+                            row: def.row,
+                            '#ofsVer': $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => row_margin_top + row * (row_height + row_space)),
                             show: () => false,
                         },
                         elem: {
@@ -5749,7 +6076,7 @@ var $;
                                     fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
                                 },
                                 dom: {
-                                    innerText: () => def.label,
+                                    innerText: def.label,
                                 },
                             }),
                             ctrl: () => ctrl,
@@ -5800,7 +6127,9 @@ var $;
             base: $$.$me_stylesheet,
             prop: {
                 styleSheetName: () => 'param_input',
-                styleSheet: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
+                className: '.styleSheetName',
+                styleSheet: () => '',
+                styleSheetCommon: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
                     return (`
           .${className} input::placeholder {
             color: rgba(49,55,69,0.5);
