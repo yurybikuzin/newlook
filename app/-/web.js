@@ -5385,6 +5385,45 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_triangle = {
+            prop: {
+                direction: () => $$.$me_rect_sides_enum.bottom,
+                size: '.em',
+                color: '.colorText',
+                k: () => 2 / Math.sqrt(3),
+                height: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                    size :
+                    Math.round(size * k)),
+                width: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                    size :
+                    Math.round(size * k)),
+                '#width': () => 0,
+                '#height': () => 0,
+            },
+            style: {
+                borderTop: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
+                    direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                        `${height / 2}px solid transparent`),
+                borderLeft: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
+                    direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                        `${width / 2}px solid transparent`),
+                borderRight: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
+                    direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                        `${width / 2}px solid transparent`),
+                borderBottom: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
+                    direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                        `${height / 2}px solid transparent`),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         const ctrl_col_width = 100;
         const ctrl_col_space = 18;
         const ctrl_width = 2 * ctrl_col_width + ctrl_col_space;
@@ -5873,7 +5912,7 @@ var $;
                         label: () => 'Поиск по примечанию',
                         type: 'include_exclude',
                     },
-                    phone: {
+                    telefon: {
                         col: () => 3,
                         row: () => 6,
                         visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
@@ -5940,13 +5979,11 @@ var $;
                             break;
                         }
                         case 'diap': {
-                            return Object.assign({ base: diap, prop: Object.assign({}, prop_common(def)) }, cnf_common(def, {}));
+                            return Object.assign({ base: diap, prop: Object.assign({}, prop_common(def)) }, cnf_common(def));
                             break;
                         }
                         case 'picker': {
-                            return Object.assign({ prop: Object.assign({}, prop_common(def)) }, cnf_common(def, {
-                                background: () => 'blue',
-                            }));
+                            return Object.assign({ base: picker, prop: Object.assign({}, prop_common(def)) }, cnf_common(def));
                             break;
                         }
                         case 'checklist': {
@@ -5999,13 +6036,11 @@ var $;
                                                 },
                                             }),
                                             ctrl: () => ({
+                                                base: input,
                                                 prop: {
                                                     '#width': () => ctrl_width,
                                                     '#height': () => row_height,
                                                     '#alignHor': () => $$.$me_align.right,
-                                                },
-                                                style: {
-                                                    background: () => 'magenta',
                                                 },
                                             }),
                                         },
@@ -6029,13 +6064,11 @@ var $;
                                                 },
                                             }),
                                             ctrl: () => ({
+                                                base: input,
                                                 prop: {
                                                     '#width': () => ctrl_width,
                                                     '#height': () => row_height,
                                                     '#alignHor': () => $$.$me_align.right,
-                                                },
-                                                style: {
-                                                    background: () => 'magenta',
                                                 },
                                             }),
                                         },
@@ -6165,6 +6198,32 @@ var $;
                         placeholder: () => id == 'min' ? 'от' : 'до',
                     },
                 })),
+            },
+        };
+        const picker = {
+            prop: {
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                '#cursor': () => 'pointer',
+            },
+            style: {
+                borderRadius: () => 3,
+                border: () => 'solid 1px #bdc3d1',
+                boxSizing: () => 'border-box',
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+            },
+            elem: {
+                triangle: () => ({
+                    base: $$.$me_triangle,
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': () => 9 + 7,
+                        '#ofsVer': () => -3,
+                        '#alignVer': () => $$.$me_align.center,
+                        size: () => 7,
+                        color: () => '#444956',
+                        k: () => 9 / 7,
+                    },
+                }),
             },
         };
         const input = {
@@ -6306,45 +6365,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //spinner.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_triangle = {
-            prop: {
-                direction: () => $$.$me_rect_sides_enum.bottom,
-                size: '.em',
-                color: '.colorText',
-                k: () => 2 / Math.sqrt(3),
-                height: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
-                    size :
-                    Math.round(size * 2 / Math.sqrt(3))),
-                width: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
-                    size :
-                    Math.round(size * k)),
-                '#width': () => 0,
-                '#height': () => 0,
-            },
-            style: {
-                borderTop: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
-                    direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
-                borderLeft: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
-                    direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderRight: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
-                    direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderBottom: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
-                    direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//triangle.js.map
 ;
 "use strict";
 var $;
