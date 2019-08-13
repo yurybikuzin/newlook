@@ -7064,7 +7064,7 @@ var $;
           }
           .${className}:focus {
             outline: none;
-            border: 2px solid #313745;
+            border: 1px solid #313745;
           }
         `);
                 }),
