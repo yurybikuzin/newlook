@@ -4843,9 +4843,6 @@ var $;
                         fini: p.fini,
                     }));
                 }
-                else {
-                    console.error(prop_adjust, prop_from, prop_to, p.from, p.to);
-                }
                 if (absorber_timers[p.id] === void 0)
                     delete locks[p.id];
             };
@@ -5676,6 +5673,7 @@ var $;
                     const prop_border = $$.a.get('.style.border');
                     const prop_zIndex = $$.a.get('.#zIndex');
                     const prop_byDesign = $$.a.get('.byDesign');
+                    const prop_isTouch = $$.a.get('.isTouch');
                     const list = new $$.$me_atom2_elem({
                         tail: 'nl_picker_list' + id,
                         parent: $$.a.get('/@app'),
@@ -5726,7 +5724,7 @@ var $;
                                         },
                                     },
                                     style: {
-                                        background: $$.$me_atom2_prop([prop_byDesign.name(), '.#isHover'], ({ masters: [byDesign, isHover] }) => !byDesign || !isHover ? '' : '#d8eeff'),
+                                        background: $$.$me_atom2_prop([prop_byDesign.name(), '.#isHover'], ({ masters: [byDesign, isHover] }) => !byDesign || !isHover ? 'white' : '#d8eeff'),
                                     },
                                 })),
                                 '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
@@ -5772,6 +5770,7 @@ var $;
                         prev.destroy();
                     }
                 }),
+                isTouch: () => '/.#isTouch',
                 byDesign: () => true,
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 '#cursor': () => 'pointer',
@@ -6850,7 +6849,7 @@ var $;
                             break;
                         }
                         case 'address': {
-                            return Object.assign({ base: input_with_button, prop: Object.assign({}, prop_common(def), { placeholder: () => 'Город, район, адрес, метро, название ЖК' }) }, cnf_common(def));
+                            return Object.assign({ base: input_with_button, prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }) }, cnf_common(def));
                         }
                         case 'include_exclude': {
                             return {
