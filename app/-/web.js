@@ -5178,13 +5178,6 @@ var $;
     var $$;
     (function ($$) {
         $$.$nl_iospicker = {
-            init: () => {
-                const ids = $$.a('.option_ids');
-                const id = $$.a('.value');
-                const idx = ids.indexOf(id);
-                if (~idx)
-                    $$.a('.rec_idx', idx);
-            },
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop_abstract(),
@@ -6043,7 +6036,7 @@ var $;
                         prev.destroy();
                     }
                 }),
-                isTouch: '/.#isTouch',
+                isTouch: () => true,
                 byDesign: () => true,
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 '#cursor': () => 'pointer',
