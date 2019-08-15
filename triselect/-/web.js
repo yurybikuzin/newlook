@@ -4400,7 +4400,10 @@ var $;
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
                     dom: {
-                        innerText: $$.$me_atom2_prop(['<.options', '.isSelected'], ({ masters: [options, isSelected] }) => isSelected ? options[id].caption : options[id].captionShort),
+                        innerText: $$.$me_atom2_prop(['<.options', '.isSelected', '<.idx'], ({ masters: [options, isSelected, idx_selected] }) => isSelected ? options[id].caption :
+                            typeof options[id].captionShort == 'string' ?
+                                options[id].captionShort :
+                                options[id].captionShort[idx_selected]),
                     },
                     event: {
                         clickOrTap: () => {
@@ -10208,9 +10211,19 @@ var $;
                                     '2': { caption: 'Только первый этаж', captionShort: 'Только' },
                                 }) }),
                             leftBottom: Object.assign({}, defaults, { options: () => ({
-                                    '0': { caption: 'Можно с альтернативой', captionShort: 'Можно с альтернативой' },
-                                    '1': { caption: 'Прямая продажа', captionShort: 'Прямая продажа' },
-                                    '2': { caption: 'Только альтернатива', captionShort: 'Только альтернатива' },
+                                    '0': { caption: 'Можно с альтернативой',
+                                        captionShort: {
+                                            '1': 'Можно с альтернативой',
+                                            '2': 'Можно',
+                                        }
+                                    },
+                                    '1': { caption: 'Только прямая продажа',
+                                        captionShort: {
+                                            '0': 'Только прямая продажа',
+                                            '2': 'Кроме',
+                                        }
+                                    },
+                                    '2': { caption: 'Только с альтернативой', captionShort: '...' },
                                 }) }),
                             rightBottom: Object.assign({}, defaults, { options: () => ({
                                     '0': { caption: 'Можно апартаменты', captionShort: 'Можно' },
