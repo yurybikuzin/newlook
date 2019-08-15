@@ -10203,7 +10203,7 @@ var $;
                                     '2': { caption: 'Только новостройки', captionShort: 'Только' },
                                 }) }),
                             rightTop: Object.assign({}, defaults, { options: () => ({
-                                    '0': { caption: 'Можно первый этаж', captionShort: 'Включая' },
+                                    '0': { caption: 'Можно первый этаж', captionShort: 'Можно' },
                                     '1': { caption: 'Кроме первого этажа', captionShort: 'Кроме' },
                                     '2': { caption: 'Только первый этаж', captionShort: 'Только' },
                                 }) }),
