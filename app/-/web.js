@@ -5780,59 +5780,23 @@ var $;
             },
             elem: {
                 СписокБарабан: () => ({
+                    base: ear,
                     prop: {
-                        '#ofsVer': $$.$me_atom2_prop(['.#height'], ({ masters: [height] }) => -height),
-                        '#height': () => null,
-                        '#width': () => null,
-                        '#cursor': () => 'pointer',
+                        captions: () => ['Список', 'Барабан'],
                         isOn: $$.$me_atom2_prop(['<.СписокБарабан'], ({ masters: [isOn] }) => isOn, ({ val }) => {
                             $$.a('<.СписокБарабан', val);
                         }),
                     },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['.isOn'], ({ masters: [isOn] }) => isOn ? 'Барабан' : 'Список'),
-                    },
-                    style: {
-                        padding: () => 8,
-                        color: () => 'rgb(0, 112, 164)',
-                        userSelect: () => 'none',
-                        background: () => 'rgb(217, 220, 226)',
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a('.isOn', !$$.a('.isOn'));
-                            return true;
-                        },
-                    },
                 }),
                 СвернутьРазвернуть: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
                     {
+                        base: ear,
                         prop: {
-                            '#ofsVer': $$.$me_atom2_prop(['.#height'], ({ masters: [height] }) => -height),
-                            '#height': () => null,
-                            '#width': () => null,
                             '#alignHor': () => $$.$me_align.right,
-                            '#cursor': () => 'pointer',
+                            captions: () => ['Свернуть', 'Развернуть'],
                             isOn: $$.$me_atom2_prop(['<.СвернутьРазвернуть'], ({ masters: [isOn] }) => isOn, ({ val }) => {
                                 $$.a('<.СвернутьРазвернуть', val);
                             }),
-                        },
-                        dom: {
-                            innerText: $$.$me_atom2_prop(['.isOn'], ({ masters: [isOn] }) => isOn ? 'Развернуть' : 'Свернуть'),
-                        },
-                        style: {
-                            padding: () => 8,
-                            paddingLeft: () => 16,
-                            paddingRight: () => 16,
-                            color: () => 'rgb(0, 112, 164)',
-                            userSelect: () => 'none',
-                            background: () => 'rgb(217, 220, 226)',
-                        },
-                        event: {
-                            clickOrTap: () => {
-                                $$.a('.isOn', !$$.a('.isOn'));
-                                return true;
-                            },
                         },
                     }),
                 cursor: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
@@ -5850,7 +5814,6 @@ var $;
                 curtain: $$.$me_atom2_prop({ keys: ['.curtain'],
                     masters: ['.СписокБарабан']
                 }, ({ key: [curtain], masters: [СписокБарабан] }) => {
-                    console.log({ СписокБарабан });
                     return СписокБарабан ? null : {
                         prop: {
                             '#height': '<.row_current_top',
@@ -5983,6 +5946,37 @@ var $;
             style: {
                 perspective: () => '900px',
                 background: () => 'white',
+            },
+        };
+        const ear = {
+            prop: {
+                '#height': () => null,
+                '#width': () => null,
+                '#cursor': () => 'pointer',
+                '#ofsVer': $$.$me_atom2_prop(['.#height'], ({ masters: [height] }) => -height),
+                captions: $$.$me_atom2_prop_abstract(),
+            },
+            style: {
+                padding: () => 8,
+                paddingLeft: () => 16,
+                paddingRight: () => 16,
+                color: () => 'rgb(0, 112, 164)',
+                userSelect: () => 'none',
+                background: () => 'rgb(217, 220, 226)',
+                borderTop: () => '1px solid #bdc3d1',
+                borderLeft: () => '1px solid #bdc3d1',
+                borderRight: () => '1px solid #bdc3d1',
+                borderTopLeftRadius: () => '4px',
+                borderTopRightRadius: () => '4px',
+            },
+            dom: {
+                innerText: $$.$me_atom2_prop(['.isOn', '.captions'], ({ masters: [isOn, captions] }) => isOn ? captions[1] : captions[0]),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.isOn', !$$.a('.isOn'));
+                    return true;
+                },
             },
         };
         const row = {
