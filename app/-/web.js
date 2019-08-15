@@ -5189,7 +5189,7 @@ var $;
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop_abstract(),
                 '#width': () => 374,
-                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids'], ({ masters: [option_ids] }) => Math.max(2, Math.min(12, option_ids.length))),
+                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids'], ({ masters: [option_ids] }) => Math.max(1, Math.min(12, option_ids.length + (option_ids.length < 5 ? -1 : option_ids.length < 7 ? 0 : 1)))),
                 '#height': $$.$me_atom2_prop(['.row_current_top', '.row_current_height'], ({ masters: [row_current_top, row_current_height] }) => 2 * row_current_top + row_current_height),
                 row_current_height: () => 38,
                 fontSize: $$.$me_atom2_prop(['.row_current_height'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
@@ -5926,7 +5926,7 @@ var $;
                                         prop_value.value(val);
                                     }),
                                     '#ofsHor': $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                    '#ofsVer': $$.$me_atom2_prop(['.#width', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
+                                    '#ofsVer': $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
                                     '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
                                 },
                                 style: {
