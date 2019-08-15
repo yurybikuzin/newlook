@@ -5253,7 +5253,8 @@ var $;
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop_abstract(),
                 '#width': () => 374,
-                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids'], ({ masters: [option_ids] }) => Math.max(1, Math.min(12, option_ids.length + (option_ids.length < 5 ? -1 : option_ids.length < 7 ? 0 : 1)))),
+                non_current_facets_semi_count_max: $$.$me_atom2_prop(['@СвернутьРазвернуть.isOn'], ({ masters: [isOn] }) => isOn ? 4 : 12),
+                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids', '.non_current_facets_semi_count_max'], ({ masters: [option_ids, non_current_facets_semi_count_max] }) => Math.max(1, Math.min(non_current_facets_semi_count_max, option_ids.length + (option_ids.length < 5 ? -1 : option_ids.length < 7 ? 0 : 1)))),
                 '#height': $$.$me_atom2_prop(['.row_current_top', '.row_current_height'], ({ masters: [row_current_top, row_current_height] }) => 2 * row_current_top + row_current_height),
                 row_current_height: () => 38,
                 fontSize: $$.$me_atom2_prop(['.row_current_height'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
@@ -5395,6 +5396,51 @@ var $;
                     wheel(p.event._deltaY),
             },
             elem: {
+                СписокБарабан: () => ({
+                    prop: {
+                        '#ofsVer': () => -25,
+                        '#height': () => 25,
+                        '#cursor': () => 'pointer',
+                        '#ofsHor': () => 100,
+                        isOn: () => false,
+                    },
+                    dom: {
+                        innerText: $$.$me_atom2_prop(['.isOn'], ({ masters: [isOn] }) => isOn ? 'Барабан' : 'Список'),
+                    },
+                    style: {
+                        color: () => 'rgb(0, 112, 164)',
+                        userSelect: () => 'none',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('.isOn', !$$.a('.isOn'));
+                            return true;
+                        },
+                    },
+                }),
+                СвернутьРазвернуть: $$.$me_atom2_prop(['@СписокБарабан.isOn'], ({ masters: [isOn] }) => isOn ? null :
+                    {
+                        prop: {
+                            '#ofsVer': () => -25,
+                            '#height': () => 25,
+                            '#width': () => 90,
+                            '#cursor': () => 'pointer',
+                            isOn: () => false,
+                        },
+                        dom: {
+                            innerText: $$.$me_atom2_prop(['.isOn'], ({ masters: [isOn] }) => isOn ? 'Развернуть' : 'Свернуть'),
+                        },
+                        style: {
+                            color: () => 'rgb(0, 112, 164)',
+                            userSelect: () => 'none',
+                        },
+                        event: {
+                            clickOrTap: () => {
+                                $$.a('.isOn', !$$.a('.isOn'));
+                                return true;
+                            },
+                        },
+                    }),
                 cursor: () => ({
                     prop: {
                         '#ofsVer': '<.row_current_top',
