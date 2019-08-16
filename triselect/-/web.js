@@ -3375,14 +3375,18 @@ var $;
                 }
                 else {
                     let x, y;
-                    p.ctx.moveTo(Math.round(x = p.ctxLeft + ctxSemiLineWidth), Math.round(y = p.ctxTop + p.ctxBorderRadius + ctxSemiLineWidth));
-                    p.ctx.arc(Math.round(x += p.ctxBorderRadius), Math.round(y -= 0), Math.round(p.ctxBorderRadius), Math.PI, -Math.PI / 2, false);
-                    p.ctx.lineTo(Math.round(x += p.ctxWidth - 2 * (p.ctxBorderRadius + ctxStrokeWidth)), Math.round(y -= p.ctxBorderRadius));
-                    p.ctx.arc(Math.round(x += 0), Math.round(y += p.ctxBorderRadius), Math.round(p.ctxBorderRadius), -Math.PI / 2, 0, false);
-                    p.ctx.lineTo(Math.round(x += p.ctxBorderRadius), Math.round(y += p.ctxHeight - 2 * (p.ctxBorderRadius + ctxStrokeWidth)));
-                    p.ctx.arc(Math.round(x -= p.ctxBorderRadius), Math.round(y += 0), Math.round(p.ctxBorderRadius), 0, Math.PI / 2, false);
-                    p.ctx.lineTo(Math.round(x -= p.ctxWidth - 2 * (p.ctxBorderRadius + ctxStrokeWidth)), Math.round(y += p.ctxBorderRadius));
-                    p.ctx.arc(Math.round(x -= 0), Math.round(y -= p.ctxBorderRadius), Math.round(p.ctxBorderRadius), Math.PI / 2, Math.PI, false);
+                    const leftTopBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.leftTop || 0);
+                    p.ctx.moveTo(Math.round(x = p.ctxLeft + ctxSemiLineWidth), Math.round(y = p.ctxTop + leftTopBorderRadius + ctxSemiLineWidth));
+                    p.ctx.arc(Math.round(x += leftTopBorderRadius), Math.round(y -= 0), Math.round(leftTopBorderRadius), Math.PI, -Math.PI / 2, false);
+                    const rightTopBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightTop || 0);
+                    p.ctx.lineTo(Math.round(x += p.ctxWidth - 2 * (rightTopBorderRadius + ctxStrokeWidth)), Math.round(y -= rightTopBorderRadius));
+                    p.ctx.arc(Math.round(x += 0), Math.round(y += rightTopBorderRadius), Math.round(rightTopBorderRadius), -Math.PI / 2, 0, false);
+                    const rightBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightBottom || 0);
+                    p.ctx.lineTo(Math.round(x += rightBottomBorderRadius), Math.round(y += p.ctxHeight - 2 * (rightBottomBorderRadius + ctxStrokeWidth)));
+                    p.ctx.arc(Math.round(x -= rightBottomBorderRadius), Math.round(y += 0), Math.round(rightBottomBorderRadius), 0, Math.PI / 2, false);
+                    const leftBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.leftBottom || 0);
+                    p.ctx.lineTo(Math.round(x -= p.ctxWidth - 2 * (leftBottomBorderRadius + ctxStrokeWidth)), Math.round(y += leftBottomBorderRadius));
+                    p.ctx.arc(Math.round(x -= 0), Math.round(y -= leftBottomBorderRadius), Math.round(leftBottomBorderRadius), Math.PI / 2, Math.PI, false);
                 }
                 p.ctx.closePath();
                 fill_stroke(Object.assign({}, p, { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
@@ -3394,7 +3398,21 @@ var $;
                         p.ctx.rect(Math.round(p.ctxLeft + (p.stroke.ctxWidth === void 0 ? 0 : typeof p.stroke.ctxWidth === 'number' ? p.stroke.ctxWidth / 2 : p.stroke.ctxWidth.left / 2)), Math.round(p.ctxTop + (p.stroke.ctxWidth === void 0 ? 0 : typeof p.stroke.ctxWidth === 'number' ? p.stroke.ctxWidth / 2 : p.stroke.ctxWidth.top / 2)), Math.round(p.ctxWidth - (p.stroke.ctxWidth === void 0 ? 0 : typeof p.stroke.ctxWidth === 'number' ? p.stroke.ctxWidth : p.stroke.ctxWidth.left + p.stroke.ctxWidth.right) / 2), Math.round(p.ctxHeight - (p.stroke.ctxWidth === void 0 ? 0 : typeof p.stroke.ctxWidth === 'number' ? p.stroke.ctxWidth : p.stroke.ctxWidth.top + p.stroke.ctxWidth.bottom) / 2));
                     }
                     else {
-                        $$.$me_throw('TODO', p.ctxBorderRadius, !p.ctxBorderRadius);
+                        const ctxStrokeWidth = p.stroke && p.stroke.ctxWidth || 0;
+                        const ctxSemiLineWidth = ctxStrokeWidth / 2;
+                        let x, y;
+                        const leftTopBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.leftTop || 0);
+                        p.ctx.moveTo(Math.round(x = p.ctxLeft + ctxSemiLineWidth), Math.round(y = p.ctxTop + leftTopBorderRadius + ctxSemiLineWidth));
+                        p.ctx.arc(Math.round(x += leftTopBorderRadius), Math.round(y -= 0), Math.round(leftTopBorderRadius), Math.PI, -Math.PI / 2, false);
+                        const rightTopBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightTop || 0);
+                        p.ctx.lineTo(Math.round(x += p.ctxWidth - 2 * (rightTopBorderRadius + ctxStrokeWidth)), Math.round(y -= rightTopBorderRadius));
+                        p.ctx.arc(Math.round(x += 0), Math.round(y += rightTopBorderRadius), Math.round(rightTopBorderRadius), -Math.PI / 2, 0, false);
+                        const rightBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightBottom || 0);
+                        p.ctx.lineTo(Math.round(x += rightBottomBorderRadius), Math.round(y += p.ctxHeight - 2 * (rightBottomBorderRadius + ctxStrokeWidth)));
+                        p.ctx.arc(Math.round(x -= rightBottomBorderRadius), Math.round(y += 0), Math.round(rightBottomBorderRadius), 0, Math.PI / 2, false);
+                        const leftBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.leftBottom || 0);
+                        p.ctx.lineTo(Math.round(x -= p.ctxWidth - 2 * (leftBottomBorderRadius + ctxStrokeWidth)), Math.round(y += leftBottomBorderRadius));
+                        p.ctx.arc(Math.round(x -= 0), Math.round(y -= leftBottomBorderRadius), Math.round(leftBottomBorderRadius), Math.PI / 2, Math.PI, false);
                     }
                     fill(Object.assign({}, p));
                 }
@@ -4371,24 +4389,209 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_panel = {
+            type: '$me_panel',
+            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
+                'borderRadiusLeftTop', 'borderRadiusRightTop',
+                'borderRadiusLeftBottom', 'borderRadiusRightBottom',
+            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+                ['paddingHor', ['paddingLeft', 'paddingRight']],
+                ['paddingVer', ['paddingTop', 'paddingBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
+                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
+                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
+            ])),
+            render: p => {
+                let borderHasWidth = false;
+                let borderHasWidthSame = true;
+                let borderHasColor = false;
+                let borderHasColorSame = true;
+                let prevWidth, prevColor;
+                const colorBorder = {};
+                const borderWidth = {};
+                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
+                    const side = s.toLowerCase();
+                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
+                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
+                    borderHasWidth = borderHasWidth || (currWidth > 0);
+                    borderHasColor = borderHasColor || currColor && (currColor != 'transparent');
+                    if (void 0 !== prevWidth) {
+                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
+                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
+                    }
+                    prevWidth = currWidth;
+                    prevColor = currColor;
+                }
+                const colorBackground = $$.a('.colorBackground');
+                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
+                    $$.$me_atom2_ctx_rect({
+                        ctx: p.ctx,
+                        ctxTop: p.ctxRect.top,
+                        ctxLeft: p.ctxRect.left,
+                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
+                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
+                        ctxBorderRadius: {
+                            leftTop: p.pixelRatio * $$.a('.borderRadiusLeftTop'),
+                            rightTop: p.pixelRatio * $$.a('.borderRadiusRightTop'),
+                            rightBottom: p.pixelRatio * $$.a('.borderRadiusRightBottom'),
+                            leftBottom: p.pixelRatio * $$.a('.borderRadiusLeftBottom'),
+                        },
+                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
+                        stroke: !borderHasWidth || !borderHasColor ? null : {
+                            style: borderHasColorSame ? prevColor : colorBorder,
+                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
+                        }
+                    });
+                }
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_label = {
+            type: '$me_label',
+            base: $$.$me_panel,
+            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), { _width_text: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio'], ({ masters: [ctx, text, pixelRatio] }) => {
+                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                    const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
+                    return result;
+                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                '#width': ['._width_text', '.paddingLeft', '.paddingRight'],
+                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
+            }), { text: () => '' }),
+            render: p => {
+                let { ctxWidth, ctxHeight } = p;
+                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
+                const text = $$.a('.text');
+                const ctxTextWidth = Math.round(p.ctx.measureText(text).width);
+                const ctxPaddingLeft = Math.round(p.pixelRatio * $$.a('.paddingLeft'));
+                const ctxPaddingRight = Math.round(p.pixelRatio * $$.a('.paddingRight'));
+                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
+                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
+                ctxWidth -= ctxPaddingLeft + ctxPaddingRight;
+                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
+                if (ctxHeight < ctxFontSize - 1) {
+                    console.error({ ctxHeight, ctxFontSize });
+                    return;
+                }
+                const align = $$.a('.alignVer');
+                const correction = align == $$.$me_align.bottom ? 0 : (ctxHeight - ctxFontSize) / (!align ? 1 : align);
+                const bottom = p.ctxRect.bottom - ctxPaddingBottom - correction;
+                const _left = (ctxTextWidth) => p.ctxRect.left + ctxPaddingLeft + $$.$me_align_correction($$.a('.alignHor'), () => ctxWidth - ctxTextWidth);
+                p.ctx.fillStyle = $$.a('.colorText');
+                if (ctxTextWidth <= ctxWidth) {
+                    p.ctx.fillText(text, _left(ctxTextWidth), bottom);
+                }
+                else {
+                    const ctxPeriodWidth = p.ctx.measureText(period).width;
+                    if (ctxWidth < ctxPeriodWidth) {
+                        console.error(p.self.name(), { ctxWidth, ctxPeriodWidth });
+                        return;
+                    }
+                    let len = text.length, wi = ctxTextWidth, s;
+                    while (len && wi > ctxWidth - ctxPeriodWidth)
+                        wi = p.ctx.measureText(s = text.slice(0, --len)).width;
+                    const left = _left(wi + ctxPeriodWidth);
+                    p.ctx.fillText(s, left, bottom);
+                    p.ctx.fillText(period, left + wi, bottom);
+                }
+            },
+        };
+        const period = '...';
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//label.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const useControl = true;
         $$.$nl_triselect = {
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop_abstract(),
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
-                '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [ids] }) => ids.map((id) => `@option[${id}].#width`)), $$.$me_atom2_prop_compute_fn_sum()),
+                '#width': () => 432,
                 '#height': () => 32,
+                width_min: () => 40,
+                _option_width: $$.$me_atom2_prop({
+                    keys: ['.option_ids'],
+                    masters: ['.width_min', `^option[]._width_text`, `^option[].paddingLeft`, `^option[].paddingRight`],
+                }, ({ masters: [width_min, _width_text, paddingLeft, paddingRight] }) => Math.max(width_min, _width_text + paddingLeft + paddingRight)),
+                _width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [ids] }) => ids.map((id) => `._option_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
+                _width_excess: $$.$me_atom2_prop(['.#width', '._width_sum'], $$.$me_atom2_prop_compute_fn_diff()),
+                option_width: $$.$me_atom2_prop({
+                    keys: ['.option_ids'],
+                    masters: ['._width_excess', '._width_sum', '._option_width[]'],
+                }, ({ masters: [excess, sum, width] }) => {
+                    const result = width * (1 + excess / sum);
+                    return $$.$me_atom2_anim({ to: result });
+                }),
                 option_left: $$.$me_atom2_prop({
                     keys: ['.option_ids'],
                     masters: $$.$me_atom2_prop_masters(['.option_ids'], ({ key: [id], masters: [ids] }) => {
                         const idx = ids.indexOf(id);
-                        return !idx ? [] : [`.option_left[${ids[idx - 1]}]`, `@option[${ids[idx - 1]}].#width`];
+                        return !idx ? [] : [`.option_left[${ids[idx - 1]}]`, `.option_width[${ids[idx - 1]}]`];
                     }),
                 }, $$.$me_atom2_prop_compute_fn_sum()),
                 idx: $$.$me_atom2_prop(['.option_ids', '.value'], ({ masters: [ids, id] }) => ids.indexOf(id)),
             },
             event: {},
-            elem: {
+            control: !useControl ? null : {
+                option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                    base: $$.$me_label,
+                    prop: {
+                        fontSize: '<.fontSize',
+                        fontWeight: '<.fontWeight',
+                        fontFamily: '<.fontFamily',
+                        isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value == id),
+                        paddingHor: () => 4,
+                        text: $$.$me_atom2_prop(['<.options', '.isSelected', '<.idx'], ({ masters: [options, isSelected, idx_selected] }) => isSelected ? options[id].caption :
+                            typeof options[id].captionShort == 'string' ?
+                                options[id].captionShort :
+                                options[id].captionShort[idx_selected]),
+                        align: () => $$.$me_align.center,
+                        '#width': `<.option_width[${id}]`,
+                        '#height': '<.#height',
+                        '#ofsHor': `<.option_left[${id}]`,
+                        idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
+                        borderWidthVer: () => 1,
+                        colorBorderVer: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#008ecf' : '#bdc3d1'),
+                        borderWidthLeft: $$.$me_atom2_prop(['.isSelected', '.idx', '<.idx'], ({ masters: [isSelected, idx, idx_selected] }) => isSelected ? 1 : !idx || idx == 2 && !idx_selected ? 1 : 0),
+                        colorBorderLeft: $$.$me_atom2_prop(['.isSelected', '.idx', '<.idx'], ({ masters: [isSelected, idx, idx_selected] }) => isSelected ? '#008ecf' : !idx || idx == 2 && !idx_selected ? '#bdc3d1' : 'transparent'),
+                        borderWidthRight: $$.$me_atom2_prop(['.isSelected', '.idx', '<.idx'], ({ masters: [isSelected, idx, idx_selected] }) => isSelected ? 1 : idx == 2 || !idx && idx_selected == 2 ? 1 : 0),
+                        colorBorderRight: $$.$me_atom2_prop(['.isSelected', '.idx', '<.idx'], ({ masters: [isSelected, idx, idx_selected] }) => isSelected ? '#008ecf' : idx == 2 || !idx && idx_selected == 2 ? '#bdc3d1' : 'transparent'),
+                        borderTopLeftRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx ? 0 : 4),
+                        borderBottomLeftRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx ? 0 : 4),
+                        borderTopRightRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx != 2 ? 0 : 4),
+                        borderBottomRightRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx != 2 ? 0 : 4),
+                        colorBackground: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#f0f1f4' : 'transparent'),
+                    },
+                    prop_non_render: {
+                        '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? null : 'pointer'),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            if ($$.a('<.value') == id)
+                                return false;
+                            $$.a('<.value', id);
+                            return true;
+                        },
+                    },
+                })),
+            },
+            elem: useControl ? null : {
                 option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
                     prop: {
                         idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
@@ -4973,124 +5176,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$me_panel = {
-            type: '$me_panel',
-            prop: Object.assign({}, $$.$me_atom2_prop_same_def(() => 0, ['borderRadius']), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
-                ['paddingHor', ['paddingLeft', 'paddingRight']],
-                ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
-                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
-                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
-                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
-                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
-            ])),
-            render: p => {
-                let borderHasWidth = false;
-                let borderHasWidthSame = true;
-                let borderHasColor = false;
-                let borderHasColorSame = true;
-                let prevWidth, prevColor;
-                const colorBorder = {};
-                const borderWidth = {};
-                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
-                    const side = s.toLowerCase();
-                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
-                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
-                    borderHasWidth = borderHasWidth || (currWidth > 0);
-                    borderHasColor = borderHasColor || currColor && (currColor != 'transparent');
-                    if (void 0 !== prevWidth) {
-                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
-                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
-                    }
-                    prevWidth = currWidth;
-                    prevColor = currColor;
-                }
-                const colorBackground = $$.a('.colorBackground');
-                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
-                    $$.$me_atom2_ctx_rect({
-                        ctx: p.ctx,
-                        ctxTop: p.ctxRect.top,
-                        ctxLeft: p.ctxRect.left,
-                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
-                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
-                        ctxBorderRadius: p.pixelRatio * $$.a('.borderRadius'),
-                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
-                        stroke: !borderHasWidth || !borderHasColor ? null : {
-                            style: borderHasColorSame ? prevColor : colorBorder,
-                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
-                        }
-                    });
-                }
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_label = {
-            type: '$me_label',
-            base: $$.$me_panel,
-            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), { _width_text: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio'], ({ masters: [ctx, text, pixelRatio] }) => {
-                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-                    return Math.ceil(ctx.measureText(text).width / pixelRatio);
-                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
-                '#width': ['._width_text', '.paddingLeft', '.paddingRight'],
-                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
-            }), { text: () => '' }),
-            render: p => {
-                let { ctxWidth, ctxHeight } = p;
-                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
-                const text = $$.a('.text');
-                const ctxTextWidth = Math.round(p.ctx.measureText(text).width);
-                const ctxPaddingLeft = Math.round(p.pixelRatio * $$.a('.paddingLeft'));
-                const ctxPaddingRight = Math.round(p.pixelRatio * $$.a('.paddingRight'));
-                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
-                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
-                ctxWidth -= ctxPaddingLeft + ctxPaddingRight;
-                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
-                if (ctxHeight < ctxFontSize - 1) {
-                    console.error({ ctxHeight, ctxFontSize });
-                    return;
-                }
-                const align = $$.a('.alignVer');
-                const correction = align == $$.$me_align.bottom ? 0 : (ctxHeight - ctxFontSize) / (!align ? 1 : align);
-                const bottom = p.ctxRect.bottom - ctxPaddingBottom - correction;
-                const _left = (ctxTextWidth) => p.ctxRect.left + ctxPaddingLeft + $$.$me_align_correction($$.a('.alignHor'), () => ctxWidth - ctxTextWidth);
-                p.ctx.fillStyle = $$.a('.colorText');
-                if (ctxTextWidth <= ctxWidth) {
-                    p.ctx.fillText(text, _left(ctxTextWidth), bottom);
-                }
-                else {
-                    const ctxPeriodWidth = p.ctx.measureText(period).width;
-                    if (ctxWidth < ctxPeriodWidth) {
-                        console.error(p.self.name(), { ctxWidth, ctxPeriodWidth });
-                        return;
-                    }
-                    let len = text.length, wi = ctxTextWidth, s;
-                    while (len && wi > ctxWidth - ctxPeriodWidth)
-                        wi = p.ctx.measureText(s = text.slice(0, --len)).width;
-                    const left = _left(wi + ctxPeriodWidth);
-                    p.ctx.fillText(s, left, bottom);
-                    p.ctx.fillText(period, left + wi, bottom);
-                }
-            },
-        };
-        const period = '...';
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//label.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$nl_switch = {
             prop: {
                 '#height': () => 44,
@@ -5242,292 +5327,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //multiselect.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_iospicker = {
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                '#width': () => 374,
-                non_current_facets_semi_count_max: $$.$me_atom2_prop(['@СвернутьРазвернуть.isOn'], ({ masters: [isOn] }) => isOn ? 4 : 12),
-                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids', '.non_current_facets_semi_count_max'], ({ masters: [option_ids, non_current_facets_semi_count_max] }) => Math.max(1, Math.min(non_current_facets_semi_count_max, option_ids.length + (option_ids.length < 5 ? -1 : option_ids.length < 7 ? 0 : 1)))),
-                '#height': $$.$me_atom2_prop(['.row_current_top', '.row_current_height'], ({ masters: [row_current_top, row_current_height] }) => 2 * row_current_top + row_current_height),
-                row_current_height: () => 38,
-                fontSize: $$.$me_atom2_prop(['.row_current_height'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
-                row_angles: $$.$me_atom2_prop(['.non_current_facets_semi_count'], ({ masters: [count] }) => {
-                    const step = 90 / (count + 2);
-                    const result = [];
-                    for (let i = 0; i <= count + 2; i++)
-                        result.push(i * step);
-                    return result;
-                }),
-                row_heights: $$.$me_atom2_prop(['.row_angles', '.row_current_height'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
-                row_label_heights: $$.$me_atom2_prop(['.row_angles', '.fontSize'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
-                row_count: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => (row_heights.length - 2) * 2 + 1),
-                row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')),
-                row_current_top: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => {
-                    let result = 0;
-                    for (let i = 1; i < row_heights.length - 1; i++)
-                        result += row_heights[i];
-                    return result;
-                }),
-                ofs: () => 0,
-                ofs_rem: $$.$me_atom2_prop(['.ofs', '.row_current_height'], ({ masters: [ofs, row_current_height] }) => {
-                    const result = ofs - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) * row_current_height;
-                    return result;
-                }),
-                rec_idx: $$.$me_atom2_prop(['.ofs', '.row_current_height', '.value', '.option_ids'], ({ masters: [ofs, row_current_height, id, ids], prev }) => {
-                    let result;
-                    if (prev == null) {
-                        const idx = ids.indexOf(id);
-                        if (~idx)
-                            result = idx;
-                    }
-                    if (result == null)
-                        result = -Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height);
-                    return result;
-                }, ({ val, prev }) => {
-                    if (prev == null)
-                        $$.a('.ofs', -val * $$.a('.row_current_height'));
-                    $$.a('.value', $$.a('.option_ids')[val]);
-                }),
-                on_change_value: $$.$me_atom2_prop(['.value', '.option_ids'], null, ({ val: [id, ids] }) => {
-                    const idx = ids.indexOf(id);
-                    if (~idx)
-                        $$.a('.rec_idx', idx);
-                }),
-                row_i_current: $$.$me_atom2_prop(['.ofs', '.row_count', '.row_current_height', '.rec_idx'], ({ masters: [ofs, row_count, row_current_height, rec_idx] }) => {
-                    const result = (rec_idx - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) % row_count + row_count) % row_count;
-                    return result;
-                }, ({ val, prev }) => {
-                    if (prev == null)
-                        return;
-                    for (let i = 0; i < $$.a('.row_count'); i++) {
-                        $$.a(`.row_top[${i}].#masters`, null);
-                        $$.a(`.row_top[${i}]`, null);
-                    }
-                }),
-                row_i_rel: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: ['.row_i_current', '.row_count'],
-                }, ({ key: [row_i], masters: [row_i_current, row_count] }) => {
-                    const row_count_semi = (row_count - 1) / 2;
-                    let result = +row_i - row_i_current;
-                    if (result > row_count_semi) {
-                        result = result - row_count;
-                    }
-                    else if (result < -row_count_semi) {
-                        result = row_count + result;
-                    }
-                    return result;
-                }),
-                row_top: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.row_i_current', '.row_count', '.row_i_rel[]'], ({ key: [row_i], masters: [row_i_current, row_count, row_i_rel] }) => {
-                        const result = [];
-                        if (!row_i_rel) {
-                            result.push('.row_current_top');
-                            result.push('.ofs_rem');
-                        }
-                        else {
-                            const i_rel_abs = Math.abs(row_i_rel);
-                            const i_rel_sign = Math.sign(row_i_rel);
-                            const row_i_top = (row_i_current + (i_rel_abs - 1) * i_rel_sign + row_count) % row_count;
-                            const row_i_height = i_rel_sign >= 0 ? row_i_top : (row_i_top + row_count - 1) % row_count;
-                            result.push(`.row_top[${row_i_top}]`);
-                            result.push(`.row_height[${row_i_height}]`);
-                            result.push(`.row_i_rel[]`);
-                        }
-                        return result;
-                    }),
-                }, ({ len, masters }) => {
-                    if (len <= 2) {
-                        const [row_current_top, ofs_rem] = masters;
-                        return row_current_top + ofs_rem;
-                    }
-                    else {
-                        const [row_top, row_height, row_i_rel] = masters;
-                        return row_top + row_height * Math.sign(row_i_rel);
-                    }
-                }),
-                lambda: $$.$me_atom2_prop(['.ofs_rem', '.row_current_height'], ({ masters: [ofs_rem, row_current_height] }) => {
-                    let result = Math.abs(ofs_rem) / row_current_height;
-                    if (ofs_rem < 0)
-                        result = 1 - result;
-                    return result;
-                }),
-                row_i_rel_abs_from: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
-                    const row_i_rel_abs = Math.abs(row_i_rel);
-                    const row_i_rel_sign = Math.sign(row_i_rel);
-                    const result = ofs_rem >= 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign > 0 ? -1 : 1);
-                    return result;
-                }),
-                row_i_rel_abs_to: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
-                    const row_i_rel_abs = Math.abs(row_i_rel);
-                    const row_i_rel_sign = Math.sign(row_i_rel);
-                    const result = ofs_rem < 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign < 0 ? -1 : 1);
-                    return result;
-                }),
-                row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_heights'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_heights] }) => {
-                    const result = (1 - lambda) * row_heights[row_i_rel_abs_from] + lambda * row_heights[row_i_rel_abs_to];
-                    return result;
-                }),
-                row_angle: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_angles', '.row_i_rel[]'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_angles, row_i_rel] }) => {
-                    const result = -Math.sign(row_i_rel) * ((1 - lambda) * row_angles[row_i_rel_abs_from] + lambda * row_angles[row_i_rel_abs_to]);
-                    return result;
-                }),
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                '#order': () => ['row', 'curtain', 'cursor'],
-                curtain: () => ['top', 'bottom'],
-            },
-            event: {
-                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-                wheelDrag: p => p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-            },
-            elem: {
-                СписокБарабан: () => ({
-                    prop: {
-                        '#ofsVer': () => -25,
-                        '#height': () => 25,
-                        '#cursor': () => 'pointer',
-                        '#ofsHor': () => 100,
-                        isOn: () => false,
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['.isOn'], ({ masters: [isOn] }) => isOn ? 'Барабан' : 'Список'),
-                    },
-                    style: {
-                        color: () => 'rgb(0, 112, 164)',
-                        userSelect: () => 'none',
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a('.isOn', !$$.a('.isOn'));
-                            return true;
-                        },
-                    },
-                }),
-                СвернутьРазвернуть: $$.$me_atom2_prop(['@СписокБарабан.isOn'], ({ masters: [isOn] }) => isOn ? null :
-                    {
-                        prop: {
-                            '#ofsVer': () => -25,
-                            '#height': () => 25,
-                            '#width': () => 90,
-                            '#cursor': () => 'pointer',
-                            isOn: () => false,
-                        },
-                        dom: {
-                            innerText: $$.$me_atom2_prop(['.isOn'], ({ masters: [isOn] }) => isOn ? 'Развернуть' : 'Свернуть'),
-                        },
-                        style: {
-                            color: () => 'rgb(0, 112, 164)',
-                            userSelect: () => 'none',
-                        },
-                        event: {
-                            clickOrTap: () => {
-                                $$.a('.isOn', !$$.a('.isOn'));
-                                return true;
-                            },
-                        },
-                    }),
-                cursor: () => ({
-                    prop: {
-                        '#ofsVer': '<.row_current_top',
-                        '#height': '<.row_current_height',
-                    },
-                    style: {
-                        borderTop: () => '1px solid #D5D5D3',
-                        borderBottom: () => '1px solid #D5D5D3',
-                        boxSizing: () => 'border-box',
-                    },
-                }),
-                curtain: $$.$me_atom2_prop({ keys: ['.curtain'] }, ({ key: [curtain] }) => ({
-                    prop: {
-                        '#height': '<.row_current_top',
-                        '#alignVer': () => $$.$me_align[curtain],
-                    },
-                    style: {
-                        background: () => `linear-gradient(${curtain == 'bottom' ? 0 : 180}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.6) 50%, rgba(255,255,255,0.3) 100%)`,
-                        pointerEvents: () => 'none',
-                    },
-                })),
-                row: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                    prop: {
-                        '#height': `<.row_height[${row_i}]`,
-                        '#ofsVer': `<.row_top[${row_i}]`,
-                    },
-                    style: {
-                        boxSizing: () => 'border-box',
-                        overflow: () => 'hidden',
-                    },
-                    elem: {
-                        label: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => null,
-                                '#alignHor': () => $$.$me_align.center,
-                                '#ofsVer': $$.$me_atom2_prop([`<<.row_angle[${row_i}]`, '.#height', '<.#height'], ({ masters: [angle, height_own, height_parent] }) => {
-                                    const result = Math.floor(Math.pow(Math.cos(angle * Math.PI / 180), 2) *
-                                        (height_parent - height_own) / 2);
-                                    return result;
-                                }),
-                                fontSize: '<<.fontSize',
-                            },
-                            style: {
-                                transform: $$.$me_atom2_prop([`<<.row_angle[${row_i}]`], ({ masters: [angle] }) => {
-                                    return `rotateX(${angle}deg)`;
-                                }),
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop([`<<.row_i_rel[${row_i}]`, '<<.option_ids', '<<.options', '<<.rec_idx'], ({ masters: [row_i_rel, option_ids, options, rec_idx] }) => {
-                                    const idx = rec_idx + row_i_rel;
-                                    if (!(0 <= idx && idx < option_ids.length))
-                                        return '';
-                                    const id = option_ids[idx];
-                                    return options[id].caption || id;
-                                }),
-                            },
-                        }),
-                    },
-                })),
-            },
-            style: {
-                perspective: () => '900px',
-                background: () => 'white',
-            },
-        };
-        let timer;
-        let prevDeltaY;
-        function wheel(deltaY) {
-            if (timer != null)
-                clearTimeout(timer);
-            const prop_ofs = $$.a.get('.ofs');
-            const prop_ofs_rem = $$.a.get('.ofs_rem');
-            timer = setTimeout(() => {
-                timer = null;
-                const ofs_rem = prop_ofs_rem.value();
-                if (!ofs_rem)
-                    return;
-                prop_ofs.value($$.$me_atom2_anim({ to: prop_ofs.value() - ofs_rem, duration: 100 }));
-            }, 100);
-            const min = -($$.a('.option_ids').length - 1) * $$.a('.row_current_height');
-            prop_ofs.value(Math.min(0, Math.max(min, prop_ofs.value() - deltaY)));
-            return true;
-        }
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//iospicker.js.map
 ;
 "use strict";
 var $;
@@ -5951,6 +5750,451 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_iospicker = {
+            dispatch: (dispatch_name, dispatch_arg) => {
+                console.warn($$.a.curr.name(), dispatch_name, dispatch_arg);
+                return true;
+            },
+            prop: {
+                СвернутьРазвернуть: $$.$me_atom2_prop(['/.СвернутьРазвернуть'], ({ masters: [isOn] }) => isOn, ({ val }) => {
+                    $$.a('/.СвернутьРазвернуть', val);
+                }),
+                СписокБарабан: $$.$me_atom2_prop(['/.СписокБарабан'], ({ masters: [isOn] }) => isOn, ({ val }) => {
+                    $$.a('/.СписокБарабан', val);
+                }),
+                itemMarginTopFirst: () => 16,
+                itemMarginBottomLast: () => 16,
+                itemMarginVer: () => 0,
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                '#width': () => 374,
+                non_current_facets_semi_count_max: () => 12,
+                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids', '.non_current_facets_semi_count_max', '.СвернутьРазвернуть'], ({ masters: [option_ids, non_current_facets_semi_count_max, СвернутьРазвернуть] }) => !СвернутьРазвернуть ?
+                    Math.max(1, Math.min(non_current_facets_semi_count_max, option_ids.length + (option_ids.length < 5 ? -1 : option_ids.length < 7 ? 0 : 1))) :
+                    Math.max(1, Math.min(non_current_facets_semi_count_max, Math.ceil(option_ids.length - 1) / 2 + (option_ids.length > 7 ? 1 : 0)))),
+                '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.СписокБарабан'], ({ masters: [СписокБарабан] }) => {
+                    if (!СписокБарабан) {
+                        return ['.row_current_top', '.row_current_height'];
+                    }
+                    else {
+                        return ['.option_ids', '.non_current_facets_semi_count_max', '.row_current_height', '.itemMarginTopFirst', '.itemMarginBottomLast', '.itemMarginVer'];
+                    }
+                }), ({ len, masters }) => {
+                    if (len == 2) {
+                        const [row_current_top, row_current_height] = masters;
+                        return 2 * row_current_top + row_current_height;
+                    }
+                    else {
+                        const [option_ids, non_current_facets_semi_count_max, row_current_height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
+                        const rec_count = option_ids.length;
+                        const max = non_current_facets_semi_count_max;
+                        const result = rec_count > max ?
+                            max * row_current_height :
+                            rec_count * row_current_height + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
+                        console.warn({ result, rec_count, max, row_current_height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer });
+                        return result;
+                    }
+                }),
+                row_current_height: () => 38,
+                fontSize: $$.$me_atom2_prop(['.row_current_height'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
+                row_angles: $$.$me_atom2_prop(['.non_current_facets_semi_count'], ({ masters: [count] }) => {
+                    const step = 90 / (count + 2);
+                    const result = [];
+                    for (let i = 0; i <= count + 2; i++)
+                        result.push(i * step);
+                    return result;
+                }),
+                row_heights: $$.$me_atom2_prop(['.row_angles', '.row_current_height'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
+                row_label_heights: $$.$me_atom2_prop(['.row_angles', '.fontSize'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
+                row_count: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => (row_heights.length - 2) * 2 + 1),
+                row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')),
+                row_current_top: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => {
+                    let result = 0;
+                    for (let i = 1; i < row_heights.length - 1; i++)
+                        result += row_heights[i];
+                    return result;
+                }),
+                ofs: () => 0,
+                ofs_rem: $$.$me_atom2_prop(['.ofs', '.row_current_height'], ({ masters: [ofs, row_current_height] }) => {
+                    const result = ofs - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) * row_current_height;
+                    return result;
+                }),
+                rec_idx: $$.$me_atom2_prop(['.ofs', '.row_current_height', '.value', '.option_ids'], ({ masters: [ofs, row_current_height, id, ids], prev }) => {
+                    let result;
+                    if (prev == null) {
+                        const idx = ids.indexOf(id);
+                        if (~idx)
+                            result = idx;
+                    }
+                    if (result == null)
+                        result = -Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height);
+                    return result;
+                }, ({ val, prev }) => {
+                    if (prev == null)
+                        $$.a('.ofs', -val * $$.a('.row_current_height'));
+                    $$.a('.value', $$.a('.option_ids')[val]);
+                }),
+                on_change_value: $$.$me_atom2_prop(['.value', '.option_ids'], null, ({ val: [id, ids] }) => {
+                    const idx = ids.indexOf(id);
+                    if (~idx)
+                        $$.a('.rec_idx', idx);
+                }),
+                row_i_current: $$.$me_atom2_prop(['.ofs', '.row_count', '.row_current_height', '.rec_idx'], ({ masters: [ofs, row_count, row_current_height, rec_idx] }) => {
+                    const result = (rec_idx - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) % row_count + row_count) % row_count;
+                    return result;
+                }, ({ val, prev }) => {
+                    if (prev == null)
+                        return;
+                    for (let i = 0; i < $$.a('.row_count'); i++) {
+                        $$.a(`.row_top[${i}].#masters`, null);
+                        $$.a(`.row_top[${i}]`, null);
+                    }
+                }),
+                row_i_rel: $$.$me_atom2_prop({
+                    keys: ['.row_i'],
+                    masters: ['.row_i_current', '.row_count'],
+                }, ({ key: [row_i], masters: [row_i_current, row_count] }) => {
+                    const row_count_semi = (row_count - 1) / 2;
+                    let result = +row_i - row_i_current;
+                    if (result > row_count_semi) {
+                        result = result - row_count;
+                    }
+                    else if (result < -row_count_semi) {
+                        result = row_count + result;
+                    }
+                    return result;
+                }),
+                row_top: $$.$me_atom2_prop({
+                    keys: ['.row_i'],
+                    masters: $$.$me_atom2_prop_masters(['.row_i_current', '.row_count', '.row_i_rel[]'], ({ key: [row_i], masters: [row_i_current, row_count, row_i_rel] }) => {
+                        const result = [];
+                        if (!row_i_rel) {
+                            result.push('.row_current_top');
+                            result.push('.ofs_rem');
+                        }
+                        else {
+                            const i_rel_abs = Math.abs(row_i_rel);
+                            const i_rel_sign = Math.sign(row_i_rel);
+                            const row_i_top = (row_i_current + (i_rel_abs - 1) * i_rel_sign + row_count) % row_count;
+                            const row_i_height = i_rel_sign >= 0 ? row_i_top : (row_i_top + row_count - 1) % row_count;
+                            result.push(`.row_top[${row_i_top}]`);
+                            result.push(`.row_height[${row_i_height}]`);
+                            result.push(`.row_i_rel[]`);
+                        }
+                        return result;
+                    }),
+                }, ({ len, masters }) => {
+                    if (len <= 2) {
+                        const [row_current_top, ofs_rem] = masters;
+                        return row_current_top + ofs_rem;
+                    }
+                    else {
+                        const [row_top, row_height, row_i_rel] = masters;
+                        return row_top + row_height * Math.sign(row_i_rel);
+                    }
+                }),
+                lambda: $$.$me_atom2_prop(['.ofs_rem', '.row_current_height'], ({ masters: [ofs_rem, row_current_height] }) => {
+                    let result = Math.abs(ofs_rem) / row_current_height;
+                    if (ofs_rem < 0)
+                        result = 1 - result;
+                    return result;
+                }),
+                row_i_rel_abs_from: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
+                    const row_i_rel_abs = Math.abs(row_i_rel);
+                    const row_i_rel_sign = Math.sign(row_i_rel);
+                    const result = ofs_rem >= 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign > 0 ? -1 : 1);
+                    return result;
+                }),
+                row_i_rel_abs_to: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
+                    const row_i_rel_abs = Math.abs(row_i_rel);
+                    const row_i_rel_sign = Math.sign(row_i_rel);
+                    const result = ofs_rem < 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign < 0 ? -1 : 1);
+                    return result;
+                }),
+                row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_heights'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_heights] }) => {
+                    const result = (1 - lambda) * row_heights[row_i_rel_abs_from] + lambda * row_heights[row_i_rel_abs_to];
+                    return result;
+                }),
+                row_angle: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_angles', '.row_i_rel[]'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_angles, row_i_rel] }) => {
+                    const result = -Math.sign(row_i_rel) * ((1 - lambda) * row_angles[row_i_rel_abs_from] + lambda * row_angles[row_i_rel_abs_to]);
+                    return result;
+                }),
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                '#order': () => ['row', 'curtain', 'cursor'],
+                curtain: () => ['top', 'bottom'],
+            },
+            event: {
+                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
+                    $$.$me_atom2_event_wheel_y_is(p.event) &&
+                    wheel(p.event._deltaY),
+                wheelDrag: p => p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
+                    $$.$me_atom2_event_wheel_y_is(p.event) &&
+                    wheel(p.event._deltaY),
+                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
+                    $$.$me_atom2_event_wheel_y_is(p.event) &&
+                    wheel(p.event._deltaY),
+            },
+            elem: {
+                СписокБарабан: () => ({
+                    base: ear,
+                    prop: {
+                        captions: () => ['Список', 'Барабан'],
+                        isOn: $$.$me_atom2_prop(['<.СписокБарабан'], ({ masters: [isOn] }) => isOn, ({ val }) => {
+                            $$.a('<.СписокБарабан', val);
+                        }),
+                    },
+                }),
+                СвернутьРазвернуть: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
+                    {
+                        base: ear,
+                        prop: {
+                            '#alignHor': () => $$.$me_align.right,
+                            captions: () => ['Свернуть', 'Развернуть'],
+                            isOn: $$.$me_atom2_prop(['<.СвернутьРазвернуть'], ({ masters: [isOn] }) => isOn, ({ val }) => {
+                                $$.a('<.СвернутьРазвернуть', val);
+                            }),
+                        },
+                    }),
+                cursor: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
+                    {
+                        prop: {
+                            '#ofsVer': '<.row_current_top',
+                            '#height': '<.row_current_height',
+                        },
+                        style: {
+                            borderTop: () => '1px solid #D5D5D3',
+                            borderBottom: () => '1px solid #D5D5D3',
+                            boxSizing: () => 'border-box',
+                        },
+                    }),
+                curtain: $$.$me_atom2_prop({ keys: ['.curtain'],
+                    masters: ['.СписокБарабан']
+                }, ({ key: [curtain], masters: [СписокБарабан] }) => {
+                    return СписокБарабан ? null : {
+                        prop: {
+                            '#height': '<.row_current_top',
+                            '#alignVer': () => $$.$me_align[curtain],
+                        },
+                        style: {
+                            background: () => `linear-gradient(${curtain == 'bottom' ? 0 : 180}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.6) 50%, rgba(255,255,255,0.3) 100%)`,
+                            pointerEvents: () => 'none',
+                        },
+                    };
+                }),
+                row: $$.$me_atom2_prop({ keys: ['.row_i'],
+                    masters: ['.СписокБарабан']
+                }, ({ key: [row_i], masters: [СписокБарабан] }) => СписокБарабан ? null : {
+                    prop: {
+                        '#height': `<.row_height[${row_i}]`,
+                        '#ofsVer': `<.row_top[${row_i}]`,
+                    },
+                    style: {
+                        boxSizing: () => 'border-box',
+                        overflow: () => 'hidden',
+                    },
+                    elem: {
+                        label: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#alignHor': () => $$.$me_align.center,
+                                '#ofsVer': $$.$me_atom2_prop([`<<.row_angle[${row_i}]`, '.#height', '<.#height'], ({ masters: [angle, height_own, height_parent] }) => {
+                                    const result = Math.floor(Math.pow(Math.cos(angle * Math.PI / 180), 2) *
+                                        (height_parent - height_own) / 2);
+                                    return result;
+                                }),
+                                fontSize: '<<.fontSize',
+                            },
+                            style: {
+                                transform: $$.$me_atom2_prop([`<<.row_angle[${row_i}]`], ({ masters: [angle] }) => {
+                                    return `rotateX(${angle}deg)`;
+                                }),
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop([`<<.row_i_rel[${row_i}]`, '<<.option_ids', '<<.options', '<<.rec_idx'], ({ masters: [row_i_rel, option_ids, options, rec_idx] }) => {
+                                    const idx = rec_idx + row_i_rel;
+                                    if (!(0 <= idx && idx < option_ids.length))
+                                        return '';
+                                    const id = option_ids[idx];
+                                    return options[id].caption || id;
+                                }),
+                            },
+                        }),
+                    },
+                }),
+                list: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [СписокБарабан] }) => !СписокБарабан ? null : {
+                    base: $$.$me_list,
+                    dispatch: (dispatch_name, dispatch_arg) => {
+                        if (dispatch_name == 'row_height_default') {
+                            const idx = dispatch_arg.idx;
+                            dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
+                                (!idx ? $$.a('.itemMarginTopFirst') : $$.a('.itemMarginBottomLast')) - $$.a('.itemMarginVer'));
+                            return true;
+                        }
+                        return false;
+                    },
+                    prop: {
+                        rec_count: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.length),
+                        row_height_min: '<.row_current_height',
+                        curtain_kind: () => 'white',
+                        header_height: () => 0,
+                        provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
+                        itemMarginTopFirst: '<.itemMarginTopFirst',
+                        itemMarginBottomLast: '<.itemMarginBottomLast',
+                        itemMarginVer: '<.itemMarginVer',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        rec_idx_selected: $$.$me_atom2_prop(['<.value', '<.option_ids'], ({ masters: [id, ids] }) => ids.indexOf(id)),
+                        row_i_selected: $$.$me_atom2_prop(['.rec_idx_selected', '.row_i_min', '.row_i_max', '.row_count', '.visible_idx_min', '.visible_idx_max'], ({ masters: [idx, row_i_min, row_i_max, row_count, visible_idx_min, visible_idx_max] }) => {
+                            if (idx < 0)
+                                return -1;
+                            if (row_i_max < 0)
+                                return -1;
+                            if (!(visible_idx_min <= idx && idx <= visible_idx_max))
+                                return -1;
+                            return (row_i_min + (idx - visible_idx_min)) % row_count;
+                        }, ({ val }) => console.log({ val })),
+                        header_content: () => ({}),
+                        row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
+                            base: row,
+                            prop: {
+                                row_i: () => row_i,
+                                rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
+                                id: $$.$me_atom2_prop(['<<<.option_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
+                                    return !~idx || idx >= rec_count ? '' : ids[idx];
+                                }),
+                                fontSize: '<<<.fontSize',
+                                options: '<<<.options',
+                                rec_count: '<<.rec_count',
+                                itemMarginTopFirst: '<<.itemMarginTopFirst',
+                                itemMarginBottomLast: '<<.itemMarginBottomLast',
+                                itemMarginVer: '<<.itemMarginVer',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<<<.value', $$.a('.id'));
+                                    $$.a.dispatch('<<<', null, 'didSelect');
+                                    return true;
+                                },
+                            },
+                            style: {
+                                background: () => 'white',
+                            },
+                        })),
+                    },
+                    elem: {
+                        header: () => null,
+                        cursor: $$.$me_atom2_prop(['.row_i_selected', '.rec_idx_selected'], ({ masters: [row_i_selected, rec_idx_selected] }) => row_i_selected < 0 ? null : {
+                            prop: {
+                                '#height': '<<.row_current_height',
+                                '#ofsVer': rec_idx_selected ?
+                                    `<.row_top[${row_i_selected}]` :
+                                    $$.$me_atom2_prop([`<.row_top[${row_i_selected}]`, '<.itemMarginTopFirst'], $$.$me_atom2_prop_compute_fn_sum()),
+                            },
+                            style: {
+                                borderTop: () => '1px solid #D5D5D3',
+                                borderBottom: () => '1px solid #D5D5D3',
+                                boxSizing: () => 'border-box',
+                            },
+                        })
+                    },
+                }),
+            },
+            style: {
+                perspective: () => '900px',
+                background: () => 'white',
+            },
+        };
+        const ear = {
+            prop: {
+                '#height': () => null,
+                '#width': () => null,
+                '#cursor': () => 'pointer',
+                '#ofsVer': $$.$me_atom2_prop(['.#height'], ({ masters: [height] }) => -height),
+                captions: $$.$me_atom2_prop_abstract(),
+            },
+            style: {
+                padding: () => 8,
+                paddingLeft: () => 16,
+                paddingRight: () => 16,
+                color: () => 'rgb(0, 112, 164)',
+                userSelect: () => 'none',
+                background: () => 'rgb(217, 220, 226)',
+                borderTop: () => '1px solid #bdc3d1',
+                borderLeft: () => '1px solid #bdc3d1',
+                borderRight: () => '1px solid #bdc3d1',
+                borderTopLeftRadius: () => '4px',
+                borderTopRightRadius: () => '4px',
+            },
+            dom: {
+                innerText: $$.$me_atom2_prop(['.isOn', '.captions'], ({ masters: [isOn, captions] }) => isOn ? captions[1] : captions[0]),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.isOn', !$$.a('.isOn'));
+                    return true;
+                },
+            },
+        };
+        const row = {
+            prop: {
+                '#cursor': () => 'pointer',
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+            },
+            control: {
+                label: () => ({
+                    base: $$.$me_label,
+                    prop: {
+                        fontSize: '<.fontSize',
+                        '#width': '<.#width',
+                        '#height': '<.#height',
+                        alignVer: () => $$.$me_align.center,
+                        alignHor: () => $$.$me_align.center,
+                        '#ofsVer': $$.$me_atom2_prop([`<.rec_idx`, '<.rec_count', '<.itemMarginTopFirst', '<.itemMarginBottomLast', '<.itemMarginVer'], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
+                            if (!~rec_idx)
+                                return 0;
+                            const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
+                                rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
+                                    0);
+                            return result;
+                        }),
+                        paddingHor: () => 8,
+                        text: $$.$me_atom2_prop([`<.rec_idx`, '<.options'], ({ masters: [rec_idx, options] }) => {
+                            if (!~rec_idx)
+                                return '';
+                            const id = Object.keys(options)[rec_idx];
+                            return options[id].caption || id;
+                        }),
+                    },
+                })
+            },
+        };
+        let timer;
+        let prevDeltaY;
+        function wheel(deltaY) {
+            if (timer != null)
+                clearTimeout(timer);
+            const prop_ofs = $$.a.get('.ofs');
+            const prop_ofs_rem = $$.a.get('.ofs_rem');
+            timer = setTimeout(() => {
+                timer = null;
+                const ofs_rem = prop_ofs_rem.value();
+                if (!ofs_rem)
+                    return;
+                prop_ofs.value($$.$me_atom2_anim({ to: prop_ofs.value() - ofs_rem, duration: 100 }));
+            }, 100);
+            const min = -($$.a('.option_ids').length - 1) * $$.a('.row_current_height');
+            prop_ofs.value(Math.min(0, Math.max(min, prop_ofs.value() - deltaY)));
+            return true;
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//iospicker.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_triangle = {
             prop: {
                 direction: () => $$.$me_rect_sides_enum.bottom,
@@ -6030,6 +6274,14 @@ var $;
                             parent: $$.a.get('/@app'),
                             cnf: {
                                 base: $$.$nl_iospicker,
+                                dispatch: (dispatch_name, dispatch_arg) => {
+                                    if (dispatch_arg == 'didSelect') {
+                                        prop_isDropdown.value(false);
+                                        return true;
+                                    }
+                                    console.error({ dispatch_name, dispatch_arg });
+                                    return false;
+                                },
                                 prop: {
                                     options: prop_options.name(),
                                     value: $$.$me_atom2_prop([prop_value.name()], null, ({ val }) => {
@@ -6063,19 +6315,10 @@ var $;
                                     return false;
                                 },
                                 prop: {
-                                    row_count: $$.$me_atom2_prop(['.#height', '.row_height_min', '.header_height', '.rec_count'], ({ len, masters: [height, row_height_min, header_height, rec_count] }) => 2 + (!len ? 5 :
-                                        rec_count < 0 ? 0 :
-                                            Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min))), ({ prev, val }) => {
-                                        const result = prev != null && prev > val ? prev : val;
-                                        return result;
-                                    }),
-                                    '#height': $$.$me_atom2_prop([prop_options.name(), prop_maxDrodownCount.name(), prop_clientRect.name(), '/.#viewportHeight', '.row_height_min', prop_itemMarginTopFirst.name(), prop_itemMarginBottomLast.name(), prop_itemMarginVer.name()
-                                    ], ({ masters: [options, maxDropdownCount, clientRect, viewportHeight, height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => Math.max(0, Math.min(Object.keys(options).length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom) / height))) * height + (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer)),
+                                    '#height': $$.$me_atom2_prop([prop_options.name(), prop_maxDrodownCount.name(), prop_clientRect.name(), '/.#viewportHeight', '.row_height_min', prop_itemMarginTopFirst.name(), prop_itemMarginBottomLast.name(), prop_itemMarginVer.name()], ({ masters: [options, maxDropdownCount, clientRect, viewportHeight, height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => Math.max(0, Math.min(Object.keys(options).length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom) / height))) * height + (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer)),
                                     '#width': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.right - clientRect.left),
-                                    '#ofsHor': $$.$me_atom2_prop([prop_clientRect.name()
-                                    ], ({ masters: [clientRect] }) => clientRect.left),
-                                    '#ofsVer': $$.$me_atom2_prop([prop_clientRect.name()
-                                    ], ({ masters: [clientRect] }) => clientRect.bottom),
+                                    '#ofsHor': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.left),
+                                    '#ofsVer': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom),
                                     '#isHover': () => false,
                                     rec_count: $$.$me_atom2_prop([prop_option_ids.name()], ({ masters: [ids] }) => ids.length),
                                     row_height_min: prop_height.name(),
@@ -6153,7 +6396,7 @@ var $;
                         prev.destroy();
                     }
                 }),
-                isTouch: () => true,
+                isTouch: '/.#isTouch',
                 byDesign: () => true,
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 '#cursor': () => 'pointer',
@@ -9828,6 +10071,8 @@ var $;
                 colorText: () => '#313745',
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
+                СвернутьРазвернуть: $$.$me_atom2_prop_store(false, (val) => typeof val == 'boolean'),
+                СписокБарабан: $$.$me_atom2_prop_store(false, (val) => typeof val == 'boolean'),
             });
             $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em' });
             $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
@@ -10188,7 +10433,7 @@ var $;
                 '#alignHor': $$.$me_atom2_prop(['.corner'], ({ masters: [corner] }) => corner.startsWith('left') ? $$.$me_align.left : $$.$me_align.right),
                 '#alignVer': $$.$me_atom2_prop(['.corner'], ({ masters: [corner] }) => corner.endsWith('Top') ? $$.$me_align.top : $$.$me_align.bottom),
                 def: $$.$me_atom2_prop(['.corner', '<.defs'], ({ masters: [corner, defs] }) => defs[corner]),
-                isOff: () => false,
+                isOff: $$.$me_atom2_prop_store(false, (val) => typeof val == 'boolean'),
                 '#order': () => ['content', 'switch'],
             },
             elem: {
