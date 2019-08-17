@@ -3379,13 +3379,15 @@ var $;
                     p.ctx.moveTo(Math.round(x = p.ctxLeft + ctxSemiLineWidth), Math.round(y = p.ctxTop + leftTopBorderRadius + ctxSemiLineWidth));
                     p.ctx.arc(Math.round(x += leftTopBorderRadius), Math.round(y -= 0), Math.round(leftTopBorderRadius), Math.PI, -Math.PI / 2, false);
                     const rightTopBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightTop || 0);
-                    p.ctx.lineTo(Math.round(x += p.ctxWidth - 2 * (rightTopBorderRadius + ctxStrokeWidth)), Math.round(y -= rightTopBorderRadius));
+                    p.ctx.lineTo(Math.round(x += p.ctxWidth - leftTopBorderRadius - rightTopBorderRadius - ctxStrokeWidth), Math.round(y -= leftTopBorderRadius));
+                    console.log(y);
                     p.ctx.arc(Math.round(x += 0), Math.round(y += rightTopBorderRadius), Math.round(rightTopBorderRadius), -Math.PI / 2, 0, false);
                     const rightBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightBottom || 0);
-                    p.ctx.lineTo(Math.round(x += rightBottomBorderRadius), Math.round(y += p.ctxHeight - 2 * (rightBottomBorderRadius + ctxStrokeWidth)));
+                    p.ctx.lineTo(Math.round(x += rightTopBorderRadius), Math.round(y += p.ctxHeight - rightTopBorderRadius - rightBottomBorderRadius - ctxStrokeWidth));
                     p.ctx.arc(Math.round(x -= rightBottomBorderRadius), Math.round(y += 0), Math.round(rightBottomBorderRadius), 0, Math.PI / 2, false);
                     const leftBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.leftBottom || 0);
-                    p.ctx.lineTo(Math.round(x -= p.ctxWidth - 2 * (leftBottomBorderRadius + ctxStrokeWidth)), Math.round(y += leftBottomBorderRadius));
+                    p.ctx.lineTo(Math.round(x -= p.ctxWidth - leftBottomBorderRadius - rightTopBorderRadius - ctxStrokeWidth), Math.round(y += rightBottomBorderRadius));
+                    console.log(y, p.ctxHeight, { rightTopBorderRadius, rightBottomBorderRadius, ctxStrokeWidth });
                     p.ctx.arc(Math.round(x -= 0), Math.round(y -= leftBottomBorderRadius), Math.round(leftBottomBorderRadius), Math.PI / 2, Math.PI, false);
                 }
                 p.ctx.closePath();
@@ -3405,24 +3407,25 @@ var $;
                         p.ctx.moveTo(Math.round(x = p.ctxLeft + ctxSemiLineWidth), Math.round(y = p.ctxTop + leftTopBorderRadius + ctxSemiLineWidth));
                         p.ctx.arc(Math.round(x += leftTopBorderRadius), Math.round(y -= 0), Math.round(leftTopBorderRadius), Math.PI, -Math.PI / 2, false);
                         const rightTopBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightTop || 0);
-                        p.ctx.lineTo(Math.round(x += p.ctxWidth - 2 * (rightTopBorderRadius + ctxStrokeWidth)), Math.round(y -= rightTopBorderRadius));
+                        p.ctx.lineTo(Math.round(x += p.ctxWidth - leftTopBorderRadius - rightTopBorderRadius - 2 * ctxStrokeWidth), Math.round(y -= leftTopBorderRadius));
                         p.ctx.arc(Math.round(x += 0), Math.round(y += rightTopBorderRadius), Math.round(rightTopBorderRadius), -Math.PI / 2, 0, false);
                         const rightBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.rightBottom || 0);
-                        p.ctx.lineTo(Math.round(x += rightBottomBorderRadius), Math.round(y += p.ctxHeight - 2 * (rightBottomBorderRadius + ctxStrokeWidth)));
+                        p.ctx.lineTo(Math.round(x += rightTopBorderRadius), Math.round(y += p.ctxHeight - rightTopBorderRadius - rightBottomBorderRadius - 2 * ctxStrokeWidth));
                         p.ctx.arc(Math.round(x -= rightBottomBorderRadius), Math.round(y += 0), Math.round(rightBottomBorderRadius), 0, Math.PI / 2, false);
                         const leftBottomBorderRadius = typeof p.ctxBorderRadius == 'number' ? p.ctxBorderRadius : (p.ctxBorderRadius.leftBottom || 0);
-                        p.ctx.lineTo(Math.round(x -= p.ctxWidth - 2 * (leftBottomBorderRadius + ctxStrokeWidth)), Math.round(y += leftBottomBorderRadius));
+                        p.ctx.lineTo(Math.round(x -= p.ctxWidth - leftBottomBorderRadius - rightTopBorderRadius - 2 * ctxStrokeWidth), Math.round(y += rightBottomBorderRadius));
                         p.ctx.arc(Math.round(x -= 0), Math.round(y -= leftBottomBorderRadius), Math.round(leftBottomBorderRadius), Math.PI / 2, Math.PI, false);
                     }
                     fill(Object.assign({}, p));
                 }
                 for (const side of $$.$me_enum_names($$.$me_rect_sides_enum)) {
                     const ctxWidth = !p.stroke.ctxWidth ? 0 : typeof p.stroke.ctxWidth === 'number' ? p.stroke.ctxWidth : p.stroke.ctxWidth[side];
+                    const ctxSemiLineWidth = ctxWidth / 2;
                     const style = !p.stroke.style ? null : typeof p.stroke.style === 'string' ? p.stroke.style : p.stroke.style[side];
                     switch (side) {
                         case 'left': {
                             p.ctx.beginPath();
-                            const x = p.ctxLeft + ctxWidth / 2;
+                            const x = p.ctxLeft + ctxSemiLineWidth;
                             p.ctx.moveTo(x, p.ctxTop + p.ctxHeight);
                             p.ctx.lineTo(x, p.ctxTop);
                             stroke({ ctx: p.ctx, stroke: { style, ctxWidth } });
@@ -3430,15 +3433,16 @@ var $;
                         }
                         case 'top': {
                             p.ctx.beginPath();
-                            const y = p.ctxTop + ctxWidth / 2;
+                            const y = p.ctxTop + ctxSemiLineWidth;
                             p.ctx.moveTo(p.ctxLeft, y);
+                            console.warn(y);
                             p.ctx.lineTo(p.ctxLeft + p.ctxWidth, y);
                             stroke({ ctx: p.ctx, stroke: { style, ctxWidth } });
                             break;
                         }
                         case 'right': {
                             p.ctx.beginPath();
-                            const x = p.ctxLeft + p.ctxWidth - ctxWidth / 2;
+                            const x = p.ctxLeft + p.ctxWidth - ctxSemiLineWidth;
                             p.ctx.moveTo(x, p.ctxTop);
                             p.ctx.lineTo(x, p.ctxTop + p.ctxHeight);
                             stroke({ ctx: p.ctx, stroke: { style, ctxWidth } });
@@ -3446,9 +3450,10 @@ var $;
                         }
                         case 'bottom': {
                             p.ctx.beginPath();
-                            const y = p.ctxTop + p.ctxHeight - ctxWidth / 2;
+                            const y = p.ctxTop + p.ctxHeight - ctxSemiLineWidth;
                             p.ctx.moveTo(p.ctxLeft + p.ctxWidth, y);
                             p.ctx.lineTo(p.ctxLeft, y);
+                            console.warn(y, p.ctxHeight, ctxWidth);
                             stroke({ ctx: p.ctx, stroke: { style, ctxWidth } });
                             break;
                         }
@@ -4427,18 +4432,19 @@ var $;
                 }
                 const colorBackground = $$.a('.colorBackground');
                 if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
+                    const ctxBorderRadius = {
+                        leftTop: p.pixelRatio * $$.a('.borderRadiusLeftTop'),
+                        rightTop: p.pixelRatio * $$.a('.borderRadiusRightTop'),
+                        rightBottom: p.pixelRatio * $$.a('.borderRadiusRightBottom'),
+                        leftBottom: p.pixelRatio * $$.a('.borderRadiusLeftBottom'),
+                    };
                     $$.$me_atom2_ctx_rect({
                         ctx: p.ctx,
                         ctxTop: p.ctxRect.top,
                         ctxLeft: p.ctxRect.left,
                         ctxWidth: p.ctxRect.right - p.ctxRect.left,
                         ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
-                        ctxBorderRadius: {
-                            leftTop: p.pixelRatio * $$.a('.borderRadiusLeftTop'),
-                            rightTop: p.pixelRatio * $$.a('.borderRadiusRightTop'),
-                            rightBottom: p.pixelRatio * $$.a('.borderRadiusRightBottom'),
-                            leftBottom: p.pixelRatio * $$.a('.borderRadiusLeftBottom'),
-                        },
+                        ctxBorderRadius,
                         fillStyle: colorBackground == 'transparent' ? null : colorBackground,
                         stroke: !borderHasWidth || !borderHasColor ? null : {
                             style: borderHasColorSame ? prevColor : colorBorder,
@@ -4572,10 +4578,10 @@ var $;
                         colorBorderLeft: $$.$me_atom2_prop(['.isSelected', '.idx', '<.idx'], ({ masters: [isSelected, idx, idx_selected] }) => isSelected ? '#008ecf' : !idx || idx == 2 && !idx_selected ? '#bdc3d1' : 'transparent'),
                         borderWidthRight: $$.$me_atom2_prop(['.isSelected', '.idx', '<.idx'], ({ masters: [isSelected, idx, idx_selected] }) => isSelected ? 1 : idx == 2 || !idx && idx_selected == 2 ? 1 : 0),
                         colorBorderRight: $$.$me_atom2_prop(['.isSelected', '.idx', '<.idx'], ({ masters: [isSelected, idx, idx_selected] }) => isSelected ? '#008ecf' : idx == 2 || !idx && idx_selected == 2 ? '#bdc3d1' : 'transparent'),
-                        borderTopLeftRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx ? 0 : 4),
-                        borderBottomLeftRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx ? 0 : 4),
-                        borderTopRightRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx != 2 ? 0 : 4),
-                        borderBottomRightRadius: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx != 2 ? 0 : 4),
+                        borderRadiusLeftTop: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx ? 0 : 4),
+                        borderRadiusLeftBottom: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx ? 0 : 4),
+                        borderRadiusRightTop: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx != 2 ? 0 : 4),
+                        borderRadiusRightBottom: $$.$me_atom2_prop(['.idx'], ({ masters: [idx] }) => idx != 2 ? 0 : 4),
                         colorBackground: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#f0f1f4' : 'transparent'),
                     },
                     prop_non_render: {
