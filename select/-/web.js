@@ -10542,7 +10542,7 @@ var $;
                                         'rmqt6': { caption: '6+' },
                                     };
                                     return result;
-                                }, fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)), '#height': () => 30, value: $$.$me_atom2_prop_store({
+                                }, fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)), '#width': () => 500, '#height': () => 30, value: $$.$me_atom2_prop_store({
                                     default: () => new Set(),
                                     valid: val => {
                                         let result = null;
