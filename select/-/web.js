@@ -4568,24 +4568,30 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_select = {
+        $$.$me_select = {
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop_abstract(),
-                colorBorder: () => '#bdc3d1',
-                colorBorderSelected: () => '#008ecf',
-                colorBackgroundSelected: () => '#f0f1f4',
-                borderRadius: () => 4,
-                borderWidth: () => 1,
-                paddingHor: () => 2,
+                colorBorder: $$.$me_atom2_prop_abstract(),
+                colorBorderSelected: $$.$me_atom2_prop_abstract(),
+                colorText: $$.$me_atom2_prop_abstract(),
+                colorTextSelected: $$.$me_atom2_prop_abstract(),
+                colorBackgroundSelected: $$.$me_atom2_prop_abstract(),
+                borderRadius: $$.$me_atom2_prop_abstract(),
+                borderWidth: $$.$me_atom2_prop_abstract(),
+                paddingHor: $$.$me_atom2_prop_abstract(),
+                '#width': $$.$me_atom2_prop_abstract(),
+                '#height': $$.$me_atom2_prop_abstract(),
+                option_width_min: $$.$me_atom2_prop_abstract(),
+                fontFamily: $$.$me_atom2_prop_abstract(),
+                fontWeight: $$.$me_atom2_prop_abstract(),
+                fontWeightSelected: $$.$me_atom2_prop_abstract(),
+                fontSize: $$.$me_atom2_prop_abstract(),
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
-                '#width': () => 440,
-                '#height': () => 32,
-                width_min: () => 40,
                 _option_width: $$.$me_atom2_prop({
                     keys: ['.option_ids'],
-                    masters: ['.width_min', `^option[]._textWidth`, `^option[].paddingLeft`, `^option[].paddingRight`],
-                }, ({ masters: [width_min, _textWidth, paddingLeft, paddingRight] }) => Math.max(width_min, _textWidth + paddingLeft + paddingRight)),
+                    masters: ['.option_width_min', `^option[]._textWidth`, `^option[].paddingLeft`, `^option[].paddingRight`],
+                }, ({ masters: [option_width_min, _textWidth, paddingLeft, paddingRight] }) => Math.max(option_width_min, _textWidth + paddingLeft + paddingRight)),
                 _width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [ids] }) => ids.map((id) => `._option_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
                 _width_excess: $$.$me_atom2_prop(['.#width', '._width_sum'], $$.$me_atom2_prop_compute_fn_diff()),
                 option_width: $$.$me_atom2_prop({
@@ -4614,7 +4620,7 @@ var $;
                     base: $$.$me_label,
                     prop: {
                         fontSize: '<.fontSize',
-                        fontWeight: '<.fontWeight',
+                        fontWeight: $$.$me_atom2_prop(['.isSelected', '<.fontWeightSelected', '<.fontWeight'], ({ masters: [isSelected, fontWeightSelected, fontWeight] }) => isSelected ? fontWeightSelected : fontWeight),
                         fontFamily: '<.fontFamily',
                         isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set ? value.has(id) : value == id),
                         paddingHor: '<.paddingHor',
@@ -4663,6 +4669,7 @@ var $;
                         borderRadiusRightTop: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
                         borderRadiusRightBottom: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
                         colorBackground: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected'], ({ masters: [isSelected, colorBackgroundSelected] }) => isSelected ? colorBackgroundSelected : 'transparent'),
+                        colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
                     },
                     prop_non_render: {
                         '#cursor': $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set || value != id ? 'pointer' : null),
@@ -4687,6 +4694,38 @@ var $;
                         },
                     },
                 })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_select = {
+            base: $$.$me_select,
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                colorBorder: () => '#bdc3d1',
+                colorBorderSelected: () => '#008ecf',
+                colorBackgroundSelected: () => '#f0f1f4',
+                borderRadius: () => 4,
+                borderWidth: () => 1,
+                paddingHor: () => 0,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                '#width': () => 440,
+                '#height': () => 32,
+                option_width_min: () => 40,
+                colorText: '/.colorText',
+                colorTextSelected: '.colorText',
+                fontFamily: '/.fontFamily',
+                fontWeight: '/.fontWeight',
+                fontWeightSelected: '.fontWeight',
+                fontSize: '.em',
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -5276,18 +5315,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //switch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_multiselect = {
-            base: $$.$nl_select,
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//multiselect.js.map
 ;
 "use strict";
 var $;
@@ -6942,7 +6969,7 @@ var $;
                         row: () => 3,
                         visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
                         label: () => 'Комнаты',
-                        type: 'multiselect',
+                        type: 'select',
                         options: () => ({
                             '1': {},
                             '2': {},
@@ -7397,11 +7424,11 @@ var $;
                     const def = params[param_name];
                     let ctrl;
                     switch (def.type) {
-                        case 'multiselect': {
+                        case 'select': {
                             return Object.assign({ prop: Object.assign({}, prop_common(def)) }, cnf_common(def, {
                                 elem: {
-                                    multiselect: () => ({
-                                        base: $$.$nl_multiselect,
+                                    select: () => ({
+                                        base: $$.$nl_select,
                                         prop: {
                                             options: def.options,
                                             value: $$.$me_atom2_prop([`<<.order`], ({ masters: [order] }) => order.params[param_name] || new Set(), ({ val }) => {
@@ -10507,15 +10534,15 @@ var $;
                                     const result = {
                                         'free': { caption: 'Св.планировка' },
                                         'studio': { caption: 'Студия' },
-                                        'rmqt1': { caption: '1' },
-                                        'rmqt2': { caption: '2' },
+                                        'rmqt1': { caption: '1-комн.кв.' },
+                                        'rmqt2': { caption: '2-комн.' },
                                         'rmqt3': { caption: '3' },
                                         'rmqt4': { caption: '4' },
                                         'rmqt5': { caption: '5' },
                                         'rmqt6': { caption: '6+' },
                                     };
                                     return result;
-                                }, value: $$.$me_atom2_prop_store({
+                                }, fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)), '#height': () => 30, value: $$.$me_atom2_prop_store({
                                     default: () => new Set(),
                                     valid: val => {
                                         let result = null;
@@ -10539,10 +10566,10 @@ var $;
         const defaults = {
             '#width': () => 440,
             '#height': () => 32,
-            width_min: () => 36,
+            option_width_min: () => 36,
             value: $$.$me_atom2_prop_store({
                 default: () => '0',
-                valid: (val) => val == '0' || val == '1' || val == '2' ? val : null,
+                valid: (val) => ~$$.a('.option_ids').indexOf(val) ? val : null,
             }),
         };
     })($$ = $.$$ || ($.$$ = {}));
