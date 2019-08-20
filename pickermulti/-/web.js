@@ -5266,6 +5266,10 @@ var $;
                                 boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
                                 background: () => 'white',
                             },
+                            event: {
+                                mousedown: p => p.isInRect(p.event.clientX, p.event.clientY),
+                                touchstart: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY),
+                            },
                         }
                     });
                     $$.a('.instance', list);
@@ -5283,6 +5287,7 @@ var $;
                     }
                 }),
                 isTouch: '/.#isTouch',
+                none: () => 'ничего не выбрано',
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 '#cursor': () => 'pointer',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
@@ -5349,8 +5354,8 @@ var $;
                         textOverflow: () => 'ellipses',
                     },
                     dom: {
-                        innerText: $$.$me_atom2_prop(['<.value', '<.options', '<.option_ids'], ({ masters: [value, options, option_ids] }) => {
-                            let result = 'не выбрано ничего';
+                        innerText: $$.$me_atom2_prop(['<.value', '<.options', '<.option_ids', '<.none'], ({ masters: [value, options, option_ids, none] }) => {
+                            let result = none;
                             if (value.size) {
                                 const id = [...value].sort((valA, valB) => option_ids.indexOf(valA) - option_ids.indexOf(valB))[0];
                                 result = options[id].caption || id;
@@ -10830,10 +10835,10 @@ var $;
                     prop: {
                         demoFor: () => '$nl_pickermulti',
                         defs: () => ({
-                            leftTop: Object.assign({}, defaults, { options: () => options_source }),
-                            rightTop: Object.assign({}, defaults, { options: () => options_buildType }),
-                            leftBottom: Object.assign({}, defaults, { options: () => options_source, isTouch: () => true }),
-                            rightBottom: Object.assign({}, defaults, { isTouch: () => true, options: () => options_buildType }),
+                            leftTop: Object.assign({}, defaults, { options: () => options_source, none: () => 'Все' }),
+                            rightTop: Object.assign({}, defaults, { options: () => options_buildType, none: () => 'не важно' }),
+                            leftBottom: Object.assign({}, defaults, { options: () => options_source, isTouch: () => true, none: () => 'Все' }),
+                            rightBottom: Object.assign({}, defaults, { isTouch: () => true, options: () => options_buildType, none: () => 'не важно' }),
                         }),
                     },
                     style: {
