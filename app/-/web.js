@@ -5246,7 +5246,7 @@ var $;
                 '#width': () => 440,
                 '#height': () => 32,
                 option_width_min: () => 40,
-                colorText: '/.colorText',
+                colorText: () => '#0070a4',
                 colorTextSelected: '.colorText',
                 fontFamily: '/.fontFamily',
                 fontWeight: '/.fontWeight',
@@ -7094,7 +7094,7 @@ var $;
                                                     width: 210,
                                                     text: 'Только апартаменты',
                                                 } : {
-                                                    width: 40,
+                                                    width: 60,
                                                     text: '...',
                                                 } }
                                         }),
@@ -7134,7 +7134,7 @@ var $;
                                                     width: 210,
                                                     text: 'Только смежные комнаты',
                                                 } : {
-                                                    width: 40,
+                                                    width: 60,
                                                     text: '...',
                                                 } }
                                         }),
@@ -7230,7 +7230,7 @@ var $;
                                             },
                                             except: { caption: ({ isSelected }) => isSelected ? 'Продажа по ипотеке невозможна' : {
                                                     text: '...',
-                                                    width: 40,
+                                                    width: 60,
                                                 }
                                             },
                                         }),
@@ -7252,7 +7252,7 @@ var $;
                                                 } },
                                             '2': { caption: ({ isSelected }) => isSelected ? 'Только с альтернативой' : {
                                                     text: '...',
-                                                    width: 40,
+                                                    width: 60,
                                                 } },
                                         }),
                                     },
