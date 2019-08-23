@@ -4437,22 +4437,13 @@ var $;
     (function ($$) {
         $$.$nl_search_tabs = {
             elem: {
-                new: () => ({
+                tab: $$.$me_atom2_prop({ keys: ['<.order_ids'] }, ({ key: [id] }) => ({
                     base: tab,
                     prop: {
-                        idx: () => '',
+                        id: () => id,
                     },
                     dom: {
-                        innerText: () => 'Новый заказ +'.toUpperCase(),
-                    },
-                }),
-                tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
-                    base: tab,
-                    prop: {
-                        idx: () => idx,
-                    },
-                    dom: {
-                        innerText: `<<.order_title[${idx}]`,
+                        innerText: id != 'new' ? `<<.order_title[${id}]` : (() => 'Новый заказ +'.toUpperCase()),
                     },
                 })),
             },
@@ -4460,12 +4451,12 @@ var $;
         const tab = {
             node: 'span',
             prop: {
-                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
+                isSelected: $$.$me_atom2_prop(['<<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
                 '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
             },
             event: {
                 clickOrTap: () => {
-                    $$.a('<<.selected', $$.a('.idx'));
+                    $$.a('<<.selected', $$.a('.id'));
                     return true;
                 },
             },
@@ -10823,28 +10814,31 @@ var $;
     (function ($$) {
         $$.$nl_search_workspace = {
             prop: {
-                orders: () => [
-                    {
+                orders: () => ({
+                    'new': {
+                        id: 'new',
+                    },
+                    'id2': {
                         id: 'id2',
                         title: 'Заказ 2',
                         params: {
                             rmqt: new Set(['1', '2']),
                         },
                     },
-                    {
+                    'id1': {
                         id: 'id1',
                         title: 'Заказ 1',
                         params: {
                             rmqt: new Set(['4', '6+']),
                         },
                     },
-                ],
-                order_idx: $$.$me_atom2_prop_keys(['.orders']),
-                order: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.orders'] }, ({ key: [idx], masters: [orders] }) => orders[idx]),
-                order_title: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.order[]'] }, ({ masters: [order] }) => order.title.toUpperCase()),
+                }),
+                order_ids: $$.$me_atom2_prop_keys(['.orders']),
+                order: $$.$me_atom2_prop({ keys: ['.order_ids'], masters: ['.orders'] }, ({ key: [id], masters: [orders] }) => orders[id]),
+                order_title: $$.$me_atom2_prop({ keys: ['.order_ids'], masters: ['.order[]'] }, ({ masters: [order] }) => order.title.toUpperCase()),
                 selected: $$.$me_atom2_prop_store({
-                    default: () => '',
-                    valid: (val) => ~$$.a('.order_idx').indexOf(val) ? val : null,
+                    default: () => $$.a('.order_ids')[0],
+                    valid: (val) => val == 'new' || $$.a('.orders')[val] ? val : null,
                 }),
                 alt: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.selected'], ({ masters: [selected] }) => [`.order[${selected}]`]), ({ masters: [order] }) => !(order.params && order.params['Область'] == 'only'), ({ val }) => console.warn(val)),
                 param_modes: $$.$me_atom2_prop(['.alt'], ({ masters: [alt] }) => ({
@@ -10872,21 +10866,21 @@ var $;
                         '#ofsVer': () => 16,
                     },
                 }),
-                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => selected ? prev || null : {
+                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => selected != 'new' ? prev || null : {
                     type: '$nl_search_new',
                     base: $$.$nl_search_new,
                     prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected),
+                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected != 'new'),
                         '#ofsVer': '<@tabs.#height',
                         '#height': $$.$me_atom2_prop(['<.#height', '<@tabs.#height'], ({ masters: [height_parent, height_tabs] }) => height_parent - height_tabs),
                     },
                 }),
-                panelParam: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => !selected ? prev || null : {
+                panelParam: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => selected == 'new' ? prev || null : {
                     type: '$nl_search_panel_param',
                     base: $$.$nl_search_panel_param,
                     prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
-                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`), ({ val }) => {
+                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new'),
+                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new' ? null : $$.a(`<.order[${selected}]`), ({ val }) => {
                             $$.a(`<.order[${$$.a('<.selected')}]`, val, true);
                         }),
                         '#ofsVer': '<@tabs.#height',
@@ -10900,13 +10894,13 @@ var $;
                         overflow: () => 'hidden',
                     },
                 }),
-                panelResult: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => !selected ? prev || null : {
+                panelResult: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => selected == 'new' ? prev || null : {
                     type: '$nl_search_panel_result',
                     base: $$.$nl_search_panel_result,
                     prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
-                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
-                        mode: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? '' : $$.a(`<.order[${selected}]`).result_mode || 'ТАБЛИЦА', ({ val }) => {
+                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new'),
+                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new' ? null : $$.a(`<.order[${selected}]`)),
+                        mode: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new' ? '' : $$.a(`<.order[${selected}]`).result_mode || 'ТАБЛИЦА', ({ val }) => {
                             if (!val)
                                 return;
                             const order = $$.a(`.order`);
