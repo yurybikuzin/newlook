@@ -6977,9 +6977,13 @@ var $;
         const prop_common = (def, p) => ({
             row: def.row,
             '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space', '<.alt'], ({ masters: [row, row_height, row_space, alt] }) => (alt ? 8 : 13) + row * (row_height + row_space) + (p && p.ofsVer || 0)),
-            '#ofsHor': '<.row_left',
             '#height': '<.row_height',
-            '#width': '<.row_width',
+            col_space: def.col_space || (() => 16),
+            col_count: def.col_count || (() => 1),
+            col_span: def.col_span || (() => 1),
+            col: def.col,
+            '#width': !def.col_count ? '<.row_width' : $$.$me_atom2_prop(['<.row_width', '.col_space', '.col_count', '.col_span'], ({ masters: [width, col_space, col_count, col_span] }) => Math.round((width - col_space * (col_count - 1)) / col_count) * col_span + col_space * (col_span - 1)),
+            '#ofsHor': !def.col_count || !def.col ? '<.row_left' : $$.$me_atom2_prop(['<.row_left', '<.row_width', '.col_space', '.col_count', '.col'], ({ masters: [left, width, col_space, col_count, col] }) => left + col * (Math.round((width - col_space * (col_count - 1)) / col_count) + col_space)),
         });
         $$.$nl_search_panel_param = {
             base: $$.$nl_search_panel,
@@ -7476,7 +7480,90 @@ var $;
                                     },
                                 },
                             },
-                            Этаж: {
+                            'Этаж/Этажность': !alt ? null : {
+                                icon: 'level',
+                                params: {
+                                    Этаж: {
+                                        row: () => 0,
+                                        type: 'diap',
+                                        label: () => 'Этаж',
+                                        label_width: () => 50,
+                                        diap_space: () => 16,
+                                    },
+                                    ПервыйЭтаж: {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 230,
+                                                    text: 'Можно первый этаж',
+                                                } : {
+                                                    text: 'Можно',
+                                                    width: 100,
+                                                } },
+                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме первого этажа' : 'Кроме' },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 181,
+                                                    text: 'Только первый этаж',
+                                                } : {
+                                                    text: 'Только',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                    ПоследнийЭтаж: {
+                                        row: () => 2,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? {
+                                                    text: 'Можно последний этаж',
+                                                    width: 230,
+                                                } : {
+                                                    text: 'Можно',
+                                                    width: 100,
+                                                } },
+                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме последнего этажа' : 'Кроме' },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 181,
+                                                    text: 'Только последний этаж',
+                                                } : {
+                                                    text: 'Только',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                    Этажность: {
+                                        row: () => 3,
+                                        type: 'diap',
+                                        label: () => 'Этажность',
+                                        label_width: () => 110,
+                                        diap_space: () => 16,
+                                    },
+                                    Лифт: {
+                                        row: () => 4,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: { caption: ({ isSelected }) => isSelected ? 'Можно без лифта' : {
+                                                    text: 'Не важно',
+                                                    width: 100,
+                                                } },
+                                            exists: { caption: ({ isSelected, val }) => val != 'only' ? {
+                                                    text: 'С лифтом',
+                                                    width: isSelected ? null : 100,
+                                                } : {
+                                                    text: 'Есть',
+                                                    width: 60,
+                                                }
+                                            },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'С пассажирским и грузовым лифтом' : {
+                                                    text: 'Пасс. + груз.',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                },
+                            },
+                            Этаж: alt ? null : {
                                 icon: 'level',
                                 params: {
                                     Этаж: {
@@ -7533,14 +7620,14 @@ var $;
                             Дом: {
                                 icon: 'icons-8-building',
                                 params: {
-                                    Этажность: {
+                                    Этажность: alt ? null : {
                                         row: () => 0,
                                         type: 'diap',
                                         label: () => 'Этажность',
                                         label_width: () => 110,
                                         diap_space: () => 16,
                                     },
-                                    Лифт: {
+                                    Лифт: alt ? null : {
                                         row: () => 1,
                                         type: 'select',
                                         options: () => ({
@@ -7563,7 +7650,7 @@ var $;
                                         }),
                                     },
                                     КлассЖилья: {
-                                        row: () => 2,
+                                        row: () => 2 - (alt ? 2 : 0),
                                         type: 'pickermulti',
                                         label: () => 'Класс жилья',
                                         label_width: () => 110,
@@ -7576,7 +7663,7 @@ var $;
                                         }),
                                     },
                                     ТипДома: {
-                                        row: () => 3,
+                                        row: () => 3 - (alt ? 2 : 0),
                                         type: 'pickermulti',
                                         label: () => 'Тип дома',
                                         label_width: () => 110,
@@ -7594,7 +7681,7 @@ var $;
                                         }),
                                     },
                                     СерияДома: {
-                                        row: () => 4,
+                                        row: () => 4 - (alt ? 2 : 0),
                                         type: 'pickermulti',
                                         label: () => 'Серия дома',
                                         label_width: () => 110,
@@ -7884,14 +7971,14 @@ var $;
                                         }),
                                     },
                                     ГодПостройки: {
-                                        row: () => 5,
+                                        row: () => 5 - (alt ? 2 : 0),
                                         type: 'diap',
                                         label: () => 'Год постройки',
                                         label_width: () => 110,
                                         diap_space: () => 16,
                                     },
                                     ПодСнос: {
-                                        row: () => 6,
+                                        row: () => 6 - (alt ? 2 : 0),
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? 'Можно в доме под снос' : {
@@ -7909,7 +7996,7 @@ var $;
                                         }),
                                     },
                                     Новостройки: {
-                                        row: () => 7,
+                                        row: () => 7 - (alt ? 2 : 0),
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
@@ -7958,7 +8045,26 @@ var $;
                             Объявление: {
                                 icon: 'icons-8-create-new-3',
                                 params: {
-                                    photo: {
+                                    photo: alt ? {
+                                        row: () => 0,
+                                        type: 'select',
+                                        col_count: () => 2,
+                                        col: () => 0,
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => ({
+                                                    width: 60,
+                                                    text: 'Все',
+                                                }) },
+                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с фото' : {
+                                                    text: 'С фото',
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    text: 'Без фото',
+                                                } : {
+                                                    text: '...',
+                                                } },
+                                        })
+                                    } : {
                                         row: () => 0,
                                         type: 'select',
                                         options: () => ({
@@ -8103,7 +8209,7 @@ var $;
                             valid: (val) => typeof val == 'string' && ~$$.a('.option_ids').indexOf(val) ? val : null,
                         }),
                         params: $$.$me_atom2_prop(['.value', '.options'], ({ masters: [value, options] }) => options[value].params || {}),
-                        param_ids: $$.$me_atom2_prop_keys(['.params']),
+                        param_ids: $$.$me_atom2_prop_keys(['.params'], true),
                         row_height: () => row_height,
                         row_space: () => row_space,
                         row_left: $$.$me_atom2_prop(['.option_width', '.marginHor'], $$.$me_atom2_prop_compute_fn_sum()),
