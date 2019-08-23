@@ -7388,7 +7388,7 @@ var $;
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: {
-                                                    width: 90,
+                                                    width: 85,
                                                     text: 'Не важно'
                                                 } },
                                             only: { caption: ({ val }) => val != 'except' ?
@@ -7413,7 +7413,7 @@ var $;
                                                     text: 'Можно с альтернативой',
                                                 } : {
                                                     text: 'Не важно',
-                                                    width: 90,
+                                                    width: 85,
                                                 } },
                                             '1': { caption: ({ isSelected, val }) => isSelected ? 'Только прямая продажа' : {
                                                     text: 'Кроме',
@@ -7429,27 +7429,27 @@ var $;
                                         row: () => 2,
                                         type: 'diap',
                                         label: () => 'Цена',
-                                        label_width: () => 90,
+                                        label_width: () => 85,
                                         diap_space: () => 16,
                                     },
                                     price_per_sq: {
                                         row: () => 3,
                                         type: 'diap',
                                         label: () => 'Цена за м²',
-                                        label_width: () => 90,
+                                        label_width: () => 85,
                                         diap_space: () => 16,
                                     },
                                     'ДинамикаЦены': {
                                         row: () => 4,
                                         type: 'select',
                                         options: () => ({
-                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 90 }) },
+                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 85 }) },
                                             '1': { caption: ({ isSelected, val }) => val != '2' ? 'Понижение цены' : 'Понижение' },
                                             '2': { caption: ({ isSelected }) => isSelected ? {
                                                     width: 176,
                                                     text: 'Повышение цены',
                                                 } : {
-                                                    width: 160,
+                                                    width: 162,
                                                     text: 'Повышение'
                                                 } },
                                         }),
@@ -7458,13 +7458,13 @@ var $;
                                         row: () => 5,
                                         type: 'select',
                                         options: () => ({
-                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 90 }) },
+                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 85 }) },
                                             '1': { caption: ({ isSelected, val }) => val != '2' ? 'Только с бонусом агенту' : 'С бонусом' },
                                             '2': { caption: ({ isSelected }) => isSelected ? {
                                                     width: 176,
                                                     text: 'Без бонуса агенту',
                                                 } : {
-                                                    width: 160,
+                                                    width: 162,
                                                     text: 'Без бонуса',
                                                 } },
                                         }),
@@ -7478,7 +7478,7 @@ var $;
                                         row: () => 0,
                                         type: 'diap',
                                         label: () => 'Этаж',
-                                        label_width: () => 50,
+                                        label_width: () => 85,
                                         diap_space: () => 16,
                                     },
                                     ПервыйЭтаж: {
@@ -7486,11 +7486,11 @@ var $;
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 230,
+                                                    width: 210,
                                                     text: 'Можно первый этаж',
                                                 } : {
                                                     text: 'Можно',
-                                                    width: 100,
+                                                    width: 85,
                                                 } },
                                             exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме первого этажа' : 'Кроме' },
                                             only: { caption: ({ isSelected }) => isSelected ? {
@@ -7498,7 +7498,7 @@ var $;
                                                     text: 'Только первый этаж',
                                                 } : {
                                                     text: 'Только',
-                                                    width: 100,
+                                                    width: 110,
                                                 } },
                                         }),
                                     },
@@ -7508,10 +7508,10 @@ var $;
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? {
                                                     text: 'Можно последний этаж',
-                                                    width: 230,
+                                                    width: 210,
                                                 } : {
                                                     text: 'Можно',
-                                                    width: 100,
+                                                    width: 85,
                                                 } },
                                             exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме последнего этажа' : 'Кроме' },
                                             only: { caption: ({ isSelected }) => isSelected ? {
@@ -7519,7 +7519,7 @@ var $;
                                                     text: 'Только последний этаж',
                                                 } : {
                                                     text: 'Только',
-                                                    width: 100,
+                                                    width: 110,
                                                 } },
                                         }),
                                     },
@@ -7527,28 +7527,30 @@ var $;
                                         row: () => 3,
                                         type: 'diap',
                                         label: () => 'Этажность',
-                                        label_width: () => 110,
+                                        label_width: () => 85,
                                         diap_space: () => 16,
                                     },
                                     Лифт: {
                                         row: () => 4,
                                         type: 'select',
                                         options: () => ({
-                                            no_matter: { caption: ({ isSelected }) => isSelected ? 'Можно без лифта' : {
+                                            no_matter: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 210,
+                                                    text: 'Можно без лифта'
+                                                } : {
                                                     text: 'Не важно',
-                                                    width: 100,
+                                                    width: 85,
                                                 } },
                                             exists: { caption: ({ isSelected, val }) => val != 'only' ? {
                                                     text: 'С лифтом',
-                                                    width: isSelected ? null : 100,
                                                 } : {
                                                     text: 'Есть',
-                                                    width: 60,
+                                                    width: 85,
                                                 }
                                             },
                                             only: { caption: ({ isSelected }) => isSelected ? 'С пассажирским и грузовым лифтом' : {
                                                     text: 'Пасс. + груз.',
-                                                    width: 100,
+                                                    width: 110,
                                                 } },
                                         }),
                                     },
@@ -8051,6 +8053,7 @@ var $;
                                             only: { caption: ({ isSelected }) => isSelected ? {
                                                     text: 'Без фото',
                                                 } : {
+                                                    width: 44,
                                                     text: '...',
                                                 } },
                                         })
@@ -8089,6 +8092,7 @@ var $;
                                             only: { caption: ({ isSelected }) => isSelected ? {
                                                     text: 'Без видео',
                                                 } : {
+                                                    width: 44,
                                                     text: '...',
                                                 } },
                                         })
