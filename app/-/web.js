@@ -906,7 +906,7 @@ var $;
         $$.$me_atom2_prop_compute_fn_diff = (initial) => initial === void 0 ? compute_fn_diff :
             (p) => compute_fn_diff(p, initial);
         const compute_fn_diff = (p, initial) => p.masters.reduce((result, val, idx) => result + (!idx ? val : -val), initial === void 0 ? 0 : initial);
-        $$.$me_atom2_prop_keys = (masters) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]));
+        $$.$me_atom2_prop_keys = (masters, strip_null = false) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]).filter((key) => !strip_null || masters[0][key] != null));
         function $me_atom2_prop_same_def(prop_def, props) {
             const result = {};
             for (const prop of props)
@@ -6976,7 +6976,7 @@ var $;
         const row_space = 20;
         const prop_common = (def, p) => ({
             row: def.row,
-            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'], ({ masters: [row, row_height, row_space] }) => 13 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
+            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space', '<.alt'], ({ masters: [row, row_height, row_space, alt] }) => (alt ? 8 : 13) + row * (row_height + row_space) + (p && p.ofsVer || 0)),
             '#ofsHor': '<.row_left',
             '#height': '<.row_height',
             '#width': '<.row_width',
@@ -7013,7 +7013,8 @@ var $;
                     prop: {
                         '#ofsVer': () => 74,
                         '#height': $$.$me_atom2_prop(['<.#height', '<@found.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
-                        options: () => ({
+                        alt: '<<.alt',
+                        options: $$.$me_atom2_prop(['.alt'], ({ masters: [alt] }) => ({
                             Местоположение: {
                                 icon: 'icons-8-place-marker',
                                 params: {
@@ -7075,7 +7076,7 @@ var $;
                                     },
                                 },
                             },
-                            Квартира: {
+                            Квартира: alt ? null : {
                                 icon: 'icons-8-key',
                                 params: {
                                     apart: {
@@ -7209,6 +7210,163 @@ var $;
                                     },
                                     okna: {
                                         row: () => 9,
+                                        type: 'select',
+                                        options: () => ({
+                                            '0': { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Не важно, куда выходят окна'
+                                                } : {
+                                                    width: 90,
+                                                    text: 'Не важно',
+                                                } },
+                                            '1': { caption: ({ isSelected }) => isSelected ? 'Окна только во двор' : 'Во двор' },
+                                            '2': { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 210,
+                                                    text: 'Окна только на улицу',
+                                                } : 'На улицу' },
+                                        }),
+                                    },
+                                },
+                            },
+                            'Квартира: основные': !alt ? null : {
+                                icon: 'icons-8-key',
+                                params: {
+                                    apart: {
+                                        row: () => 0,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: {
+                                                caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Можно апартаменты',
+                                                } : {
+                                                    width: 90,
+                                                    text: 'Не важно',
+                                                },
+                                            },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
+                                            except: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 210,
+                                                    text: 'Только апартаменты',
+                                                } : {
+                                                    width: 60,
+                                                    text: '...',
+                                                } }
+                                        }),
+                                    },
+                                    rmqt: {
+                                        row: () => 1,
+                                        type: 'pickermulti',
+                                        label: () => 'Квартира',
+                                        label_width: () => 90,
+                                        none: () => 'с любым количеством комнат',
+                                        options: () => ({
+                                            'free': { caption: 'Св.планировка' },
+                                            'studio': { caption: 'Студия' },
+                                            'rmqt1': { caption: '1-комн.' },
+                                            'rmqt2': { caption: '2-комн.' },
+                                            'rmqt3': { caption: '3-комн.' },
+                                            'rmqt4': { caption: '4-комн.' },
+                                            'rmqt5': { caption: '5-комн.' },
+                                            'rmqt6': { caption: '6+ комн.' },
+                                        }),
+                                    },
+                                    plan: {
+                                        row: () => 2,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: {
+                                                caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Можно со смежными комнатами',
+                                                } : {
+                                                    width: 90,
+                                                    text: 'Не важно',
+                                                },
+                                            },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Только изолированные комнаты' : 'Изолированные' },
+                                            except: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 210,
+                                                    text: 'Только смежные комнаты',
+                                                } : {
+                                                    width: 60,
+                                                    text: '...',
+                                                } }
+                                        }),
+                                    },
+                                    total_sq: {
+                                        row: () => 3,
+                                        type: 'diap',
+                                        label: () => 'Площадь',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                    life_sq: {
+                                        row: () => 4,
+                                        type: 'diap',
+                                        label: () => 'Жилая',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                    kitchen_sq: {
+                                        row: () => 5,
+                                        type: 'diap',
+                                        label: () => 'Кухня',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                },
+                            },
+                            'Квартира: ещё': !alt ? null : {
+                                icon: 'icons-8-key',
+                                params: {
+                                    remont: {
+                                        row: () => 0,
+                                        type: 'pickermulti',
+                                        label: () => 'Состояние',
+                                        label_width: () => 90,
+                                        none: () => 'квартиры не важно',
+                                        options: () => ({
+                                            'требуется капитальный ремонт': {},
+                                            'без отделки': {},
+                                            'требуется ремонт': {},
+                                            'среднее': {},
+                                            'хорошее': {},
+                                            'отличное': {},
+                                            'евроремонт': {},
+                                            'дизайнерский ремонт': {},
+                                            'первичная отделка': {},
+                                        }),
+                                    },
+                                    lavatory: {
+                                        row: () => 1,
+                                        type: 'picker',
+                                        label: () => 'Санузел',
+                                        label_width: () => 90,
+                                        options: () => ({
+                                            '0': { caption: 'может быть совмещенным' },
+                                            '1': { caption: 'только раздельный' },
+                                            '2': { caption: 'не менее 2-х' },
+                                            '3': { caption: 'не менее 3-х' },
+                                            '4': { caption: 'не менее 4-х' },
+                                        }),
+                                    },
+                                    balcony: {
+                                        row: () => 2,
+                                        type: 'picker',
+                                        label: () => 'Балкон',
+                                        label_width: () => 90,
+                                        options: () => ({
+                                            '0': { caption: 'можно без балкона' },
+                                            '1': { caption: 'нужен балкон' },
+                                            '2': { caption: 'нужна лоджия' },
+                                            '3': { caption: 'не менее 2-х балконов/лоджий' },
+                                            '4': { caption: 'не менее 3-х балконов/лоджий' },
+                                            '5': { caption: 'не менее 4-х балконов/лоджий' },
+                                        }),
+                                    },
+                                    okna: {
+                                        row: () => 3,
                                         type: 'select',
                                         options: () => ({
                                             '0': { caption: ({ isSelected }) => isSelected ? {
@@ -7932,9 +8090,12 @@ var $;
                                     },
                                 },
                             },
-                        }),
-                        option_ids: $$.$me_atom2_prop_keys(['.options']),
-                        option_height: () => 54,
+                        })),
+                        option_ids: $$.$me_atom2_prop_keys(['.options'], true),
+                        option_height: $$.$me_atom2_prop(['.alt'], ({ masters: [alt] }) => alt ? 44 : 54),
+                        option_fontSize: $$.$me_atom2_prop(['.alt', '.em'], ({ masters: [alt, em] }) => alt ? em / 16 * 14 : em),
+                        option_iconSize: $$.$me_atom2_prop(['.alt', '.em'], ({ masters: [alt, em] }) => alt ? 22 : 28),
+                        option_label_ofsHor: $$.$me_atom2_prop(['.alt', '.em'], ({ masters: [alt, em] }) => alt ? 16 + 16 + 22 : 60),
                         option_width: () => 210,
                         option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
                         value: $$.$me_atom2_prop_store({
@@ -7948,6 +8109,7 @@ var $;
                         row_left: $$.$me_atom2_prop(['.option_width', '.marginHor'], $$.$me_atom2_prop_compute_fn_sum()),
                         row_width: () => 428,
                         marginHor: () => 32,
+                        '#order': () => ['option', 'separator', 'param'],
                     },
                     elem: {
                         separator: () => ({
@@ -7958,12 +8120,18 @@ var $;
                                 borderRight: () => '1px solid #bdc3d1',
                             },
                         }),
-                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'] }, ({ key: [id], masters: [params] }) => {
+                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params', '.alt'] }, ({ key: [id], masters: [params, alt] }) => {
                             const def = params[id];
                             if (def.type == 'select') {
                                 return {
                                     base: $$.$nl_select,
-                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]), no_adjust: def.no_adjust }),
+                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
+                                            const order = $$.a('<<.order');
+                                            if (!order.params)
+                                                order.params = {};
+                                            order.params[id] = val;
+                                            $$.a('<<.order', order, true);
+                                        }), no_adjust: def.no_adjust }),
                                 };
                             }
                             else if (def.type == 'address') {
@@ -8128,8 +8296,8 @@ var $;
                                 icon: () => ({
                                     node: 'img',
                                     prop: {
-                                        '#width': () => 28,
-                                        '#height': () => 28,
+                                        '#width': '<<.option_iconSize',
+                                        '#height': '<<.option_iconSize',
                                         '#alignVer': () => $$.$me_align.center,
                                         '#ofsHor': () => 16,
                                     },
@@ -8145,15 +8313,20 @@ var $;
                                 }),
                                 label: () => ({
                                     prop: {
-                                        '#ofsHor': () => 61,
+                                        '#ofsHor': '<<.option_label_ofsHor',
                                         '#alignVer': () => $$.$me_align.center,
                                         '#height': () => null,
+                                        '#width': $$.$me_atom2_prop(['<<.option_width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff(-8)),
+                                        fontSize: '<<.option_fontSize',
                                     },
                                     dom: {
                                         innerText: () => id,
                                     },
                                     style: {
                                         color: $$.$me_atom2_prop(['<.isSelected', '.colorText'], ({ masters: [isSelected, colorText] }) => isSelected ? 'white' : colorText),
+                                        whiteSpace: () => 'nowrap',
+                                        overflow: () => 'hidden',
+                                        textOverflow: () => 'ellipsis',
                                     },
                                 }),
                             },
@@ -10552,14 +10725,15 @@ var $;
                     default: () => '',
                     valid: (val) => ~$$.a('.order_idx').indexOf(val) ? val : null,
                 }),
-                param_modes: () => ({
+                alt: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.selected'], ({ masters: [selected] }) => [`.order[${selected}]`]), ({ masters: [order] }) => !(order.params && order.params['Область'] == 'only'), ({ val }) => console.warn(val)),
+                param_modes: $$.$me_atom2_prop(['.alt'], ({ masters: [alt] }) => ({
                     ПОЛНЫЙ: {
-                        height: 630,
+                        height: alt ? 518 : 630,
                     },
                     СЖАТЫЙ: {
                         height: 120,
                     },
-                }),
+                })),
                 param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
                 param_mode: $$.$me_atom2_prop_store({
                     default: () => 'ПОЛНЫЙ',
@@ -10591,7 +10765,9 @@ var $;
                     base: $$.$nl_search_panel_param,
                     prop: {
                         '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
-                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
+                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`), ({ val }) => {
+                            $$.a(`<.order[${$$.a('<.selected')}]`, val, true);
+                        }),
                         '#ofsVer': '<@tabs.#height',
                         height_target: $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => modes[mode].height),
                         '#height': $$.$me_atom2_prop(['.height_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
