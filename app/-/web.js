@@ -8055,9 +8055,8 @@ var $;
                                                     width: 60,
                                                     text: 'Все',
                                                 }) },
-                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с фото' : {
-                                                    text: 'С фото',
-                                                } },
+                                            except: { caption: ({ isSelected, val }) => 'С фото',
+                                            },
                                             only: { caption: ({ isSelected }) => isSelected ? {
                                                     text: 'Без фото',
                                                 } : {
@@ -8094,9 +8093,8 @@ var $;
                                                     width: 60,
                                                     text: 'Все',
                                                 }) },
-                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с видео' : {
-                                                    text: 'С видео',
-                                                } },
+                                            except: { caption: ({ isSelected, val }) => 'С видео',
+                                            },
                                             only: { caption: ({ isSelected }) => isSelected ? {
                                                     text: 'Без видео',
                                                 } : {
