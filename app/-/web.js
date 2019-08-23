@@ -6218,28 +6218,34 @@ var $;
                 size: '.em',
                 color: '.colorText',
                 k: () => 2 / Math.sqrt(3),
-                height: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
                     size :
                     Math.round(size * k)),
-                width: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
                     size :
                     Math.round(size * k)),
-                '#width': () => 0,
-                '#height': () => 0,
             },
-            style: {
-                borderTop: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
-                    direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
-                borderLeft: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
-                    direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderRight: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
-                    direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderBottom: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
-                    direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
+            elem: {
+                content: () => ({
+                    prop: {
+                        '#width': () => 0,
+                        '#height': () => 0,
+                    },
+                    style: {
+                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
+                            direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                                `${height / 2}px solid transparent`),
+                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
+                            direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                                `${width / 2}px solid transparent`),
+                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
+                            direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                                `${width / 2}px solid transparent`),
+                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
+                            direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                                `${height / 2}px solid transparent`),
+                    },
+                }),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -6456,9 +6462,7 @@ var $;
                     base: $$.$me_triangle,
                     prop: {
                         '#alignHor': () => $$.$me_align.right,
-                        marginRight: () => 9,
-                        '#ofsHor': $$.$me_atom2_prop(['.size', '.marginRight'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#ofsVer': () => -3,
+                        '#ofsHor': () => 9,
                         '#alignVer': () => $$.$me_align.center,
                         size: () => 7,
                         color: () => '#444956',
@@ -6472,7 +6476,7 @@ var $;
                         '#alignVer': () => $$.$me_align.center,
                         '#ofsVer': () => -1,
                         '#ofsHor': () => 8,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.size', '<@triangle.marginRight'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.#width', '<@triangle.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
                     },
                     style: {
                         whiteSpace: () => 'nowrap',
@@ -6767,9 +6771,7 @@ var $;
                     base: $$.$me_triangle,
                     prop: {
                         '#alignHor': () => $$.$me_align.right,
-                        marginRight: () => 9,
-                        '#ofsHor': $$.$me_atom2_prop(['.size', '.marginRight'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#ofsVer': () => -3,
+                        '#ofsHor': () => 9,
                         '#alignVer': () => $$.$me_align.center,
                         size: () => 7,
                         color: () => '#444956',
@@ -6783,7 +6785,7 @@ var $;
                         '#alignVer': () => $$.$me_align.center,
                         '#ofsVer': () => -1,
                         '#ofsHor': () => 8,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.size', '<@triangle.marginRight'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.#width', '<@triangle.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
                     },
                     style: {
                         whiteSpace: () => 'nowrap',
@@ -7191,8 +7193,22 @@ var $;
                                             '4': { caption: 'не менее 4-х' },
                                         }),
                                     },
-                                    okna: {
+                                    balcony: {
                                         row: () => 8,
+                                        type: 'picker',
+                                        label: () => 'Балкон',
+                                        label_width: () => 90,
+                                        options: () => ({
+                                            '0': { caption: 'можно без балкона' },
+                                            '1': { caption: 'нужен балкон' },
+                                            '2': { caption: 'нужна лоджия' },
+                                            '3': { caption: 'не менее 2-х балконов/лоджий' },
+                                            '4': { caption: 'не менее 3-х балконов/лоджий' },
+                                            '5': { caption: 'не менее 4-х балконов/лоджий' },
+                                        }),
+                                    },
+                                    okna: {
+                                        row: () => 9,
                                         type: 'select',
                                         options: () => ({
                                             '0': { caption: ({ isSelected }) => isSelected ? {
@@ -7303,7 +7319,7 @@ var $;
                                 },
                             },
                             Этаж: {
-                                icon: 'icons-8-building',
+                                icon: 'level',
                                 params: {
                                     Этаж: {
                                         row: () => 0,
@@ -8399,7 +8415,7 @@ var $;
                         size: '<.triangleSize',
                         color: '<.colorBackground',
                         '#ofsVer': '<.#height',
-                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.width', '<.lambda', '<.paddingHor'], ({ masters: [width_parent, width_own, lambda, paddingHor] }) => paddingHor + Math.round((width_parent - 2 * paddingHor - width_own) * lambda)),
+                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.#width', '<.lambda', '<.paddingHor'], ({ masters: [width_parent, width_own, lambda, paddingHor] }) => paddingHor + Math.round((width_parent - 2 * paddingHor - width_own) * lambda)),
                     },
                 }),
                 items: () => ({
@@ -8450,7 +8466,7 @@ var $;
                 const limitRight = $$.a('.limitRight') - clientRect.left - width;
                 const limitLeft = $$.a('.limitLeft') - clientRect.left;
                 const ofsHor_valid = Math.max(limitLeft, Math.min(ofsHor, limitRight));
-                const lambda = .5 + Math.min(.5, (ofsHor - ofsHor_valid) / (width - 2 * $$.a('.paddingHor') - $$.a('@triangle.width')));
+                const lambda = .5 + Math.min(.5, (ofsHor - ofsHor_valid) / (width - 2 * $$.a('.paddingHor') - $$.a('@triangle.#width')));
                 $$.a('.#ofsHor', ofsHor_valid);
                 $$.a('.#width', width);
                 $$.a('.lambda', lambda);
@@ -10538,7 +10554,7 @@ var $;
                 }),
                 param_modes: () => ({
                     ПОЛНЫЙ: {
-                        height: 580,
+                        height: 630,
                     },
                     СЖАТЫЙ: {
                         height: 120,
