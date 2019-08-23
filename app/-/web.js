@@ -8084,7 +8084,26 @@ var $;
                                                 } },
                                         })
                                     },
-                                    video: {
+                                    video: alt ? {
+                                        row: () => 0,
+                                        col_count: () => 2,
+                                        col: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => ({
+                                                    width: 60,
+                                                    text: 'Все',
+                                                }) },
+                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с видео' : {
+                                                    text: 'С видео',
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    text: 'Без видео',
+                                                } : {
+                                                    text: '...',
+                                                } },
+                                        })
+                                    } : {
                                         row: () => 1,
                                         type: 'select',
                                         options: () => ({
@@ -8096,21 +8115,19 @@ var $;
                                                     text: 'С видео',
                                                 } },
                                             only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
                                                     text: 'Только без видео',
                                                 } : {
-                                                    width: 145,
                                                     text: 'Без видео',
                                                 } },
                                         })
                                     },
                                     deep: {
-                                        row: () => 2,
+                                        row: () => 2 - (alt ? 1 : 0),
                                         label: () => 'Глубина поиска',
                                         type: 'deep',
                                     },
                                     ТолькоНовые: {
-                                        row: () => 4,
+                                        row: () => 4 - (alt ? 1 : 0),
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: { text: 'Все', width: 60 } },
@@ -8126,7 +8143,7 @@ var $;
                                     },
                                     Источник: {
                                         type: 'pickermulti',
-                                        row: () => 5,
+                                        row: () => 5 - (alt ? 1 : 0),
                                         label: () => 'Источники',
                                         label_width: () => 100,
                                         none: () => 'все',
@@ -8158,7 +8175,7 @@ var $;
                                         }),
                                     },
                                     sold: {
-                                        row: () => 6,
+                                        row: () => 6 - (alt ? 1 : 0),
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
