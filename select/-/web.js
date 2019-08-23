@@ -164,6 +164,22 @@ var $;
             return result;
         }
         $$.$me_point_in_rect_offset = $me_point_in_rect_offset;
+        function $me_option_caption(id, options, val) {
+            const isSelected = !(val instanceof Set) ? val == id : val.has(id);
+            const caption = typeof options[id].caption != 'function' ?
+                options[id].caption :
+                options[id].caption({ val, isSelected });
+            return caption;
+        }
+        $$.$me_option_caption = $me_option_caption;
+        function $me_option_caption_text(id, options, val) {
+            const caption = $me_option_caption(id, options, val);
+            const result = typeof caption == 'string' ? caption :
+                !caption || typeof caption.text != 'string' ? id :
+                    caption.text;
+            return result;
+        }
+        $$.$me_option_caption_text = $me_option_caption_text;
         $$.$me_enum_names = (val) => {
             if (_enum_names_cache.has(val))
                 return _enum_names_cache.get(val);
@@ -3102,7 +3118,6 @@ var $;
                             key_enum = [atom_master.value()].concat(key_enum);
                         }
                         else {
-                            console.error(this.name(), key_name, masters_store);
                         }
                     }
                     else {
@@ -4523,7 +4538,7 @@ var $;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign({ period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+            prop: Object.assign({ period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
                     '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
                 ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
@@ -4536,21 +4551,25 @@ var $;
             render: p => {
                 let { ctxWidth, ctxHeight } = p;
                 const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
-                const ctxPaddingLeft = Math.round(p.pixelRatio * $$.a('.paddingLeft'));
-                const ctxPaddingRight = Math.round(p.pixelRatio * $$.a('.paddingRight'));
+                const paddingLeft = $$.a('.paddingLeft');
+                const paddingRight = $$.a('.paddingRight');
+                const ctxPaddingLeft = Math.round(p.pixelRatio * paddingLeft);
+                const ctxPaddingRight = Math.round(p.pixelRatio * paddingRight);
                 const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
                 const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
-                ctxWidth -= ctxPaddingLeft + ctxPaddingRight;
                 ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
                 if (ctxHeight < ctxFontSize - 1) {
                     console.error({ ctxHeight, ctxFontSize });
                     return;
                 }
                 const align = $$.a('.alignVer');
-                const correction = align == $$.$me_align.bottom ? 0 : (ctxHeight - ctxFontSize) / (!align ? 1 : align);
-                const bottom = p.ctxRect.bottom - ctxPaddingBottom - correction;
+                const ctxOfs = $$.a('.ofsVer') * p.pixelRatio;
+                const ctxCorrection = align == $$.$me_align.bottom ? ctxOfs :
+                    align == $$.$me_align.top ? ctxHeight - ctxFontSize - ctxOfs :
+                        (ctxHeight - ctxFontSize) / 2 - ctxOfs;
+                const bottom = p.ctxRect.bottom - ctxPaddingBottom - ctxCorrection;
                 p.ctx.fillStyle = $$.a('.colorText');
-                let text = $$.a('._text');
+                let text = $$.a('._text') + '';
                 const ctxLeft = $$.a('._ctxLeft');
                 ctxWidth -= ctxLeft - $$.a('.#left') * p.pixelRatio;
                 while (p.ctx.measureText(text).width > ctxWidth)
@@ -4558,7 +4577,6 @@ var $;
                 p.ctx.fillText(text, ctxLeft, bottom);
             },
         };
-        const period = '...';
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //label.js.map
@@ -4587,17 +4605,47 @@ var $;
                 fontWeight: $$.$me_atom2_prop_abstract(),
                 fontWeightSelected: $$.$me_atom2_prop_abstract(),
                 fontSize: $$.$me_atom2_prop_abstract(),
+                alignVer: () => $$.$me_align.center,
+                ofsVer: () => 0,
+                no_adjust: () => false,
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
-                _option_width: $$.$me_atom2_prop({
-                    keys: ['.option_ids'],
-                    masters: ['.option_width_min', `^option[]._textWidth`, `^option[].paddingLeft`, `^option[].paddingRight`],
-                }, ({ masters: [option_width_min, _textWidth, paddingLeft, paddingRight] }) => Math.max(option_width_min, _textWidth + paddingLeft + paddingRight)),
-                _width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [ids] }) => ids.map((id) => `._option_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                _width_excess: $$.$me_atom2_prop(['.#width', '._width_sum'], $$.$me_atom2_prop_compute_fn_diff()),
-                option_width: $$.$me_atom2_prop({
-                    keys: ['.option_ids'],
-                    masters: ['._width_excess', '._width_sum', '._option_width[]'],
-                }, ({ masters: [excess, sum, width] }) => width * (1 + excess / sum)),
+                _option_width: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [option_ids] }) => {
+                    const result = ['.no_adjust', '.option_ids', '.options', '.value', '.#width', '.option_width_min'];
+                    for (const id of option_ids)
+                        result.push(`^option[${id}]._textWidth`, `^option[${id}].paddingLeft`, `^option[${id}].paddingRight`);
+                    return result;
+                }), ({ masters, prev }) => {
+                    const [no_adjust, option_ids, options, value, width_total, option_width_min] = masters;
+                    if (no_adjust && prev)
+                        return prev;
+                    const masters_base = 6;
+                    const width = {};
+                    let width_sum = 0;
+                    let width_excess_base = 0;
+                    const ids = [];
+                    let w;
+                    for (let i = 0; i < option_ids.length; i++) {
+                        const id = option_ids[i];
+                        const caption = $$.$me_option_caption(id, options, value);
+                        const isSpecifiedWidth = typeof caption != 'string' &&
+                            caption &&
+                            typeof caption.width == 'number';
+                        const w = width[id] =
+                            isSpecifiedWidth ?
+                                caption.width :
+                                Math.max(option_width_min, masters[masters_base + i * 3] + masters[masters_base + 1 + i * 3] + masters[masters_base + 2 + i * 3]);
+                        width_sum += w;
+                        if (!isSpecifiedWidth) {
+                            width_excess_base += w;
+                            ids.push(id);
+                        }
+                    }
+                    const width_excess = width_total - width_sum;
+                    for (const id of ids)
+                        width[id] *= (1 + width_excess / width_excess_base);
+                    return width;
+                }),
+                option_width: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['._option_width'] }, ({ key: [id], masters: [width] }) => width[id]),
                 option_left: $$.$me_atom2_prop({
                     keys: ['.option_ids'],
                     masters: $$.$me_atom2_prop_masters(['.option_ids'], ({ key: [id], masters: [ids] }) => {
@@ -4624,25 +4672,26 @@ var $;
                         fontFamily: '<.fontFamily',
                         isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set ? value.has(id) : value == id),
                         paddingHor: '<.paddingHor',
-                        text: $$.$me_atom2_prop(['<.options', '<.option_ids', '.isSelected', '<.value'], ({ masters: [options, option_ids, isSelected, value] }) => {
-                            const idx_selected = option_ids.indexOf(value);
-                            const result = (isSelected ? options[id].caption :
-                                typeof options[id].captionShort == 'string' ?
-                                    options[id].captionShort :
-                                    typeof options[id].captionShort == 'function' ?
-                                        (options[id].captionShort(value) || options[id].caption) :
-                                        null) || options[id].caption || id;
-                            return result;
-                        }),
-                        align: () => $$.$me_align.center,
+                        text: $$.$me_atom2_prop(['<.options', '<.value'], ({ masters: [options, value] }) => $$.$me_option_caption_text(id, options, value)),
+                        alignHor: () => $$.$me_align.center,
+                        alignVer: '<.alignVer',
+                        ofsVer: '<.ofsVer',
                         '#width': $$.$me_atom2_prop([`<.option_width[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
                         '#height': '<.#height',
                         '#ofsHor': $$.$me_atom2_prop([`<.option_left[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
                         idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
-                        _ctxLeft: $$.$me_atom2_prop([
-                            '.#ctx', '.text', '.period', '/.#pixelRatio', `<.option_width[${id}]`, `<.option_left[${id}]`, '.paddingLeft', '.paddingRight'
-                        ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $$.$me_atom2_anim({ to: $$.$me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight).ctxLeft
-                        })),
+                        _ctxLeft: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.no_adjust'], ({ masters: [no_adjust] }) => no_adjust ?
+                            ['._text_n_ctxLeft'] :
+                            ['.#ctx', '.text', '.period', '/.#pixelRatio', `<.option_width[${id}]`, `<.option_left[${id}]`, '.paddingLeft', '.paddingRight']), ({ len, masters }) => {
+                            if (len == 1) {
+                                return masters[0].ctxLeft;
+                            }
+                            else {
+                                const [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] = masters;
+                                return $$.$me_atom2_anim({ to: $$.$me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight).ctxLeft
+                                });
+                            }
+                        }),
                         borderWidthVer: '<.borderWidth',
                         colorBorderVer: $$.$me_atom2_prop(['.isSelected', '<.colorBorder', '<.colorBorderSelected'], ({ masters: [isSelected, colorBorder, colorBorderSelected] }) => isSelected ? colorBorderSelected : colorBorder),
                         borderLeft: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
@@ -4670,6 +4719,7 @@ var $;
                         borderRadiusRightBottom: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
                         colorBackground: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected'], ({ masters: [isSelected, colorBackgroundSelected] }) => isSelected ? colorBackgroundSelected : 'transparent'),
                         colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
                     prop_non_render: {
                         '#cursor': $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set || value != id ? 'pointer' : null),
@@ -4709,7 +4759,7 @@ var $;
             base: $$.$me_select,
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
                 colorBorder: () => '#bdc3d1',
                 colorBorderSelected: () => '#008ecf',
                 colorBackgroundSelected: () => '#f0f1f4',
@@ -4720,12 +4770,12 @@ var $;
                 '#width': () => 440,
                 '#height': () => 32,
                 option_width_min: () => 40,
-                colorText: '/.colorText',
+                colorText: () => '#0070a4',
                 colorTextSelected: '.colorText',
                 fontFamily: '/.fontFamily',
                 fontWeight: '/.fontWeight',
                 fontWeightSelected: '.fontWeight',
-                fontSize: '.em',
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -5180,6 +5230,39 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_switch = {
+            base: $$.$me_select,
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                colorBorder: () => 'transparent',
+                colorBorderSelected: () => 'transparent',
+                colorBackgroundSelected: () => '#0070a4',
+                borderRadius: () => 0,
+                borderWidth: () => 0,
+                paddingHor: () => 0,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                option_width_min: () => 40,
+                colorText: () => '#0070a4',
+                colorTextSelected: () => 'white',
+                fontFamily: '/.fontFamily',
+                fontWeight: '/.fontWeight',
+                fontWeightSelected: () => 500,
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                alignVer: () => $$.$me_align.bottom,
+                ofsVer: $$.$me_atom2_prop_abstract(),
+                no_adjust: () => true,
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//switch.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         function $me_ribbon_effect(p) {
             const flush = () => {
                 delete effect_timers[p.id];
@@ -5262,59 +5345,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //ribbon.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_switch = {
-            prop: {
-                '#height': () => 44,
-                '#width': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.values'], ({ masters: [values] }) => values.map(value => `@item[${value}].#width`)), $$.$me_atom2_prop_compute_fn_sum()),
-                paddingHor: () => 8,
-                paddingTop: () => 18,
-                paddingBottom: () => 8,
-            },
-            style: {
-                fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em),
-                userSelect: () => 'none',
-            },
-            elem: {
-                item: $$.$me_atom2_prop({ keys: ['.values'] }, ({ key: [key] }) => ({
-                    node: 'span',
-                    dom: {
-                        innerText: () => key.toUpperCase(),
-                    },
-                    prop: {
-                        '#width': () => null,
-                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == key),
-                        '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                    },
-                    style: {
-                        background: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#0070a4' : 'white'),
-                        color: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => !isSelected ? '#0070a4' : 'white'),
-                        position: () => 'relative',
-                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                        fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400),
-                        paddingTop: '<.paddingTop',
-                        paddingLeft: '<.paddingHor',
-                        paddingRight: '<.paddingHor',
-                        paddingBottom: '<.paddingBottom',
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a('<.selected', key);
-                            return true;
-                        },
-                    },
-                })),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//switch.js.map
 ;
 "use strict";
 var $;
@@ -5564,7 +5594,7 @@ var $;
                     return result;
                 }, ({ val, atom }) => {
                     $$.a('.height_actual', val);
-                }), height_actual: '.#height', disabledScroll: () => false, '#order': () => ['row', 'header'] }),
+                }), height_actual: '.#height', disabledScroll: $$.$me_atom2_prop(['.visible_idx_min', '.visible_idx_max', '.visible_top', '.visible_bottom', '.rec_count', '.header_height', '.#height'], ({ masters: [visible_idx_min, visible_idx_max, visible_top, visible_bottom, rec_count, header_height, height] }) => !visible_idx_min && visible_idx_max == rec_count - 1 && visible_top >= header_height && visible_bottom <= height), '#order': () => ['row', 'header'] }),
             elem: {
                 header: $$.$me_atom2_prop(['.header_content'], ({ masters: [header_content] }) => !header_content ? null : {
                     prop: {
@@ -5779,7 +5809,6 @@ var $;
                         const result = rec_count > max ?
                             max * row_current_height :
                             rec_count * row_current_height + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
-                        console.warn({ result, rec_count, max, row_current_height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer });
                         return result;
                     }
                 }),
@@ -6040,7 +6069,7 @@ var $;
                             if (!(visible_idx_min <= idx && idx <= visible_idx_max))
                                 return -1;
                             return (row_i_min + (idx - visible_idx_min)) % row_count;
-                        }, ({ val }) => console.log({ val })),
+                        }),
                         header_content: () => ({}),
                         row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
                             base: row,
@@ -6254,7 +6283,6 @@ var $;
                     const prop_borderRadius = $$.a.get('.style.borderRadius');
                     const prop_border = $$.a.get('.style.border');
                     const prop_zIndex = $$.a.get('.#zIndex');
-                    const prop_byDesign = $$.a.get('.byDesign');
                     const prop_isTouch = $$.a.get('.isTouch');
                     const list = $$.a('.isTouch') ?
                         new $$.$me_atom2_elem({
@@ -6338,7 +6366,7 @@ var $;
                                             },
                                         },
                                         style: {
-                                            background: $$.$me_atom2_prop([prop_byDesign.name(), '.#isHover'], ({ masters: [byDesign, isHover] }) => !byDesign || !isHover ? 'white' : '#d8eeff'),
+                                            background: () => 'white',
                                         },
                                     })),
                                     '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
@@ -6350,13 +6378,13 @@ var $;
                                     cursor: () => ({
                                         prop: {
                                             '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
-                                            '#ofsHor': $$.$me_atom2_prop([prop_byDesign.name()], ({ masters: [byDesign] }) => byDesign ? 0 : 3),
-                                            '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`, prop_byDesign.name()]), ({ len, masters: [top, rec_idx, byDesign] }) => !len ? null : rec_idx ? top : byDesign ? 0 : 3),
-                                            '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count', prop_byDesign.name()]), ({ len, masters: [val, rec_idx, rec_count, byDesign] }) => !len ? null : byDesign ? val : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
-                                            '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', prop_byDesign.name()], ({ masters: [width, ofsHor, byDesign] }) => byDesign ? width : width - 2 * ofsHor - 2),
+                                            '#ofsHor': () => 3,
+                                            '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`]), ({ len, masters: [top, rec_idx] }) => !len ? null : rec_idx ? top : 3),
+                                            '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count']), ({ len, masters: [val, rec_idx, rec_count] }) => !len ? null : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
+                                            '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor - 2),
                                         },
                                         style: {
-                                            boxShadow: $$.$me_atom2_prop([prop_byDesign.name()], ({ masters: [byDesign] }) => byDesign ? '' : '0 1px 6px 0 rgba(0, 0, 0, 0.5)'),
+                                            boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
                                             pointerEvents: () => 'none',
                                         },
                                     }),
@@ -6364,9 +6392,11 @@ var $;
                                 style: {
                                     background: () => 'white',
                                     borderRadius: prop_borderRadius.name(),
-                                    border: $$.$me_atom2_prop([prop_byDesign.name(), prop_border.name()], ({ masters: [byDesign, border] }) => byDesign ? border : 'solid 1px #bdc3d1'),
+                                    border: $$.$me_atom2_prop([
+                                        prop_border.name()
+                                    ], ({ masters: [border] }) => 'solid 1px #bdc3d1'),
                                     boxSizing: () => 'border-box',
-                                    boxShadow: $$.$me_atom2_prop([prop_byDesign.name()], ({ masters: [byDesign] }) => byDesign ? '' : '0 8px 12px 0 rgba(0, 0, 0, 0.5)'),
+                                    boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
                                 },
                             },
                         });
@@ -6376,7 +6406,7 @@ var $;
             },
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
                 maxDrodownCount: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 9 : Infinity),
                 instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
                     if (!val && prev) {
@@ -6385,7 +6415,6 @@ var $;
                     }
                 }),
                 isTouch: '/.#isTouch',
-                byDesign: () => true,
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 '#cursor': () => 'pointer',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
@@ -6404,9 +6433,7 @@ var $;
             },
             style: {
                 borderRadius: () => 3,
-                border: $$.$me_atom2_prop(['.isDropdown', '.byDesign'], ({ masters: [isDropdown, byDesign] }) => byDesign ? (!isDropdown ?
-                    'solid 1px #bdc3d1' :
-                    'solid 2px #313745') : (!isDropdown ?
+                border: $$.$me_atom2_prop(['.isDropdown'], ({ masters: [isDropdown] }) => (!isDropdown ?
                     'solid 1px #bdc3d1' :
                     'solid 1px #313745')),
                 boxSizing: () => 'border-box',
@@ -6509,6 +6536,359 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let instances;
+        $$.$nl_pickermulti = {
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
+                    $$.a('.instance', null);
+                }
+                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
+                    if (!instances)
+                        instances = new Map();
+                    const ids = [...instances].map(([spinner, id]) => id).sort();
+                    let id;
+                    for (let i = 0; i < ids.length; i++)
+                        if (i != ids[i]) {
+                            id = i;
+                            break;
+                        }
+                    if (id === void 0)
+                        id = ids.length;
+                    const prop_itemMarginTopFirst = $$.a.get('.itemMarginTopFirst');
+                    const prop_itemMarginBottomLast = $$.a.get('.itemMarginBottomLast');
+                    const prop_itemMarginVer = $$.a.get('.itemMarginVer');
+                    const prop_options = $$.a.get('.options');
+                    const prop_option_ids = $$.a.get('.option_ids');
+                    const prop_maxDrodownCount = $$.a.get('.maxDrodownCount');
+                    const prop_clientRect = $$.a.get('.#clientRect');
+                    const prop_height = $$.a.get('.#height');
+                    const prop_fontSize = $$.a.get('.fontSize');
+                    const prop_value = $$.a.get('.value');
+                    const prop_isDropdown = $$.a.get('.isDropdown');
+                    const prop_borderRadius = $$.a.get('.style.borderRadius');
+                    const prop_border = $$.a.get('.style.border');
+                    const prop_zIndex = $$.a.get('.#zIndex');
+                    const prop_isTouch = $$.a.get('.isTouch');
+                    const prop_row_height_min = $$.a.get('.row_height_min');
+                    const isTouch = prop_isTouch.value();
+                    const list = new $$.$me_atom2_elem({
+                        tail: 'nl_pickermulti_list' + id,
+                        parent: $$.a.get('/@app'),
+                        cnf: {
+                            base: $$.$me_list,
+                            dispatch: (dispatch_name, dispatch_arg) => {
+                                if (dispatch_name == 'row_height_default') {
+                                    const idx = dispatch_arg.idx;
+                                    dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
+                                        (!idx ? $$.a('.itemMarginTopFirst') : $$.a('.itemMarginBottomLast')) - $$.a('.itemMarginVer'));
+                                    return true;
+                                }
+                                return false;
+                            },
+                            prop: {
+                                options: prop_options.name(),
+                                value: $$.$me_atom2_prop([prop_value.name()], null, ({ val }) => {
+                                    prop_value.value(val, true);
+                                }),
+                                '#ofsHor': !isTouch ?
+                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.left) :
+                                    $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
+                                '#ofsVer': !isTouch ?
+                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom)
+                                    : $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
+                                '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
+                                '#width': isTouch ? () => 374 :
+                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.right - clientRect.left),
+                                maxDropdownCount: () => 12,
+                                '#height': $$.$me_atom2_prop(isTouch ?
+                                    ['.option_ids', '.maxDropdownCount', '.row_height_min', '.itemMarginTopFirst', '.itemMarginBottomLast', '.itemMarginVer'] :
+                                    ['.option_ids', '.maxDropdownCount', '/.#viewportHeight', prop_clientRect.name(), '.row_height_min', '.itemMarginTopFirst', '.itemMarginBottomLast', '.itemMarginVer'], ({ len, masters }) => {
+                                    if (isTouch) {
+                                        const [option_ids, maxDropdownCount, row_height_min, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
+                                        const rec_count = option_ids.length;
+                                        const max = maxDropdownCount;
+                                        const result = rec_count > max ?
+                                            max * row_height_min :
+                                            rec_count * row_height_min + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
+                                        return result;
+                                    }
+                                    else {
+                                        const minMargin = 10;
+                                        const [option_ids, maxDropdownCount, viewportHeight, clientRect, row_height_min, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
+                                        const correction = (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer);
+                                        const result = Math.max(0, Math.min(option_ids.length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom - correction - minMargin) / row_height_min))) * row_height_min + correction;
+                                        return result;
+                                    }
+                                }),
+                                fontSize: !isTouch ?
+                                    $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)) :
+                                    $$.$me_atom2_prop(['.row_height_min'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
+                                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                                rec_count: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids.length),
+                                row_height_min: prop_row_height_min.name(),
+                                curtain_kind: () => 'white',
+                                header_height: () => 0,
+                                provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
+                                itemMarginTopFirst: prop_itemMarginTopFirst.name(),
+                                itemMarginBottomLast: prop_itemMarginBottomLast.name(),
+                                itemMarginVer: prop_itemMarginVer.name(),
+                                rec_idx_selected: $$.$me_atom2_prop(['.value', '.option_ids'], ({ masters: [id, ids] }) => [...id].map((id) => ids.indexOf(id)).filter((idx) => ~idx)),
+                                row_i_selected: $$.$me_atom2_prop(['.rec_idx_selected', '.row_i_min', '.row_i_max', '.row_count', '.visible_idx_min', '.visible_idx_max'], ({ masters: [idx, row_i_min, row_i_max, row_count, visible_idx_min, visible_idx_max] }) => {
+                                    return idx.map((idx) => {
+                                        if (idx < 0)
+                                            return -1;
+                                        if (row_i_max < 0)
+                                            return -1;
+                                        if (!(visible_idx_min <= idx && idx <= visible_idx_max))
+                                            return -1;
+                                        return (row_i_min + (idx - visible_idx_min)) % row_count;
+                                    }).filter((idx) => ~idx);
+                                }),
+                                header_content: () => ({}),
+                                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
+                                    base: row,
+                                    prop: {
+                                        isTouch: prop_isTouch.name(),
+                                        row_i: () => row_i,
+                                        rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
+                                        id: $$.$me_atom2_prop(['<<.option_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
+                                            return !~idx || idx >= rec_count ? '' : ids[idx];
+                                        }),
+                                        isSelected: $$.$me_atom2_prop(['<<.row_i_selected'], ({ masters: [row_i_selected] }) => !!~row_i_selected.indexOf(+row_i)),
+                                        fontSize: '<<.fontSize',
+                                        options: '<<.options',
+                                        rec_count: '<<.rec_count',
+                                        itemMarginTopFirst: '<<.itemMarginTopFirst',
+                                        itemMarginBottomLast: '<<.itemMarginBottomLast',
+                                        itemMarginVer: '<<.itemMarginVer',
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            const value = $$.a('<<.value');
+                                            const id = $$.a('.id');
+                                            if (value.has(id)) {
+                                                value.delete(id);
+                                            }
+                                            else {
+                                                value.add(id);
+                                            }
+                                            $$.a('<<.value', value, true);
+                                            return true;
+                                        },
+                                    },
+                                    style: {
+                                        background: () => 'white',
+                                    },
+                                })),
+                                row_cursor: () => '',
+                                '#order': () => ['row', 'cursor'],
+                            },
+                            elem: {
+                                header: () => null,
+                                cursor: () => isTouch ? null : {
+                                    prop: {
+                                        '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
+                                        '#ofsHor': () => 3,
+                                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`]), ({ len, masters: [top, rec_idx] }) => !len ? null : rec_idx ? top : 3),
+                                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count']), ({ len, masters: [val, rec_idx, rec_count] }) => !len ? null : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor - 2),
+                                    },
+                                    style: {
+                                        boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
+                                        pointerEvents: () => 'none',
+                                    },
+                                },
+                            },
+                            style: {
+                                boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
+                                background: () => 'white',
+                            },
+                            event: {
+                                mousedown: p => p.isInRect(p.event.clientX, p.event.clientY),
+                                touchstart: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY),
+                            },
+                        }
+                    });
+                    $$.a('.instance', list);
+                }
+                return true;
+            },
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                maxDrodownCount: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 9 : Infinity),
+                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
+                    if (!val && prev) {
+                        instances.delete(prev);
+                        prev.destroy();
+                    }
+                }),
+                isTouch: '/.#isTouch',
+                none: () => 'ничего не выбрано',
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                '#cursor': () => 'pointer',
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                itemMarginTopFirst: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
+                itemMarginBottomLast: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
+                itemMarginVer: () => 0,
+                row_height_min: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 38 : 24),
+                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
+                    if (val) {
+                        $$.a.dispatch('', 'show');
+                    }
+                    else if (prev) {
+                        $$.a.dispatch('', 'hide');
+                    }
+                }),
+            },
+            style: {
+                borderRadius: () => 3,
+                border: $$.$me_atom2_prop(['.isDropdown'], ({ masters: [isDropdown] }) => (!isDropdown ?
+                    'solid 1px #bdc3d1' :
+                    'solid 1px #313745')),
+                boxSizing: () => 'border-box',
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                background: () => 'white',
+                userSelect: () => 'none',
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.isDropdown', !$$.a('.isDropdown'));
+                    return true;
+                },
+                clickOrTapOutside: () => {
+                    $$.a('.isDropdown', false);
+                    return false;
+                },
+            },
+            elem: {
+                triangle: () => ({
+                    base: $$.$me_triangle,
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        marginRight: () => 9,
+                        '#ofsHor': $$.$me_atom2_prop(['.size', '.marginRight'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#ofsVer': () => -3,
+                        '#alignVer': () => $$.$me_align.center,
+                        size: () => 7,
+                        color: () => '#444956',
+                        k: () => 9 / 7,
+                    },
+                }),
+                text: () => ({
+                    prop: {
+                        fontSize: '<.fontSize',
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#ofsVer': () => -1,
+                        '#ofsHor': () => 8,
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.size', '<@triangle.marginRight'], $$.$me_atom2_prop_compute_fn_diff()),
+                    },
+                    style: {
+                        whiteSpace: () => 'nowrap',
+                        overflow: () => 'hidden',
+                        textOverflow: () => 'ellipses',
+                    },
+                    dom: {
+                        innerText: $$.$me_atom2_prop(['<.value', '<.options', '<.option_ids', '<.none'], ({ masters: [value, options, option_ids, none] }) => {
+                            let result = none;
+                            if (value.size) {
+                                const id = [...value].sort((valA, valB) => option_ids.indexOf(valA) - option_ids.indexOf(valB))[0];
+                                result = $$.$me_option_caption_text(id, options, value);
+                                if (value.size > 1)
+                                    result += ' и еще ' + (value.size - 1);
+                            }
+                            return result;
+                        }),
+                    },
+                }),
+            },
+        };
+        const row = {
+            prop: {
+                '#cursor': () => 'pointer',
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                row_cursor_src: $$.$me_atom2_prop(['.isTouch', '.#isHover', '.row_i'], ({ masters: [isTouch, isHover, row_i] }) => isTouch || !isHover ? '' : row_i, ({ atom, val }) => {
+                    $$.$nl_pickermulti_cursor({ origin: atom, val: val });
+                }),
+            },
+            control: {
+                label: () => ({
+                    base: $$.$me_label,
+                    prop: {
+                        fontSize: '<.fontSize',
+                        '#width': '<.#width',
+                        '#height': '<.#height',
+                        alignVer: () => $$.$me_align.center,
+                        alignHor: $$.$me_atom2_prop(['<.isTouch'], ({ masters: [isTouch] }) => isTouch ? $$.$me_align.center : $$.$me_align.left),
+                        paddingLeft: $$.$me_atom2_prop(['<.isTouch', '.fontSize'], ({ masters: [isTouch, fontSize] }) => isTouch ? 0 : 2 * fontSize),
+                        '#ofsVer': $$.$me_atom2_prop([`<.rec_idx`, '<.rec_count', '<.itemMarginTopFirst', '<.itemMarginBottomLast', '<.itemMarginVer'], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
+                            if (!~rec_idx)
+                                return 0;
+                            const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
+                                rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
+                                    0);
+                            return result;
+                        }),
+                        paddingHor: () => 8,
+                        text: $$.$me_atom2_prop([`<.rec_idx`, '<.options'], ({ masters: [rec_idx, options] }) => {
+                            if (!~rec_idx)
+                                return '';
+                            const id = Object.keys(options)[rec_idx];
+                            return options[id].caption || id;
+                        }),
+                        isSelected: '<.isSelected',
+                    },
+                    render: p => {
+                        if (!$$.a('.isSelected'))
+                            return;
+                        const fontSize = $$.a('.fontSize');
+                        const h = fontSize * .9;
+                        const w = h * 1.2;
+                        const ctxHeight = h * p.pixelRatio;
+                        const ctxWidth = w * p.pixelRatio;
+                        const lineWidth = 1;
+                        const rec_idx = $$.a(`<.rec_idx`);
+                        const rec_count = $$.a('<.rec_count');
+                        const itemMarginTopFirst = $$.a('<.itemMarginTopFirst');
+                        const itemMarginVer = $$.a('<.itemMarginVer');
+                        const itemMarginBottomLast = $$.a('<.itemMarginBottomLast');
+                        const ofsVer = ($$.a('.#height') - h) / 2;
+                        const ofsHor = $$.a('<.isTouch') ? 20 : (2 * fontSize - w) / 2;
+                        $$.$me_atom2_ctx_check({
+                            ctx: p.ctx,
+                            ctxLeft: p.ctxRect.left + ofsHor * p.pixelRatio,
+                            ctxTop: p.ctxRect.top + ofsVer * p.pixelRatio,
+                            ctxWidth,
+                            ctxHeight,
+                            stroke: {
+                                style: $$.a('.colorText'),
+                                ctxWidth: lineWidth * p.pixelRatio,
+                            },
+                            lambda: 0.38,
+                            mu: 0.6,
+                        });
+                    },
+                })
+            },
+        };
+        $$.$nl_pickermulti_cursor = $$.$me_atom2_async_multi_origin({
+            default: '',
+            raf_order: 100,
+            flush: (row_i, prev, _value) => {
+                _value.origin.by_path_s('<<.row_cursor').value(row_i);
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//pickermulti.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_stylesheet = {
             prop: {
                 styleSheetName: $$.$me_atom2_prop_abstract(),
@@ -6590,1053 +6970,1180 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_checkbox = {
-            base: $$.$me_stylesheet,
-            prop: {
-                caption: $$.$me_atom2_prop_abstract(),
-                checked: () => false,
-                space: () => 8,
-                fontSize: () => 14,
-                boxSize: () => 14,
-                colorText: () => '#6a6c74',
-                styleSheetName: () => 'checkbox',
-                className: '.styleSheetName',
-                styleSheet: () => '',
-                styleSheetCommon: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
-                    return (`
-          .${className} .box {
-            box-sizing: border-box;
-          }
-          .${className}[checked=false] .box {
-            border: solid 1px #313745;
-            background-color: white;
-          }
-          .${className}[checked=true] .box {
-            background: #0070a4;
-          }
-        `);
-                }),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                '#cursor': () => 'pointer',
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('.checked', !$$.a('.checked'));
-                    return true;
-                },
-            },
-            attr: {
-                checked: '.checked',
-            },
-            style: {
-                userSelect: () => 'none',
-            },
-            elem: {
-                box: () => ({
-                    prop: {
-                        '#width': '<.boxSize',
-                        '#height': '<.boxSize',
-                        '#alignVer': () => $$.$me_align.center,
-                    },
-                    style: {
-                        borderRadius: $$.$me_atom2_prop(['<.boxSize'], ({ masters: [boxSize] }) => boxSize * 2 / 14),
-                    },
-                    dom: {
-                        className: () => 'box',
-                    },
-                    elem: {
-                        check: () => ({
-                            node: 'img',
-                            prop: {
-                                '#hidden': $$.$me_atom2_prop(['<<.checked'], ({ masters: [checked] }) => !checked),
-                                '#width': () => 10,
-                                '#height': () => 9,
-                                '#align': () => $$.$me_align.center,
-                                '#ofsVer': () => 1,
-                            },
-                            attr: {
-                                src: () => 'assets/path-4-copy-2@2x.png',
-                                draggable: () => false,
-                            },
-                        }),
-                    },
-                }),
-                caption: () => ({
-                    prop: {
-                        '#ofsHor': $$.$me_atom2_prop(['<@box.#width', '<.space'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                    },
-                    style: {
-                        color: '<.colorText',
-                        fontSize: '<.fontSize',
-                        whiteSpace: () => 'nowrap',
-                    },
-                    dom: {
-                        innerHTML: '<.caption',
-                        className: () => 'caption',
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//checkbox.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_checkbox_list = {
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                col_ofs: $$.$me_atom2_prop_abstract(),
-                row_space: $$.$me_atom2_prop_abstract(),
-                fontSize: () => 14,
-                boxSize: () => 14,
-                row_height: $$.$me_atom2_prop(['.fontSize', '.boxSize'], ({ masters }) => Math.max(...masters)),
-                '#height': $$.$me_atom2_prop(['.options', '.col_ofs', '.row_height', '.row_space'], ({ masters: [options, col_ofs, row_height, row_space] }) => {
-                    const row_count = Math.ceil(Object.keys(options).length / col_ofs.length);
-                    const result = (row_count - 1) * (row_height + row_space) + row_height;
-                    return result;
-                }),
-                ids: $$.$me_atom2_prop_keys(['.options']),
-                item_pos: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.ids', '.col_ofs', '.row_height', '.row_space', '.#width'] }, ({ key: [id], masters: [ids, col_ofs, row_height, row_space, width] }) => {
-                    const idx = ids.indexOf(id);
-                    const row_i = Math.floor(idx / col_ofs.length);
-                    const col_i = idx - row_i * col_ofs.length;
-                    const result = {
-                        left: col_ofs[col_i],
-                        top: (row_height + row_space) * row_i,
-                        width: col_i < col_ofs.length - 1 ? col_ofs[col_i + 1] - col_ofs[col_i] : width - col_ofs[col_i],
-                    };
-                    return result;
-                }),
-                item_top: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.item_pos[]'] }, ({ masters: [item_pos] }) => item_pos.top),
-                item_left: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.item_pos[]'] }, ({ masters: [item_pos] }) => item_pos.left),
-                item_width: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.item_pos[]'] }, ({ masters: [item_pos] }) => item_pos.width),
-            },
-            elem: {
-                item: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['.options'] }, ({ key: [id], masters: [options] }) => ({
-                    base: $$.$nl_checkbox,
-                    prop: {
-                        '#ofsHor': `<.item_left[${id}]`,
-                        '#ofsVer': `<.item_top[${id}]`,
-                        '#height': '<.row_height',
-                        '#width': `<.item_width[${id}]`,
-                        caption: typeof options[id].caption == 'function' ? options[id].caption :
-                            () => options[id].caption || id,
-                        checked: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value.has(id), ({ val }) => {
-                            const value = $$.a('<.value');
-                            let need_update = false;
-                            if (val) {
-                                if (!value.has(id)) {
-                                    value.add(id);
-                                    need_update = true;
-                                }
-                            }
-                            else {
-                                if (value.has(id)) {
-                                    value.delete(id);
-                                    need_update = true;
-                                }
-                            }
-                            if (need_update)
-                                $$.a('<.value', value, true);
-                        })
-                    },
-                })),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//list.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const ctrl_col_width = 100;
-        const ctrl_col_space = 18;
-        const ctrl_width = 2 * ctrl_col_width + ctrl_col_space;
-        const col_width = 61 + 37 + ctrl_width;
-        const col_space = 400 - col_width;
-        const row_height = 24;
-        const row_space = 40 - 24;
-        const row_margin_top = 20;
-        const col_margin_hor = 16;
-        const content_width = (col_width + col_space) * 3 + col_width + 2 * col_margin_hor;
-        function param_wheel(deltaX) {
-            const prop_ofsHor = $$.a.get('.ofsHor');
-            const ofsHor = prop_ofsHor.value() - deltaX;
-            const max = 0;
-            const min = Math.min(0, $$.a('.#width') - content_width);
-            if (deltaX > 0 && ofsHor >= min ||
-                deltaX < 0 && ofsHor <= max) {
-                prop_ofsHor.value(ofsHor);
-            }
-            else {
-                $$.$me_ribbon_effect({
-                    id: $$.a.curr.name(),
-                    adjust: '.ofsHor',
-                    from: '.ofsHor',
-                    to: ofsHor > max ? max : min,
-                    delta: deltaX,
-                    fromBack: deltaX < 0,
-                });
-            }
-            return true;
-        }
-        const prop_common = (def) => ({
-            visible: def.visible,
-            width: def.width,
-            col: def.col,
+        const row_height = 30;
+        const row_space = 20;
+        const prop_common = (def, p) => ({
             row: def.row,
-            on_change_visible: $$.$me_atom2_prop(['.visible'], null, ({ val }) => {
-                $$.a(`.show`, !!val);
-            }),
-            on_change_row: $$.$me_atom2_prop(['.row'], null, ({ val, prev }) => {
-                if (prev != null)
-                    $$.a('.style.opacity', $$.$me_atom2_anim({ from: 0, to: 1, duration: 400 }));
-            }),
-            '#hidden': $$.$me_atom2_prop(['.visible', '<.height_anim_is'], ({ masters: [visible, height_anim_is] }) => !visible && !height_anim_is),
-            '#width': !def.width ? () => col_width :
-                $$.$me_atom2_prop(['.width'], ({ masters: [width] }) => Math.abs(width - 1.67) < .1 ? col_width + col_space + ctrl_width :
-                    width == .5 ? Math.round(col_width / 2) :
-                        Math.abs(width - .33) < .1 ? ctrl_col_width :
-                            Math.abs(width - .67) < .1 ? ctrl_width :
-                                col_width),
-            '#height': () => row_height,
-            '#ofsHor': $$.$me_atom2_prop(['<.ofsHor', '.col'], ({ masters: [ofsHor, col] }) => col_margin_hor +
-                ofsHor +
-                Math.floor(col) * (col_width + col_space) +
-                (col - Math.floor(col) == .5 ?
-                    Math.round(col_width / 2) :
-                    Math.abs(col - Math.floor(col) - .33) < .1 ?
-                        Math.round(col_width - ctrl_width) :
-                        Math.abs(col - Math.floor(col) - .67) < .1 ?
-                            Math.round(col_width - ctrl_col_width) :
-                            0)),
-            '#ofsVer': $$.$me_atom2_prop(['.row'], ({ masters: [row] }) => row_margin_top + row * (row_height + row_space)),
-            show: () => false,
-        });
-        const cnf_common = (def, opt) => ({
-            style: Object.assign({ opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })) }, (!opt || !opt.style ? {} : opt.style)),
-            init: () => {
-                $$.a('.show', true);
-            },
-            elem: Object.assign({ label: label(def) }, (!opt || !opt.elem ? {} : opt.elem)),
-        });
-        const label_useControl = true;
-        const label = (def, prop = {}) => !def.label ? null : () => ({
-            prop: Object.assign({ '#width': () => col_width - ctrl_width }, (label_useControl ? {
-                '#height': () => row_height,
-            } : {
-                '#height': () => null,
-                '#alignVer': () => $$.$me_align.center,
-            }), { '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width), fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)) }, prop),
-            control: !label_useControl ? null : {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        '#width': '<.#width',
-                        '#height': '<.#height',
-                        alignVer: () => $$.$me_align.center,
-                        text: def.label,
-                        fontSize: '<.fontSize',
-                        fontWeight: '<.fontWeight',
-                    },
-                }),
-            },
-            style: label_useControl ? null : {
-                whiteSpace: () => 'nowrap',
-                userSelect: () => 'none',
-            },
-            dom: label_useControl ? null : {
-                innerText: def.label,
-            },
+            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'], ({ masters: [row, row_height, row_space] }) => 13 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
+            '#ofsHor': '<.row_left',
+            '#height': '<.row_height',
+            '#width': '<.row_width',
         });
         $$.$nl_search_panel_param = {
             base: $$.$nl_search_panel,
-            event: {
-                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    $$.$me_atom2_event_wheel_x_is(p.event) &&
-                    param_wheel(p.event._deltaX),
-                wheelDrag: p => p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
-                    $$.$me_atom2_event_wheel_x_is(p.event) &&
-                    param_wheel(p.event._deltaX),
-                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    $$.$me_atom2_event_wheel_x_is(p.event) &&
-                    param_wheel(p.event._deltaX),
-            },
             prop: {
-                hidden_curtain: () => false,
-                width_curtain: () => 40,
-                curtain_kind: () => 'white',
-                curtain: () => ['left', 'right'],
-                curtainVisible: $$.$me_atom2_prop({
-                    keys: ['.curtain'],
-                    masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
-                        if (curtain == 'left') {
-                            return ['.ofsHor'];
-                        }
-                        else {
-                            return ['.ofsHor', '.#width'];
-                        }
-                    }),
-                }, ({ key: [curtain], masters }) => {
-                    if (curtain == 'left') {
-                        const [ofsHor] = masters;
-                        return ofsHor < 0;
-                    }
-                    else {
-                        const [ofsHor, width] = masters;
-                        return ofsHor > width - content_width;
-                    }
-                }),
-                params: () => ({
-                    studio: {
-                        col: () => 0.33,
-                        row: () => 1,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Квартира',
-                        type: 'checkbox',
-                        caption: () => 'Студия',
-                        space: () => 12,
-                        width: () => .33,
-                    },
-                    free_plan: {
-                        col: () => 0.67,
-                        row: () => 1,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        type: 'checkbox',
-                        caption: () => 'Св. планировка',
-                        space: () => 12,
-                        width: () => .33,
-                    },
-                    photo: {
-                        col: () => 0.33,
-                        row: () => 2,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Только с',
-                        type: 'checkbox',
-                        caption: () => 'Фото',
-                        space: () => 12,
-                        width: () => .33,
-                    },
-                    video: {
-                        col: () => 0.67,
-                        row: () => 2,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        type: 'checkbox',
-                        caption: () => 'Видео',
-                        space: () => 12,
-                        width: () => .33,
-                    },
-                    address: {
-                        col: () => 1.33,
-                        width: () => 1.67,
-                        row: () => 1,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Адрес',
-                        type: 'address',
-                    },
-                    without_new_moscow: {
-                        col: () => 3,
-                        row: () => 1,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        type: 'checkbox',
-                        caption: () => 'Без Новой Москвы',
-                        space: () => 8,
-                        width: () => .5,
-                    },
-                    only_new_moscow: {
-                        col: () => 3.5,
-                        row: () => 1,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        type: 'checkbox',
-                        caption: () => 'Только Новая Москва',
-                        space: () => 8,
-                        width: () => .5,
-                    },
-                    rmqt: {
-                        col: () => 0.33,
-                        width: () => .67,
-                        row: () => 3,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Комнаты',
-                        type: 'select',
-                        options: () => ({
-                            '1': {},
-                            '2': {},
-                            '3': {},
-                            '4': {},
-                            '5': {},
-                            '6': { caption: '6+' },
-                        }),
-                    },
-                    total_sq: {
-                        col: () => 0.33,
-                        row: () => 4,
-                        width: () => 0.67,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Площадь',
-                        type: 'diap',
-                    },
-                    life_sq: {
-                        col: () => 0.33,
-                        row: () => 5,
-                        width: () => 0.67,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Жилая',
-                        type: 'diap',
-                    },
-                    kitchen_sq: {
-                        col: () => 0.33,
-                        row: () => 6,
-                        width: () => 0.67,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Кухня',
-                        type: 'diap',
-                    },
-                    storey_count: {
-                        col: () => 0.33,
-                        row: () => 7,
-                        width: () => 0.67,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Этажность',
-                        type: 'diap',
-                    },
-                    storey: {
-                        col: () => 0.33,
-                        width: () => 0.67,
-                        row: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' ? 8 : 5),
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Этаж',
-                        type: 'diap',
-                    },
-                    exceptFirst: {
-                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0 : 0.33),
-                        row: () => 9,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        type: 'checkbox',
-                        caption: () => 'Кроме первого',
-                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
-                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
-                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
-                    },
-                    exceptLast: {
-                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0.5 : 0.67),
-                        row: () => 9,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        type: 'checkbox',
-                        caption: () => 'Кроме последнего',
-                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
-                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
-                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
-                    },
-                    onlyFirst: {
-                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0 : 0.33),
-                        row: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 10 : 9.8),
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        type: 'checkbox',
-                        caption: () => 'Только первый',
-                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
-                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
-                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
-                    },
-                    onlyLast: {
-                        col: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 0.5 : 0.67),
-                        row: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 10 : 9.8),
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        type: 'checkbox',
-                        caption: () => 'Только последний',
-                        space: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? 12 : 4),
-                        width: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.params.exceptFirst ? .5 : .33),
-                        fontSize_k: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => (order.params.exceptFirst ? 14 : 12) / 16),
-                    },
-                    source: {
-                        col: () => 0.33,
-                        row: () => 11,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Источник',
-                        type: 'checklist',
-                        options: () => ({
-                            winner: {
-                                caption: () => 'WinNER',
-                            },
-                            winnerPro: {
-                                caption: () => 'WinNER <span style="color: #ffc200">PRO</span>',
-                            },
-                            sob: {
-                                caption: () => 'Sob.ru',
-                            },
-                            avito: {
-                                caption: () => 'Avito.ru',
-                            },
-                            cian: {
-                                caption: () => 'Cian.ru',
-                            },
-                            irr: {
-                                caption: () => 'Irr.ru',
-                            },
-                            other: {
-                                caption: () => 'Прочие',
-                            },
-                            yandex: {
-                                caption: () => 'Яндекс',
-                            },
-                        }),
-                        col_ofs: () => [0, ctrl_col_width + ctrl_col_space],
-                        row_space: () => 16,
-                    },
-                    deal_type: {
-                        col: () => 1.33,
-                        width: () => .67,
-                        row: () => 3,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Тип сделки',
-                        type: 'picker',
-                        byDesign: () => false,
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            direct: { caption: 'прямая продажа' },
-                            altern: { caption: 'альтернатива' },
-                        }),
-                    },
-                    price: {
-                        row: () => 4,
-                        col: () => 1.33,
-                        width: () => .67,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Цена',
-                        type: 'diap',
-                    },
-                    price_per_sq: {
-                        col: () => 1.33,
-                        row: () => 5,
-                        width: () => .67,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Цена за м²',
-                        type: 'diap',
-                    },
-                    build_type: {
-                        col: () => 1.33,
-                        width: () => .67,
-                        row: () => 6,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Тип дома',
-                        type: 'picker',
-                        byDesign: () => false,
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'панельный': {},
-                            'блочный': {},
-                            'монолитный': {},
-                            'монолитно-кирпичный': {},
-                            'кирпичный': {},
-                            'деревянный': {},
-                            'шлакоблоки/шлакобетон': {},
-                            'железобетон': {},
-                            'сталинский': {},
-                        }),
-                    },
-                    habit_class: {
-                        col: () => 1.33,
-                        width: () => .67,
-                        row: () => 7,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Класс жилья',
-                        type: 'picker',
-                        byDesign: () => false,
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'эконом': {},
-                            'комфорт': {},
-                            'бизнес': {},
-                            'элитный': {},
-                        }),
-                    },
-                    remont: {
-                        col: () => 1.33,
-                        width: () => .67,
-                        row: () => 8,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Ремонт',
-                        type: 'picker',
-                        byDesign: () => false,
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'требуется капитальный ремонт': {},
-                            'без отделки': {},
-                            'требуется ремонт': {},
-                            'среднее состояние': {},
-                            'хорошее состояние': {},
-                            'отличное состояние': {},
-                            'евроремонт': {},
-                            'дизайнерский ремонт': {},
-                            'первичная отделка': {},
-                        }),
-                    },
-                    territory: {
-                        col: () => 1.33,
-                        width: () => .67,
-                        row: () => 9,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Территория',
-                        type: 'picker',
-                        byDesign: () => false,
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'огороженная': {},
-                            'охраняемая': {},
-                        }),
-                    },
-                    parking: {
-                        col: () => 1.33,
-                        width: () => .67,
-                        row: () => 10,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Парковка',
-                        type: 'picker',
-                        byDesign: () => false,
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'есть': {},
-                            'охраняемая': {},
-                            'подземная': {},
-                        }),
-                    },
-                    avaria: {
-                        col: () => 1.33,
-                        width: () => .67,
-                        row: () => 11,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Аварийность',
-                        type: 'picker',
-                        byDesign: () => false,
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'кроме домов под снос': {},
-                            'только дома под снос': {},
-                        }),
-                    },
-                    built_year: {
-                        col: () => 1.33,
-                        row: () => 12,
-                        width: () => .67,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Год постройки',
-                        type: 'diap',
-                    },
-                    area: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 3,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'Область',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'Москва и область' },
-                            'только Москва': {},
-                            'только область': {},
-                        }),
-                    },
-                    far: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 4,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный' || mode == 'Основной'),
-                        label: () => 'От станции',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'до 2 мин пешком': {},
-                            'до 5 мин пешком': {},
-                            'до 7 мин пешком': {},
-                            'до 10 мин пешком': {},
-                            'до 12 мин пешком': {},
-                            'до 15 мин пешком': {},
-                            'до 5 мин транспортом': {},
-                        }),
-                    },
-                    nova: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 6,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Новостройки',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'включая новостройки' },
-                            'кроме новостроек': {},
-                            'только новостройки': {},
-                        }),
-                    },
-                    apart: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 7,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Апартаменты',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'включая апартаменты' },
-                            'кроме апартаментов': {},
-                            'только апартаменты': {},
-                        }),
-                    },
-                    actual: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 8,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Актуальность',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'включая снятые с продажи' },
-                            'кроме снятых с продажи': {},
-                            'только снятые с продажи': {},
-                        }),
-                    },
-                    spy: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 9,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Слежение',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'включая отслеживаемые' },
-                            'кроме отслеживаемых': {},
-                            'только отслеживаемые': {},
-                        }),
-                    },
-                    dyna: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 10,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Динамика цен',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'повышение цены': {},
-                            'снижение цены': {},
-                        }),
-                    },
-                    plan: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 11,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Планировка',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'не важно' },
-                            'смежные комнаты': {},
-                            'раздельные комнаты': {},
-                            'смежные+раздельные': {},
-                        }),
-                    },
-                    param: {
-                        col: () => 2.33,
-                        width: () => .67,
-                        row: () => 12,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Параметры',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'ЧТО ЭТО???' },
-                        }),
-                    },
-                    note: {
-                        col: () => 3,
-                        row: () => 3,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Поиск по примечанию',
-                        type: 'include_exclude',
-                    },
-                    telefon: {
-                        col: () => 3,
-                        row: () => 6,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Поиск по телефону',
-                        type: 'include_exclude',
-                    },
-                    phone_black: {
-                        col: () => 3.33,
-                        width: () => .67,
-                        row: () => 9,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Включая',
-                        type: 'picker',
-                        options: () => ({
-                            '': { caption: 'Не важно' },
-                            direct: { caption: 'Прямая продажа' },
-                            altern: { caption: 'Альтернатива' },
-                        }),
-                    },
-                    deep: {
-                        col: () => 3,
-                        row: () => 10,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        label: () => 'Глубина поиска',
-                        type: 'deep',
-                    },
-                    brand_new: {
-                        col: () => 3,
-                        row: () => 12,
-                        visible: $$.$me_atom2_prop(['<<.param_mode'], ({ masters: [mode] }) => mode == 'Полный'),
-                        caption: () => 'Только новые (впервые опубликованные)',
-                        space: () => 21,
-                        type: 'checkbox',
-                        width: () => 1,
-                    },
-                }),
-                param_names: $$.$me_atom2_prop_keys(['.params']),
                 ofsHor: () => 0,
             },
             elem: {
                 mode_switcher: () => ({
                     base: $$.$nl_switch,
                     prop: {
-                        '#ofsVer': () => 16,
+                        '#width': () => 124 + 32,
+                        '#height': () => 44,
+                        ofsVer: () => 8,
                         '#alignHor': () => $$.$me_align.right,
-                        'values': '<<.param_mode_keys',
-                        'selected': $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
+                        options: '<<.param_modes',
+                        value: $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
+                        no_adjust: () => true,
                     },
                 }),
                 common: () => ({
                     base: input_with_button,
                     prop: {
-                        '#width': () => col_width,
+                        '#width': () => 314,
+                        '#height': () => row_height,
                         '#ofsHor': () => 16,
                         '#ofsVer': () => 16,
                         placeholder: () => 'Параметры',
                     },
                 }),
-                param: $$.$me_atom2_prop({ keys: ['.param_names'], masters: ['.params', '<.param_mode', '.height_anim_is'] }, ({ key: [param_name], masters: [params, param_mode, height_anim_is], prev }) => {
-                    const def = params[param_name];
-                    let ctrl;
-                    switch (def.type) {
-                        case 'select': {
-                            return Object.assign({ prop: Object.assign({}, prop_common(def)) }, cnf_common(def, {
-                                elem: {
-                                    select: () => ({
-                                        base: $$.$nl_select,
-                                        prop: {
-                                            options: def.options,
-                                            value: $$.$me_atom2_prop([`<<.order`], ({ masters: [order] }) => order.params[param_name] || new Set(), ({ val }) => {
-                                                const order = $$.a(`<<.order`);
-                                                order.params[param_name] = val;
-                                                $$.a(`<<.order`, order, true);
-                                            }),
-                                            fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                            '#width': () => ctrl_width,
-                                            '#height': () => row_height,
-                                        },
-                                    })
-                                },
-                            }));
-                            break;
-                        }
-                        case 'diap': {
-                            return Object.assign({ base: diap, prop: Object.assign({}, prop_common(def)) }, cnf_common(def));
-                            break;
-                        }
-                        case 'picker': {
-                            return Object.assign({ base: $$.$nl_picker, prop: Object.assign({}, prop_common(def), { '#height': () => row_height, options: def.options, byDesign: def.byDesign, value: $$.$me_atom2_prop([`<.order`], ({ masters: [order] }) => order.params[param_name] || def.default || '', ({ val }) => {
-                                        const order = $$.a(`<.order`);
-                                        order.params[param_name] = val;
-                                        $$.a(`<.order`, order, true);
-                                    }) }) }, cnf_common(def));
-                            break;
-                        }
-                        case 'checklist': {
-                            return Object.assign({ base: $$.$nl_checkbox_list, prop: Object.assign({}, prop_common(def), { options: def.options, col_ofs: def.col_ofs, row_space: def.row_space, value: $$.$me_atom2_prop([`<.order`], ({ masters: [order] }) => order.params[param_name] || new Set(), ({ val }) => {
-                                        const order = $$.a(`<.order`);
-                                        order.params[param_name] = val;
-                                        $$.a(`<<.order`, order, true);
-                                    }) }) }, cnf_common(def));
-                            break;
-                        }
-                        case 'checkbox': {
-                            return Object.assign({ base: $$.$nl_checkbox, prop: Object.assign({}, prop_common(def), { space: def.space, caption: def.caption, fontSize_k: def.fontSize_k ? def.fontSize_k : () => 14 / 16, fontSize: $$.$me_atom2_prop(['.em', '.fontSize_k'], $$.$me_atom2_prop_compute_fn_mul()), checked: $$.$me_atom2_prop([`<.order`], ({ masters: [order] }) => order.params[param_name] || false, ({ val }) => {
-                                        const order = $$.a(`<.order`);
-                                        order.params[param_name] = val;
-                                        $$.a(`<.order`, order, true);
-                                    }) }) }, cnf_common(def));
-                            break;
-                        }
-                        case 'address': {
-                            return Object.assign({ base: input_with_button, prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }) }, cnf_common(def));
-                        }
-                        case 'include_exclude': {
-                            return {
-                                prop: Object.assign({}, prop_common(def), { '#height': () => row_height + (row_height + row_space) * 2 }),
-                                elem: {
-                                    label: label(def, {
-                                        '#width': '<.#width',
-                                        fontWeight: () => 'bold',
-                                        '#ofsHor': null,
-                                        '#alignVer': () => $$.$me_align.top,
-                                        '#ofsVer': () => 2,
-                                    }),
-                                    include: () => ({
-                                        prop: {
-                                            '#width': () => col_width,
-                                            '#height': () => row_height,
-                                            '#ofsVer': () => (row_height + row_space),
-                                            '#alignVer': () => $$.$me_align.bottom,
-                                        },
-                                        elem: {
-                                            label: () => ({
-                                                prop: {
-                                                    '#width': () => null,
-                                                    '#height': () => null,
-                                                    '#alignVer': () => $$.$me_align.center,
-                                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                                },
-                                                dom: {
-                                                    innerText: () => 'Включая',
-                                                },
-                                            }),
-                                            ctrl: () => ({
-                                                base: input,
-                                                prop: {
-                                                    '#width': () => ctrl_width,
-                                                    '#height': () => row_height,
-                                                    '#alignHor': () => $$.$me_align.right,
-                                                },
-                                            }),
-                                        },
-                                    }),
-                                    exclude: () => ({
-                                        prop: {
-                                            '#width': () => col_width,
-                                            '#height': () => row_height,
-                                            '#alignVer': () => $$.$me_align.bottom,
-                                        },
-                                        elem: {
-                                            label: () => ({
-                                                prop: {
-                                                    '#width': () => null,
-                                                    '#height': () => null,
-                                                    '#alignVer': () => $$.$me_align.center,
-                                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                                },
-                                                dom: {
-                                                    innerText: () => 'Исключая',
-                                                },
-                                            }),
-                                            ctrl: () => ({
-                                                base: input,
-                                                prop: {
-                                                    '#width': () => ctrl_width,
-                                                    '#height': () => row_height,
-                                                    '#alignHor': () => $$.$me_align.right,
-                                                },
-                                            }),
-                                        },
-                                    }),
-                                },
-                                style: {
-                                    opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })),
-                                },
-                                init: () => {
-                                    $$.a('.show', true);
-                                },
-                            };
-                            break;
-                        }
-                        case 'deep': {
-                            return {
-                                prop: Object.assign({}, prop_common(def), { '#height': () => row_height + row_height + row_space }),
-                                elem: {
-                                    label: label(def, {
-                                        '#width': '<.#width',
-                                        fontWeight: () => 'bold',
-                                        '#ofsHor': null,
-                                        '#alignVer': () => $$.$me_align.top,
-                                        '#ofsVer': () => 2,
-                                    }),
-                                    ctrl: () => ({
-                                        prop: {
-                                            '#width': () => col_width,
-                                            '#height': () => row_height,
-                                            '#alignVer': () => $$.$me_align.bottom,
-                                        },
-                                        elem: {
-                                            input: () => ({
-                                                prop: {
-                                                    '#width': () => 90,
-                                                },
-                                                style: {
-                                                    background: () => 'green',
-                                                },
-                                            }),
-                                            label: () => ({
-                                                prop: {
-                                                    '#width': () => 121,
-                                                    '#ofsHor': () => 110,
-                                                },
-                                                style: {
-                                                    background: () => 'green',
-                                                },
-                                            }),
-                                            icon: () => ({
-                                                node: 'img',
-                                                prop: {
-                                                    '#alignHor': () => $$.$me_align.right,
-                                                    '#ofsVer': () => -3,
-                                                    '#width': () => 28,
-                                                    '#height': () => 28,
-                                                    '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                                    '#cursor': () => 'pointer',
-                                                },
-                                                attr: {
-                                                    src: () => 'assets/icons-8-today@2x.png',
-                                                    draggable: () => false,
-                                                },
-                                                style: {
-                                                    filter: () => 'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)',
-                                                },
-                                            }),
-                                        },
-                                    }),
-                                },
-                                style: {
-                                    opacity: $$.$me_atom2_prop(['.show'], ({ masters: [show] }) => $$.$me_atom2_anim({ to: show ? 1 : 0, duration: 400 })),
-                                },
-                                init: () => {
-                                    $$.a('.show', true);
-                                },
-                            };
-                            break;
-                        }
-                        default: $$.$me_throw(def.type);
-                    }
-                }),
-                curtain: $$.$me_atom2_prop({ keys: ['.curtain'], masters: ['.hidden_curtain', '.curtainVisible[]'] }, ({ key: [curtain], masters: [hidden_curtain, curtainVisible] }) => hidden_curtain || !curtainVisible ? null : {
+                tabs: () => ({
                     prop: {
-                        '#width': '<.width_curtain',
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@found.#height', '.#ofsVer'], ({ masters: [height, found_height, ofsVer] }) => {
-                            return height - (found_height + ofsVer);
+                        '#ofsVer': () => 74,
+                        '#height': $$.$me_atom2_prop(['<.#height', '<@found.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
+                        options: () => ({
+                            Местоположение: {
+                                icon: 'icons-8-place-marker',
+                                params: {
+                                    Область: {
+                                        row: () => 0,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая Московскую область' : {
+                                                    text: 'Включая',
+                                                    width: 90,
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Только Московская область' : {
+                                                    text: 'Только',
+                                                    width: 90,
+                                                } },
+                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме Московской области' : {
+                                                    text: 'Кроме',
+                                                    width: 90,
+                                                } },
+                                        })
+                                    },
+                                    НоваяМосква: {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая Новую Москву' : {
+                                                    text: 'Включая',
+                                                    width: 90,
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Только Новая Москва' : {
+                                                    text: 'Только',
+                                                    width: 90,
+                                                } },
+                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме Новой Москвы' : {
+                                                    text: 'Кроме',
+                                                    width: 90,
+                                                } },
+                                        }),
+                                    },
+                                    Адрес: {
+                                        type: 'address',
+                                        row: () => 2,
+                                    },
+                                    ОтСтанции: {
+                                        row: () => 3,
+                                        label: () => 'От станции',
+                                        label_width: () => 90,
+                                        type: 'picker',
+                                        options: () => ({
+                                            '': { caption: 'не важно' },
+                                            'до 2 мин пешком': {},
+                                            'до 5 мин пешком': {},
+                                            'до 7 мин пешком': {},
+                                            'до 10 мин пешком': {},
+                                            'до 12 мин пешком': {},
+                                            'до 15 мин пешком': {},
+                                            'до 5 мин транспортом': {},
+                                        }),
+                                    },
+                                },
+                            },
+                            Квартира: {
+                                icon: 'icons-8-key',
+                                params: {
+                                    apart: {
+                                        row: () => 0,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: {
+                                                caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Можно апартаменты',
+                                                } : {
+                                                    width: 90,
+                                                    text: 'Не важно',
+                                                },
+                                            },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
+                                            except: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 210,
+                                                    text: 'Только апартаменты',
+                                                } : {
+                                                    width: 60,
+                                                    text: '...',
+                                                } }
+                                        }),
+                                    },
+                                    rmqt: {
+                                        row: () => 1,
+                                        type: 'pickermulti',
+                                        label: () => 'Квартира',
+                                        label_width: () => 90,
+                                        none: () => 'с любым количеством комнат',
+                                        options: () => ({
+                                            'free': { caption: 'Св.планировка' },
+                                            'studio': { caption: 'Студия' },
+                                            'rmqt1': { caption: '1-комн.' },
+                                            'rmqt2': { caption: '2-комн.' },
+                                            'rmqt3': { caption: '3-комн.' },
+                                            'rmqt4': { caption: '4-комн.' },
+                                            'rmqt5': { caption: '5-комн.' },
+                                            'rmqt6': { caption: '6+ комн.' },
+                                        }),
+                                    },
+                                    plan: {
+                                        row: () => 2,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: {
+                                                caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Можно со смежными комнатами',
+                                                } : {
+                                                    width: 90,
+                                                    text: 'Не важно',
+                                                },
+                                            },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Только изолированные комнаты' : 'Изолированные' },
+                                            except: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 210,
+                                                    text: 'Только смежные комнаты',
+                                                } : {
+                                                    width: 60,
+                                                    text: '...',
+                                                } }
+                                        }),
+                                    },
+                                    total_sq: {
+                                        row: () => 3,
+                                        type: 'diap',
+                                        label: () => 'Площадь',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                    life_sq: {
+                                        row: () => 4,
+                                        type: 'diap',
+                                        label: () => 'Жилая',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                    kitchen_sq: {
+                                        row: () => 5,
+                                        type: 'diap',
+                                        label: () => 'Кухня',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                    remont: {
+                                        row: () => 6,
+                                        type: 'pickermulti',
+                                        label: () => 'Состояние',
+                                        label_width: () => 90,
+                                        none: () => 'квартиры не важно',
+                                        options: () => ({
+                                            'требуется капитальный ремонт': {},
+                                            'без отделки': {},
+                                            'требуется ремонт': {},
+                                            'среднее': {},
+                                            'хорошее': {},
+                                            'отличное': {},
+                                            'евроремонт': {},
+                                            'дизайнерский ремонт': {},
+                                            'первичная отделка': {},
+                                        }),
+                                    },
+                                    lavatory: {
+                                        row: () => 7,
+                                        type: 'picker',
+                                        label: () => 'Санузел',
+                                        label_width: () => 90,
+                                        options: () => ({
+                                            '0': { caption: 'может быть совмещенным' },
+                                            '1': { caption: 'только раздельный' },
+                                            '2': { caption: 'не менее 2-х' },
+                                            '3': { caption: 'не менее 3-х' },
+                                            '4': { caption: 'не менее 4-х' },
+                                        }),
+                                    },
+                                    okna: {
+                                        row: () => 8,
+                                        type: 'select',
+                                        options: () => ({
+                                            '0': { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Не важно, куда выходят окна'
+                                                } : {
+                                                    width: 90,
+                                                    text: 'Не важно',
+                                                } },
+                                            '1': { caption: ({ isSelected }) => isSelected ? 'Окна только во двор' : 'Во двор' },
+                                            '2': { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 210,
+                                                    text: 'Окна только на улицу',
+                                                } : 'На улицу' },
+                                        }),
+                                    },
+                                },
+                            },
+                            'Цена и условия': {
+                                icon: 'icons-8-money',
+                                params: {
+                                    'Ипотека': {
+                                        row: () => 0,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: {
+                                                    width: 90,
+                                                    text: 'Не важно'
+                                                } },
+                                            only: { caption: ({ val }) => val != 'except' ?
+                                                    'Возможна продажа по ипотеке' : {
+                                                    text: 'Возможна',
+                                                    width: 90,
+                                                }
+                                            },
+                                            except: { caption: ({ isSelected }) => isSelected ? 'Продажа по ипотеке невозможна' : {
+                                                    text: '...',
+                                                    width: 60,
+                                                }
+                                            },
+                                        }),
+                                    },
+                                    'ТипСделки': {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            '0': { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Можно с альтернативой',
+                                                } : {
+                                                    text: 'Не важно',
+                                                    width: 90,
+                                                } },
+                                            '1': { caption: ({ isSelected, val }) => isSelected ? 'Только прямая продажа' : {
+                                                    text: 'Кроме',
+                                                    width: val == '0' ? null : 90,
+                                                } },
+                                            '2': { caption: ({ isSelected }) => isSelected ? 'Только с альтернативой' : {
+                                                    text: '...',
+                                                    width: 60,
+                                                } },
+                                        }),
+                                    },
+                                    price: {
+                                        row: () => 2,
+                                        type: 'diap',
+                                        label: () => 'Цена',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                    price_per_sq: {
+                                        row: () => 3,
+                                        type: 'diap',
+                                        label: () => 'Цена за м²',
+                                        label_width: () => 90,
+                                        diap_space: () => 16,
+                                    },
+                                    'ДинамикаЦены': {
+                                        row: () => 4,
+                                        type: 'select',
+                                        options: () => ({
+                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 90 }) },
+                                            '1': { caption: ({ isSelected, val }) => val != '2' ? 'Понижение цены' : 'Понижение' },
+                                            '2': { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 176,
+                                                    text: 'Повышение цены',
+                                                } : {
+                                                    width: 160,
+                                                    text: 'Повышение'
+                                                } },
+                                        }),
+                                    },
+                                    'БонусАгенту': {
+                                        row: () => 5,
+                                        type: 'select',
+                                        options: () => ({
+                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 90 }) },
+                                            '1': { caption: ({ isSelected, val }) => val != '2' ? 'Только с бонусом агенту' : 'С бонусом' },
+                                            '2': { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 176,
+                                                    text: 'Без бонуса агенту',
+                                                } : {
+                                                    width: 160,
+                                                    text: 'Без бонуса',
+                                                } },
+                                        }),
+                                    },
+                                },
+                            },
+                            Этаж: {
+                                icon: 'icons-8-building',
+                                params: {
+                                    Этаж: {
+                                        row: () => 0,
+                                        type: 'diap',
+                                        label: () => 'Этаж',
+                                        label_width: () => 50,
+                                        diap_space: () => 16,
+                                    },
+                                    ПервыйЭтаж: {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 230,
+                                                    text: 'Можно первый этаж',
+                                                } : {
+                                                    text: 'Можно',
+                                                    width: 100,
+                                                } },
+                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме первого этажа' : 'Кроме' },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 181,
+                                                    text: 'Только первый этаж',
+                                                } : {
+                                                    text: 'Только',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                    ПоследнийЭтаж: {
+                                        row: () => 2,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? {
+                                                    text: 'Можно последний этаж',
+                                                    width: 230,
+                                                } : {
+                                                    text: 'Можно',
+                                                    width: 100,
+                                                } },
+                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме последнего этажа' : 'Кроме' },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 181,
+                                                    text: 'Только последний этаж',
+                                                } : {
+                                                    text: 'Только',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                },
+                            },
+                            Дом: {
+                                icon: 'icons-8-building',
+                                params: {
+                                    Этажность: {
+                                        row: () => 0,
+                                        type: 'diap',
+                                        label: () => 'Этажность',
+                                        label_width: () => 110,
+                                        diap_space: () => 16,
+                                    },
+                                    Лифт: {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: { caption: ({ isSelected }) => isSelected ? 'Можно без лифта' : {
+                                                    text: 'Не важно',
+                                                    width: 100,
+                                                } },
+                                            exists: { caption: ({ isSelected, val }) => val != 'only' ? {
+                                                    text: 'С лифтом',
+                                                    width: isSelected ? null : 100,
+                                                } : {
+                                                    text: 'Есть',
+                                                    width: 60,
+                                                }
+                                            },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'С пассажирским и грузовым лифтом' : {
+                                                    text: 'Пасс. + груз.',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                    КлассЖилья: {
+                                        row: () => 2,
+                                        type: 'pickermulti',
+                                        label: () => 'Класс жилья',
+                                        label_width: () => 110,
+                                        none: () => 'не важен',
+                                        options: () => ({
+                                            'эконом': {},
+                                            'комфорт': {},
+                                            'бизнес': {},
+                                            'элитный': {},
+                                        }),
+                                    },
+                                    ТипДома: {
+                                        row: () => 3,
+                                        type: 'pickermulti',
+                                        label: () => 'Тип дома',
+                                        label_width: () => 110,
+                                        none: () => 'не важен',
+                                        options: () => ({
+                                            'панельный': {},
+                                            'блочный': {},
+                                            'монолитный': {},
+                                            'монолитно-кирпичный': {},
+                                            'кирпичный': {},
+                                            'деревянный': {},
+                                            'шлакоблоки/шлакобетон': {},
+                                            'железобетон': {},
+                                            'сталинский': {},
+                                        }),
+                                    },
+                                    СерияДома: {
+                                        row: () => 4,
+                                        type: 'pickermulti',
+                                        label: () => 'Серия дома',
+                                        label_width: () => 110,
+                                        none: () => 'не важна',
+                                        options: () => ({
+                                            '02/98-НМ': {},
+                                            '1385 АР-3': {},
+                                            '1605/12': {},
+                                            '1605/9': {},
+                                            '1605/Б': {},
+                                            '17/2004-АС': {},
+                                            '1МГ-600': {},
+                                            '1МГ-601': {},
+                                            '2-71/358': {},
+                                            '2548-01-АР': {},
+                                            '2548-02-АР': {},
+                                            '32/2005-АС': {},
+                                            '349/01': {},
+                                            '355/24': {},
+                                            '7040-01': {},
+                                            'I-303': {},
+                                            'I-335': {},
+                                            'I-447': {},
+                                            'I-510': {},
+                                            'I-511': {},
+                                            'I-513': {},
+                                            'I-515': {},
+                                            'I605-АМ': {},
+                                            'II-04': {},
+                                            'II-05': {},
+                                            'II-08': {},
+                                            'II-18': {},
+                                            'II-18-01-МН': {},
+                                            'II-18-31/12': {},
+                                            'II-29': {},
+                                            'II-32': {},
+                                            'II-49': {},
+                                            'II-57': {},
+                                            'II-68-02': {},
+                                            'II-68-03': {},
+                                            'II-89-01-МН': {},
+                                            'III/17': {},
+                                            'VI-23': {},
+                                            'VII-51': {},
+                                            'VII-58': {},
+                                            'А-41K': {},
+                                            'башня Вулыха': {},
+                                            'Бекерон': {},
+                                            'БОД-1': {},
+                                            'В-2000': {},
+                                            'В-2002': {},
+                                            'В-2005': {},
+                                            'ГМС-1': {},
+                                            'ГМС-3': {},
+                                            'И-1168 А3': {},
+                                            'И-1168 А4': {},
+                                            'И-1233': {},
+                                            'И-1254': {},
+                                            'И-1262А': {},
+                                            'И-1429': {},
+                                            'И-1430': {},
+                                            'И-1459-132': {},
+                                            'И-1491-17': {},
+                                            'И-1501': {},
+                                            'И-155': {},
+                                            'И-155МК': {},
+                                            'И-155Н': {},
+                                            'И-1602': {},
+                                            'И-1677': {},
+                                            'И-1723': {},
+                                            'И-1724': {},
+                                            'И-1731': {},
+                                            'И-1782/1': {},
+                                            'И-1812/1': {},
+                                            'И-1834': {},
+                                            'И-1836': {},
+                                            'И-1838': {},
+                                            'И-1839': {},
+                                            'И-1849': {},
+                                            'И-1932': {},
+                                            'И-208': {},
+                                            'И-209А': {},
+                                            'И-2342': {},
+                                            'И-241': {},
+                                            'И-491А': {},
+                                            'И-515-5М': {},
+                                            'И-515/9ш': {},
+                                            'И-522': {},
+                                            'И-522А': {},
+                                            'И-679': {},
+                                            'И-700': {},
+                                            'И-700А': {},
+                                            'И-760А': {},
+                                            'И-79-99': {},
+                                            'И-99-47/405': {},
+                                            'И-99-47/406': {},
+                                            'индивидуальный проект': {},
+                                            'ИП-46С': {},
+                                            'ИШ3/12': {},
+                                            'К-7': {},
+                                            'КМС-101': {},
+                                            'Колос': {},
+                                            'КОПЭ': {},
+                                            'КОПЭ-М-ПАРУС': {},
+                                            'КТЖС': {},
+                                            'КТЖС-11/22': {},
+                                            '1МГ-300': {},
+                                            'МОНОЛИТ': {},
+                                            'МЭС-84': {},
+                                            'НП-46с': {},
+                                            'П-06': {},
+                                            'П-111': {},
+                                            'П-111М': {},
+                                            'П-111МО': {},
+                                            'П-12-31/12': {},
+                                            'II-14': {},
+                                            'П-14/35': {},
+                                            'П-18/22': {},
+                                            'П-20': {},
+                                            'П-21': {},
+                                            'П-22': {},
+                                            'П-23': {},
+                                            'П-28': {},
+                                            'П-29': {},
+                                            'П-3': {},
+                                            'П-3/16': {},
+                                            'П-3/17': {},
+                                            'П-3/22': {},
+                                            'П-30': {},
+                                            'П-31': {},
+                                            'П-32': {},
+                                            'П-321-60': {},
+                                            'II-34': {},
+                                            'II-35': {},
+                                            'П-37': {},
+                                            'II-38': {},
+                                            'П-39': {},
+                                            'П-3М': {},
+                                            'П-4': {},
+                                            'П-40': {},
+                                            'П-41': {},
+                                            'П-42': {},
+                                            'П-43': {},
+                                            'П-44': {},
+                                            'П-44К': {},
+                                            'П-44М': {},
+                                            'П-44Т': {},
+                                            'П-44ТМ': {},
+                                            'П-45': {},
+                                            'П-46': {},
+                                            'П-46М': {},
+                                            'П-47': {},
+                                            'П-49 Д': {},
+                                            'П-50': {},
+                                            'П-53': {},
+                                            'П-55': {},
+                                            'П-55М': {},
+                                            'II-29-41/37': {},
+                                            'II-66': {},
+                                            'II-67': {},
+                                            'II-68': {},
+                                            'ПД-4': {},
+                                            'ПД-4/12': {},
+                                            'Пд4-1/12Н1': {},
+                                            'ПД4-1/8Н1': {},
+                                            'ПЗМ-1/14': {},
+                                            'ПЗМ-1/16': {},
+                                            'ПЗМ-2/16': {},
+                                            'ПЗМ-3/16': {},
+                                            'ПП-70': {},
+                                            'Призма': {},
+                                            'РД-90': {},
+                                            'С-111М': {},
+                                            'С-220': {},
+                                            'С-222': {},
+                                            'ТИП-441': {},
+                                            'ЦВП-4570-II-63': {},
+                                            'Юбилейный': {},
+                                            'II-02': {},
+                                            'II-01': {},
+                                            'II-18-01/08': {},
+                                            'II-18-01/09': {},
+                                            '1605-АМ/9': {},
+                                            '1605-АМ/12': {},
+                                            'II-49П': {},
+                                            'II-49Д': {},
+                                            'II-03': {},
+                                            'II-18-01/12': {},
+                                            'II-18-02/12': {},
+                                            'II-18/12': {},
+                                            'II-20': {},
+                                            '1605-АМ/5': {},
+                                            'И-III-3': {},
+                                            'II-28': {},
+                                            'II-68-02/16М': {},
+                                            'КПД-4570': {},
+                                            'II-68-01': {},
+                                            '1-515/9': {},
+                                            'К4/16': {},
+                                            'И-155Б': {},
+                                            '1-515/5': {},
+                                            'II-18-01/12А': {},
+                                            'СМ-1 ': {},
+                                            'П-44ТМ/25': {},
+                                            'И-701': {},
+                                            'И-155-с': {},
+                                            'Айсберг': {},
+                                            'II-14/35': {},
+                                            'И-99-47/407': {},
+                                            'П-101': {},
+                                            '1-300': {},
+                                            'II-18-01/09К': {},
+                                            'И-1900': {},
+                                            'М-10': {},
+                                            'МПСМ': {},
+                                            'ИП-46М': {},
+                                            'П-30М': {},
+                                            'II-07': {},
+                                            'ПБ-01': {},
+                                            'И-1414': {},
+                                            'И-2111': {},
+                                            '1605-АМЛ/5': {},
+                                            '1-447С-26': {},
+                                            '1-447С-1': {},
+                                            '1-447С-36': {},
+                                            '1-447С-2': {},
+                                            '1-447С-5': {},
+                                            '1-446': {},
+                                            'ПБ-02': {},
+                                            'КПД-4572А': {},
+                                            'II-68-04': {},
+                                            '124-124-1': {},
+                                            '1605-А': {},
+                                            '1-439': {},
+                                            'Мм1-3': {},
+                                            'И-1168': {},
+                                            'СМ-06': {},
+                                            'СМ-03': {},
+                                            '1-419': {},
+                                            '1-203': {},
+                                            'ЭС-24': {},
+                                            '8966': {},
+                                            '1-126': {},
+                                            '1-225': {},
+                                            '1-402': {},
+                                            '16/2188': {},
+                                            'Т-1': {},
+                                            'Т-3': {},
+                                            '1-233': {},
+                                            '1-260': {},
+                                            'К-8-49': {},
+                                            '1-255': {},
+                                            'КС-8-50': {},
+                                            'Д-23': {},
+                                            'Д-25Н1': {},
+                                            'ПП-83': {},
+                                            'К2/16': {},
+                                            'К7/16': {},
+                                            'К8/16': {},
+                                            '1-464А': {},
+                                            'КОПЭ-87': {},
+                                            'П-121М': {},
+                                            '121-041': {},
+                                            '121-042': {},
+                                            '121-043': {},
+                                            'II-29-208': {},
+                                            'II-29-3': {},
+                                            'II-29-9': {},
+                                            'II-29-160': {},
+                                            'ПД-1': {},
+                                            'И-02/98-НМ': {},
+                                            '1-467': {},
+                                            'ЭЖРЧС': {},
+                                            'П-3МК': {},
+                                            'II-18-02/09': {},
+                                            'ПД-3': {},
+                                            'И-580': {},
+                                            'II-18-03/12': {},
+                                            'К-14': {},
+                                            'И-700Н': {},
+                                            'Юникон': {},
+                                            '111-121': {},
+                                            '1-211': {},
+                                            'II-68-01/22': {},
+                                            'Лебедь': {},
+                                            'И-99-47': {},
+                                        }),
+                                    },
+                                    ГодПостройки: {
+                                        row: () => 5,
+                                        type: 'diap',
+                                        label: () => 'Год постройки',
+                                        label_width: () => 110,
+                                        diap_space: () => 16,
+                                    },
+                                    ПодСнос: {
+                                        row: () => 6,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? 'Можно в доме под снос' : {
+                                                    text: 'Можно',
+                                                    width: 100,
+                                                } },
+                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме домов под снос' : {
+                                                    text: 'Кроме',
+                                                    width: 100,
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Только в доме под снос' : {
+                                                    text: 'Только',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                    Новостройки: {
+                                        row: () => 7,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
+                                                    text: 'Можно',
+                                                    width: 100,
+                                                } },
+                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
+                                                    text: 'Кроме',
+                                                    width: 100,
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
+                                                    text: 'Только',
+                                                    width: 100,
+                                                } },
+                                        }),
+                                    },
+                                },
+                            },
+                            Инфраструктура: {
+                                icon: 'icons-8-city-square',
+                                params: {
+                                    Территория: {
+                                        row: () => 0,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: { caption: { text: 'Не важно', width: 75 } },
+                                            fenced: { caption: ({ val }) => val != 'guarded' ? 'Только огороженная территория' : 'Огороженная' },
+                                            guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая территория' : 'Охраняемая' },
+                                        })
+                                    },
+                                    Парковка: {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            no_matter: { caption: { text: 'Не важно', width: 75 } },
+                                            exists: { caption: ({ val }) => val == 'no_matter' || val == 'exists' ? 'Только с парковкой' : {
+                                                    text: 'Есть',
+                                                    width: 40,
+                                                } },
+                                            guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая территория' : 'Охраняемая' },
+                                            underground: { caption: ({ isSelected }) => isSelected ? 'Только подземная парковка' : 'Подземная' },
+                                        })
+                                    },
+                                },
+                            },
+                            Объявление: {
+                                icon: 'icons-8-create-new-3',
+                                params: {
+                                    photo: {
+                                        row: () => 0,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => ({
+                                                    width: 60,
+                                                    text: 'Все',
+                                                }) },
+                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с фото' : {
+                                                    text: 'С фото',
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Только без фото',
+                                                } : {
+                                                    width: 145,
+                                                    text: 'Без фото',
+                                                } },
+                                        })
+                                    },
+                                    video: {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => ({
+                                                    width: 60,
+                                                    text: 'Все',
+                                                }) },
+                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с видео' : {
+                                                    text: 'С видео',
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Только без видео',
+                                                } : {
+                                                    width: 145,
+                                                    text: 'Без видео',
+                                                } },
+                                        })
+                                    },
+                                    deep: {
+                                        row: () => 2,
+                                        label: () => 'Глубина поиска',
+                                        type: 'deep',
+                                    },
+                                    ТолькоНовые: {
+                                        row: () => 4,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: { text: 'Все', width: 60 } },
+                                            only: { caption: ({ isSelected, val }) => val != 'except' ? 'Только новые (впервые опубликованные)' : {
+                                                    width: 80,
+                                                    text: 'Только',
+                                                } },
+                                            except: { caption: ({ isSelected }) => isSelected ? 'Кроме новых (впервые опубликованных)' : {
+                                                    width: 75,
+                                                    text: 'Кроме',
+                                                } },
+                                        })
+                                    },
+                                    Источник: {
+                                        type: 'pickermulti',
+                                        row: () => 5,
+                                        label: () => 'Источники',
+                                        label_width: () => 100,
+                                        none: () => 'все',
+                                        options: () => ({
+                                            winner: {
+                                                caption: 'WinNER',
+                                            },
+                                            winnerPro: {
+                                                caption: 'WinNER PRO',
+                                            },
+                                            sob: {
+                                                caption: 'Sob.ru',
+                                            },
+                                            avito: {
+                                                caption: 'Avito.ru',
+                                            },
+                                            cian: {
+                                                caption: 'Cian.ru',
+                                            },
+                                            irr: {
+                                                caption: 'Irr.ru',
+                                            },
+                                            other: {
+                                                caption: 'Прочие',
+                                            },
+                                            yandex: {
+                                                caption: 'Яндекс',
+                                            },
+                                        }),
+                                    },
+                                    sold: {
+                                        row: () => 6,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
+                                                    width: 60,
+                                                    text: 'Все',
+                                                } },
+                                            except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
+                                                    text: 'Кроме',
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Только снятые с продажи',
+                                                } : {
+                                                    width: 75,
+                                                    text: 'Только',
+                                                } },
+                                        })
+                                    },
+                                },
+                            },
+                            Детали: {
+                                icon: 'icons-8-list',
+                                params: {
+                                    Примечание: {
+                                        row: () => 0,
+                                        label: () => 'Поиск по примечанию',
+                                        type: 'include_exclude',
+                                        label_width: () => 100,
+                                    },
+                                    Телефоны: {
+                                        row: () => 3,
+                                        label: () => 'Поиск по телефону',
+                                        type: 'include_exclude',
+                                        label_width: () => 100,
+                                    },
+                                },
+                            },
                         }),
-                        '#alignHor': () => $$.$me_align[curtain],
-                        '#ofsVer': () => row_margin_top + row_height + row_space,
+                        option_ids: $$.$me_atom2_prop_keys(['.options']),
+                        option_height: () => 54,
+                        option_width: () => 210,
+                        option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
+                        value: $$.$me_atom2_prop_store({
+                            default: () => $$.a('.option_ids')[0],
+                            valid: (val) => typeof val == 'string' && ~$$.a('.option_ids').indexOf(val) ? val : null,
+                        }),
+                        params: $$.$me_atom2_prop(['.value', '.options'], ({ masters: [value, options] }) => options[value].params || {}),
+                        param_ids: $$.$me_atom2_prop_keys(['.params']),
+                        row_height: () => row_height,
+                        row_space: () => row_space,
+                        row_left: $$.$me_atom2_prop(['.option_width', '.marginHor'], $$.$me_atom2_prop_compute_fn_sum()),
+                        row_width: () => 428,
+                        marginHor: () => 32,
                     },
-                    style: {
-                        background: $$.$me_atom2_prop(['<.curtain_kind'], ({ masters: [kind] }) => kind == 'black' ?
-                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(0,0,0,.24) 0%, rgba(0,0,0,.1) 33%, rgba(0,0,0,0) 100%)` :
-                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%)`),
-                        pointerEvents: () => 'none',
+                    elem: {
+                        separator: () => ({
+                            prop: {
+                                '#width': '<.option_width',
+                            },
+                            style: {
+                                borderRight: () => '1px solid #bdc3d1',
+                            },
+                        }),
+                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'] }, ({ key: [id], masters: [params] }) => {
+                            const def = params[id];
+                            if (def.type == 'select') {
+                                return {
+                                    base: $$.$nl_select,
+                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]), no_adjust: def.no_adjust }),
+                                };
+                            }
+                            else if (def.type == 'address') {
+                                return {
+                                    base: input_with_button,
+                                    prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
+                                };
+                            }
+                            else if (def.type == 'picker' || def.type == 'pickermulti') {
+                                return {
+                                    prop: Object.assign({}, prop_common(def)),
+                                    elem: {
+                                        label: !def.label ? null : () => ({
+                                            prop: {
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            base: def.type == 'picker' ? $$.$nl_picker : $$.$nl_pickermulti,
+                                            prop: {
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
+                                                options: def.options,
+                                                value: def.type == 'picker' ? null : () => new Set(),
+                                                none: def.type == 'picker' ? null : def.none,
+                                            },
+                                        }),
+                                    },
+                                };
+                            }
+                            else if (def.type == 'diap') {
+                                return {
+                                    base: diap,
+                                    prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space }),
+                                };
+                            }
+                            else if (def.type == 'deep') {
+                                return {
+                                    prop: Object.assign({}, prop_common(def), { '#height': () => row_height + row_height + row_space }),
+                                    elem: {
+                                        label: () => ({
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#ofsVer': () => 14,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            prop: {
+                                                '#height': () => row_height,
+                                                '#alignVer': () => $$.$me_align.bottom,
+                                            },
+                                            elem: {
+                                                input: () => ({
+                                                    prop: {
+                                                        '#width': () => 90,
+                                                    },
+                                                    style: {
+                                                        background: () => 'green',
+                                                    },
+                                                }),
+                                                label: () => ({
+                                                    prop: {
+                                                        '#width': () => 121,
+                                                        '#ofsHor': () => 110,
+                                                    },
+                                                    style: {
+                                                        background: () => 'green',
+                                                    },
+                                                }),
+                                                icon: () => ({
+                                                    node: 'img',
+                                                    prop: {
+                                                        '#alignHor': () => $$.$me_align.right,
+                                                        '#ofsVer': () => 2,
+                                                        '#width': () => 28,
+                                                        '#height': () => 28,
+                                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                                        '#cursor': () => 'pointer',
+                                                    },
+                                                    attr: {
+                                                        src: () => 'assets/icons-8-today@2x.png',
+                                                        draggable: () => false,
+                                                    },
+                                                    style: {
+                                                        filter: () => 'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)',
+                                                    },
+                                                }),
+                                            },
+                                        }),
+                                    },
+                                };
+                            }
+                            else if (def.type == 'include_exclude') {
+                                return {
+                                    prop: Object.assign({}, prop_common(def, { ofsVer: -5 }), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    elem: {
+                                        label: () => ({
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#height': () => row_height,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                                '#ofsVer': () => 12,
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        include: () => ({
+                                            base: include_exclude_item,
+                                            prop: {
+                                                label: () => 'Включая',
+                                                label_width: def.label_width,
+                                                '#ofsVer': () => (row_height + row_space),
+                                            },
+                                        }),
+                                        exclude: () => ({
+                                            base: include_exclude_item,
+                                            prop: {
+                                                label: () => 'Исключая',
+                                                label_width: def.label_width,
+                                                '#ofsVer': () => 2 * (row_height + row_space),
+                                            },
+                                        }),
+                                    },
+                                };
+                            }
+                            else {
+                                $$.$me_throw(def.type);
+                            }
+                        }),
+                        option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                            prop: {
+                                '#ofsVer': `<.option_top[${id}]`,
+                                '#width': '<.option_width',
+                                '#height': '<.option_height',
+                                isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value == id),
+                                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? null : 'pointer'),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<.value', id);
+                                    return true;
+                                },
+                            },
+                            style: {
+                                background: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#0070a4' : 'white'),
+                            },
+                            elem: {
+                                icon: () => ({
+                                    node: 'img',
+                                    prop: {
+                                        '#width': () => 28,
+                                        '#height': () => 28,
+                                        '#alignVer': () => $$.$me_align.center,
+                                        '#ofsHor': () => 16,
+                                    },
+                                    attr: {
+                                        src: $$.$me_atom2_prop(['<<.options'], ({ masters: [options] }) => `assets/${options[id].icon}@2x.png`),
+                                        draggable: () => false,
+                                    },
+                                    style: {
+                                        filter: $$.$me_atom2_prop(['<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
+                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                    },
+                                }),
+                                label: () => ({
+                                    prop: {
+                                        '#ofsHor': () => 61,
+                                        '#alignVer': () => $$.$me_align.center,
+                                        '#height': () => null,
+                                    },
+                                    dom: {
+                                        innerText: () => id,
+                                    },
+                                    style: {
+                                        color: $$.$me_atom2_prop(['<.isSelected', '.colorText'], ({ masters: [isSelected, colorText] }) => isSelected ? 'white' : colorText),
+                                    },
+                                }),
+                            },
+                        })),
                     },
+                    style: {},
                 }),
                 found: () => ({
                     prop: {
@@ -7659,16 +8166,62 @@ var $;
         const diap = {
             prop: {
                 ids: () => ['min', 'max'],
+                label: $$.$me_atom2_prop_abstract(),
+                label_width: $$.$me_atom2_prop_abstract(),
+                diap_space: $$.$me_atom2_prop_abstract(),
             },
             elem: {
+                label: () => ({
+                    prop: {
+                        '#width': '<.label_width',
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                    },
+                    dom: {
+                        innerText: '<.label',
+                    },
+                }),
                 input: $$.$me_atom2_prop({ keys: ['.ids'] }, ({ key: [id] }) => ({
                     base: input,
                     prop: {
-                        '#alignHor': () => id == 'min' ? $$.$me_align.left : $$.$me_align.right,
-                        '#width': () => ctrl_col_width,
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': id == 'max' ? null : $$.$me_atom2_prop(['.#width', '<.diap_space'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.label_width', '<.diap_space'], ({ masters: [width, label_width, diap_space] }) => (width - label_width - diap_space) / 2),
                         placeholder: () => id == 'min' ? 'от' : 'до',
                     },
                 })),
+            },
+        };
+        const include_exclude_item = {
+            prop: {
+                label: $$.$me_atom2_prop_abstract(),
+                label_width: $$.$me_atom2_prop_abstract(),
+                '#width': '<.#width',
+                '#height': () => row_height,
+                '#ofsVer': $$.$me_atom2_prop_abstract(),
+                '#alignVer': () => $$.$me_align.top,
+            },
+            elem: {
+                label: () => ({
+                    prop: {
+                        '#width': '<.label_width',
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                    },
+                    dom: {
+                        innerText: '<.label',
+                    },
+                }),
+                ctrl: () => ({
+                    base: input,
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#height': () => row_height,
+                        '#alignHor': () => $$.$me_align.right,
+                    },
+                }),
             },
         };
         const input = {
@@ -7692,7 +8245,7 @@ var $;
           }
         `);
                 }),
-                '#height': () => row_height,
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
             },
             style: {
                 borderRadius: () => 3,
@@ -7706,6 +8259,7 @@ var $;
             },
             event: {
                 clickOrTap: () => {
+                    $$.a.curr.node.focus();
                     return true;
                 },
                 clickOrTapOutside: () => {
@@ -7715,9 +8269,6 @@ var $;
             },
         };
         const input_with_button = {
-            prop: {
-                '#height': () => row_height,
-            },
             elem: {
                 input: () => ({
                     base: input,
@@ -9595,16 +10146,22 @@ var $;
                 mode_switcher: () => ({
                     base: $$.$nl_switch,
                     prop: {
-                        '#ofsVer': () => 16,
                         '#alignHor': () => $$.$me_align.right,
-                        values: () => ['Таблица', 'Плитка', 'Карта'],
-                        selected: $$.$me_atom2_prop([`<.mode`], null, ({ val }) => {
+                        '#width': () => 265,
+                        '#height': () => 40,
+                        ofsVer: () => 5,
+                        options: () => ({
+                            'ТАБЛИЦА': {},
+                            'ПЛИТКА': {},
+                            'КАРТА': {},
+                        }),
+                        value: $$.$me_atom2_prop([`<.mode`], null, ({ val }) => {
                             $$.a('<.mode', val);
                         }),
                         paddingHor: () => 16,
                     },
                 }),
-                grid: $$.$me_atom2_prop(['.mode'], ({ masters: [mode], prev }) => mode != 'Таблица' ? prev || null : {
+                grid: $$.$me_atom2_prop(['.mode'], ({ masters: [mode], prev }) => mode != 'ТАБЛИЦА' ? prev || null : {
                     type: '$nl_search_grid',
                     base: $$.$nl_search_grid,
                     prop: {
@@ -9654,7 +10211,7 @@ var $;
                                 return;
                             order.visible_top = visible_top;
                         }),
-                        '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'Таблица'),
+                        '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'ТАБЛИЦА'),
                         '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, em] }) => width - 2 * em),
                         '#ofsHor': '.em',
                         '#ofsVer': () => 56,
@@ -9980,19 +10537,16 @@ var $;
                     valid: (val) => ~$$.a('.order_idx').indexOf(val) ? val : null,
                 }),
                 param_modes: () => ({
-                    Полный: {
-                        height: 627,
+                    ПОЛНЫЙ: {
+                        height: 580,
                     },
-                    Основной: {
-                        height: 295,
-                    },
-                    Сжатый: {
-                        height: 123,
+                    СЖАТЫЙ: {
+                        height: 120,
                     },
                 }),
                 param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
                 param_mode: $$.$me_atom2_prop_store({
-                    default: () => 'Основной',
+                    default: () => 'ПОЛНЫЙ',
                     valid: (val) => ~$$.a('.param_mode_keys').indexOf(val) ? val : null,
                 }),
                 offerCount: () => 1200,
@@ -10039,7 +10593,7 @@ var $;
                     prop: {
                         '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
                         order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
-                        mode: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? '' : $$.a(`<.order[${selected}]`).result_mode || 'Таблица', ({ val }) => {
+                        mode: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? '' : $$.a(`<.order[${selected}]`).result_mode || 'ТАБЛИЦА', ({ val }) => {
                             if (!val)
                                 return;
                             const order = $$.a(`.order`);
@@ -10512,23 +11066,19 @@ var $;
                         demoFor: () => '$nl_select',
                         defs: () => ({
                             leftTop: Object.assign({}, defaults, { options: () => ({
-                                    '0': { caption: 'Можно новостройки', captionShort: 'Можно' },
-                                    '1': { caption: 'Кроме новостроек', captionShort: 'Кроме' },
-                                    '2': { caption: 'Только новостройки', captionShort: 'Только' },
+                                    '0': { caption: ({ isSelected }) => isSelected ? 'Можно новостройки' : { text: 'Можно', width: 90 } },
+                                    '1': { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : { text: 'Кроме', width: 90 } },
+                                    '2': { caption: ({ isSelected }) => isSelected ? 'Только новостройки' : { text: 'Только', width: 90 } },
                                 }) }),
                             rightTop: Object.assign({}, defaults, { options: () => ({
-                                    '0': { caption: 'Можно первый этаж', captionShort: 'Можно' },
-                                    '1': { caption: 'Кроме первого этажа', captionShort: 'Кроме' },
-                                    '2': { caption: 'Только первый этаж', captionShort: 'Только' },
+                                    '0': { caption: ({ isSelected }) => isSelected ? 'Можно с альтернативой' : 'Можно' },
+                                    '1': { caption: ({ isSelected }) => isSelected ? 'Только прямая продажа' : 'Кроме' },
+                                    '2': { caption: ({ isSelected }) => isSelected ? 'Только с альтернативой' : '...' },
                                 }) }),
                             leftBottom: Object.assign({}, defaults, { options: () => ({
-                                    '0': { caption: 'Можно с альтернативой',
-                                        captionShort: (val) => val == '2' ? 'Можно' : null,
-                                    },
-                                    '1': { caption: 'Только прямая продажа',
-                                        captionShort: (val) => val == '2' ? 'Кроме' : null,
-                                    },
-                                    '2': { caption: 'Только с альтернативой', captionShort: '...' },
+                                    '0': { caption: ({ isSelected }) => isSelected ? 'Допустим первый этаж' : { text: 'Можно', width: 90 } },
+                                    '1': { caption: ({ isSelected }) => isSelected ? 'Кроме первого этажа' : { text: 'Кроме', width: 90 } },
+                                    '2': { caption: ({ isSelected }) => isSelected ? 'Только первый этаж' : { text: 'Только', width: 90 } },
                                 }) }),
                             rightBottom: Object.assign({}, defaults, { options: () => {
                                     const result = {
@@ -10550,7 +11100,7 @@ var $;
                                             result = val;
                                             const valid_ids = new Set($$.a('.option_ids'));
                                             for (const s of result)
-                                                if (!result.has(s))
+                                                if (!valid_ids.has(s))
                                                     result.delete(s);
                                         }
                                         return result;
