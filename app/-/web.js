@@ -7489,7 +7489,9 @@ var $;
                                     $$.$me_atom2_prop([prop_clientRect.name(), '.#width'], ({ masters: [clientRect, width] }) => clientRect.right - width) :
                                     $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
                                 '#ofsVer': !isTouch ?
-                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom)
+                                    $$.$me_atom2_prop([prop_clientRect.name(), '/.#viewportHeight', '.#height'], ({ masters: [clientRect, viewportHeight, height] }) => clientRect.bottom + height <= viewportHeight ?
+                                        clientRect.bottom :
+                                        Math.max(0, viewportHeight - height))
                                     : $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
                                 '#zIndex': () => 10,
                             },
