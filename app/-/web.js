@@ -146,6 +146,11 @@ var $;
         }
         $$.$me_throw = $me_throw;
         $$.$me_stop = false;
+        let $me_theme;
+        (function ($me_theme) {
+            $me_theme[$me_theme["light"] = 0] = "light";
+            $me_theme[$me_theme["dark"] = 1] = "dark";
+        })($me_theme = $$.$me_theme || ($$.$me_theme = {}));
         $$.$me_rect = () => ({ left: 0, top: 0, right: 0, bottom: 0 });
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
@@ -6882,6 +6887,385 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let $nl_calendar_mode;
+        (function ($nl_calendar_mode) {
+            $nl_calendar_mode[$nl_calendar_mode["day"] = 0] = "day";
+            $nl_calendar_mode[$nl_calendar_mode["month"] = 1] = "month";
+        })($nl_calendar_mode = $$.$nl_calendar_mode || ($$.$nl_calendar_mode = {}));
+        $$.$nl_calendar = {
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'isValid') {
+                    dispatch_arg.result = dispatch_arg.val <= new Date();
+                    return true;
+                }
+                else if (dispatch_name == 'clickOrTapOutside') {
+                    return true;
+                }
+                else if (dispatch_name == 'didSelect') {
+                    return true;
+                }
+                return false;
+            },
+            prop: {
+                value: () => new Date(),
+                k: () => 1,
+                day_size: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 32)),
+                month_height: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 32)),
+                header_height: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 33)),
+                content_day_header_height: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 24)),
+                arrow_size: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 11)),
+                arrow_ofsHor: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 11)),
+                theme: '/.theme',
+                header_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
+                header_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'white'),
+                content_header_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : '#d8dce3'),
+                content_header_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#878f9b'),
+                content_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                content_selected_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f0f1f4' : '#878f9b'),
+                content_selected_background_border: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'solid 1px #008ecf' : 'solid 1px #008ecf'),
+                content_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                content_invalid_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#b2b7bf' : '#b2b7bf'),
+                '#height': $$.$me_atom2_prop(['@header.#height', '.content_height_max'], $$.$me_atom2_prop_compute_fn_sum()),
+                mode: () => $nl_calendar_mode.day,
+                weekdays: () => ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                months: () => ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                '#width': $$.$me_atom2_prop(['.weekdays', '.day_size'], ({ masters: [weekdays, day_size] }) => weekdays.length * day_size),
+                content_height_max: $$.$me_atom2_prop(['.day_size', '.content_day_header_height', '.month_height'], ({ masters: [day_size, content_day_header_height, month_height] }) => Math.max(day_size * 6 + content_day_header_height, month_height * 6)),
+            },
+            style: {
+                userSelect: () => 'none',
+            },
+            elem: {
+                area: $$.$me_atom2_prop(['.mode'], ({ masters: [mode] }) => ({
+                    type: $nl_calendar_mode[mode],
+                    base: area,
+                })),
+                header: () => ({
+                    base: header,
+                }),
+                content: $$.$me_atom2_prop(['.mode'], ({ masters: [mode] }) => ({
+                    type: $nl_calendar_mode[mode],
+                    base: mode == $nl_calendar_mode.day ? content_day : content_month
+                })),
+            },
+        };
+        const header = {
+            prop: {
+                '#height': '<.header_height',
+                arrow: () => ['left', 'right'],
+            },
+            style: {
+                background: '<.header_background_color',
+            },
+            elem: {
+                arrow: $$.$me_atom2_prop({ keys: ['.arrow'] }, ({ key: [id] }) => ({
+                    prop: {
+                        '#alignHor': () => $$.$me_align[id],
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#width': $$.$me_atom2_prop(['<<.arrow_size', '<<.arrow_ofsHor'], ({ masters: [size, ofsHor] }) => size + 2 * ofsHor),
+                        '#cursor': () => 'pointer',
+                    },
+                    elem: {
+                        triangle: () => ({
+                            base: $$.$me_triangle,
+                            prop: {
+                                '#alignVer': () => $$.$me_align.center,
+                                '#ofsHor': '<<<.arrow_ofsHor',
+                                color: '<<<.header_text_color',
+                                direction: () => $$.$me_rect_sides_enum[id],
+                                size: '<<<.arrow_size',
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            const inc = $$.a('@triangle.direction') - 1;
+                            const mode = $$.a('<<.mode');
+                            const value = $$.a('<<.value');
+                            const month = value.getMonth();
+                            const year = value.getFullYear();
+                            const day = value.getDate();
+                            const year_new = mode == $nl_calendar_mode.month ?
+                                year + inc :
+                                year + (inc < 0 && !month || inc > 0 && month == 11 ? inc : 0);
+                            const month_new = mode == $nl_calendar_mode.month ?
+                                month :
+                                (month + 12 + inc) % 12;
+                            const day_new = Math.min(day, month_day_count([month_new, year_new]));
+                            $$.a('<<.value', new Date(year_new, month_new, day_new));
+                            return true;
+                        },
+                    },
+                })),
+                caption: () => ({
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<<.arrow_ofsHor', '<<.arrow_size'], ({ masters: [arrow_ofsHor, arrow_width] }) => 2 * arrow_ofsHor + arrow_width),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': () => 'pointer',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('<<.mode', $$.a('<<.mode') == $nl_calendar_mode.month ?
+                                $nl_calendar_mode.day :
+                                $nl_calendar_mode.month);
+                            return true;
+                        },
+                    },
+                    elem: {
+                        label: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#align': () => $$.$me_align.center,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.mode'], ({ masters: [mode] }) => {
+                                    const result = ['<<<.value'];
+                                    if (mode == $nl_calendar_mode.day)
+                                        result.push('<<<.months');
+                                    return result;
+                                }), ({ len, masters: [value, months] }) => (len < 2 ? '' : months[value.getMonth()] + ' ') + value.getFullYear()),
+                            },
+                            style: {
+                                color: '<<<.header_text_color',
+                                fontSize: $$.$me_atom2_prop(['<<<.k', '/.em'], ({ masters: [k, em] }) => Math.round(k * em)),
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        const area = {
+            prop: {
+                '#height': $$.$me_atom2_prop(['<@header.#height', '<@content.#height'], $$.$me_atom2_prop_compute_fn_sum()),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+            },
+            style: {
+                background: '<.content_background_color',
+                boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
+            },
+            event: {
+                clickOrTapOutside: () => $$.a.dispatch('<', 'clickOrTapOutside', { result: false }).result,
+            },
+        };
+        const content_month = {
+            prop: {
+                '#ofsVer': '<@header.#height',
+                '#height': $$.$me_atom2_prop(['.month_height'], $$.$me_atom2_prop_compute_fn_mul(6)),
+                months: '<.months',
+                month_height: '<.month_height',
+                month_top: $$.$me_atom2_prop({ keys: ['.months'], masters: ['.months', '.month_height'] }, ({ key: [month], masters: [months, month_height] }) => Math.floor(months.indexOf(month) / 2) * month_height),
+                month_left: $$.$me_atom2_prop({ keys: ['.months'], masters: ['.months', '.#width'] }, ({ key: [month], masters: [months, width] }) => months.indexOf(month) % 2 * width / 2),
+            },
+            elem: {
+                month: $$.$me_atom2_prop({ keys: ['.months'] }, ({ key: [month] }) => ({
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.#width'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
+                        '#height': '<.month_height',
+                        '#ofsHor': `<.month_left[${month}]`,
+                        '#ofsVer': `<.month_top[${month}]`,
+                        isSelected: $$.$me_atom2_prop(['<<.value', '<.months'], ({ masters: [value, months] }) => months[value.getMonth()] == month),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': () => 'pointer',
+                        content_selected_background_color: '<<.content_selected_background_color',
+                        content_selected_background_border: '<<.content_selected_background_border',
+                    },
+                    style: Object.assign({}, style_selected),
+                    event: {
+                        clickOrTap: () => {
+                            const value = $$.a('<<.value');
+                            const year = value.getFullYear();
+                            const month_new = $$.a('<.months').indexOf(month);
+                            const day_new = Math.min(value.getDate(), month_day_count([month_new, year]));
+                            const value_new = new Date(year, month_new, day_new);
+                            $$.a('<<.value', value_new);
+                            $$.a('<<.mode', $nl_calendar_mode.day);
+                            return true;
+                        },
+                    },
+                    elem: {
+                        label: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#align': () => $$.$me_align.center,
+                            },
+                            dom: {
+                                innerText: () => month,
+                            },
+                            style: {
+                                color: '<<<.content_text_color',
+                                fontSize: $$.$me_atom2_prop(['<<<.k', '/.em'], ({ masters: [k, em] }) => Math.round(k * em)),
+                            },
+                        }),
+                    },
+                })),
+            },
+        };
+        const content_day = {
+            prop: {
+                day_size: '<.day_size',
+                '#height': $$.$me_atom2_prop(['@header.#height', '@content.#height'], $$.$me_atom2_prop_compute_fn_sum()),
+                '#ofsVer': '<@header.#height',
+                weekdays: '<.weekdays',
+                weekday_left: $$.$me_atom2_prop({
+                    keys: ['.weekdays'],
+                    masters: $$.$me_atom2_prop_masters(['.weekdays'], ({ key: [weekday], masters: [weekdays] }) => {
+                        const idx = weekdays.indexOf(weekday);
+                        return !idx ? [] : [`.weekday_left[${weekdays[idx - 1]}]`, `.day_size`];
+                    }),
+                }, $$.$me_atom2_prop_compute_fn_sum()),
+                days: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => {
+                    const weekday = (value.getDay() + 6) % 7;
+                    const dayOfMonth = value.getDate() - 1;
+                    const i_min = -(weekday + 7 - dayOfMonth % 7) % 7;
+                    let i_max = dayOfMonth + 6 - weekday;
+                    const day_count = month_day_count(value);
+                    while (i_max < day_count - 1)
+                        i_max += 7;
+                    const result = [];
+                    for (let i = i_min; i <= i_max; i++) {
+                        result.push(i + '');
+                    }
+                    return result;
+                }),
+                day_caption: $$.$me_atom2_prop({ keys: ['.days'], masters: ['<.value'] }, ({ key: [day], masters: [value] }) => {
+                    let result = +day + 1;
+                    if (result <= 0) {
+                        result = month_day_count([(value.getMonth() + 11) % 12, value.getFullYear() - (value.getMonth() ? 0 : 1)]) + result;
+                    }
+                    else {
+                        const day_count = month_day_count(value);
+                        if (result > day_count)
+                            result = result - day_count;
+                    }
+                    return result;
+                }),
+                day_top: $$.$me_atom2_prop({ keys: ['.days'], masters: ['.days', '.day_size'] }, ({ key: [day], masters: [days, day_size] }) => {
+                    return Math.floor(days.indexOf(day) / 7) * day_size;
+                }),
+                day_left: $$.$me_atom2_prop({ keys: ['.days'], masters: ['.days', '.day_size'] }, ({ key: [day], masters: [days, day_size] }) => {
+                    return days.indexOf(day) % 7 * day_size;
+                }),
+            },
+            elem: {
+                header: () => ({
+                    prop: {
+                        '#height': '<<.content_day_header_height',
+                    },
+                    style: {
+                        background: '<<.content_header_background_color',
+                    },
+                    elem: {
+                        weekday: $$.$me_atom2_prop({ keys: ['<.weekdays'] }, ({ key: [weekday] }) => ({
+                            prop: {
+                                '#width': `<<.day_size`,
+                                '#ofsHor': `<<.weekday_left[${weekday}]`,
+                            },
+                            elem: {
+                                label: () => ({
+                                    prop: {
+                                        '#width': () => null,
+                                        '#height': () => null,
+                                        '#align': () => $$.$me_align.center,
+                                    },
+                                    style: {
+                                        fontSize: $$.$me_atom2_prop(['<<<<.k', '/.em'], ({ masters: [k, em] }) => Math.round(k * em)),
+                                        color: '<<<<.content_header_text_color',
+                                    },
+                                    dom: {
+                                        innerText: () => weekday,
+                                    },
+                                }),
+                            },
+                        })),
+                    },
+                }),
+                content: () => ({
+                    prop: {
+                        '#ofsVer': '<@header.#height',
+                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.days'], ({ masters: [days] }) => [`<.day_top[${days[days.length - 1]}]`, '<.day_size']), $$.$me_atom2_prop_compute_fn_sum()),
+                    },
+                    elem: {
+                        day: $$.$me_atom2_prop({ keys: ['<.days'] }, ({ key: [day] }) => ({
+                            prop: {
+                                '#width': `<<.day_size`,
+                                '#height': `<<.day_size`,
+                                '#ofsHor': `<<.day_left[${day}]`,
+                                '#ofsVer': `<<.day_top[${day}]`,
+                                isSelected: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => value.getDate() == +day + 1),
+                                isAvail: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => +day >= 0 && +day < month_day_count(value)),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                '#cursor': $$.$me_atom2_prop(['.isAvail', '.isSelected', '.isValid'], ({ masters: [isAvail, isSelected, isValid] }) => !isAvail || isSelected || !isValid ? null : 'pointer'),
+                                isValid: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
+                                    const value_new = new Date(value.getFullYear(), value.getMonth(), +day + 1);
+                                    const result = $$.a.dispatch('<<<', 'isValid', { val: value_new, result: false }).result;
+                                    return result;
+                                }),
+                                content_selected_background_color: '<<<.content_selected_background_color',
+                                content_selected_background_border: '<<<.content_selected_background_border',
+                            },
+                            style: Object.assign({}, style_selected),
+                            event: {
+                                clickOrTap: () => {
+                                    if (!$$.a('.isValid'))
+                                        return false;
+                                    if (!$$.a('.isSelected')) {
+                                        const value = $$.a('<<<.value');
+                                        const value_new = new Date(value.getFullYear(), value.getMonth(), +day + 1);
+                                        $$.a('<<<.value', value_new);
+                                        $$.a.dispatch('<<<', 'didSelect');
+                                    }
+                                    return true;
+                                },
+                            },
+                            elem: {
+                                label: $$.$me_atom2_prop(['.isAvail'], ({ masters: [isAvail] }) => !isAvail ? null : {
+                                    prop: {
+                                        '#width': () => null,
+                                        '#height': () => null,
+                                        '#align': () => $$.$me_align.center,
+                                    },
+                                    style: {
+                                        color: $$.$me_atom2_prop(['<.isValid', '<<<<.content_text_color', '<<<<.content_invalid_text_color'], ({ masters: [isValid, validColor, invalidColor] }) => isValid ? validColor : invalidColor),
+                                        fontSize: $$.$me_atom2_prop(['<<<<.k', '/.em'], ({ masters: [k, em] }) => Math.round(k * em)),
+                                    },
+                                    dom: {
+                                        innerText: `<<<.day_caption[${day}]`,
+                                    },
+                                }),
+                            },
+                        })),
+                    },
+                }),
+            },
+        };
+        const style_selected = {
+            background: $$.$me_atom2_prop(['.isSelected', '.content_selected_background_color'], ({ masters: [isSelected, color] }) => isSelected ? color : 'transparent'),
+            border: $$.$me_atom2_prop(['.isSelected', '.content_selected_background_border'], ({ masters: [isSelected, border] }) => isSelected ? border : 'none'),
+            boxSizing: () => 'border-box',
+        };
+        const month_day_count = (value) => {
+            const [month, year] = value instanceof Date ?
+                [value.getMonth(), value.getFullYear()] :
+                value;
+            const result = month != 1 ?
+                [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month] :
+                year % 4 == 0 && year % 100 != 0 || year % 400 == 0 ?
+                    29 :
+                    28;
+            return result;
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//calendar.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_stylesheet = {
             prop: {
                 styleSheetName: $$.$me_atom2_prop_abstract(),
@@ -6957,6 +7341,266 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //stylesheet.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_input = {
+            base: $$.$me_stylesheet,
+            node: 'input',
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'focus' || dispatch_name == 'blur' || dispatch_name == 'change')
+                    return true;
+                return false;
+            },
+            prop: {
+                theme: '/.theme',
+                styleSheetName: () => 'param_input',
+                className: '.styleSheetName',
+                styleSheet: () => '',
+                styleSheetCommon: $$.$me_atom2_prop(['.className', '.theme'], ({ masters: [className, theme] }) => {
+                    return (`
+          .${className}::placeholder {
+            color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+          }
+          .${className} {
+            border: solid 1px ${theme == $$.$me_theme.light ? '#bdc3d1' : '#d8dce3'};
+            background: ${theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'}
+          }
+          .${className}:focus {
+            outline: none;
+            border: 1px solid ${theme == $$.$me_theme.light ? '#313745' : 'white'};
+          }
+        `);
+                }),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                isFocused: () => false,
+            },
+            style: {
+                borderRadius: () => 3,
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                paddingLeft: () => 8,
+                boxSizing: () => 'border-box',
+                '-webkit-appearance': () => 'none',
+            },
+            attr: {
+                placeholder: '.placeholder',
+            },
+            event: {
+                clickOrTap: () => {
+                    if ($$.a.dispatch('', 'focus', { result: true }).result) {
+                        $$.a.curr.node.focus();
+                        $$.a('.isFocused', true);
+                    }
+                    else {
+                        $$.a.curr.node.blur();
+                        $$.a('.isFocused', false);
+                    }
+                    return true;
+                },
+                clickOrTapOutside: () => {
+                    if ($$.a.dispatch('', 'blur', { result: true }).result) {
+                        $$.a.curr.node.blur();
+                        $$.a('.isFocused', false);
+                    }
+                    else {
+                        $$.a.curr.node.focus();
+                        $$.a('.isFocused', true);
+                    }
+                    return false;
+                },
+            },
+            init: (self) => {
+                const elem = self;
+                self.onChange = onChange.bind(self);
+                elem.node.addEventListener('change', self.onChange);
+            },
+            fini: (self) => {
+                self.node.removeEventListener('change', self.onChange);
+            },
+        };
+        function onChange(event) {
+            const prev = $$.a.curr;
+            $$.a.curr = this;
+            console.log(event.target.value);
+            $$.a.dispatch('', 'change', event.target.value);
+            $$.a.curr = prev;
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//input.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function today() {
+            const now = new Date();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        }
+        let instances;
+        $$.$nl_pickerdate = {
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
+                    $$.a('.instance', null);
+                    return true;
+                }
+                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
+                    if (!instances)
+                        instances = new Map();
+                    const ids = [...instances].map(([spinner, id]) => id).sort();
+                    let id;
+                    for (let i = 0; i < ids.length; i++)
+                        if (i != ids[i]) {
+                            id = i;
+                            break;
+                        }
+                    if (id === void 0)
+                        id = ids.length;
+                    const prop_clientRect = $$.a.get('.#clientRect');
+                    const prop_zIndex = $$.a.get('.#zIndex');
+                    const prop_value = $$.a.get('.value');
+                    const prop_isTouch = $$.a.get('.isTouch');
+                    const prop_isDropdown = $$.a.get('.isDropdown');
+                    const isTouch = prop_isTouch.value();
+                    const calendar = new $$.$me_atom2_elem({
+                        tail: 'nl_pickerdate_calendar' + id,
+                        parent: $$.a.get('/@app'),
+                        cnf: {
+                            base: $$.$nl_calendar,
+                            dispatch: (dispatch_name, dispatch_arg) => {
+                                if (dispatch_name == 'clickOrTapOutside') {
+                                    prop_isDropdown.value(false);
+                                    return true;
+                                }
+                                else if (dispatch_name == 'didSelect') {
+                                    prop_isDropdown.value(false);
+                                    return true;
+                                }
+                                return false;
+                            },
+                            prop: {
+                                value: $$.$me_atom2_prop([prop_value.name()], null, ({ val }) => prop_value.value(val, true)),
+                                k: () => isTouch ? 2 : 1,
+                                '#ofsHor': !isTouch ?
+                                    $$.$me_atom2_prop([prop_clientRect.name(), '.#width'], ({ masters: [clientRect, width] }) => clientRect.right - width) :
+                                    $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
+                                '#ofsVer': !isTouch ?
+                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom)
+                                    : $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
+                                '#zIndex': () => 10,
+                            },
+                        }
+                    });
+                    $$.a('.instance', calendar);
+                    return true;
+                }
+                return false;
+            },
+            prop: {
+                value: () => today(),
+                theme: '/.theme',
+                input_width: () => 90,
+                text_margin: () => 16,
+                icon_size: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(28 / 32)),
+                icon_filter: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    'invert(65%) sepia(17%) saturate(1025%) hue-rotate(158deg) brightness(84%) contrast(87%)' :
+                    'invert(46%) sepia(87%) saturate(371%) hue-rotate(162deg) brightness(93%) contrast(84%)'),
+                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
+                    if (!val && prev) {
+                        instances.delete(prev);
+                        prev.destroy();
+                    }
+                }),
+                isTouch: '/.#isTouch',
+                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
+                    if (val) {
+                        $$.a.dispatch('', 'show');
+                    }
+                    else if (prev) {
+                        $$.a.dispatch('', 'hide');
+                    }
+                }),
+            },
+            style: {
+                userSelect: () => 'none',
+            },
+            elem: {
+                input: () => ({
+                    base: $$.$nl_input,
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'change') {
+                            $$.a('<.value', new Date(today().getTime() - (+dispatch_arg - 1) * 86400000));
+                            return true;
+                        }
+                        return false;
+                    },
+                    prop: {
+                        '#width': '<.input_width',
+                    },
+                    dom: {
+                        value: $$.$me_atom2_prop(['<.value', '.isFocused'], ({ masters: [value, isFocused] }) => {
+                            const result = 1 + Math.ceil((today().getTime() - value.getTime()) / 86400000);
+                            return isFocused ? result + '' : result + ' ' + $$.$me_word_plural(result, 'день', 'дня', 'дней');
+                        }),
+                    },
+                }),
+                text: () => ({
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<@input.#width', '<.text_margin'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '<.text_margin', '<@button.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                    },
+                    elem: {
+                        label: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#align': () => $$.$me_align.center,
+                            },
+                            style: {
+                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.value'], ({ masters: [value] }) => 'с ' +
+                                    value.getDate() +
+                                    ' ' +
+                                    ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'][value.getMonth()] +
+                                    ' ' +
+                                    value.getFullYear()),
+                            },
+                        }),
+                    },
+                }),
+                button: () => ({
+                    node: 'img',
+                    prop: {
+                        '#height': '<.icon_size',
+                        '#width': '<.icon_size',
+                        '#alignVer': () => $$.$me_align.center,
+                        '#alignHor': () => $$.$me_align.right,
+                        '#cursor': () => 'pointer',
+                    },
+                    style: {
+                        filter: '<.icon_filter',
+                    },
+                    attr: {
+                        src: () => 'assets/icons-8-today@2x.png'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('<.isDropdown', !$$.a('<.isDropdown'));
+                            return true;
+                        },
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//pickerdate.js.map
 ;
 "use strict";
 var $;
@@ -8039,7 +8683,7 @@ var $;
                                 icon: 'icons-8-create-new-3',
                                 params: {
                                     photo: alt ? {
-                                        row: () => 0,
+                                        row: () => 4,
                                         type: 'select',
                                         col_count: () => 2,
                                         col: () => 0,
@@ -8078,7 +8722,7 @@ var $;
                                         })
                                     },
                                     video: alt ? {
-                                        row: () => 0,
+                                        row: () => 4,
                                         col_count: () => 2,
                                         col: () => 1,
                                         type: 'select',
@@ -8115,12 +8759,13 @@ var $;
                                         })
                                     },
                                     deep: {
-                                        row: () => 2 - (alt ? 1 : 0),
+                                        row: () => alt ? 0 : 2,
+                                        label_width: () => 135,
                                         label: () => 'Глубина поиска',
-                                        type: 'deep',
+                                        type: 'pickerdate',
                                     },
                                     ТолькоНовые: {
-                                        row: () => 4 - (alt ? 1 : 0),
+                                        row: () => alt ? 1 : 4,
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: { text: 'Все', width: 60 } },
@@ -8136,7 +8781,7 @@ var $;
                                     },
                                     Источник: {
                                         type: 'pickermulti',
-                                        row: () => 5 - (alt ? 1 : 0),
+                                        row: () => alt ? 2 : 5,
                                         label: () => 'Источники',
                                         label_width: () => 100,
                                         none: () => 'все',
@@ -8168,7 +8813,7 @@ var $;
                                         }),
                                     },
                                     sold: {
-                                        row: () => 6 - (alt ? 1 : 0),
+                                        row: () => alt ? 3 : 6,
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
@@ -8290,62 +8935,26 @@ var $;
                                     prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space }),
                                 };
                             }
-                            else if (def.type == 'deep') {
+                            else if (def.type == 'pickerdate') {
                                 return {
-                                    prop: Object.assign({}, prop_common(def), { '#height': () => row_height + row_height + row_space }),
+                                    prop: Object.assign({}, prop_common(def)),
                                     elem: {
-                                        label: () => ({
+                                        label: !def.label ? null : () => ({
                                             prop: {
-                                                '#width': '<.#width',
-                                                '#ofsVer': () => 14,
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
                                                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                                fontWeight: () => 500,
                                             },
                                             dom: {
                                                 innerText: def.label,
                                             },
                                         }),
                                         ctrl: () => ({
+                                            base: $$.$nl_pickerdate,
                                             prop: {
-                                                '#height': () => row_height,
-                                                '#alignVer': () => $$.$me_align.bottom,
-                                            },
-                                            elem: {
-                                                input: () => ({
-                                                    prop: {
-                                                        '#width': () => 90,
-                                                    },
-                                                    style: {
-                                                        background: () => 'green',
-                                                    },
-                                                }),
-                                                label: () => ({
-                                                    prop: {
-                                                        '#width': () => 121,
-                                                        '#ofsHor': () => 110,
-                                                    },
-                                                    style: {
-                                                        background: () => 'green',
-                                                    },
-                                                }),
-                                                icon: () => ({
-                                                    node: 'img',
-                                                    prop: {
-                                                        '#alignHor': () => $$.$me_align.right,
-                                                        '#ofsVer': () => 2,
-                                                        '#width': () => 28,
-                                                        '#height': () => 28,
-                                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                                        '#cursor': () => 'pointer',
-                                                    },
-                                                    attr: {
-                                                        src: () => 'assets/icons-8-today@2x.png',
-                                                        draggable: () => false,
-                                                    },
-                                                    style: {
-                                                        filter: () => 'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)',
-                                                    },
-                                                }),
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
                                             },
                                         }),
                                     },
@@ -10949,8 +11558,12 @@ var $;
                     default: () => false,
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
+                theme: $$.$me_atom2_prop_store({
+                    default: () => $$.$me_theme.light,
+                    valid: (val) => val == $$.$me_theme.light || val == $$.$me_theme.dark ? val : null,
+                }),
             });
-            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em' });
+            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
             $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
         }
         $$.$nl_app_defaults_init = $nl_app_defaults_init;
