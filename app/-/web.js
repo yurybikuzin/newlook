@@ -4565,57 +4565,6 @@ var $;
                             },
                         },
                     },
-                    Аренда: {
-                        'Москва': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Загородная: {
-                                'Вся база': 500000,
-                                'За сегодня': 500,
-                                'Новые': 500,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                        },
-                        'Московская область': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                        },
-                    },
                 }),
                 panel_names: $$.$me_atom2_prop_keys(['.data']),
                 panel_data: $$.$me_atom2_prop({ keys: ['.panel_names'], masters: ['.data'] }, ({ key: [panel_name], masters: [data] }) => data[panel_name]),
@@ -4754,7 +4703,7 @@ var $;
                                     },
                                     style: {
                                         position: () => 'relative',
-                                        background: () => '#d8dce3',
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
                                     },
                                     elem: {
                                         key: () => ({
@@ -4798,7 +4747,7 @@ var $;
                                     },
                                     style: {
                                         position: () => 'relative',
-                                        background: () => '#f0f1f4',
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f0f1f4' : '#878f9b'),
                                     },
                                     elem: {
                                         key: () => ({
@@ -4809,6 +4758,7 @@ var $;
                                             style: {
                                                 paddingLeft: () => 8,
                                                 color: () => '#53adff',
+                                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'transparent' : 'rgb(70, 79, 99)'),
                                             },
                                             dom: {
                                                 innerText: () => table_row_key,
@@ -4821,7 +4771,7 @@ var $;
                                             },
                                             style: {
                                                 textAlign: () => 'center',
-                                                color: () => '#6a6c74',
+                                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#6a6c74' : 'white'),
                                                 opacity: `<<<.table_fld_opacity[${col}]`,
                                             },
                                             dom: {
@@ -7091,7 +7041,8 @@ var $;
         const row_space = 20;
         const prop_common = (def, p) => ({
             row: def.row,
-            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space', '<.alt'], ({ masters: [row, row_height, row_space, alt] }) => (alt ? 8 : 13) + row * (row_height + row_space) + (p && p.ofsVer || 0)),
+            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'
+            ], ({ masters: [row, row_height, row_space] }) => 8 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
             '#height': '<.row_height',
             col_space: def.col_space || (() => 16),
             col_count: def.col_count || (() => 1),
@@ -7118,22 +7069,11 @@ var $;
                         no_adjust: () => true,
                     },
                 }),
-                common: () => ({
-                    base: input_with_button,
-                    prop: {
-                        '#width': () => 314,
-                        '#height': () => row_height,
-                        '#ofsHor': () => 16,
-                        '#ofsVer': () => 16,
-                        placeholder: () => 'Параметры',
-                    },
-                }),
                 tabs: () => ({
                     prop: {
                         '#ofsVer': () => 74,
                         '#height': $$.$me_atom2_prop(['<.#height', '<@found.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
-                        alt: '<<.alt',
-                        options: $$.$me_atom2_prop(['.alt'], ({ masters: [alt] }) => ({
+                        options: $$.$me_atom2_prop([], () => ({
                             Местоположение: {
                                 icon: 'icons-8-place-marker',
                                 params: {
@@ -7195,159 +7135,7 @@ var $;
                                     },
                                 },
                             },
-                            Квартира: alt ? null : {
-                                icon: 'icons-8-key',
-                                params: {
-                                    apart: {
-                                        row: () => 0,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: {
-                                                caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Можно апартаменты',
-                                                } : {
-                                                    width: 90,
-                                                    text: 'Не важно',
-                                                },
-                                            },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
-                                            except: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Только апартаменты',
-                                                } : {
-                                                    width: 60,
-                                                    text: '...',
-                                                } }
-                                        }),
-                                    },
-                                    rmqt: {
-                                        row: () => 1,
-                                        type: 'pickermulti',
-                                        label: () => 'Квартира',
-                                        label_width: () => 90,
-                                        none: () => 'с любым количеством комнат',
-                                        options: () => ({
-                                            'free': { caption: 'Св.планировка' },
-                                            'studio': { caption: 'Студия' },
-                                            'rmqt1': { caption: '1-комн.' },
-                                            'rmqt2': { caption: '2-комн.' },
-                                            'rmqt3': { caption: '3-комн.' },
-                                            'rmqt4': { caption: '4-комн.' },
-                                            'rmqt5': { caption: '5-комн.' },
-                                            'rmqt6': { caption: '6+ комн.' },
-                                        }),
-                                    },
-                                    plan: {
-                                        row: () => 2,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: {
-                                                caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Можно со смежными комнатами',
-                                                } : {
-                                                    width: 90,
-                                                    text: 'Не важно',
-                                                },
-                                            },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Только изолированные комнаты' : 'Изолированные' },
-                                            except: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Только смежные комнаты',
-                                                } : {
-                                                    width: 60,
-                                                    text: '...',
-                                                } }
-                                        }),
-                                    },
-                                    total_sq: {
-                                        row: () => 3,
-                                        type: 'diap',
-                                        label: () => 'Площадь',
-                                        label_width: () => 90,
-                                        diap_space: () => 16,
-                                    },
-                                    life_sq: {
-                                        row: () => 4,
-                                        type: 'diap',
-                                        label: () => 'Жилая',
-                                        label_width: () => 90,
-                                        diap_space: () => 16,
-                                    },
-                                    kitchen_sq: {
-                                        row: () => 5,
-                                        type: 'diap',
-                                        label: () => 'Кухня',
-                                        label_width: () => 90,
-                                        diap_space: () => 16,
-                                    },
-                                    remont: {
-                                        row: () => 6,
-                                        type: 'pickermulti',
-                                        label: () => 'Состояние',
-                                        label_width: () => 90,
-                                        none: () => 'квартиры не важно',
-                                        options: () => ({
-                                            'требуется капитальный ремонт': {},
-                                            'без отделки': {},
-                                            'требуется ремонт': {},
-                                            'среднее': {},
-                                            'хорошее': {},
-                                            'отличное': {},
-                                            'евроремонт': {},
-                                            'дизайнерский ремонт': {},
-                                            'первичная отделка': {},
-                                        }),
-                                    },
-                                    lavatory: {
-                                        row: () => 7,
-                                        type: 'picker',
-                                        label: () => 'Санузел',
-                                        label_width: () => 90,
-                                        options: () => ({
-                                            '0': { caption: 'может быть совмещенным' },
-                                            '1': { caption: 'только раздельный' },
-                                            '2': { caption: 'не менее 2-х' },
-                                            '3': { caption: 'не менее 3-х' },
-                                            '4': { caption: 'не менее 4-х' },
-                                        }),
-                                    },
-                                    balcony: {
-                                        row: () => 8,
-                                        type: 'picker',
-                                        label: () => 'Балкон',
-                                        label_width: () => 90,
-                                        options: () => ({
-                                            '0': { caption: 'можно без балкона' },
-                                            '1': { caption: 'нужен балкон' },
-                                            '2': { caption: 'нужна лоджия' },
-                                            '3': { caption: 'не менее 2-х балконов/лоджий' },
-                                            '4': { caption: 'не менее 3-х балконов/лоджий' },
-                                            '5': { caption: 'не менее 4-х балконов/лоджий' },
-                                        }),
-                                    },
-                                    okna: {
-                                        row: () => 9,
-                                        type: 'select',
-                                        options: () => ({
-                                            '0': { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Не важно, куда выходят окна'
-                                                } : {
-                                                    width: 90,
-                                                    text: 'Не важно',
-                                                } },
-                                            '1': { caption: ({ isSelected }) => isSelected ? 'Окна только во двор' : 'Во двор' },
-                                            '2': { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Окна только на улицу',
-                                                } : 'На улицу' },
-                                        }),
-                                    },
-                                },
-                            },
-                            'Квартира: основные': !alt ? null : {
+                            'Квартира: основные': {
                                 icon: 'icons-8-key',
                                 params: {
                                     apart: {
@@ -7436,7 +7224,7 @@ var $;
                                     },
                                 },
                             },
-                            'Квартира: ещё': !alt ? null : {
+                            'Квартира: ещё': {
                                 icon: 'icons-8-key',
                                 params: {
                                     remont: {
@@ -7595,7 +7383,7 @@ var $;
                                     },
                                 },
                             },
-                            'Этаж/Этажность': !alt ? null : {
+                            'Этаж/Этажность': {
                                 icon: 'level',
                                 params: {
                                     Этаж: {
@@ -7680,94 +7468,11 @@ var $;
                                     },
                                 },
                             },
-                            Этаж: alt ? null : {
-                                icon: 'level',
-                                params: {
-                                    Этаж: {
-                                        row: () => 0,
-                                        type: 'diap',
-                                        label: () => 'Этаж',
-                                        label_width: () => 50,
-                                        diap_space: () => 16,
-                                    },
-                                    ПервыйЭтаж: {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 230,
-                                                    text: 'Можно первый этаж',
-                                                } : {
-                                                    text: 'Можно',
-                                                    width: 100,
-                                                } },
-                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме первого этажа' : 'Кроме' },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 181,
-                                                    text: 'Только первый этаж',
-                                                } : {
-                                                    text: 'Только',
-                                                    width: 100,
-                                                } },
-                                        }),
-                                    },
-                                    ПоследнийЭтаж: {
-                                        row: () => 2,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? {
-                                                    text: 'Можно последний этаж',
-                                                    width: 230,
-                                                } : {
-                                                    text: 'Можно',
-                                                    width: 100,
-                                                } },
-                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме последнего этажа' : 'Кроме' },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 181,
-                                                    text: 'Только последний этаж',
-                                                } : {
-                                                    text: 'Только',
-                                                    width: 100,
-                                                } },
-                                        }),
-                                    },
-                                },
-                            },
                             Дом: {
                                 icon: 'icons-8-building',
                                 params: {
-                                    Этажность: alt ? null : {
-                                        row: () => 0,
-                                        type: 'diap',
-                                        label: () => 'Этажность',
-                                        label_width: () => 110,
-                                        diap_space: () => 16,
-                                    },
-                                    Лифт: alt ? null : {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: { caption: ({ isSelected }) => isSelected ? 'Можно без лифта' : {
-                                                    text: 'Не важно',
-                                                    width: 100,
-                                                } },
-                                            exists: { caption: ({ isSelected, val }) => val != 'only' ? {
-                                                    text: 'С лифтом',
-                                                    width: isSelected ? null : 100,
-                                                } : {
-                                                    text: 'Есть',
-                                                    width: 60,
-                                                }
-                                            },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'С пассажирским и грузовым лифтом' : {
-                                                    text: 'Пасс. + груз.',
-                                                    width: 100,
-                                                } },
-                                        }),
-                                    },
                                     КлассЖилья: {
-                                        row: () => 2 - (alt ? 2 : 0),
+                                        row: () => 0,
                                         type: 'pickermulti',
                                         label: () => 'Класс жилья',
                                         label_width: () => 110,
@@ -7780,7 +7485,7 @@ var $;
                                         }),
                                     },
                                     ТипДома: {
-                                        row: () => 3 - (alt ? 2 : 0),
+                                        row: () => 1,
                                         type: 'pickermulti',
                                         label: () => 'Тип дома',
                                         label_width: () => 110,
@@ -7798,7 +7503,7 @@ var $;
                                         }),
                                     },
                                     СерияДома: {
-                                        row: () => 4 - (alt ? 2 : 0),
+                                        row: () => 2,
                                         type: 'pickermulti',
                                         label: () => 'Серия дома',
                                         label_width: () => 110,
@@ -8088,14 +7793,14 @@ var $;
                                         }),
                                     },
                                     ГодПостройки: {
-                                        row: () => 5 - (alt ? 2 : 0),
+                                        row: () => 3,
                                         type: 'diap',
                                         label: () => 'Год постройки',
                                         label_width: () => 110,
                                         diap_space: () => 16,
                                     },
                                     ПодСнос: {
-                                        row: () => 6 - (alt ? 2 : 0),
+                                        row: () => 4,
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? 'Можно в доме под снос' : {
@@ -8113,7 +7818,7 @@ var $;
                                         }),
                                     },
                                     Новостройки: {
-                                        row: () => 7 - (alt ? 2 : 0),
+                                        row: () => 5,
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
@@ -8162,7 +7867,7 @@ var $;
                             Объявление: {
                                 icon: 'icons-8-create-new-3',
                                 params: {
-                                    photo: alt ? {
+                                    photo: {
                                         row: () => 4,
                                         type: 'select',
                                         col_count: () => 2,
@@ -8181,27 +7886,8 @@ var $;
                                                     text: '...',
                                                 } },
                                         })
-                                    } : {
-                                        row: () => 0,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => ({
-                                                    width: 60,
-                                                    text: 'Все',
-                                                }) },
-                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с фото' : {
-                                                    text: 'С фото',
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Только без фото',
-                                                } : {
-                                                    width: 145,
-                                                    text: 'Без фото',
-                                                } },
-                                        })
                                     },
-                                    video: alt ? {
+                                    video: {
                                         row: () => 4,
                                         col_count: () => 2,
                                         col: () => 1,
@@ -8220,32 +7906,15 @@ var $;
                                                     text: '...',
                                                 } },
                                         })
-                                    } : {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => ({
-                                                    width: 60,
-                                                    text: 'Все',
-                                                }) },
-                                            except: { caption: ({ isSelected, val }) => val != 'only' ? 'Только с видео' : {
-                                                    text: 'С видео',
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    text: 'Только без видео',
-                                                } : {
-                                                    text: 'Без видео',
-                                                } },
-                                        })
                                     },
                                     deep: {
-                                        row: () => alt ? 0 : 2,
+                                        row: () => 0,
                                         label_width: () => 135,
                                         label: () => 'Глубина поиска',
                                         type: 'pickerdate',
                                     },
                                     ТолькоНовые: {
-                                        row: () => alt ? 1 : 4,
+                                        row: () => 1,
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: { text: 'Все', width: 60 } },
@@ -8261,7 +7930,7 @@ var $;
                                     },
                                     Источник: {
                                         type: 'pickermulti',
-                                        row: () => alt ? 2 : 5,
+                                        row: () => 2,
                                         label: () => 'Источники',
                                         label_width: () => 100,
                                         none: () => 'все',
@@ -8293,7 +7962,7 @@ var $;
                                         }),
                                     },
                                     sold: {
-                                        row: () => alt ? 3 : 6,
+                                        row: () => 3,
                                         type: 'select',
                                         options: () => ({
                                             include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
@@ -8314,29 +7983,18 @@ var $;
                                     },
                                 },
                             },
-                            Детали: {
-                                icon: 'icons-8-list',
-                                params: {
-                                    Примечание: {
-                                        row: () => 0,
-                                        label: () => 'Поиск по примечанию',
-                                        type: 'include_exclude',
-                                        label_width: () => 100,
-                                    },
-                                    Телефоны: {
-                                        row: () => 3,
-                                        label: () => 'Поиск по телефону',
-                                        type: 'include_exclude',
-                                        label_width: () => 100,
-                                    },
-                                },
-                            },
                         })),
                         option_ids: $$.$me_atom2_prop_keys(['.options'], true),
-                        option_height: $$.$me_atom2_prop(['.alt'], ({ masters: [alt] }) => alt ? 44 : 54),
-                        option_fontSize: $$.$me_atom2_prop(['.alt', '.em'], ({ masters: [alt, em] }) => alt ? em / 16 * 14 : em),
-                        option_iconSize: $$.$me_atom2_prop(['.alt', '.em'], ({ masters: [alt, em] }) => alt ? 22 : 28),
-                        option_label_ofsHor: $$.$me_atom2_prop(['.alt', '.em'], ({ masters: [alt, em] }) => alt ? 16 + 16 + 22 : 60),
+                        option_height: () => 44,
+                        option_fontSize: $$.$me_atom2_prop([
+                            '.em'
+                        ], ({ masters: [em] }) => em / 16 * 14),
+                        option_iconSize: $$.$me_atom2_prop([
+                            '.em'
+                        ], ({ masters: [em] }) => 22),
+                        option_label_ofsHor: $$.$me_atom2_prop([
+                            '.em'
+                        ], ({ masters: [em] }) => 16 + 16 + 22),
                         option_width: () => 210,
                         option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
                         value: $$.$me_atom2_prop_store({
@@ -8361,7 +8019,8 @@ var $;
                                 borderRight: () => '1px solid #bdc3d1',
                             },
                         }),
-                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params', '.alt'] }, ({ key: [id], masters: [params, alt] }) => {
+                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'
+                            ] }, ({ key: [id], masters: [params] }) => {
                             const def = params[id];
                             if (def.type == 'select') {
                                 return {
@@ -9055,7 +8714,7 @@ var $;
                         '#height': '<<.#height',
                     },
                     style: {
-                        background: () => 'white',
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
                         opacity: '<.colSelectedOpacity',
                     },
                 }),
@@ -9207,7 +8866,7 @@ var $;
                                         text: `<<<<.col_caption[${id}]`,
                                         borderWidth: () => 1,
                                         colorBorder: () => '#adb0b8',
-                                        colorBackground: () => '#d8dce3',
+                                        colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
                                         align: () => $$.$me_align.center,
                                         fontSize: () => 14,
                                         paddingHor: () => 4,
@@ -9232,7 +8891,7 @@ var $;
                                             borderWidth: () => 1,
                                             colorBorder: () => '#adb0b8',
                                             borderWidthTop: () => 0,
-                                            colorBackground: () => '#F5F8F8',
+                                            colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'),
                                             fontSize: () => 14,
                                             paddingHor: () => 4,
                                             alignVer: () => $$.$me_align.center,
@@ -9293,7 +8952,7 @@ var $;
                     control: {
                         cell: () => ({
                             base: $$.$me_panel,
-                            prop: Object.assign({}, cell_borders, { colorBackground: () => '#d8dce3' }),
+                            prop: Object.assign({}, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
                         }),
                     },
                 }),
@@ -9311,7 +8970,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
@@ -9458,7 +9117,7 @@ var $;
                 '#ofsVer': () => -4,
             },
             attr: {
-                src: () => 'assets/stretch@2x.png',
+                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => `assets/stretch-${$$.$me_theme[theme]}@2x.png`),
                 draggable: () => false,
             },
             style: {
@@ -9795,7 +9454,7 @@ var $;
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
+                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
                                 }),
                             },
                         }),
@@ -9815,7 +9474,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
@@ -9899,10 +9558,6 @@ var $;
                         '#cursor': () => null,
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
-                    style: {
-                        background: () => 'white',
-                        boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
-                    },
                     elem: {
                         content: '<.content',
                     },
@@ -9912,6 +9567,52 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //dialog.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_cross = {
+            base: $$.$me_stylesheet,
+            prop: {
+                size: $$.$me_atom2_prop_abstract(),
+                thick: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                opacity: () => 1,
+                opacityHover: () => 1,
+                '#width': '.size',
+                '#height': '.size',
+                styleSheetName: () => 'cross',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
+        .${className}:before {
+          transform: rotate(45deg);
+        }
+        .${className}:after {
+          transform: rotate(-45deg);
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
+        .${className} {
+          opacity: ${opacity};
+        }
+        .${className}:hover {
+          opacity: ${opacityHover};
+        }
+        .${className}:before, .${className}:after {
+          position: absolute;
+          left: ${(size - thick) / 2}px;
+          content: ' ';
+          height: ${size}px;
+          width: ${thick}px;
+          background-color: ${color};
+        }
+      `),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//cross.js.map
 ;
 "use strict";
 var $;
@@ -9943,7 +9644,7 @@ var $;
                 }),
             },
             style: {
-                background: () => '#0070a4',
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
                 borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
             },
             event: {
@@ -10003,7 +9704,7 @@ var $;
                         paddingVer: () => 32,
                     },
                     style: {
-                        background: () => 'white',
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
                         boxShadow: () => '0 12px 12px 0 rgba(0, 0, 0, 0.5)',
                     },
                     elem: {
@@ -10056,7 +9757,6 @@ var $;
                             },
                         }),
                         buttonCancel: () => ({
-                            node: 'img',
                             prop: {
                                 '#alignHor': () => $$.$me_align.right,
                                 '#ofsHor': '<.paddingHor',
@@ -10066,9 +9766,16 @@ var $;
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                                 '#cursor': () => 'pointer',
                             },
-                            attr: {
-                                src: () => 'assets/close-btn@2x.png',
-                                draggable: () => false,
+                            elem: {
+                                cross: () => ({
+                                    base: $$.$me_cross,
+                                    prop: {
+                                        size: () => 15,
+                                        thick: () => 2,
+                                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                                        opacity: () => .5,
+                                    },
+                                }),
                             },
                             event: {
                                 clickOrTap: () => {
@@ -10163,7 +9870,7 @@ var $;
                     return result;
                 }),
                 disabledScroll: $$.$me_atom2_prop(['<.moving'], ({ masters: [moving] }) => !!moving),
-                curtain_kind: () => 'white',
+                curtain_kind: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'black'),
                 row_height_min: '<.row_height',
                 header_height: () => 0,
                 provider_tag: '.source',
@@ -10183,7 +9890,9 @@ var $;
                 header: () => null,
             },
             style: {
-                background: () => '#f0f1f4',
+                boxShadow: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.25)'),
+                border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'solid 1px #d8dce3'),
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f0f1f4' : '#878f9b'),
             },
         };
         const row = {
@@ -10237,7 +9946,7 @@ var $;
         };
         const item = {
             style: {
-                background: () => '#d8dce3',
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
                 border: () => 'solid 1px #adb0b8',
                 boxSizing: () => 'border-box',
                 userSelect: () => 'none',
@@ -10279,6 +9988,11 @@ var $;
                     attr: {
                         src: () => 'assets/move@2x.png',
                         draggable: () => false,
+                    },
+                    style: {
+                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                            'brightness(0%) invert(29%) sepia(9%) saturate(1214%) hue-rotate(184deg) brightness(93%) contrast(87%)' :
+                            'brightness(0%) invert(94%) sepia(11%) saturate(100%) hue-rotate(182deg) brightness(95%) contrast(89%)'),
                     },
                 }),
             },
@@ -10502,11 +10216,14 @@ var $;
                         '#ofsHor': $$.$me_atom2_prop(['<@shown.#ofsHor', '<@shown.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
                         '#cursor': () => 'pointer',
                     },
-                    style: {
-                        userSelect: () => 'none',
-                    },
                     attr: {
                         src: () => 'assets/icons-8-filter@2x.png'
+                    },
+                    style: {
+                        userSelect: () => 'none',
+                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                            'brightness(0%) invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                            'brightness(0%) invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
                     },
                     event: {
                         clickOrTap: () => {
@@ -10911,15 +10628,14 @@ var $;
                     default: () => $$.a('.order_ids')[0],
                     valid: (val) => val == 'new' || $$.a('.orders')[val] ? val : null,
                 }),
-                alt: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.selected'], ({ masters: [selected] }) => [`.order[${selected}]`]), ({ masters: [order] }) => !(order.params && order.params['Область'] == 'only'), ({ val }) => console.warn(val)),
-                param_modes: $$.$me_atom2_prop(['.alt'], ({ masters: [alt] }) => ({
+                param_modes: () => ({
                     ПОЛНЫЙ: {
-                        height: alt ? 518 : 630,
+                        height: 518 - 44,
                     },
                     СЖАТЫЙ: {
                         height: 120,
                     },
-                })),
+                }),
                 param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
                 param_mode: $$.$me_atom2_prop_store({
                     default: () => 'ПОЛНЫЙ',
@@ -11134,7 +10850,7 @@ var $;
             prop: {
                 '#height': () => 54,
                 '#cursor': () => 'pointer',
-                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#3c4354' : '#464f63'),
+                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#474F61' : '#d8dce3'),
             },
             style: {
                 background: '.colorBackground',
@@ -11208,10 +10924,10 @@ var $;
                         '#ofsHor': () => -9,
                     },
                     attr: {
-                        src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => {
+                        src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive', '/.theme'], ({ masters: [isShrinked, isShrinked_animActive, theme] }) => {
                             if (isShrinked_animActive)
                                 isShrinked = !isShrinked;
-                            return `assets/light-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
+                            return `assets/${$$.$me_theme[theme]}-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
                         }),
                     },
                 }),
