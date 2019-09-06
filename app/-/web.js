@@ -170,7 +170,10 @@ var $;
         }
         $$.$me_point_in_rect_offset = $me_point_in_rect_offset;
         function $me_option_caption(id, options, val) {
-            const isSelected = !(val instanceof Set) ? val == id : val.has(id);
+            const isSelected = typeof val == 'string' ? val == id :
+                val instanceof Set ? val.has(id) :
+                    val instanceof Map ? val.has(id) :
+                        false;
             const caption = typeof options[id].caption != 'function' ?
                 options[id].caption :
                 options[id].caption({ val, isSelected });
@@ -2984,7 +2987,7 @@ var $;
                         let state;
                         if (ma && ma._state !== $me_atom2_state_enum.valid) {
                             state = new Set();
-                            state.add('#masters');
+                            state.add(this.name() + '.#masters');
                             return { state };
                         }
                         let store = this._masters_store;
@@ -3004,8 +3007,6 @@ var $;
                                             this._state instanceof Set ?
                                                 this._state :
                                                 new Set();
-                                    if (this.name() == '/@demo@dialog@invisible@row[3]@content@wrapper@item.#hidden')
-                                        console.error(this.name(), name_master);
                                     state.add(name_master);
                                 }
                             }
@@ -4470,7 +4471,7 @@ var $;
                 paddingLeft: () => 10,
                 paddingRight: () => 10,
                 paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
                 fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
             },
@@ -4486,7 +4487,7 @@ var $;
     (function ($$) {
         $$.$nl_panel = {
             style: {
-                background: () => 'white',
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
                 borderRadius: () => '2px',
                 boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
             },
@@ -4977,7 +4978,7 @@ var $;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign({ period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
                     '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
                 ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
@@ -4986,7 +4987,7 @@ var $;
                 }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
                 '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
                 '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
-            }), { text: () => '' }),
+            })),
             render: p => {
                 let { ctxWidth, ctxHeight } = p;
                 const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
@@ -5033,6 +5034,7 @@ var $;
                 colorBorderSelected: $$.$me_atom2_prop_abstract(),
                 colorText: $$.$me_atom2_prop_abstract(),
                 colorTextSelected: $$.$me_atom2_prop_abstract(),
+                colorBackground: $$.$me_atom2_prop_abstract(),
                 colorBackgroundSelected: $$.$me_atom2_prop_abstract(),
                 borderRadius: $$.$me_atom2_prop_abstract(),
                 borderWidth: $$.$me_atom2_prop_abstract(),
@@ -5156,7 +5158,7 @@ var $;
                         borderRadiusLeftBottom: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
                         borderRadiusRightTop: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
                         borderRadiusRightBottom: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
-                        colorBackground: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected'], ({ masters: [isSelected, colorBackgroundSelected] }) => isSelected ? colorBackgroundSelected : 'transparent'),
+                        colorBackground: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected', '<.colorBackground'], ({ masters: [isSelected, colorBackgroundSelected, colorBackground] }) => isSelected ? colorBackgroundSelected : colorBackground),
                         colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
@@ -5201,13 +5203,18 @@ var $;
                 value: $$.$me_atom2_prop_abstract(),
                 colorBorder: () => 'transparent',
                 colorBorderSelected: () => 'transparent',
-                colorBackgroundSelected: () => '#0070a4',
+                colorBackground: () => 'transparent',
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#0070a4' :
+                    '#0facf4'),
                 borderRadius: () => 0,
                 borderWidth: () => 0,
                 paddingHor: () => 0,
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 option_width_min: () => 40,
-                colorText: () => '#0070a4',
+                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#0070a4' :
+                    'white'),
                 colorTextSelected: () => 'white',
                 fontFamily: '/.fontFamily',
                 fontWeight: '/.fontWeight',
@@ -5232,9 +5239,18 @@ var $;
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
-                colorBorder: () => '#bdc3d1',
-                colorBorderSelected: () => '#008ecf',
-                colorBackgroundSelected: () => '#f0f1f4',
+                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#bdc3d1' :
+                    '#d8dce3'),
+                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#008ecf' :
+                    '#008ecf'),
+                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    'white' :
+                    '#878f9b'),
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#f0f1f4' :
+                    '#747B89'),
                 borderRadius: () => 4,
                 borderWidth: () => 1,
                 paddingHor: () => 0,
@@ -5242,8 +5258,10 @@ var $;
                 '#width': () => 440,
                 '#height': () => 32,
                 option_width_min: () => 40,
-                colorText: () => '#0070a4',
-                colorTextSelected: '.colorText',
+                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$me_theme.light ?
+                    '#0070a4' :
+                    colorText),
+                colorTextSelected: '/.colorText',
                 fontFamily: '/.fontFamily',
                 fontWeight: '/.fontWeight',
                 fontWeightSelected: '.fontWeight',
@@ -5253,6 +5271,101 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let instances;
+        $$.$me_dropdown = {
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
+                    $$.a('.instance', null);
+                    return true;
+                }
+                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
+                    if (!instances)
+                        instances = new Map();
+                    const ids = [...instances].map(([spinner, id]) => id).sort();
+                    let id;
+                    for (let i = 0; i < ids.length; i++)
+                        if (i != ids[i]) {
+                            id = i;
+                            break;
+                        }
+                    if (id === void 0)
+                        id = ids.length;
+                    const prop_dropdownTarget = $$.a.get('.#clientRect');
+                    const prop_clientRect = $$.a.get('.dropdownTargetClientRect');
+                    const isTouch = $$.a('.isTouch');
+                    const prop_isDropdown = $$.a.get('.isDropdown');
+                    const prop_zIndex = $$.a.get('.#zIndex');
+                    const cnf = $$.a.dispatch('', 'dropdown', {
+                        id,
+                        prop_clientRect,
+                        prop_isDropdown,
+                        prop_zIndex,
+                        isTouch,
+                        result: null,
+                    }).result;
+                    if (!cnf)
+                        $$.$me_throw($$.a.curr.name());
+                    if (!cnf.prop)
+                        cnf.prop = {};
+                    if (!cnf.prop['#ofsHor'])
+                        cnf.prop['#ofsHor'] = !isTouch ?
+                            $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.left) :
+                            $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2);
+                    if (!cnf.prop['#ofsVer'])
+                        cnf.prop['#ofsVer'] = !isTouch ?
+                            $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom)
+                            : $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2);
+                    if (!cnf.prop['#zIndex'])
+                        cnf.prop['#zIndex'] = $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 10);
+                    const dropdown = new $$.$me_atom2_elem({
+                        tail: 'me_dropdown' + id,
+                        parent: $$.a.get('/@app'),
+                        cnf,
+                    });
+                    $$.a('.instance', dropdown);
+                    return true;
+                }
+                return false;
+            },
+            prop: {
+                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
+                    if (!val && prev) {
+                        instances.delete(prev);
+                        prev.destroy();
+                    }
+                }),
+                isTouch: '/.#isTouch',
+                dropdownTarget: () => '',
+                dropdownTargetClientRect: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.dropdownTarget'], ({ masters: [target] }) => [target + '.#clientRect'])),
+                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
+                    if (val) {
+                        $$.a.dispatch('', 'show');
+                    }
+                    else if (prev) {
+                        $$.a.dispatch('', 'hide');
+                    }
+                }),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.isDropdown', !$$.a('.isDropdown'));
+                    return true;
+                },
+                clickOrTapOutside: () => {
+                    $$.a('.isDropdown', false);
+                    return false;
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//dropdown.js.map
 ;
 "use strict";
 var $;
@@ -5764,450 +5877,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_iospicker = {
-            dispatch: (dispatch_name, dispatch_arg) => {
-                console.warn($$.a.curr.name(), dispatch_name, dispatch_arg);
-                return true;
-            },
-            prop: {
-                СвернутьРазвернуть: $$.$me_atom2_prop(['/.СвернутьРазвернуть'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                    $$.a('/.СвернутьРазвернуть', val);
-                }),
-                СписокБарабан: $$.$me_atom2_prop(['/.СписокБарабан'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                    $$.a('/.СписокБарабан', val);
-                }),
-                itemMarginTopFirst: () => 16,
-                itemMarginBottomLast: () => 16,
-                itemMarginVer: () => 0,
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                '#width': () => 374,
-                non_current_facets_semi_count_max: () => 12,
-                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids', '.non_current_facets_semi_count_max', '.СвернутьРазвернуть'], ({ masters: [option_ids, non_current_facets_semi_count_max, СвернутьРазвернуть] }) => !СвернутьРазвернуть ?
-                    Math.max(1, Math.min(non_current_facets_semi_count_max, option_ids.length + (option_ids.length < 5 ? -1 : option_ids.length < 7 ? 0 : 1))) :
-                    Math.max(1, Math.min(non_current_facets_semi_count_max, Math.ceil(option_ids.length - 1) / 2 + (option_ids.length > 7 ? 1 : 0)))),
-                '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.СписокБарабан'], ({ masters: [СписокБарабан] }) => {
-                    if (!СписокБарабан) {
-                        return ['.row_current_top', '.row_current_height'];
-                    }
-                    else {
-                        return ['.option_ids', '.non_current_facets_semi_count_max', '.row_current_height', '.itemMarginTopFirst', '.itemMarginBottomLast', '.itemMarginVer'];
-                    }
-                }), ({ len, masters }) => {
-                    if (len == 2) {
-                        const [row_current_top, row_current_height] = masters;
-                        return 2 * row_current_top + row_current_height;
-                    }
-                    else {
-                        const [option_ids, non_current_facets_semi_count_max, row_current_height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
-                        const rec_count = option_ids.length;
-                        const max = non_current_facets_semi_count_max;
-                        const result = rec_count > max ?
-                            max * row_current_height :
-                            rec_count * row_current_height + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
-                        return result;
-                    }
-                }),
-                row_current_height: () => 38,
-                fontSize: $$.$me_atom2_prop(['.row_current_height'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
-                row_angles: $$.$me_atom2_prop(['.non_current_facets_semi_count'], ({ masters: [count] }) => {
-                    const step = 90 / (count + 2);
-                    const result = [];
-                    for (let i = 0; i <= count + 2; i++)
-                        result.push(i * step);
-                    return result;
-                }),
-                row_heights: $$.$me_atom2_prop(['.row_angles', '.row_current_height'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
-                row_label_heights: $$.$me_atom2_prop(['.row_angles', '.fontSize'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
-                row_count: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => (row_heights.length - 2) * 2 + 1),
-                row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')),
-                row_current_top: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => {
-                    let result = 0;
-                    for (let i = 1; i < row_heights.length - 1; i++)
-                        result += row_heights[i];
-                    return result;
-                }),
-                ofs: () => 0,
-                ofs_rem: $$.$me_atom2_prop(['.ofs', '.row_current_height'], ({ masters: [ofs, row_current_height] }) => {
-                    const result = ofs - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) * row_current_height;
-                    return result;
-                }),
-                rec_idx: $$.$me_atom2_prop(['.ofs', '.row_current_height', '.value', '.option_ids'], ({ masters: [ofs, row_current_height, id, ids], prev }) => {
-                    let result;
-                    if (prev == null) {
-                        const idx = ids.indexOf(id);
-                        if (~idx)
-                            result = idx;
-                    }
-                    if (result == null)
-                        result = -Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height);
-                    return result;
-                }, ({ val, prev }) => {
-                    if (prev == null)
-                        $$.a('.ofs', -val * $$.a('.row_current_height'));
-                    $$.a('.value', $$.a('.option_ids')[val]);
-                }),
-                on_change_value: $$.$me_atom2_prop(['.value', '.option_ids'], null, ({ val: [id, ids] }) => {
-                    const idx = ids.indexOf(id);
-                    if (~idx)
-                        $$.a('.rec_idx', idx);
-                }),
-                row_i_current: $$.$me_atom2_prop(['.ofs', '.row_count', '.row_current_height', '.rec_idx'], ({ masters: [ofs, row_count, row_current_height, rec_idx] }) => {
-                    const result = (rec_idx - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) % row_count + row_count) % row_count;
-                    return result;
-                }, ({ val, prev }) => {
-                    if (prev == null)
-                        return;
-                    for (let i = 0; i < $$.a('.row_count'); i++) {
-                        $$.a(`.row_top[${i}].#masters`, null);
-                        $$.a(`.row_top[${i}]`, null);
-                    }
-                }),
-                row_i_rel: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: ['.row_i_current', '.row_count'],
-                }, ({ key: [row_i], masters: [row_i_current, row_count] }) => {
-                    const row_count_semi = (row_count - 1) / 2;
-                    let result = +row_i - row_i_current;
-                    if (result > row_count_semi) {
-                        result = result - row_count;
-                    }
-                    else if (result < -row_count_semi) {
-                        result = row_count + result;
-                    }
-                    return result;
-                }),
-                row_top: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.row_i_current', '.row_count', '.row_i_rel[]'], ({ key: [row_i], masters: [row_i_current, row_count, row_i_rel] }) => {
-                        const result = [];
-                        if (!row_i_rel) {
-                            result.push('.row_current_top');
-                            result.push('.ofs_rem');
-                        }
-                        else {
-                            const i_rel_abs = Math.abs(row_i_rel);
-                            const i_rel_sign = Math.sign(row_i_rel);
-                            const row_i_top = (row_i_current + (i_rel_abs - 1) * i_rel_sign + row_count) % row_count;
-                            const row_i_height = i_rel_sign >= 0 ? row_i_top : (row_i_top + row_count - 1) % row_count;
-                            result.push(`.row_top[${row_i_top}]`);
-                            result.push(`.row_height[${row_i_height}]`);
-                            result.push(`.row_i_rel[]`);
-                        }
-                        return result;
-                    }),
-                }, ({ len, masters }) => {
-                    if (len <= 2) {
-                        const [row_current_top, ofs_rem] = masters;
-                        return row_current_top + ofs_rem;
-                    }
-                    else {
-                        const [row_top, row_height, row_i_rel] = masters;
-                        return row_top + row_height * Math.sign(row_i_rel);
-                    }
-                }),
-                lambda: $$.$me_atom2_prop(['.ofs_rem', '.row_current_height'], ({ masters: [ofs_rem, row_current_height] }) => {
-                    let result = Math.abs(ofs_rem) / row_current_height;
-                    if (ofs_rem < 0)
-                        result = 1 - result;
-                    return result;
-                }),
-                row_i_rel_abs_from: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
-                    const row_i_rel_abs = Math.abs(row_i_rel);
-                    const row_i_rel_sign = Math.sign(row_i_rel);
-                    const result = ofs_rem >= 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign > 0 ? -1 : 1);
-                    return result;
-                }),
-                row_i_rel_abs_to: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
-                    const row_i_rel_abs = Math.abs(row_i_rel);
-                    const row_i_rel_sign = Math.sign(row_i_rel);
-                    const result = ofs_rem < 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign < 0 ? -1 : 1);
-                    return result;
-                }),
-                row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_heights'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_heights] }) => {
-                    const result = (1 - lambda) * row_heights[row_i_rel_abs_from] + lambda * row_heights[row_i_rel_abs_to];
-                    return result;
-                }),
-                row_angle: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_angles', '.row_i_rel[]'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_angles, row_i_rel] }) => {
-                    const result = -Math.sign(row_i_rel) * ((1 - lambda) * row_angles[row_i_rel_abs_from] + lambda * row_angles[row_i_rel_abs_to]);
-                    return result;
-                }),
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                '#order': () => ['row', 'curtain', 'cursor'],
-                curtain: () => ['top', 'bottom'],
-            },
-            event: {
-                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-                wheelDrag: p => p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-            },
-            elem: {
-                СписокБарабан: () => ({
-                    base: ear,
-                    prop: {
-                        captions: () => ['Список', 'Барабан'],
-                        isOn: $$.$me_atom2_prop(['<.СписокБарабан'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                            $$.a('<.СписокБарабан', val);
-                        }),
-                    },
-                }),
-                СвернутьРазвернуть: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
-                    {
-                        base: ear,
-                        prop: {
-                            '#alignHor': () => $$.$me_align.right,
-                            captions: () => ['Свернуть', 'Развернуть'],
-                            isOn: $$.$me_atom2_prop(['<.СвернутьРазвернуть'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                                $$.a('<.СвернутьРазвернуть', val);
-                            }),
-                        },
-                    }),
-                cursor: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
-                    {
-                        prop: {
-                            '#ofsVer': '<.row_current_top',
-                            '#height': '<.row_current_height',
-                        },
-                        style: {
-                            borderTop: () => '1px solid #D5D5D3',
-                            borderBottom: () => '1px solid #D5D5D3',
-                            boxSizing: () => 'border-box',
-                        },
-                    }),
-                curtain: $$.$me_atom2_prop({ keys: ['.curtain'],
-                    masters: ['.СписокБарабан']
-                }, ({ key: [curtain], masters: [СписокБарабан] }) => {
-                    return СписокБарабан ? null : {
-                        prop: {
-                            '#height': '<.row_current_top',
-                            '#alignVer': () => $$.$me_align[curtain],
-                        },
-                        style: {
-                            background: () => `linear-gradient(${curtain == 'bottom' ? 0 : 180}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.6) 50%, rgba(255,255,255,0.3) 100%)`,
-                            pointerEvents: () => 'none',
-                        },
-                    };
-                }),
-                row: $$.$me_atom2_prop({ keys: ['.row_i'],
-                    masters: ['.СписокБарабан']
-                }, ({ key: [row_i], masters: [СписокБарабан] }) => СписокБарабан ? null : {
-                    prop: {
-                        '#height': `<.row_height[${row_i}]`,
-                        '#ofsVer': `<.row_top[${row_i}]`,
-                    },
-                    style: {
-                        boxSizing: () => 'border-box',
-                        overflow: () => 'hidden',
-                    },
-                    elem: {
-                        label: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => null,
-                                '#alignHor': () => $$.$me_align.center,
-                                '#ofsVer': $$.$me_atom2_prop([`<<.row_angle[${row_i}]`, '.#height', '<.#height'], ({ masters: [angle, height_own, height_parent] }) => {
-                                    const result = Math.floor(Math.pow(Math.cos(angle * Math.PI / 180), 2) *
-                                        (height_parent - height_own) / 2);
-                                    return result;
-                                }),
-                                fontSize: '<<.fontSize',
-                            },
-                            style: {
-                                transform: $$.$me_atom2_prop([`<<.row_angle[${row_i}]`], ({ masters: [angle] }) => {
-                                    return `rotateX(${angle}deg)`;
-                                }),
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop([`<<.row_i_rel[${row_i}]`, '<<.option_ids', '<<.options', '<<.rec_idx'], ({ masters: [row_i_rel, option_ids, options, rec_idx] }) => {
-                                    const idx = rec_idx + row_i_rel;
-                                    if (!(0 <= idx && idx < option_ids.length))
-                                        return '';
-                                    const id = option_ids[idx];
-                                    return options[id].caption || id;
-                                }),
-                            },
-                        }),
-                    },
-                }),
-                list: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [СписокБарабан] }) => !СписокБарабан ? null : {
-                    base: $$.$me_list,
-                    dispatch: (dispatch_name, dispatch_arg) => {
-                        if (dispatch_name == 'row_height_default') {
-                            const idx = dispatch_arg.idx;
-                            dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
-                                (!idx ? $$.a('.itemMarginTopFirst') : $$.a('.itemMarginBottomLast')) - $$.a('.itemMarginVer'));
-                            return true;
-                        }
-                        return false;
-                    },
-                    prop: {
-                        rec_count: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.length),
-                        row_height_min: '<.row_current_height',
-                        curtain_kind: () => 'white',
-                        header_height: () => 0,
-                        provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
-                        itemMarginTopFirst: '<.itemMarginTopFirst',
-                        itemMarginBottomLast: '<.itemMarginBottomLast',
-                        itemMarginVer: '<.itemMarginVer',
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        rec_idx_selected: $$.$me_atom2_prop(['<.value', '<.option_ids'], ({ masters: [id, ids] }) => ids.indexOf(id)),
-                        row_i_selected: $$.$me_atom2_prop(['.rec_idx_selected', '.row_i_min', '.row_i_max', '.row_count', '.visible_idx_min', '.visible_idx_max'], ({ masters: [idx, row_i_min, row_i_max, row_count, visible_idx_min, visible_idx_max] }) => {
-                            if (idx < 0)
-                                return -1;
-                            if (row_i_max < 0)
-                                return -1;
-                            if (!(visible_idx_min <= idx && idx <= visible_idx_max))
-                                return -1;
-                            return (row_i_min + (idx - visible_idx_min)) % row_count;
-                        }),
-                        header_content: () => ({}),
-                        row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                            base: row,
-                            prop: {
-                                row_i: () => row_i,
-                                rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                                id: $$.$me_atom2_prop(['<<<.option_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                                    return !~idx || idx >= rec_count ? '' : ids[idx];
-                                }),
-                                fontSize: '<<<.fontSize',
-                                options: '<<<.options',
-                                rec_count: '<<.rec_count',
-                                itemMarginTopFirst: '<<.itemMarginTopFirst',
-                                itemMarginBottomLast: '<<.itemMarginBottomLast',
-                                itemMarginVer: '<<.itemMarginVer',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a('<<<.value', $$.a('.id'));
-                                    $$.a.dispatch('<<<', null, 'didSelect');
-                                    return true;
-                                },
-                            },
-                            style: {
-                                background: () => 'white',
-                            },
-                        })),
-                    },
-                    elem: {
-                        header: () => null,
-                        cursor: $$.$me_atom2_prop(['.row_i_selected', '.rec_idx_selected'], ({ masters: [row_i_selected, rec_idx_selected] }) => row_i_selected < 0 ? null : {
-                            prop: {
-                                '#height': '<<.row_current_height',
-                                '#ofsVer': rec_idx_selected ?
-                                    `<.row_top[${row_i_selected}]` :
-                                    $$.$me_atom2_prop([`<.row_top[${row_i_selected}]`, '<.itemMarginTopFirst'], $$.$me_atom2_prop_compute_fn_sum()),
-                            },
-                            style: {
-                                borderTop: () => '1px solid #D5D5D3',
-                                borderBottom: () => '1px solid #D5D5D3',
-                                boxSizing: () => 'border-box',
-                            },
-                        })
-                    },
-                }),
-            },
-            style: {
-                perspective: () => '900px',
-                background: () => 'white',
-            },
-        };
-        const ear = {
-            prop: {
-                '#height': () => null,
-                '#width': () => null,
-                '#cursor': () => 'pointer',
-                '#ofsVer': $$.$me_atom2_prop(['.#height'], ({ masters: [height] }) => -height),
-                captions: $$.$me_atom2_prop_abstract(),
-            },
-            style: {
-                padding: () => 8,
-                paddingLeft: () => 16,
-                paddingRight: () => 16,
-                color: () => 'rgb(0, 112, 164)',
-                userSelect: () => 'none',
-                background: () => 'rgb(217, 220, 226)',
-                borderTop: () => '1px solid #bdc3d1',
-                borderLeft: () => '1px solid #bdc3d1',
-                borderRight: () => '1px solid #bdc3d1',
-                borderTopLeftRadius: () => '4px',
-                borderTopRightRadius: () => '4px',
-            },
-            dom: {
-                innerText: $$.$me_atom2_prop(['.isOn', '.captions'], ({ masters: [isOn, captions] }) => isOn ? captions[1] : captions[0]),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('.isOn', !$$.a('.isOn'));
-                    return true;
-                },
-            },
-        };
-        const row = {
-            prop: {
-                '#cursor': () => 'pointer',
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        fontSize: '<.fontSize',
-                        '#width': '<.#width',
-                        '#height': '<.#height',
-                        alignVer: () => $$.$me_align.center,
-                        alignHor: () => $$.$me_align.center,
-                        '#ofsVer': $$.$me_atom2_prop([`<.rec_idx`, '<.rec_count', '<.itemMarginTopFirst', '<.itemMarginBottomLast', '<.itemMarginVer'], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
-                            if (!~rec_idx)
-                                return 0;
-                            const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
-                                rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
-                                    0);
-                            return result;
-                        }),
-                        paddingHor: () => 8,
-                        text: $$.$me_atom2_prop([`<.rec_idx`, '<.options'], ({ masters: [rec_idx, options] }) => {
-                            if (!~rec_idx)
-                                return '';
-                            const id = Object.keys(options)[rec_idx];
-                            return options[id].caption || id;
-                        }),
-                    },
-                })
-            },
-        };
-        let timer;
-        let prevDeltaY;
-        function wheel(deltaY) {
-            if (timer != null)
-                clearTimeout(timer);
-            const prop_ofs = $$.a.get('.ofs');
-            const prop_ofs_rem = $$.a.get('.ofs_rem');
-            timer = setTimeout(() => {
-                timer = null;
-                const ofs_rem = prop_ofs_rem.value();
-                if (!ofs_rem)
-                    return;
-                prop_ofs.value($$.$me_atom2_anim({ to: prop_ofs.value() - ofs_rem, duration: 100 }));
-            }, 100);
-            const min = -($$.a('.option_ids').length - 1) * $$.a('.row_current_height');
-            prop_ofs.value(Math.min(0, Math.max(min, prop_ofs.value() - deltaY)));
-            return true;
-        }
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//iospicker.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$me_triangle = {
             prop: {
                 direction: () => $$.$me_rect_sides_enum.bottom,
@@ -6253,271 +5922,346 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let instances;
+        $$.$nl_triangle = {
+            base: $$.$me_triangle,
+            prop: {
+                '#alignHor': () => $$.$me_align.right,
+                '#ofsHor': () => 9,
+                '#alignVer': () => $$.$me_align.center,
+                size: () => 7,
+                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#444956' : 'white'),
+                k: () => 9 / 7,
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_picker = {
+            base: $$.$me_dropdown,
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
-                    $$.a('.instance', null);
-                }
-                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
-                    if (!instances)
-                        instances = new Map();
-                    const ids = [...instances].map(([spinner, id]) => id).sort();
-                    let id;
-                    for (let i = 0; i < ids.length; i++)
-                        if (i != ids[i]) {
-                            id = i;
-                            break;
-                        }
-                    if (id === void 0)
-                        id = ids.length;
+                if (dispatch_name == 'dropdown') {
+                    const { prop_isDropdown, prop_clientRect, isTouch } = dispatch_arg;
                     const prop_itemMarginTopFirst = $$.a.get('.itemMarginTopFirst');
                     const prop_itemMarginBottomLast = $$.a.get('.itemMarginBottomLast');
                     const prop_itemMarginVer = $$.a.get('.itemMarginVer');
                     const prop_options = $$.a.get('.options');
                     const prop_option_ids = $$.a.get('.option_ids');
-                    const prop_maxDrodownCount = $$.a.get('.maxDrodownCount');
-                    const prop_clientRect = $$.a.get('.#clientRect');
-                    const prop_height = $$.a.get('.#height');
-                    const prop_fontSize = $$.a.get('.fontSize');
                     const prop_value = $$.a.get('.value');
-                    const prop_isDropdown = $$.a.get('.isDropdown');
-                    const prop_borderRadius = $$.a.get('.style.borderRadius');
-                    const prop_border = $$.a.get('.style.border');
-                    const prop_zIndex = $$.a.get('.#zIndex');
-                    const prop_isTouch = $$.a.get('.isTouch');
-                    const list = $$.a('.isTouch') ?
-                        new $$.$me_atom2_elem({
-                            tail: 'nl_picker_list' + id,
-                            parent: $$.a.get('/@app'),
-                            cnf: {
-                                base: $$.$nl_iospicker,
-                                dispatch: (dispatch_name, dispatch_arg) => {
-                                    if (dispatch_arg == 'didSelect') {
-                                        prop_isDropdown.value(false);
-                                        return true;
-                                    }
-                                    console.error({ dispatch_name, dispatch_arg });
-                                    return false;
-                                },
+                    const prop_itemFontSize = $$.a.get('.itemFontSize');
+                    const prop_row_height_min = $$.a.get('.row_height_min');
+                    const prop_dropdownWidth = $$.a.get('.dropdownWidth');
+                    const prop_dropdownHeight = $$.a.get('.dropdownHeight');
+                    const prop_theme = $$.a.get('/.theme');
+                    dispatch_arg.result = {
+                        base: $$.$me_list,
+                        dispatch: (dispatch_name, dispatch_arg) => {
+                            if (dispatch_name == 'row_height_default') {
+                                const idx = dispatch_arg.idx;
+                                dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
+                                    (!idx ? prop_itemMarginTopFirst.value() : prop_itemMarginBottomLast.value()) - prop_itemMarginVer.value());
+                                return true;
+                            }
+                            return false;
+                        },
+                        prop: {
+                            '#width': prop_dropdownWidth.name(),
+                            '#height': prop_dropdownHeight.name(),
+                            rec_count: $$.$me_atom2_prop([prop_option_ids.name()], ({ masters: [ids] }) => ids.length),
+                            row_height_min: prop_row_height_min.name(),
+                            curtain_kind: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'black'),
+                            header_height: () => 0,
+                            provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
+                            rec_idx_selected: $$.$me_atom2_prop([prop_value.name(), prop_option_ids.name()], ({ masters: [value, ids] }) => (typeof value == 'string' ?
+                                [ids.indexOf(value)] :
+                                value instanceof Set ?
+                                    [...value].map((id) => ids.indexOf(id)) :
+                                    value instanceof Map ?
+                                        [...value].map(([id]) => ids.indexOf(id)) :
+                                        []).filter((idx) => ~idx)),
+                            row_i_selected: $$.$me_atom2_prop(['.rec_idx_selected', '.row_i_min', '.row_i_max', '.row_count', '.visible_idx_min', '.visible_idx_max'], ({ masters: [idx, row_i_min, row_i_max, row_count, visible_idx_min, visible_idx_max] }) => {
+                                return idx.map((idx) => {
+                                    if (idx < 0)
+                                        return -1;
+                                    if (row_i_max < 0)
+                                        return -1;
+                                    if (!(visible_idx_min <= idx && idx <= visible_idx_max))
+                                        return -1;
+                                    return (row_i_min + (idx - visible_idx_min)) % row_count;
+                                }).filter((idx) => ~idx);
+                            }),
+                            header_content: () => ({}),
+                            row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
                                 prop: {
-                                    options: prop_options.name(),
-                                    value: $$.$me_atom2_prop([prop_value.name()], null, ({ val }) => {
-                                        prop_value.value(val);
+                                    isTouch: () => isTouch,
+                                    row_i: () => row_i,
+                                    rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
+                                    id: $$.$me_atom2_prop([prop_option_ids.name(), `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
+                                        return !~idx || idx >= rec_count ? '' : ids[idx];
                                     }),
-                                    '#ofsHor': $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                    '#ofsVer': $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                    '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
-                                },
-                                style: {
-                                    boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
+                                    isSelected: $$.$me_atom2_prop(['<<.row_i_selected'], ({ masters: [row_i_selected] }) => !!~row_i_selected.indexOf(+row_i)),
+                                    rec_count: '<<.rec_count',
+                                    '#cursor': () => 'pointer',
+                                    '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                    row_cursor_src: $$.$me_atom2_prop(['.isTouch', '.#isHover', '.row_i'], ({ masters: [isTouch, isHover, row_i] }) => isTouch || !isHover ? '' : row_i, ({ atom, val }) => {
+                                        $$.$nl_picker_cursor({ origin: atom, val: val });
+                                    }),
                                 },
                                 event: {
-                                    mousedown: p => p.isInRect(p.event.clientX, p.event.clientY),
-                                    touchstart: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY),
-                                },
-                            }
-                        }) :
-                        new $$.$me_atom2_elem({
-                            tail: 'nl_picker_list' + id,
-                            parent: $$.a.get('/@app'),
-                            cnf: {
-                                base: $$.$me_list,
-                                dispatch: (dispatch_name, dispatch_arg) => {
-                                    if (dispatch_name == 'row_height_default') {
-                                        const idx = dispatch_arg.idx;
-                                        dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
-                                            (!idx ? prop_itemMarginTopFirst.value() : prop_itemMarginBottomLast.value()) - prop_itemMarginVer.value());
+                                    clickOrTap: () => {
+                                        const value = prop_value.value();
+                                        const id = $$.a('.id');
+                                        if (value instanceof Set) {
+                                            const ss = value;
+                                            if (ss.has(id)) {
+                                                ss.delete(id);
+                                            }
+                                            else {
+                                                ss.add(id);
+                                            }
+                                            prop_value.value(ss, true);
+                                        }
+                                        else if (value instanceof Map) {
+                                            const ss = value;
+                                            if (ss.has(id)) {
+                                                ss.delete(id);
+                                            }
+                                            else {
+                                                ss.set(id, null);
+                                            }
+                                            prop_value.value(ss, true);
+                                        }
+                                        else {
+                                            prop_value.value(id);
+                                            prop_isDropdown.value(false);
+                                        }
                                         return true;
-                                    }
-                                    return false;
-                                },
-                                prop: {
-                                    '#height': $$.$me_atom2_prop([prop_options.name(), prop_maxDrodownCount.name(), prop_clientRect.name(), '/.#viewportHeight', '.row_height_min', prop_itemMarginTopFirst.name(), prop_itemMarginBottomLast.name(), prop_itemMarginVer.name()], ({ masters: [options, maxDropdownCount, clientRect, viewportHeight, height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => Math.max(0, Math.min(Object.keys(options).length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom) / height))) * height + (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer)),
-                                    '#width': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.right - clientRect.left),
-                                    '#ofsHor': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.left),
-                                    '#ofsVer': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom),
-                                    '#isHover': () => false,
-                                    rec_count: $$.$me_atom2_prop([prop_option_ids.name()], ({ masters: [ids] }) => ids.length),
-                                    row_height_min: prop_height.name(),
-                                    curtain_kind: () => 'white',
-                                    header_height: () => 0,
-                                    provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
-                                    header_content: () => ({}),
-                                    row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                                        base: row,
-                                        prop: {
-                                            row_i: () => row_i,
-                                            rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                                            id: $$.$me_atom2_prop([prop_option_ids.name(), `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                                                return !~idx || idx >= rec_count ? '' : ids[idx];
-                                            }),
-                                            rec_count: '<<.rec_count',
-                                            fontSize: prop_fontSize.name(),
-                                            itemMarginTopFirst: prop_itemMarginTopFirst.name(),
-                                            itemMarginBottomLast: prop_itemMarginBottomLast.name(),
-                                            itemMarginVer: prop_itemMarginVer.name(),
-                                            options: prop_options.name(),
-                                            '#isHover': () => false,
-                                        },
-                                        event: {
-                                            clickOrTap: () => {
-                                                prop_value.value($$.a('.id'));
-                                                prop_isDropdown.value(false);
-                                                return true;
-                                            },
-                                        },
-                                        style: {
-                                            background: () => 'white',
-                                        },
-                                    })),
-                                    '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
-                                    row_cursor: () => '',
-                                    '#order': () => ['row', 'cursor'],
-                                },
-                                elem: {
-                                    header: () => null,
-                                    cursor: () => ({
-                                        prop: {
-                                            '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
-                                            '#ofsHor': () => 3,
-                                            '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`]), ({ len, masters: [top, rec_idx] }) => !len ? null : rec_idx ? top : 3),
-                                            '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count']), ({ len, masters: [val, rec_idx, rec_count] }) => !len ? null : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
-                                            '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor - 2),
-                                        },
-                                        style: {
-                                            boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
-                                            pointerEvents: () => 'none',
-                                        },
-                                    }),
+                                    },
                                 },
                                 style: {
-                                    background: () => 'white',
-                                    borderRadius: prop_borderRadius.name(),
-                                    border: $$.$me_atom2_prop([
-                                        prop_border.name()
-                                    ], ({ masters: [border] }) => 'solid 1px #bdc3d1'),
-                                    boxSizing: () => 'border-box',
-                                    boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
+                                    background: () => 'transparent',
                                 },
-                            },
-                        });
-                    $$.a('.instance', list);
+                                control: {
+                                    label: () => ({
+                                        base: $$.$me_label,
+                                        prop: {
+                                            fontSize: prop_itemFontSize.name(),
+                                            '#width': '<.#width',
+                                            '#height': '<.#height',
+                                            alignVer: () => $$.$me_align.center,
+                                            alignHor: $$.$me_atom2_prop(['<.isTouch'], ({ masters: [isTouch] }) => isTouch ? $$.$me_align.center : $$.$me_align.left),
+                                            paddingLeft: $$.$me_atom2_prop([prop_value.name(), '<.isTouch', prop_itemFontSize.name()], ({ masters: [value, isTouch, fontSize] }) => isTouch ? 0 :
+                                                !(value instanceof Set || value instanceof Map) ? 8 :
+                                                    2 * fontSize),
+                                            '#ofsVer': $$.$me_atom2_prop([
+                                                `<.rec_idx`,
+                                                '<.rec_count',
+                                                prop_itemMarginTopFirst.name(),
+                                                prop_itemMarginBottomLast.name(),
+                                                prop_itemMarginVer.name(),
+                                            ], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
+                                                if (!~rec_idx)
+                                                    return 0;
+                                                const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
+                                                    rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
+                                                        0);
+                                                return result;
+                                            }),
+                                            paddingRight: () => 8,
+                                            text: $$.$me_atom2_prop([`<.rec_idx`, prop_options.name()], ({ masters: [rec_idx, options] }) => {
+                                                if (!~rec_idx)
+                                                    return '';
+                                                const id = Object.keys(options)[rec_idx];
+                                                return options[id].caption || id;
+                                            }),
+                                            isSelected: '<.isSelected',
+                                        },
+                                        render: p => {
+                                            const value = prop_value.value();
+                                            if (!((value instanceof Set || value instanceof Map) &&
+                                                $$.a('.isSelected')))
+                                                return;
+                                            const fontSize = $$.a('.fontSize');
+                                            const h = fontSize * .9;
+                                            const w = h * 1.2;
+                                            const ctxHeight = h * p.pixelRatio;
+                                            const ctxWidth = w * p.pixelRatio;
+                                            const lineWidth = 1;
+                                            const rec_idx = $$.a(`<.rec_idx`);
+                                            const rec_count = $$.a('<.rec_count');
+                                            const itemMarginTopFirst = prop_itemMarginTopFirst.value();
+                                            const itemMarginBottomLast = prop_itemMarginBottomLast.value();
+                                            const itemMarginVer = prop_itemMarginVer.value();
+                                            const ofsVer = ($$.a('.#height') - h) / 2;
+                                            const ofsHor = $$.a('<.isTouch') ? 20 : (2 * fontSize - w) / 2;
+                                            $$.$me_atom2_ctx_check({
+                                                ctx: p.ctx,
+                                                ctxLeft: p.ctxRect.left + ofsHor * p.pixelRatio,
+                                                ctxTop: p.ctxRect.top + ofsVer * p.pixelRatio,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                stroke: {
+                                                    style: $$.a('.colorText'),
+                                                    ctxWidth: lineWidth * p.pixelRatio,
+                                                },
+                                                lambda: 0.38,
+                                                mu: 0.6,
+                                            });
+                                        },
+                                    })
+                                },
+                            })),
+                            row_cursor: () => '',
+                            '#order': () => ['row', 'cursor'],
+                        },
+                        elem: {
+                            header: () => null,
+                            cursor: isTouch ?
+                                $$.$me_atom2_prop([prop_value.name(), '.row_i_selected', '.rec_idx_selected'], ({ masters: [value, row_i_selected, rec_idx_selected] }) => value instanceof Set || value instanceof Map || row_i_selected.length != 1 ? null :
+                                    {
+                                        prop: {
+                                            '#height': '<.row_height_min',
+                                            '#ofsVer': rec_idx_selected[0] ?
+                                                `<.row_top[${row_i_selected[0]}]` :
+                                                $$.$me_atom2_prop([`<.row_top[${row_i_selected[0]}]`, prop_itemMarginTopFirst.name()], $$.$me_atom2_prop_compute_fn_sum()),
+                                        },
+                                        style: {
+                                            borderTop: () => '1px solid #D5D5D3',
+                                            borderBottom: () => '1px solid #D5D5D3',
+                                            boxSizing: () => 'border-box',
+                                        },
+                                    }) :
+                                () => ({
+                                    prop: {
+                                        '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
+                                        '#ofsHor': () => 3,
+                                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`]), ({ len, masters: [top, rec_idx] }) => !len ? null : rec_idx ? top : 3),
+                                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count']), ({ len, masters: [val, rec_idx, rec_count] }) => !len ? null : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor - 2),
+                                    },
+                                    style: {
+                                        boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
+                                        pointerEvents: () => 'none',
+                                    },
+                                }),
+                        },
+                        style: {
+                            background: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b'),
+                            boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
+                        },
+                        event: {
+                            mousedown: p => p.isInRect(p.event.clientX, p.event.clientY),
+                            touchstart: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY),
+                        },
+                    };
+                    return true;
                 }
-                return true;
+                return false;
             },
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
-                maxDrodownCount: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 9 : Infinity),
-                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
-                    if (!val && prev) {
-                        instances.delete(prev);
-                        prev.destroy();
-                    }
-                }),
-                isTouch: '/.#isTouch',
+                dropdownCountMax: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 9 : Infinity),
+                none: () => 'ничего не выбрано',
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 '#cursor': () => 'pointer',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                itemMarginTopFirst: () => 4,
-                itemMarginBottomLast: () => 4,
-                itemMarginVer: () => 0,
-                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
-                    if (val) {
-                        $$.a.dispatch('', 'show');
+                dropdownWidth: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? [] : ['.dropdownTargetClientRect']), ({ len, masters: [clientRect] }) => !len ? 374 : clientRect.right - clientRect.left),
+                dropdownHeight: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isTouch'], ({ masters: [isTouch] }) => (isTouch ?
+                    ['.row_height_min'] :
+                    ['/.#viewportHeight', '.dropdownTargetClientRect', '.row_height_min'])
+                    .concat([
+                    '.option_ids',
+                    '.dropdownCountMax',
+                    '.itemMarginTopFirst',
+                    '.itemMarginBottomLast',
+                    '.itemMarginVer',
+                ])), ({ len, masters }) => {
+                    if (len <= 7) {
+                        const [row_height_min, option_ids, maxDropdownCount, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
+                        const rec_count = option_ids.length;
+                        const max = maxDropdownCount;
+                        const result = rec_count > max ?
+                            max * row_height_min :
+                            rec_count * row_height_min + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
+                        return result;
                     }
-                    else if (prev) {
-                        $$.a.dispatch('', 'hide');
+                    else {
+                        const minMargin = 10;
+                        const [viewportHeight, clientRect, row_height_min, option_ids, maxDropdownCount, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
+                        const correction = (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer);
+                        const result = Math.max(0, Math.min(option_ids.length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom - correction - minMargin) / row_height_min))) * row_height_min + correction;
+                        return result;
                     }
                 }),
+                itemFontSize: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isTouch'], ({ masters: [isTouch] }) => ['.isTouch', isTouch ? '.row_height_min' : '.em']), ({ masters: [isTouch, val] }) => val * (isTouch ? 22 / 38 : 14 / 16)),
+                itemMarginTopFirst: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
+                itemMarginBottomLast: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
+                itemMarginVer: () => 0,
+                row_height_min: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 38 : 24),
             },
             style: {
                 borderRadius: () => 3,
-                border: $$.$me_atom2_prop(['.isDropdown'], ({ masters: [isDropdown] }) => (!isDropdown ?
-                    'solid 1px #bdc3d1' :
-                    'solid 1px #313745')),
+                border: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
+                    (theme == $$.$me_theme.light ? 'solid 1px #bdc3d1' : 'solid 1px #d8dce3') :
+                    (theme == $$.$me_theme.light ? 'solid 1px #313745' : 'solid 1px white'))),
                 boxSizing: () => 'border-box',
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                background: () => 'white',
+                background: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
+                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b') :
+                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'))),
                 userSelect: () => 'none',
             },
-            event: {
-                clickOrTap: () => {
-                    $$.a('.isDropdown', !$$.a('.isDropdown'));
-                    return true;
-                },
-                clickOrTapOutside: () => {
-                    $$.a('.isDropdown', false);
-                    return false;
-                },
-            },
             elem: {
-                triangle: () => ({
-                    base: $$.$me_triangle,
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#ofsHor': () => 9,
-                        '#alignVer': () => $$.$me_align.center,
-                        size: () => 7,
-                        color: () => '#444956',
-                        k: () => 9 / 7,
-                    },
-                }),
+                triangle: () => $$.$nl_triangle,
                 text: () => ({
                     prop: {
-                        fontSize: '<.fontSize',
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#ofsVer': () => -1,
                         '#ofsHor': () => 8,
                         '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.#width', '<@triangle.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
                     },
-                    style: {
-                        whiteSpace: () => 'nowrap',
-                        overflow: () => 'hidden',
-                        textOverflow: () => 'ellipses',
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['<.value', '<.options'], ({ masters: [id, options] }) => options[id].caption || id),
-                    },
-                }),
-            },
-        };
-        const row = {
-            prop: {
-                '#cursor': () => 'pointer',
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                row_cursor_src: $$.$me_atom2_prop(['.#isHover', '.row_i'], ({ masters: [isHover, row_i] }) => !isHover ? '' : row_i, ({ atom, val }) => {
-                    $$.$nl_picker_cursor({ origin: atom, val: val });
-                }),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        fontSize: '<.fontSize',
-                        '#width': '<.#width',
-                        '#height': '<.#height',
-                        alignVer: () => $$.$me_align.center,
-                        '#ofsVer': $$.$me_atom2_prop([`<.rec_idx`, '<.rec_count', '<.itemMarginTopFirst', '<.itemMarginBottomLast', '<.itemMarginVer'], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
-                            if (!~rec_idx)
-                                return 0;
-                            const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
-                                rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
-                                    0);
-                            return result;
-                        }),
-                        paddingHor: () => 8,
-                        text: $$.$me_atom2_prop([`<.rec_idx`, '<.options'], ({ masters: [rec_idx, options] }) => {
-                            if (!~rec_idx)
-                                return '';
-                            const id = Object.keys(options)[rec_idx];
-                            return options[id].caption || id;
+                    control: {
+                        label: () => ({
+                            base: $$.$me_label,
+                            prop: {
+                                '#height': '<.#height',
+                                '#width': '<.#width',
+                                text: $$.$me_atom2_prop(['<<.value', '<<.options', '<<.option_ids', '<<.none', '.#width', '/.#pixelRatio', '.#ctx'], ({ masters: [value, options, option_ids, none, width, pixelRatio, ctx] }) => {
+                                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                                    const ctxWidth = width * pixelRatio;
+                                    let result = none;
+                                    const ids = typeof value == 'string' ? [value] :
+                                        value instanceof Set ? [...value].sort((valA, valB) => option_ids.indexOf(valA) - option_ids.indexOf(valB)) :
+                                            value instanceof Map ? [...value].map(([id, _]) => id) :
+                                                [];
+                                    if (ids.length) {
+                                        let i = 0;
+                                        result = $$.$me_option_caption_text(ids[i], options);
+                                        while (i + 1 < ids.length && ctx.measureText(result + ' и еще ' + (ids.length - (i + 1))).width < ctxWidth) {
+                                            let text = result + ', ' + $$.$me_option_caption_text(ids[i + 1], options);
+                                            if (ctx.measureText(text + (ids.length <= i + 2 ? '' : ' и еще ' + (ids.length - (i + 2)))).width >= ctxWidth) {
+                                                break;
+                                            }
+                                            else {
+                                                result = text;
+                                                i++;
+                                            }
+                                        }
+                                        if (i + 1 < ids.length)
+                                            result += ' и еще ' + (ids.length - (i + 1));
+                                    }
+                                    return result;
+                                }),
+                                fontSize: '<<.fontSize',
+                                alignVer: () => $$.$me_align.center,
+                            },
                         }),
                     },
-                })
+                }),
             },
         };
         $$.$nl_picker_cursor = $$.$me_atom2_async_multi_origin({
@@ -6536,351 +6280,163 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let instances;
-        $$.$nl_pickermulti = {
+        $$.$me_stylesheet = {
+            prop: {
+                styleSheetName: $$.$me_atom2_prop_abstract(),
+                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
+                styleSheetCommon: () => '',
+                instanceId: () => null,
+                styleSheet_apply: $$.$me_atom2_prop(['.styleSheet', '.styleSheetName', '.instanceId'], null, styleSheet_apply_fn),
+                styleSheetCommon_apply: $$.$me_atom2_prop(['.styleSheetCommon', '.styleSheetName'], null, styleSheet_apply_fn),
+                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
+            },
+            dom: {
+                className: $$.$me_atom2_prop(['.styleSheetName', '.className'], ({ masters: [styleSheetName, className] }) => styleSheetName + ' ' + className),
+            },
+            init: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                if (!instances[styleSheetName])
+                    instances[styleSheetName] = new Map();
+                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
+                let id;
+                for (let i = 0; i < ids.length; i++)
+                    if (i != ids[i]) {
+                        id = i;
+                        break;
+                    }
+                if (id === void 0)
+                    id = ids.length;
+                $$.a('.instanceId', id);
+                instances[styleSheetName].set(self, id);
+                const styleSheetCommon = $$.a('.styleSheetCommon');
+                if (!styleSheetCommon)
+                    return;
+                const styleSheetCommonId = styleSheetId(styleSheetName);
+                if (document.getElementById(styleSheetCommonId))
+                    return;
+                let sheet = document.createElement('style');
+                sheet.id = styleSheetCommonId;
+                sheet.innerHTML = styleSheetCommon;
+                let head = document.head || document.getElementsByTagName('head')[0];
+                head.appendChild(sheet);
+            },
+            fini: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
+                instances[styleSheetName].delete(self);
+                if (instances[styleSheetName].size)
+                    return;
+                instances[styleSheetName] = null;
+                removeStyleSheet(styleSheetId(styleSheetName));
+            },
+        };
+        function styleSheet_apply_fn(p) {
+            const [innerHTML, styleSheetName, instanceId] = p.val;
+            let sheet;
+            const id = styleSheetId(styleSheetName, instanceId);
+            if (!innerHTML) {
+                removeStyleSheet(id);
+            }
+            else if (sheet = document.getElementById(id)) {
+                if (sheet.innerHTML != innerHTML)
+                    sheet.innerHTML = innerHTML;
+            }
+            else {
+                sheet = document.createElement('style');
+                sheet.id = id;
+                sheet.innerHTML = innerHTML;
+                let head = document.head || document.getElementsByTagName('head')[0];
+                head.appendChild(sheet);
+            }
+        }
+        function removeStyleSheet(styleSheetId) {
+            let sheet = document.getElementById(styleSheetId);
+            if (sheet && sheet.parentElement)
+                sheet.parentElement.removeChild(sheet);
+        }
+        let instances = {};
+        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//stylesheet.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_input = {
+            base: $$.$me_stylesheet,
+            node: 'input',
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
-                    $$.a('.instance', null);
-                }
-                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
-                    if (!instances)
-                        instances = new Map();
-                    const ids = [...instances].map(([spinner, id]) => id).sort();
-                    let id;
-                    for (let i = 0; i < ids.length; i++)
-                        if (i != ids[i]) {
-                            id = i;
-                            break;
-                        }
-                    if (id === void 0)
-                        id = ids.length;
-                    const prop_itemMarginTopFirst = $$.a.get('.itemMarginTopFirst');
-                    const prop_itemMarginBottomLast = $$.a.get('.itemMarginBottomLast');
-                    const prop_itemMarginVer = $$.a.get('.itemMarginVer');
-                    const prop_options = $$.a.get('.options');
-                    const prop_option_ids = $$.a.get('.option_ids');
-                    const prop_maxDrodownCount = $$.a.get('.maxDrodownCount');
-                    const prop_clientRect = $$.a.get('.#clientRect');
-                    const prop_height = $$.a.get('.#height');
-                    const prop_fontSize = $$.a.get('.fontSize');
-                    const prop_value = $$.a.get('.value');
-                    const prop_isDropdown = $$.a.get('.isDropdown');
-                    const prop_borderRadius = $$.a.get('.style.borderRadius');
-                    const prop_border = $$.a.get('.style.border');
-                    const prop_zIndex = $$.a.get('.#zIndex');
-                    const prop_isTouch = $$.a.get('.isTouch');
-                    const prop_row_height_min = $$.a.get('.row_height_min');
-                    const isTouch = prop_isTouch.value();
-                    const list = new $$.$me_atom2_elem({
-                        tail: 'nl_pickermulti_list' + id,
-                        parent: $$.a.get('/@app'),
-                        cnf: {
-                            base: $$.$me_list,
-                            dispatch: (dispatch_name, dispatch_arg) => {
-                                if (dispatch_name == 'row_height_default') {
-                                    const idx = dispatch_arg.idx;
-                                    dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
-                                        (!idx ? $$.a('.itemMarginTopFirst') : $$.a('.itemMarginBottomLast')) - $$.a('.itemMarginVer'));
-                                    return true;
-                                }
-                                return false;
-                            },
-                            prop: {
-                                options: prop_options.name(),
-                                value: $$.$me_atom2_prop([prop_value.name()], null, ({ val }) => {
-                                    prop_value.value(val, true);
-                                }),
-                                '#ofsHor': !isTouch ?
-                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.left) :
-                                    $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                '#ofsVer': !isTouch ?
-                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom)
-                                    : $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#width': isTouch ? () => 374 :
-                                    $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.right - clientRect.left),
-                                maxDropdownCount: () => 12,
-                                '#height': $$.$me_atom2_prop(isTouch ?
-                                    ['.option_ids', '.maxDropdownCount', '.row_height_min', '.itemMarginTopFirst', '.itemMarginBottomLast', '.itemMarginVer'] :
-                                    ['.option_ids', '.maxDropdownCount', '/.#viewportHeight', prop_clientRect.name(), '.row_height_min', '.itemMarginTopFirst', '.itemMarginBottomLast', '.itemMarginVer'], ({ len, masters }) => {
-                                    if (isTouch) {
-                                        const [option_ids, maxDropdownCount, row_height_min, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
-                                        const rec_count = option_ids.length;
-                                        const max = maxDropdownCount;
-                                        const result = rec_count > max ?
-                                            max * row_height_min :
-                                            rec_count * row_height_min + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
-                                        return result;
-                                    }
-                                    else {
-                                        const minMargin = 10;
-                                        const [option_ids, maxDropdownCount, viewportHeight, clientRect, row_height_min, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
-                                        const correction = (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer);
-                                        const result = Math.max(0, Math.min(option_ids.length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom - correction - minMargin) / row_height_min))) * row_height_min + correction;
-                                        return result;
-                                    }
-                                }),
-                                fontSize: !isTouch ?
-                                    $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)) :
-                                    $$.$me_atom2_prop(['.row_height_min'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
-                                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                                rec_count: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids.length),
-                                row_height_min: prop_row_height_min.name(),
-                                curtain_kind: () => 'white',
-                                header_height: () => 0,
-                                provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
-                                itemMarginTopFirst: prop_itemMarginTopFirst.name(),
-                                itemMarginBottomLast: prop_itemMarginBottomLast.name(),
-                                itemMarginVer: prop_itemMarginVer.name(),
-                                rec_idx_selected: $$.$me_atom2_prop(['.value', '.option_ids'], ({ masters: [id, ids] }) => [...id].map((id) => ids.indexOf(id)).filter((idx) => ~idx)),
-                                row_i_selected: $$.$me_atom2_prop(['.rec_idx_selected', '.row_i_min', '.row_i_max', '.row_count', '.visible_idx_min', '.visible_idx_max'], ({ masters: [idx, row_i_min, row_i_max, row_count, visible_idx_min, visible_idx_max] }) => {
-                                    return idx.map((idx) => {
-                                        if (idx < 0)
-                                            return -1;
-                                        if (row_i_max < 0)
-                                            return -1;
-                                        if (!(visible_idx_min <= idx && idx <= visible_idx_max))
-                                            return -1;
-                                        return (row_i_min + (idx - visible_idx_min)) % row_count;
-                                    }).filter((idx) => ~idx);
-                                }),
-                                header_content: () => ({}),
-                                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                                    base: row,
-                                    prop: {
-                                        isTouch: prop_isTouch.name(),
-                                        row_i: () => row_i,
-                                        rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                                        id: $$.$me_atom2_prop(['<<.option_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                                            return !~idx || idx >= rec_count ? '' : ids[idx];
-                                        }),
-                                        isSelected: $$.$me_atom2_prop(['<<.row_i_selected'], ({ masters: [row_i_selected] }) => !!~row_i_selected.indexOf(+row_i)),
-                                        fontSize: '<<.fontSize',
-                                        options: '<<.options',
-                                        rec_count: '<<.rec_count',
-                                        itemMarginTopFirst: '<<.itemMarginTopFirst',
-                                        itemMarginBottomLast: '<<.itemMarginBottomLast',
-                                        itemMarginVer: '<<.itemMarginVer',
-                                    },
-                                    event: {
-                                        clickOrTap: () => {
-                                            const value = $$.a('<<.value');
-                                            const id = $$.a('.id');
-                                            if (value.has(id)) {
-                                                value.delete(id);
-                                            }
-                                            else {
-                                                value.add(id);
-                                            }
-                                            $$.a('<<.value', value, true);
-                                            return true;
-                                        },
-                                    },
-                                    style: {
-                                        background: () => 'white',
-                                    },
-                                })),
-                                row_cursor: () => '',
-                                '#order': () => ['row', 'cursor'],
-                            },
-                            elem: {
-                                header: () => null,
-                                cursor: () => isTouch ? null : {
-                                    prop: {
-                                        '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
-                                        '#ofsHor': () => 3,
-                                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`]), ({ len, masters: [top, rec_idx] }) => !len ? null : rec_idx ? top : 3),
-                                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count']), ({ len, masters: [val, rec_idx, rec_count] }) => !len ? null : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
-                                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor - 2),
-                                    },
-                                    style: {
-                                        boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
-                                        pointerEvents: () => 'none',
-                                    },
-                                },
-                            },
-                            style: {
-                                boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
-                                background: () => 'white',
-                            },
-                            event: {
-                                mousedown: p => p.isInRect(p.event.clientX, p.event.clientY),
-                                touchstart: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY),
-                            },
-                        }
-                    });
-                    $$.a('.instance', list);
-                }
-                return true;
+                if (dispatch_name == 'focus' || dispatch_name == 'blur' || dispatch_name == 'change')
+                    return true;
+                return false;
             },
             prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                maxDrodownCount: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 9 : Infinity),
-                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
-                    if (!val && prev) {
-                        instances.delete(prev);
-                        prev.destroy();
-                    }
+                styleSheetName: () => 'nl_input',
+                className: '.styleSheetName',
+                styleSheet: () => '',
+                styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
+                    return (`
+          .${className}::placeholder {
+            color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+          }
+          .${className} {
+            border: solid 1px ${theme == $$.$me_theme.light ? '#bdc3d1' : '#d8dce3'};
+            background: ${theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'}
+          }
+          .${className}:focus {
+            outline: none;
+            border: 1px solid ${theme == $$.$me_theme.light ? '#313745' : 'white'};
+          }
+        `);
                 }),
-                isTouch: '/.#isTouch',
-                none: () => 'ничего не выбрано',
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                '#cursor': () => 'pointer',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                itemMarginTopFirst: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
-                itemMarginBottomLast: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
-                itemMarginVer: () => 0,
-                row_height_min: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 38 : 24),
-                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
-                    if (val) {
-                        $$.a.dispatch('', 'show');
-                    }
-                    else if (prev) {
-                        $$.a.dispatch('', 'hide');
-                    }
+                isFocused: $$.$me_atom2_prop([], () => false, ({ val }) => {
+                    const node = $$.a.curr.parent().node;
+                    node[val ? 'focus' : 'blur']();
                 }),
             },
             style: {
                 borderRadius: () => 3,
-                border: $$.$me_atom2_prop(['.isDropdown'], ({ masters: [isDropdown] }) => (!isDropdown ?
-                    'solid 1px #bdc3d1' :
-                    'solid 1px #313745')),
-                boxSizing: () => 'border-box',
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                background: () => 'white',
-                userSelect: () => 'none',
+                paddingLeft: () => 8,
+                boxSizing: () => 'border-box',
+                '-webkit-appearance': () => 'none',
+            },
+            attr: {
+                placeholder: '.placeholder',
             },
             event: {
                 clickOrTap: () => {
-                    $$.a('.isDropdown', !$$.a('.isDropdown'));
+                    $$.a('.isFocused', $$.a.dispatch('', 'focus', { result: true }).result);
                     return true;
                 },
                 clickOrTapOutside: () => {
-                    $$.a('.isDropdown', false);
+                    $$.a('.isFocused', !$$.a.dispatch('', 'blur', { result: true }).result);
                     return false;
                 },
             },
-            elem: {
-                triangle: () => ({
-                    base: $$.$me_triangle,
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#ofsHor': () => 9,
-                        '#alignVer': () => $$.$me_align.center,
-                        size: () => 7,
-                        color: () => '#444956',
-                        k: () => 9 / 7,
-                    },
-                }),
-                text: () => ({
-                    prop: {
-                        fontSize: '<.fontSize',
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#ofsVer': () => -1,
-                        '#ofsHor': () => 8,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.#width', '<@triangle.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
-                    },
-                    style: {
-                        whiteSpace: () => 'nowrap',
-                        overflow: () => 'hidden',
-                        textOverflow: () => 'ellipses',
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['<.value', '<.options', '<.option_ids', '<.none'], ({ masters: [value, options, option_ids, none] }) => {
-                            let result = none;
-                            if (value.size) {
-                                const id = [...value].sort((valA, valB) => option_ids.indexOf(valA) - option_ids.indexOf(valB))[0];
-                                result = $$.$me_option_caption_text(id, options, value);
-                                if (value.size > 1)
-                                    result += ' и еще ' + (value.size - 1);
-                            }
-                            return result;
-                        }),
-                    },
-                }),
+            init: (self) => {
+                const elem = self;
+                self.onChange = onChange.bind(self);
+                elem.node.addEventListener('change', self.onChange);
+            },
+            fini: (self) => {
+                self.node.removeEventListener('change', self.onChange);
             },
         };
-        const row = {
-            prop: {
-                '#cursor': () => 'pointer',
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                row_cursor_src: $$.$me_atom2_prop(['.isTouch', '.#isHover', '.row_i'], ({ masters: [isTouch, isHover, row_i] }) => isTouch || !isHover ? '' : row_i, ({ atom, val }) => {
-                    $$.$nl_pickermulti_cursor({ origin: atom, val: val });
-                }),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        fontSize: '<.fontSize',
-                        '#width': '<.#width',
-                        '#height': '<.#height',
-                        alignVer: () => $$.$me_align.center,
-                        alignHor: $$.$me_atom2_prop(['<.isTouch'], ({ masters: [isTouch] }) => isTouch ? $$.$me_align.center : $$.$me_align.left),
-                        paddingLeft: $$.$me_atom2_prop(['<.isTouch', '.fontSize'], ({ masters: [isTouch, fontSize] }) => isTouch ? 0 : 2 * fontSize),
-                        '#ofsVer': $$.$me_atom2_prop([`<.rec_idx`, '<.rec_count', '<.itemMarginTopFirst', '<.itemMarginBottomLast', '<.itemMarginVer'], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
-                            if (!~rec_idx)
-                                return 0;
-                            const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
-                                rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
-                                    0);
-                            return result;
-                        }),
-                        paddingHor: () => 8,
-                        text: $$.$me_atom2_prop([`<.rec_idx`, '<.options'], ({ masters: [rec_idx, options] }) => {
-                            if (!~rec_idx)
-                                return '';
-                            const id = Object.keys(options)[rec_idx];
-                            return options[id].caption || id;
-                        }),
-                        isSelected: '<.isSelected',
-                    },
-                    render: p => {
-                        if (!$$.a('.isSelected'))
-                            return;
-                        const fontSize = $$.a('.fontSize');
-                        const h = fontSize * .9;
-                        const w = h * 1.2;
-                        const ctxHeight = h * p.pixelRatio;
-                        const ctxWidth = w * p.pixelRatio;
-                        const lineWidth = 1;
-                        const rec_idx = $$.a(`<.rec_idx`);
-                        const rec_count = $$.a('<.rec_count');
-                        const itemMarginTopFirst = $$.a('<.itemMarginTopFirst');
-                        const itemMarginVer = $$.a('<.itemMarginVer');
-                        const itemMarginBottomLast = $$.a('<.itemMarginBottomLast');
-                        const ofsVer = ($$.a('.#height') - h) / 2;
-                        const ofsHor = $$.a('<.isTouch') ? 20 : (2 * fontSize - w) / 2;
-                        $$.$me_atom2_ctx_check({
-                            ctx: p.ctx,
-                            ctxLeft: p.ctxRect.left + ofsHor * p.pixelRatio,
-                            ctxTop: p.ctxRect.top + ofsVer * p.pixelRatio,
-                            ctxWidth,
-                            ctxHeight,
-                            stroke: {
-                                style: $$.a('.colorText'),
-                                ctxWidth: lineWidth * p.pixelRatio,
-                            },
-                            lambda: 0.38,
-                            mu: 0.6,
-                        });
-                    },
-                })
-            },
-        };
-        $$.$nl_pickermulti_cursor = $$.$me_atom2_async_multi_origin({
-            default: '',
-            raf_order: 100,
-            flush: (row_i, prev, _value) => {
-                _value.origin.by_path_s('<<.row_cursor').value(row_i);
-            },
-        });
+        function onChange(event) {
+            const prev = $$.a.curr;
+            $$.a.curr = this;
+            console.log(event.target.value);
+            $$.a.dispatch('', 'change', event.target.value);
+            $$.a.curr = prev;
+        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//pickermulti.js.map
+//input.js.map
 ;
 "use strict";
 var $;
@@ -6942,12 +6498,28 @@ var $;
                 })),
                 header: () => ({
                     base: header,
+                    prop,
                 }),
                 content: $$.$me_atom2_prop(['.mode'], ({ masters: [mode] }) => ({
                     type: $nl_calendar_mode[mode],
-                    base: mode == $nl_calendar_mode.day ? content_day : content_month
+                    base: mode == $nl_calendar_mode.day ? content_day : content_month,
+                    prop,
                 })),
             },
+        };
+        function new_month_year(value, mode, inc = 1) {
+            const month = value.getMonth();
+            const year = value.getFullYear();
+            const year_new = mode == $nl_calendar_mode.month ?
+                year + inc :
+                year + (inc < 0 && !month || inc > 0 && month == 11 ? inc : 0);
+            const month_new = mode == $nl_calendar_mode.month ?
+                month :
+                (month + 12 + inc) % 12;
+            return [month_new, year_new];
+        }
+        const prop = {
+            '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1)
         };
         const header = {
             prop: {
@@ -6958,45 +6530,45 @@ var $;
                 background: '<.header_background_color',
             },
             elem: {
-                arrow: $$.$me_atom2_prop({ keys: ['.arrow'] }, ({ key: [id] }) => ({
-                    prop: {
-                        '#alignHor': () => $$.$me_align[id],
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        '#width': $$.$me_atom2_prop(['<<.arrow_size', '<<.arrow_ofsHor'], ({ masters: [size, ofsHor] }) => size + 2 * ofsHor),
-                        '#cursor': () => 'pointer',
-                    },
-                    elem: {
-                        triangle: () => ({
-                            base: $$.$me_triangle,
-                            prop: {
-                                '#alignVer': () => $$.$me_align.center,
-                                '#ofsHor': '<<<.arrow_ofsHor',
-                                color: '<<<.header_text_color',
-                                direction: () => $$.$me_rect_sides_enum[id],
-                                size: '<<<.arrow_size',
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            const inc = $$.a('@triangle.direction') - 1;
-                            const mode = $$.a('<<.mode');
-                            const value = $$.a('<<.value');
-                            const month = value.getMonth();
-                            const year = value.getFullYear();
-                            const day = value.getDate();
-                            const year_new = mode == $nl_calendar_mode.month ?
-                                year + inc :
-                                year + (inc < 0 && !month || inc > 0 && month == 11 ? inc : 0);
-                            const month_new = mode == $nl_calendar_mode.month ?
-                                month :
-                                (month + 12 + inc) % 12;
-                            const day_new = Math.min(day, month_day_count([month_new, year_new]));
-                            $$.a('<<.value', new Date(year_new, month_new, day_new));
-                            return true;
+                arrow: $$.$me_atom2_prop({ keys: ['.arrow'], masters: ['<.mode', '<.value'] }, ({ key: [id], masters: [mode, value] }) => id == 'right' && (() => {
+                    const [month_new, year_new] = new_month_year(value, mode);
+                    let val = new Date(year_new, month_new, 1);
+                    const result = !$$.a.dispatch('<', 'isValid', { val, result: false }).result;
+                    return result;
+                })() ? null :
+                    {
+                        prop: {
+                            '#alignHor': () => $$.$me_align[id],
+                            '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            '#width': $$.$me_atom2_prop(['<<.arrow_size', '<<.arrow_ofsHor'], ({ masters: [size, ofsHor] }) => size + 2 * ofsHor),
+                            '#cursor': () => 'pointer',
                         },
-                    },
-                })),
+                        elem: {
+                            triangle: () => ({
+                                base: $$.$me_triangle,
+                                prop: {
+                                    '#alignVer': () => $$.$me_align.center,
+                                    '#ofsHor': '<<<.arrow_ofsHor',
+                                    color: '<<<.header_text_color',
+                                    direction: () => $$.$me_rect_sides_enum[id],
+                                    size: '<<<.arrow_size',
+                                },
+                            }),
+                        },
+                        event: {
+                            clickOrTap: () => {
+                                const value = $$.a('<<.value');
+                                const [month_new, year_new] = new_month_year(value, $$.a('<<.mode'), $$.a('@triangle.direction') - 1);
+                                const day = value.getDate();
+                                let day_new = Math.min(day, month_day_count([month_new, year_new]));
+                                let val = new Date(year_new, month_new, day_new);
+                                while (!$$.a.dispatch('<<', 'isValid', { val, result: false }).result)
+                                    val = new Date(year_new, month_new, --day_new);
+                                $$.a('<<.value', val);
+                                return true;
+                            },
+                        },
+                    }),
                 caption: () => ({
                     prop: {
                         '#ofsHor': $$.$me_atom2_prop(['<<.arrow_ofsHor', '<<.arrow_size'], ({ masters: [arrow_ofsHor, arrow_width] }) => 2 * arrow_ofsHor + arrow_width),
@@ -7046,7 +6618,7 @@ var $;
                 boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
             },
             event: {
-                clickOrTapOutside: () => $$.a.dispatch('<', 'clickOrTapOutside', { result: false }).result,
+                clickOrTap: () => true,
             },
         };
         const content_month = {
@@ -7067,13 +6639,20 @@ var $;
                         '#ofsVer': `<.month_top[${month}]`,
                         isSelected: $$.$me_atom2_prop(['<<.value', '<.months'], ({ masters: [value, months] }) => months[value.getMonth()] == month),
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        '#cursor': () => 'pointer',
+                        isValid: $$.$me_atom2_prop(['<<.value', '<.months'], ({ masters: [value, months] }) => {
+                            const value_new = new Date(value.getFullYear(), months.indexOf(month), 1);
+                            const result = $$.a.dispatch('<<', 'isValid', { val: value_new, result: false }).result;
+                            return result;
+                        }),
+                        '#cursor': $$.$me_atom2_prop(['.isValid'], ({ masters: [isValid] }) => !isValid ? null : 'pointer'),
                         content_selected_background_color: '<<.content_selected_background_color',
                         content_selected_background_border: '<<.content_selected_background_border',
                     },
                     style: Object.assign({}, style_selected),
                     event: {
                         clickOrTap: () => {
+                            if (!$$.a('.#cursor'))
+                                return false;
                             const value = $$.a('<<.value');
                             const year = value.getFullYear();
                             const month_new = $$.a('<.months').indexOf(month);
@@ -7095,7 +6674,7 @@ var $;
                                 innerText: () => month,
                             },
                             style: {
-                                color: '<<<.content_text_color',
+                                color: $$.$me_atom2_prop(['<.isValid', '<<<.content_text_color', '<<<.content_invalid_text_color'], ({ masters: [isValid, validColor, invalidColor] }) => isValid ? validColor : invalidColor),
                                 fontSize: $$.$me_atom2_prop(['<<<.k', '/.em'], ({ masters: [k, em] }) => Math.round(k * em)),
                             },
                         }),
@@ -7153,6 +6732,8 @@ var $;
                 header: () => ({
                     prop: {
                         '#height': '<<.content_day_header_height',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': () => 'default',
                     },
                     style: {
                         background: '<<.content_header_background_color',
@@ -7197,7 +6778,7 @@ var $;
                                 isSelected: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => value.getDate() == +day + 1),
                                 isAvail: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => +day >= 0 && +day < month_day_count(value)),
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': $$.$me_atom2_prop(['.isAvail', '.isSelected', '.isValid'], ({ masters: [isAvail, isSelected, isValid] }) => !isAvail || isSelected || !isValid ? null : 'pointer'),
+                                '#cursor': $$.$me_atom2_prop(['.isAvail', '.isValid'], ({ masters: [isAvail, isValid] }) => !(isAvail && isValid) ? null : 'pointer'),
                                 isValid: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
                                     const value_new = new Date(value.getFullYear(), value.getMonth(), +day + 1);
                                     const result = $$.a.dispatch('<<<', 'isValid', { val: value_new, result: false }).result;
@@ -7209,14 +6790,14 @@ var $;
                             style: Object.assign({}, style_selected),
                             event: {
                                 clickOrTap: () => {
-                                    if (!$$.a('.isValid'))
+                                    if (!$$.a('.#cursor'))
                                         return false;
                                     if (!$$.a('.isSelected')) {
                                         const value = $$.a('<<<.value');
                                         const value_new = new Date(value.getFullYear(), value.getMonth(), +day + 1);
                                         $$.a('<<<.value', value_new);
-                                        $$.a.dispatch('<<<', 'didSelect');
                                     }
+                                    $$.a.dispatch('<<<', 'didSelect');
                                     return true;
                                 },
                             },
@@ -7266,266 +6847,28 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$me_stylesheet = {
-            prop: {
-                styleSheetName: $$.$me_atom2_prop_abstract(),
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
-                styleSheetCommon: () => '',
-                instanceId: () => null,
-                styleSheet_apply: $$.$me_atom2_prop(['.styleSheetName', '.instanceId', '.styleSheet'], null, ({ val: [styleSheetName, instanceId, innerHTML] }) => {
-                    let sheet;
-                    const id = styleSheetId(styleSheetName, instanceId);
-                    if (!innerHTML) {
-                        removeStyleSheet(id);
-                    }
-                    else if (sheet = document.getElementById(id)) {
-                        sheet.innerHTML = innerHTML;
-                    }
-                    else {
-                        sheet = document.createElement('style');
-                        sheet.id = id;
-                        sheet.innerHTML = innerHTML;
-                        let head = document.head || document.getElementsByTagName('head')[0];
-                        head.appendChild(sheet);
-                    }
-                }),
-                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
-            },
-            dom: {
-                className: '.className',
-            },
-            init: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                if (!instances[styleSheetName])
-                    instances[styleSheetName] = new Map();
-                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
-                let id;
-                for (let i = 0; i < ids.length; i++)
-                    if (i != ids[i]) {
-                        id = i;
-                        break;
-                    }
-                if (id === void 0)
-                    id = ids.length;
-                $$.a('.instanceId', id);
-                instances[styleSheetName].set(self, id);
-                const styleSheetCommon = $$.a('.styleSheetCommon');
-                if (!styleSheetCommon)
-                    return;
-                const styleSheetCommonId = styleSheetId(styleSheetName);
-                if (document.getElementById(styleSheetCommonId))
-                    return;
-                let sheet = document.createElement('style');
-                sheet.id = styleSheetCommonId;
-                sheet.innerHTML = styleSheetCommon;
-                let head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(sheet);
-            },
-            fini: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
-                instances[styleSheetName].delete(self);
-                if (instances[styleSheetName].size)
-                    return;
-                instances[styleSheetName] = null;
-                removeStyleSheet(styleSheetId(styleSheetName));
-            },
-        };
-        function removeStyleSheet(styleSheetId) {
-            let sheet = document.getElementById(styleSheetId);
-            if (sheet && sheet.parentElement)
-                sheet.parentElement.removeChild(sheet);
-        }
-        let instances = {};
-        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//stylesheet.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_input = {
-            base: $$.$me_stylesheet,
-            node: 'input',
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'focus' || dispatch_name == 'blur' || dispatch_name == 'change')
-                    return true;
-                return false;
-            },
-            prop: {
-                theme: '/.theme',
-                styleSheetName: () => 'param_input',
-                className: '.styleSheetName',
-                styleSheet: () => '',
-                styleSheetCommon: $$.$me_atom2_prop(['.className', '.theme'], ({ masters: [className, theme] }) => {
-                    return (`
-          .${className}::placeholder {
-            color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
-          }
-          .${className} {
-            border: solid 1px ${theme == $$.$me_theme.light ? '#bdc3d1' : '#d8dce3'};
-            background: ${theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'}
-          }
-          .${className}:focus {
-            outline: none;
-            border: 1px solid ${theme == $$.$me_theme.light ? '#313745' : 'white'};
-          }
-        `);
-                }),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                isFocused: () => false,
-            },
-            style: {
-                borderRadius: () => 3,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                paddingLeft: () => 8,
-                boxSizing: () => 'border-box',
-                '-webkit-appearance': () => 'none',
-            },
-            attr: {
-                placeholder: '.placeholder',
-            },
-            event: {
-                clickOrTap: () => {
-                    if ($$.a.dispatch('', 'focus', { result: true }).result) {
-                        $$.a.curr.node.focus();
-                        $$.a('.isFocused', true);
-                    }
-                    else {
-                        $$.a.curr.node.blur();
-                        $$.a('.isFocused', false);
-                    }
-                    return true;
-                },
-                clickOrTapOutside: () => {
-                    if ($$.a.dispatch('', 'blur', { result: true }).result) {
-                        $$.a.curr.node.blur();
-                        $$.a('.isFocused', false);
-                    }
-                    else {
-                        $$.a.curr.node.focus();
-                        $$.a('.isFocused', true);
-                    }
-                    return false;
-                },
-            },
-            init: (self) => {
-                const elem = self;
-                self.onChange = onChange.bind(self);
-                elem.node.addEventListener('change', self.onChange);
-            },
-            fini: (self) => {
-                self.node.removeEventListener('change', self.onChange);
-            },
-        };
-        function onChange(event) {
-            const prev = $$.a.curr;
-            $$.a.curr = this;
-            console.log(event.target.value);
-            $$.a.dispatch('', 'change', event.target.value);
-            $$.a.curr = prev;
-        }
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//input.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         function today() {
             const now = new Date();
             return new Date(now.getFullYear(), now.getMonth(), now.getDate());
         }
-        let instances;
+        function asString(val) {
+            const result = val == Infinity ? 'За все время' :
+                val == 0 ? 'Сегодня' :
+                    val + ' ' + $$.$me_word_plural(val, 'день', 'дня', 'дней');
+            return result;
+        }
         $$.$nl_pickerdate = {
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
-                    $$.a('.instance', null);
-                    return true;
-                }
-                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
-                    if (!instances)
-                        instances = new Map();
-                    const ids = [...instances].map(([spinner, id]) => id).sort();
-                    let id;
-                    for (let i = 0; i < ids.length; i++)
-                        if (i != ids[i]) {
-                            id = i;
-                            break;
-                        }
-                    if (id === void 0)
-                        id = ids.length;
-                    const prop_clientRect = $$.a.get('.#clientRect');
-                    const prop_zIndex = $$.a.get('.#zIndex');
-                    const prop_value = $$.a.get('.value');
-                    const prop_isTouch = $$.a.get('.isTouch');
-                    const prop_isDropdown = $$.a.get('.isDropdown');
-                    const isTouch = prop_isTouch.value();
-                    const calendar = new $$.$me_atom2_elem({
-                        tail: 'nl_pickerdate_calendar' + id,
-                        parent: $$.a.get('/@app'),
-                        cnf: {
-                            base: $$.$nl_calendar,
-                            dispatch: (dispatch_name, dispatch_arg) => {
-                                if (dispatch_name == 'clickOrTapOutside') {
-                                    prop_isDropdown.value(false);
-                                    return true;
-                                }
-                                else if (dispatch_name == 'didSelect') {
-                                    prop_isDropdown.value(false);
-                                    return true;
-                                }
-                                return false;
-                            },
-                            prop: {
-                                value: $$.$me_atom2_prop([prop_value.name()], null, ({ val }) => prop_value.value(val, true)),
-                                k: () => isTouch ? 2 : 1,
-                                '#ofsHor': !isTouch ?
-                                    $$.$me_atom2_prop([prop_clientRect.name(), '.#width'], ({ masters: [clientRect, width] }) => clientRect.right - width) :
-                                    $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                '#ofsVer': !isTouch ?
-                                    $$.$me_atom2_prop([prop_clientRect.name(), '/.#viewportHeight', '.#height'], ({ masters: [clientRect, viewportHeight, height] }) => clientRect.bottom + height <= viewportHeight ?
-                                        clientRect.bottom :
-                                        Math.max(0, viewportHeight - height))
-                                    : $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                '#zIndex': () => 10,
-                            },
-                        }
-                    });
-                    $$.a('.instance', calendar);
-                    return true;
-                }
-                return false;
-            },
             prop: {
-                value: () => today(),
+                value: () => 6,
                 theme: '/.theme',
-                input_width: () => 90,
+                input_width: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => value == Infinity ? 150 : 100),
+                buttonDropdown_width: () => 40,
                 text_margin: () => 16,
                 icon_size: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(28 / 32)),
                 icon_filter: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
                     'invert(65%) sepia(17%) saturate(1025%) hue-rotate(158deg) brightness(84%) contrast(87%)' :
                     'invert(46%) sepia(87%) saturate(371%) hue-rotate(162deg) brightness(93%) contrast(84%)'),
-                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
-                    if (!val && prev) {
-                        instances.delete(prev);
-                        prev.destroy();
-                    }
-                }),
                 isTouch: '/.#isTouch',
-                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
-                    if (val) {
-                        $$.a.dispatch('', 'show');
-                    }
-                    else if (prev) {
-                        $$.a.dispatch('', 'hide');
-                    }
-                }),
             },
             style: {
                 userSelect: () => 'none',
@@ -7535,7 +6878,7 @@ var $;
                     base: $$.$nl_input,
                     dispatch(dispatch_name, dispatch_arg) {
                         if (dispatch_name == 'change') {
-                            $$.a('<.value', new Date(today().getTime() - (+dispatch_arg - 1) * 86400000));
+                            $$.a('<.value', dispatch_arg == '' ? Infinity : Number.parseInt(dispatch_arg, 10));
                             return true;
                         }
                         return false;
@@ -7545,64 +6888,199 @@ var $;
                     },
                     dom: {
                         value: $$.$me_atom2_prop(['<.value', '.isFocused'], ({ masters: [value, isFocused] }) => {
-                            const result = 1 + Math.ceil((today().getTime() - value.getTime()) / 86400000);
-                            return isFocused ? result + '' : result + ' ' + $$.$me_word_plural(result, 'день', 'дня', 'дней');
+                            const result = value;
+                            return (!isFocused ? asString(result) :
+                                result == Infinity ? '' :
+                                    result + '');
                         }),
                     },
                 }),
-                text: () => ({
+                buttonDropdown: () => ({
+                    base: $$.$nl_picker,
                     prop: {
-                        '#ofsHor': $$.$me_atom2_prop(['<@input.#width', '<.text_margin'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '<.text_margin', '<@button.#width'], $$.$me_atom2_prop_compute_fn_diff()),
-                    },
-                    elem: {
-                        label: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => null,
-                                '#align': () => $$.$me_align.center,
-                            },
-                            style: {
-                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.value'], ({ masters: [value] }) => 'с ' +
-                                    value.getDate() +
-                                    ' ' +
-                                    ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'][value.getMonth()] +
-                                    ' ' +
-                                    value.getFullYear()),
-                            },
-                        }),
-                    },
-                }),
-                button: () => ({
-                    node: 'img',
-                    prop: {
-                        '#height': '<.icon_size',
-                        '#width': '<.icon_size',
-                        '#alignVer': () => $$.$me_align.center,
-                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': $$.$me_atom2_prop(['<.input_width', '<.buttonDropdown_width'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#width': '<.buttonDropdown_width',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
                         '#cursor': () => 'pointer',
+                        options: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => {
+                            const vals = [0, 1, 2, 3, 7, 14, 30, 50, 120, 180, Infinity];
+                            const idx = vals.findIndex((val) => value >= val);
+                            if (vals[idx] != value)
+                                vals.splice(idx, 0, value);
+                            const result = {};
+                            for (const val of vals) {
+                                result[val + ''] = { caption: asString(val) };
+                            }
+                            return result;
+                        }),
+                        value: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value + '', ({ val }) => {
+                            $$.a('<.value', val == (Infinity + '') ? Infinity : +val);
+                        }),
+                        dropdownTarget: () => '<@input',
+                        isTouch: '<.isTouch',
                     },
                     style: {
-                        filter: '<.icon_filter',
-                    },
-                    attr: {
-                        src: () => 'assets/icons-8-today@2x.png'
+                        background: () => 'transparent',
+                        border: () => 'none',
                     },
                     event: {
                         clickOrTap: () => {
-                            $$.a('<.isDropdown', !$$.a('<.isDropdown'));
+                            $$.a('<@input.isFocused', false);
+                            console.log($$.a('<@input.isFocused'));
                             return true;
                         },
                     },
+                    elem: {
+                        triangle: () => ({
+                            base: $$.$nl_triangle,
+                            prop: {
+                                '#ofsVer': () => 2,
+                            },
+                        }),
+                        text: () => null,
+                    },
                 }),
+                text: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => value == Infinity ? null :
+                    {
+                        prop: {
+                            '#ofsHor': $$.$me_atom2_prop(['<.input_width', '<.text_margin'], $$.$me_atom2_prop_compute_fn_sum()),
+                            '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '<.text_margin', '<@buttonCalendar.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                        },
+                        style: {
+                            whiteSpace: () => 'nowrap',
+                            overflow: () => 'hidden',
+                            textOverflow: () => 'ellipsis',
+                        },
+                        elem: {
+                            label: () => ({
+                                prop: {
+                                    '#width': () => null,
+                                    '#height': () => null,
+                                    '#align': () => $$.$me_align.center,
+                                },
+                                style: {
+                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                },
+                                dom: {
+                                    innerText: $$.$me_atom2_prop(['<<.value'], ({ masters: [value] }) => {
+                                        const dt = value == Infinity ? null : new Date(today().getTime() - value * 86400000);
+                                        const result = 'с ' +
+                                            dt.getDate() +
+                                            ' ' +
+                                            ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'][dt.getMonth()] +
+                                            ' ' +
+                                            dt.getFullYear();
+                                        return result;
+                                    }),
+                                },
+                            }),
+                        },
+                    }),
+                buttonCalendar: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => value == Infinity ? null :
+                    {
+                        base: $$.$me_dropdown,
+                        dispatch: (dispatch_name, dispatch_arg) => {
+                            if (dispatch_name == 'dropdown') {
+                                const { prop_isDropdown, prop_clientRect, isTouch } = dispatch_arg;
+                                const prop_value = $$.a.get('<.value');
+                                dispatch_arg.result = {
+                                    base: $$.$nl_calendar,
+                                    dispatch: (dispatch_name, dispatch_arg) => {
+                                        if (dispatch_name == 'didSelect') {
+                                            prop_isDropdown.value(false);
+                                            return true;
+                                        }
+                                        return false;
+                                    },
+                                    prop: {
+                                        value: $$.$me_atom2_prop([prop_value.name()], ({ masters: [value] }) => value == Infinity ? null : new Date(today().getTime() - value * 86400000), ({ val }) => {
+                                            const value = Math.ceil((today().getTime() - val.getTime()) / 86400000);
+                                            prop_value.value(value);
+                                        }),
+                                        k: () => isTouch ? 2 : 1,
+                                        '#ofsHor': !isTouch ?
+                                            $$.$me_atom2_prop([prop_clientRect.name(), '.#width'], ({ masters: [clientRect, width] }) => clientRect.right - width) :
+                                            $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
+                                        marginVer: () => 4,
+                                        '#ofsVer': !isTouch ?
+                                            $$.$me_atom2_prop([prop_clientRect.name(), '/.#viewportHeight', '.#height', '.marginVer'], ({ masters: [clientRect, viewportHeight, height, marginVer] }) => clientRect.bottom + marginVer + height <= viewportHeight ?
+                                                clientRect.bottom + marginVer :
+                                                Math.max(0, viewportHeight - height - marginVer)) :
+                                            $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
+                                    },
+                                };
+                                return true;
+                            }
+                            return false;
+                        },
+                        node: 'img',
+                        prop: {
+                            '#height': '<.icon_size',
+                            '#width': '<.icon_size',
+                            '#alignVer': () => $$.$me_align.center,
+                            '#alignHor': () => $$.$me_align.right,
+                            '#cursor': () => 'pointer',
+                            isTouch: '<.isTouch',
+                            '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        },
+                        style: {
+                            filter: '<.icon_filter',
+                        },
+                        attr: {
+                            src: () => 'assets/icons-8-today@2x.png'
+                        },
+                    }),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //pickerdate.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_plus = {
+            base: $$.$me_stylesheet,
+            prop: {
+                size: $$.$me_atom2_prop_abstract(),
+                thick: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                opacity: () => 1,
+                opacityHover: () => 1,
+                '#width': '.size',
+                '#height': '.size',
+                styleSheetName: () => 'plus',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
+        .${className}:before {
+          transform: rotate(0deg);
+        }
+        .${className}:after {
+          transform: rotate(90deg);
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
+        .${className} {
+          opacity: ${opacity};
+        }
+        .${className}:hover {
+          opacity: ${opacityHover};
+        }
+        .${className}:before, .${className}:after {
+          position: absolute;
+          left: ${(size - thick) / 2}px;
+          content: ' ';
+          height: ${size}px;
+          width: ${thick}px;
+          background-color: ${color};
+        }
+      `),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//plus.js.map
 ;
 "use strict";
 var $;
@@ -8904,7 +8382,7 @@ var $;
                                 };
                             }
                             else if (def.type == 'picker' || def.type == 'pickermulti') {
-                                return {
+                                const result = {
                                     prop: Object.assign({}, prop_common(def)),
                                     elem: {
                                         label: !def.label ? null : () => ({
@@ -8919,17 +8397,18 @@ var $;
                                             },
                                         }),
                                         ctrl: () => ({
-                                            base: def.type == 'picker' ? $$.$nl_picker : $$.$nl_pickermulti,
+                                            base: $$.$nl_picker,
                                             prop: {
                                                 '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
                                                 '#alignHor': () => $$.$me_align.right,
                                                 options: def.options,
-                                                value: def.type == 'picker' ? null : () => new Set(),
+                                                value: def.type == 'picker' ? null : () => new Map(),
                                                 none: def.type == 'picker' ? null : def.none,
                                             },
                                         }),
                                     },
                                 };
+                                return result;
                             }
                             else if (def.type == 'diap') {
                                 return {
@@ -9017,7 +8496,8 @@ var $;
                                 },
                             },
                             style: {
-                                background: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#0070a4' : 'white'),
+                                background: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => !isSelected ? 'transparent' :
+                                    theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
                             },
                             elem: {
                                 icon: () => ({
@@ -9033,9 +8513,11 @@ var $;
                                         draggable: () => false,
                                     },
                                     style: {
-                                        filter: $$.$me_atom2_prop(['<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
-                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
-                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                        filter: $$.$me_atom2_prop(['<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
+                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
+                                            theme == $$.$me_theme.light ?
+                                                'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                                'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
                                     },
                                 }),
                                 label: () => ({
@@ -9099,7 +8581,7 @@ var $;
                     },
                 }),
                 input: $$.$me_atom2_prop({ keys: ['.ids'] }, ({ key: [id] }) => ({
-                    base: input,
+                    base: $$.$nl_input,
                     prop: {
                         '#alignHor': () => $$.$me_align.right,
                         '#ofsHor': id == 'max' ? null : $$.$me_atom2_prop(['.#width', '<.diap_space'], $$.$me_atom2_prop_compute_fn_sum()),
@@ -9131,7 +8613,7 @@ var $;
                     },
                 }),
                 ctrl: () => ({
-                    base: input,
+                    base: $$.$nl_input,
                     prop: {
                         '#width': $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
                         '#height': () => row_height,
@@ -9140,72 +8622,46 @@ var $;
                 }),
             },
         };
-        const input = {
-            base: $$.$me_stylesheet,
-            node: 'input',
-            prop: {
-                styleSheetName: () => 'param_input',
-                className: '.styleSheetName',
-                styleSheet: () => '',
-                styleSheetCommon: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
-                    return (`
-          .${className}::placeholder {
-            color: rgba(49,55,69,0.5);
-          }
-          .${className} {
-            border: solid 1px #bdc3d1;
-          }
-          .${className}:focus {
-            outline: none;
-            border: 1px solid #313745;
-          }
-        `);
-                }),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-            },
-            style: {
-                borderRadius: () => 3,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                paddingLeft: () => 8,
-                boxSizing: () => 'border-box',
-                '-webkit-appearance': () => 'none',
-            },
-            attr: {
-                placeholder: '.placeholder',
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a.curr.node.focus();
-                    return true;
-                },
-                clickOrTapOutside: () => {
-                    $$.a.curr.node.blur();
-                    return false;
-                },
-            },
-        };
         const input_with_button = {
             elem: {
                 input: () => ({
-                    base: input,
+                    base: $$.$nl_input,
                     prop: {
                         placeholder: '<.placeholder',
                     },
                 }),
                 button: () => ({
-                    node: 'img',
                     prop: {
                         '#alignHor': () => $$.$me_align.right,
-                        '#ofsHor': () => 8,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#width': () => 16,
-                        '#height': () => 16,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#width': () => 40,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
                         '#cursor': () => 'pointer',
                     },
-                    attr: {
-                        src: () => 'assets/icons-8-plus-2-math@2x.png',
-                        draggable: () => false,
+                    elem: {
+                        square: () => ({
+                            prop: {
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': () => 8,
+                                '#alignVer': () => $$.$me_align.center,
+                                '#width': () => 16,
+                                '#height': () => 16,
+                            },
+                            style: {
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#88B5CE' : '#5FBDF9'),
+                                borderRadius: () => 3,
+                            },
+                            elem: {
+                                plus: () => ({
+                                    base: $$.$me_plus,
+                                    prop: {
+                                        size: () => 10,
+                                        thick: () => 2,
+                                        '#align': () => $$.$me_align.center,
+                                        color: () => 'white',
+                                    },
+                                }),
+                            },
+                        }),
                     },
                     event: {
                         clickOrTap: () => {
@@ -11549,7 +11005,7 @@ var $;
         function $nl_app_defaults_init() {
             $$.$me_atom2_entity.root().props({
                 em: () => 16,
-                colorText: () => '#313745',
+                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
                 СвернутьРазвернуть: $$.$me_atom2_prop_store({
@@ -11592,7 +11048,7 @@ var $;
                     },
                     style: {
                         margin: () => 0,
-                        background: () => '#D9DCE2',
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
                     prop: {
@@ -11678,7 +11134,7 @@ var $;
             prop: {
                 '#height': () => 54,
                 '#cursor': () => 'pointer',
-                'colorBackground': () => '#3c4354',
+                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#3c4354' : '#464f63'),
             },
             style: {
                 background: '.colorBackground',
@@ -11707,7 +11163,9 @@ var $;
                                 src: () => 'assets/' + 'icons-8-enter-2' + '@2x.png',
                             },
                             style: {
-                                filter: () => 'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                                    'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
+                                    'invert(18%) sepia(11%) saturate(1273%) hue-rotate(184deg) brightness(92%) contrast(86%)'),
                             },
                         }),
                     },
@@ -11721,7 +11179,7 @@ var $;
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                     },
                     style: {
-                        color: () => 'white',
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
                     },
                     dom: {
                         innerText: () => 'Авторизация',
@@ -11804,9 +11262,10 @@ var $;
                     default: () => '',
                     valid: (val) => typeof val == 'string' ? val : null,
                 }),
+                menu_cursor: () => '',
             },
             style: {
-                background: () => 'white',
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
             },
             elem: {
                 item: $$.$me_atom2_prop({ keys: ['.item_id'] }, ({ key: [id] }) => ({
@@ -11815,10 +11274,23 @@ var $;
                         '#height': '<.item_height',
                         '#cursor': () => 'pointer',
                         'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => id == selected),
-                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover'], ({ masters: [isSelected, isHover] }) => isSelected ? '#0070a4' :
-                            isHover ? '#cce2ed' :
-                                'white'),
+                        'isSelectedPrev': $$.$me_atom2_prop(['<.selected', '<.item_id'], ({ masters: [selected, ids] }) => {
+                            const idx = ids.indexOf(selected);
+                            const result = ~idx && ids.indexOf(id) == idx + 1;
+                            return result;
+                        }),
+                        'isHoveredPrev': $$.$me_atom2_prop(['<.menu_cursor', '<.item_id'], ({ masters: [selected, ids] }) => {
+                            const idx = ids.indexOf(selected);
+                            const result = ~idx && ids.indexOf(id) == idx + 1;
+                            return result;
+                        }),
+                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover', '/.theme'], ({ masters: [isSelected, isHover, theme] }) => isSelected ? (theme == $$.$me_theme.light ? '#0070a4' : '#008ecf') :
+                            isHover ? (theme == $$.$me_theme.light ? '#cce2ed' : '#306283') :
+                                (theme == $$.$me_theme.light ? 'white' : '#464f63')),
                         'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
+                        menu_cursor_src: $$.$me_atom2_prop(['/.#isTouch', '.#isHover'], ({ masters: [isTouch, isHover] }) => isTouch || !isHover ? '' : id, ({ atom, val }) => {
+                            menu_cursor({ origin: atom, val: val });
+                        }),
                     },
                     style: {
                         background: '.colorBackground',
@@ -11847,9 +11319,11 @@ var $;
                                         src: `<<<.item_icon[${id}]`
                                     },
                                     style: {
-                                        filter: $$.$me_atom2_prop(['<<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
-                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
-                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                        filter: $$.$me_atom2_prop(['<<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
+                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
+                                            theme == $$.$me_theme.light ?
+                                                'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                                'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
                                     },
                                 }),
                             },
@@ -11871,9 +11345,9 @@ var $;
                                 opacity: $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({ to: isShrinked ? 0 : 1 })),
                             },
                         }),
-                        separator: $$.$me_atom2_prop(['<.item_id', '.isSelected'], ({ masters: [ids, isSelected] }) => isSelected || !ids.indexOf(id) ? null : {
+                        separator: $$.$me_atom2_prop(['<.item_id', '.isSelected', '.isSelectedPrev'], ({ masters: [ids, isSelected, isSelectedPrev] }) => isSelected || isSelectedPrev || !ids.indexOf(id) ? null : {
                             prop: {
-                                '#hidden': $$.$me_atom2_prop(['<.isSelected', '<.#isHover'], $$.$me_atom2_prop_compute_fn_or()),
+                                '#hidden': $$.$me_atom2_prop(['<.#isHover', '<.isHoveredPrev'], $$.$me_atom2_prop_compute_fn_or()),
                                 '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
                                     to: isShrinked ? 12 : 16
                                 })),
@@ -11893,6 +11367,13 @@ var $;
                 })),
             },
         };
+        const menu_cursor = $$.$me_atom2_async_multi_origin({
+            default: '',
+            raf_order: 100,
+            flush: (id, prev, _value) => {
+                _value.origin.by_path_s('<.menu_cursor').value(id);
+            },
+        });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //app.js.map
