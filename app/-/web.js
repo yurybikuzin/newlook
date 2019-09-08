@@ -1143,7 +1143,7 @@ var $;
                     return;
                 }
                 if (prop_clientRect.state() === $$.$me_atom2_state_enum.valid)
-                    prop_clientRect.set_state($$.$me_atom2_state_enum.invalid);
+                    prop_clientRect.set_state($$.$me_atom2_state_enum.need_check);
                 for (const ec_kind of ['elem', 'control']) {
                     const entities_of_kind = this._entities[ec_kind];
                     if (!entities_of_kind)
@@ -3147,7 +3147,13 @@ var $;
                         const entity = this.parent(true);
                         if (entity instanceof $$.$me_atom2_elem) {
                             const elem = entity;
-                            if (elem.node.style.width == 'auto' || elem.node.style.height == 'auto') {
+                            if (elem.node.style.width == 'auto' ||
+                                elem.node.style.height == 'auto' ||
+                                (() => {
+                                    const prop_width = $$.$me_atom2_entity.root().by_path($$.$me_atom2_path.fromString('.#width'));
+                                    const prop_height = $$.$me_atom2_entity.root().by_path($$.$me_atom2_path.fromString('.#height'));
+                                    return prop_width && prop_height && (prop_width.value() == null || prop_height.value() == null);
+                                })) {
                                 $me_atom2.add_to_update(this);
                             }
                             else {
@@ -4435,6 +4441,30 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //ric.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $nl_defaults_init() {
+            $$.$me_atom2_entity.root().props({
+                em: () => 16,
+                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+                fontWeight: () => 400,
+                theme: $$.$me_atom2_prop_store({
+                    default: () => $$.$me_theme.light,
+                    valid: (val) => val == $$.$me_theme.light || val == $$.$me_theme.dark ? val : null,
+                }),
+            });
+            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
+            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
+        }
+        $$.$nl_defaults_init = $nl_defaults_init;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//defaults.js.map
 ;
 "use strict";
 var $;
@@ -7037,12 +7067,389 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_search_panel_param_options = {
+            ОтСтанции: {
+                '': { caption: 'не важно' },
+                '2п': { caption: 'до 2 мин пешком' },
+                '5п': { caption: 'до 5 мин пешком' },
+                '7п': { caption: 'до 7 мин пешком' },
+                '10п': { caption: 'до 10 мин пешком' },
+                '12п': { caption: 'до 12 мин пешком' },
+                '15п': { caption: 'до 15 мин пешком' },
+                '5т': { caption: 'до 5 мин транспортом' },
+            },
+            rmqt: {
+                'free': { caption: 'Св.планировка' },
+                'studio': { caption: 'Студия' },
+                'rmqt1': { caption: '1-комн.' },
+                'rmqt2': { caption: '2-комн.' },
+                'rmqt3': { caption: '3-комн.' },
+                'rmqt4': { caption: '4-комн.' },
+                'rmqt5': { caption: '5-комн.' },
+                'rmqt6': { caption: '6+ комн.' },
+            },
+            remont: {
+                'требуется капитальный ремонт': {},
+                'без отделки': {},
+                'требуется ремонт': {},
+                'среднее состояние': {},
+                'хорошее состояние': {},
+                'отличное состояние': {},
+                'евроремонт': {},
+                'дизайнерский ремонт': {},
+                'первичная отделка': {},
+            },
+            lavatory: {
+                '0': { caption: 'может быть совмещенным' },
+                '1': { caption: 'только раздельный' },
+                '2': { caption: 'не менее 2-х' },
+                '3': { caption: 'не менее 3-х' },
+                '4': { caption: 'не менее 4-х' },
+            },
+            balcony: {
+                '0': { caption: 'можно без балкона' },
+                '1': { caption: 'нужен балкон' },
+                '2': { caption: 'нужна лоджия' },
+                '3': { caption: 'не менее 2-х балконов/лоджий' },
+                '4': { caption: 'не менее 3-х балконов/лоджий' },
+                '5': { caption: 'не менее 4-х балконов/лоджий' },
+            },
+            ТипДома: {
+                'панельный': {},
+                'блочный': {},
+                'монолитный': {},
+                'монолитно-кирпичный': {},
+                'кирпичный': {},
+                'деревянный': {},
+                'шлакоблоки/шлакобетон': {},
+                'железобетон': {},
+                'сталинский': {},
+            },
+            СерияДома: {
+                '02/98-НМ': {},
+                '1385 АР-3': {},
+                '1605/12': {},
+                '1605/9': {},
+                '1605/Б': {},
+                '17/2004-АС': {},
+                '1МГ-600': {},
+                '1МГ-601': {},
+                '2-71/358': {},
+                '2548-01-АР': {},
+                '2548-02-АР': {},
+                '32/2005-АС': {},
+                '349/01': {},
+                '355/24': {},
+                '7040-01': {},
+                'I-303': {},
+                'I-335': {},
+                'I-447': {},
+                'I-510': {},
+                'I-511': {},
+                'I-513': {},
+                'I-515': {},
+                'I605-АМ': {},
+                'II-04': {},
+                'II-05': {},
+                'II-08': {},
+                'II-18': {},
+                'II-18-01-МН': {},
+                'II-18-31/12': {},
+                'II-29': {},
+                'II-32': {},
+                'II-49': {},
+                'II-57': {},
+                'II-68-02': {},
+                'II-68-03': {},
+                'II-89-01-МН': {},
+                'III/17': {},
+                'VI-23': {},
+                'VII-51': {},
+                'VII-58': {},
+                'А-41K': {},
+                'башня Вулыха': {},
+                'Бекерон': {},
+                'БОД-1': {},
+                'В-2000': {},
+                'В-2002': {},
+                'В-2005': {},
+                'ГМС-1': {},
+                'ГМС-3': {},
+                'И-1168 А3': {},
+                'И-1168 А4': {},
+                'И-1233': {},
+                'И-1254': {},
+                'И-1262А': {},
+                'И-1429': {},
+                'И-1430': {},
+                'И-1459-132': {},
+                'И-1491-17': {},
+                'И-1501': {},
+                'И-155': {},
+                'И-155МК': {},
+                'И-155Н': {},
+                'И-1602': {},
+                'И-1677': {},
+                'И-1723': {},
+                'И-1724': {},
+                'И-1731': {},
+                'И-1782/1': {},
+                'И-1812/1': {},
+                'И-1834': {},
+                'И-1836': {},
+                'И-1838': {},
+                'И-1839': {},
+                'И-1849': {},
+                'И-1932': {},
+                'И-208': {},
+                'И-209А': {},
+                'И-2342': {},
+                'И-241': {},
+                'И-491А': {},
+                'И-515-5М': {},
+                'И-515/9ш': {},
+                'И-522': {},
+                'И-522А': {},
+                'И-679': {},
+                'И-700': {},
+                'И-700А': {},
+                'И-760А': {},
+                'И-79-99': {},
+                'И-99-47/405': {},
+                'И-99-47/406': {},
+                'индивидуальный проект': {},
+                'ИП-46С': {},
+                'ИШ3/12': {},
+                'К-7': {},
+                'КМС-101': {},
+                'Колос': {},
+                'КОПЭ': {},
+                'КОПЭ-М-ПАРУС': {},
+                'КТЖС': {},
+                'КТЖС-11/22': {},
+                '1МГ-300': {},
+                'МОНОЛИТ': {},
+                'МЭС-84': {},
+                'НП-46с': {},
+                'П-06': {},
+                'П-111': {},
+                'П-111М': {},
+                'П-111МО': {},
+                'П-12-31/12': {},
+                'II-14': {},
+                'П-14/35': {},
+                'П-18/22': {},
+                'П-20': {},
+                'П-21': {},
+                'П-22': {},
+                'П-23': {},
+                'П-28': {},
+                'П-29': {},
+                'П-3': {},
+                'П-3/16': {},
+                'П-3/17': {},
+                'П-3/22': {},
+                'П-30': {},
+                'П-31': {},
+                'П-32': {},
+                'П-321-60': {},
+                'II-34': {},
+                'II-35': {},
+                'П-37': {},
+                'II-38': {},
+                'П-39': {},
+                'П-3М': {},
+                'П-4': {},
+                'П-40': {},
+                'П-41': {},
+                'П-42': {},
+                'П-43': {},
+                'П-44': {},
+                'П-44К': {},
+                'П-44М': {},
+                'П-44Т': {},
+                'П-44ТМ': {},
+                'П-45': {},
+                'П-46': {},
+                'П-46М': {},
+                'П-47': {},
+                'П-49 Д': {},
+                'П-50': {},
+                'П-53': {},
+                'П-55': {},
+                'П-55М': {},
+                'II-29-41/37': {},
+                'II-66': {},
+                'II-67': {},
+                'II-68': {},
+                'ПД-4': {},
+                'ПД-4/12': {},
+                'Пд4-1/12Н1': {},
+                'ПД4-1/8Н1': {},
+                'ПЗМ-1/14': {},
+                'ПЗМ-1/16': {},
+                'ПЗМ-2/16': {},
+                'ПЗМ-3/16': {},
+                'ПП-70': {},
+                'Призма': {},
+                'РД-90': {},
+                'С-111М': {},
+                'С-220': {},
+                'С-222': {},
+                'ТИП-441': {},
+                'ЦВП-4570-II-63': {},
+                'Юбилейный': {},
+                'II-02': {},
+                'II-01': {},
+                'II-18-01/08': {},
+                'II-18-01/09': {},
+                '1605-АМ/9': {},
+                '1605-АМ/12': {},
+                'II-49П': {},
+                'II-49Д': {},
+                'II-03': {},
+                'II-18-01/12': {},
+                'II-18-02/12': {},
+                'II-18/12': {},
+                'II-20': {},
+                '1605-АМ/5': {},
+                'И-III-3': {},
+                'II-28': {},
+                'II-68-02/16М': {},
+                'КПД-4570': {},
+                'II-68-01': {},
+                '1-515/9': {},
+                'К4/16': {},
+                'И-155Б': {},
+                '1-515/5': {},
+                'II-18-01/12А': {},
+                'СМ-1 ': {},
+                'П-44ТМ/25': {},
+                'И-701': {},
+                'И-155-с': {},
+                'Айсберг': {},
+                'II-14/35': {},
+                'И-99-47/407': {},
+                'П-101': {},
+                '1-300': {},
+                'II-18-01/09К': {},
+                'И-1900': {},
+                'М-10': {},
+                'МПСМ': {},
+                'ИП-46М': {},
+                'П-30М': {},
+                'II-07': {},
+                'ПБ-01': {},
+                'И-1414': {},
+                'И-2111': {},
+                '1605-АМЛ/5': {},
+                '1-447С-26': {},
+                '1-447С-1': {},
+                '1-447С-36': {},
+                '1-447С-2': {},
+                '1-447С-5': {},
+                '1-446': {},
+                'ПБ-02': {},
+                'КПД-4572А': {},
+                'II-68-04': {},
+                '124-124-1': {},
+                '1605-А': {},
+                '1-439': {},
+                'Мм1-3': {},
+                'И-1168': {},
+                'СМ-06': {},
+                'СМ-03': {},
+                '1-419': {},
+                '1-203': {},
+                'ЭС-24': {},
+                '8966': {},
+                '1-126': {},
+                '1-225': {},
+                '1-402': {},
+                '16/2188': {},
+                'Т-1': {},
+                'Т-3': {},
+                '1-233': {},
+                '1-260': {},
+                'К-8-49': {},
+                '1-255': {},
+                'КС-8-50': {},
+                'Д-23': {},
+                'Д-25Н1': {},
+                'ПП-83': {},
+                'К2/16': {},
+                'К7/16': {},
+                'К8/16': {},
+                '1-464А': {},
+                'КОПЭ-87': {},
+                'П-121М': {},
+                '121-041': {},
+                '121-042': {},
+                '121-043': {},
+                'II-29-208': {},
+                'II-29-3': {},
+                'II-29-9': {},
+                'II-29-160': {},
+                'ПД-1': {},
+                'И-02/98-НМ': {},
+                '1-467': {},
+                'ЭЖРЧС': {},
+                'П-3МК': {},
+                'II-18-02/09': {},
+                'ПД-3': {},
+                'И-580': {},
+                'II-18-03/12': {},
+                'К-14': {},
+                'И-700Н': {},
+                'Юникон': {},
+                '111-121': {},
+                '1-211': {},
+                'II-68-01/22': {},
+                'Лебедь': {},
+                'И-99-47': {},
+            },
+            Источник: {
+                winner: {
+                    caption: 'WinNER',
+                },
+                winnerPro: {
+                    caption: 'WinNER PRO',
+                },
+                sob: {
+                    caption: 'Sob.ru',
+                },
+                avito: {
+                    caption: 'Avito.ru',
+                },
+                cian: {
+                    caption: 'Cian.ru',
+                },
+                irr: {
+                    caption: 'Irr.ru',
+                },
+                other: {
+                    caption: 'Прочие',
+                },
+                yandex: {
+                    caption: 'Яндекс',
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//options.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         const row_height = 30;
         const row_space = 20;
         const prop_common = (def, p) => ({
+            '#hidden': def.hidden,
             row: def.row,
-            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'
-            ], ({ masters: [row, row_height, row_space] }) => 8 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
+            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'], ({ masters: [row, row_height, row_space] }) => 8 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
             '#height': '<.row_height',
             col_space: def.col_space || (() => 16),
             col_count: def.col_count || (() => 1),
@@ -7051,10 +7458,197 @@ var $;
             '#width': !def.col_count ? '<.row_width' : $$.$me_atom2_prop(['<.row_width', '.col_space', '.col_count', '.col_span'], ({ masters: [width, col_space, col_count, col_span] }) => Math.round((width - col_space * (col_count - 1)) / col_count) * col_span + col_space * (col_span - 1)),
             '#ofsHor': !def.col_count || !def.col ? '<.row_left' : $$.$me_atom2_prop(['<.row_left', '<.row_width', '.col_space', '.col_count', '.col'], ({ masters: [left, width, col_space, col_count, col] }) => left + col * (Math.round((width - col_space * (col_count - 1)) / col_count) + col_space)),
         });
+        function crumb_pickermulti(result, params, fld_name, fld_caption = '') {
+            let size;
+            if (params[fld_name] && (size = params[fld_name].size)) {
+                const id = [...params[fld_name]].map(([value]) => value)[0];
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    $$.$me_option_caption_text(id, $$.$nl_search_panel_param_options[fld_name]) +
+                    (size == 1 ? '' : ' и ещё ' + (size - 1));
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_picker(result, params, fld_name, fld_caption = '') {
+            let size;
+            if (params[fld_name]) {
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    $$.$nl_search_panel_param_options[fld_name][params[fld_name]].caption;
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_select(result, params, fld_name, values, captions) {
+            if (values.length < 2)
+                $$.$me_throw('values.length < 2', values);
+            if (values.length != captions.length)
+                $$.$me_throw('values.length != captions.length', values, captions);
+            if (params[fld_name] && params[fld_name] != values[0]) {
+                let caption = captions[captions.length - 1];
+                for (let i = 1; i < values.length; i++)
+                    if (params[fld_name] == values[i]) {
+                        caption = captions[i - 1];
+                        break;
+                    }
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_diap(result, params, fld_name, suffix, fld_caption = '') {
+            if (params[fld_name] && (params[fld_name].min || params[fld_name].max)) {
+                if (suffix)
+                    suffix = ' ' + suffix;
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    (params[fld_name].min && params[fld_name].max ?
+                        params[fld_name].min + '-' + params[fld_name].max + suffix :
+                        params[fld_name].min ?
+                            'от ' + params[fld_name].min + suffix :
+                            'до ' + params[fld_name].min + suffix);
+                result[fld_name] = { caption };
+            }
+        }
         $$.$nl_search_panel_param = {
             base: $$.$nl_search_panel,
             prop: {
                 ofsHor: () => 0,
+                header_height: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.crumb_ids'], ({ masters: [crumb_ids] }) => {
+                    const result = ['@mode_switcher.#height', '.crumb_ofsVer'];
+                    if (crumb_ids.length)
+                        result.push(`.crumb_pos[${crumb_ids[crumb_ids.length - 1]}]`, '.crumb_height');
+                    return result;
+                }), ({ len, masters: [mode_switcher_height, crumb_ofsVer, crumb_pos, crumb_height] }) => {
+                    const result = Math.max(mode_switcher_height + crumb_ofsVer, len == 2 ? 0 : crumb_pos.top + crumb_height + crumb_ofsVer);
+                    return result;
+                }),
+                footer_height: '@found.#height',
+                crumb_height: () => 24,
+                crumb_ofsHor: () => 16,
+                crumb_ofsVer: () => 16,
+                crumb_spaceHor: () => 8,
+                crumb_spaceVer: () => 8,
+                crumb_paddingHor: () => 8,
+                crumbs: $$.$me_atom2_prop(['.order'], ({ masters: [order] }) => {
+                    const params = order.params;
+                    console.log(params);
+                    const result = {
+                        'раздел': { caption: 'Купить квартиру' },
+                    };
+                    {
+                        let caption;
+                        if (params['Область'] && params['Область'] == 'only') {
+                            caption = 'в Моск.области';
+                        }
+                        else {
+                            caption =
+                                params['НоваяМосква'] && params['НоваяМосква'] == 'only' ? 'в Новой Москве' :
+                                    params['НоваяМосква'] && params['НоваяМосква'] == 'exclude' ? 'в Москве (кроме Новой)' :
+                                        'в Москве';
+                            if (!params['Область'] || params['Область'] != 'exclude')
+                                caption += ' и области';
+                        }
+                        result['Область'] = { caption };
+                    }
+                    crumb_picker(result, params, 'ОтСтанции');
+                    crumb_select(result, params, 'apart', ['no_matter', 'only'], ['только апартаменты', 'кроме апартаментов']);
+                    crumb_pickermulti(result, params, 'rmqt');
+                    crumb_select(result, params, 'plan', ['no_matter', 'only'], ['изолированные комнаты', 'только смежные комнаты']);
+                    crumb_diap(result, params, 'total_sq', 'м²', 'общая');
+                    crumb_diap(result, params, 'price', 'м²', 'жилая');
+                    crumb_diap(result, params, 'price', 'м²', 'кухня');
+                    crumb_pickermulti(result, params, 'remont', 'ремонт');
+                    crumb_picker(result, params, 'lavatory', 'санузел');
+                    crumb_picker(result, params, 'balcony');
+                    crumb_select(result, params, 'Ипотека', ['include', 'only'], ['по ипотеке', 'продажа по ипотеке невозможна']);
+                    crumb_select(result, params, 'ТипСделки', ['0', '1'], ['прямая продажа', 'только с альтернативой']);
+                    crumb_diap(result, params, 'price', '₽', 'цена');
+                    crumb_diap(result, params, 'price_per_sq', '₽', 'за м²');
+                    crumb_select(result, params, 'ДинамикаЦены', ['0', '1'], ['понижение цены', 'повышение цены']);
+                    crumb_select(result, params, 'БонусАгенту', ['0', '1'], ['с бонусом агенту', 'без бонуса агенту']);
+                    crumb_diap(result, params, 'Этаж', '', 'этаж');
+                    crumb_select(result, params, 'ПервыйЭтаж', ['include', 'exclude'], ['кроме первого этажа', 'только первый этаж']);
+                    crumb_select(result, params, 'ПоследнийЭтаж', ['include', 'exclude'], ['кроме последнего этажа', 'только последний этаж']);
+                    crumb_diap(result, params, 'Этажность', '', 'этажность');
+                    crumb_select(result, params, 'Лифт', ['no_matter', 'exists'], ['с лифтом', 'лифт: пасс. + груз.']);
+                    crumb_pickermulti(result, params, 'КлассЖилья', 'класс жилья');
+                    crumb_pickermulti(result, params, 'ТипДома', 'тип дома');
+                    crumb_pickermulti(result, params, 'СерияДома', 'серия дома');
+                    crumb_diap(result, params, 'ГодПостройки', '', 'год постройки');
+                    crumb_select(result, params, 'ПодСнос', ['include', 'exclude'], ['кроме домов под снос', 'только в доме под снос']);
+                    crumb_select(result, params, 'Новостройки', ['include', 'exclude'], ['кроме новостроек', 'только в новостройке']);
+                    crumb_select(result, params, 'Территория', ['no_matter', 'fenced'], ['огороженная территория', 'охраняемая территория']);
+                    crumb_select(result, params, 'Парковка', ['no_matter', 'exists', 'guarded'], ['с парковкой', 'охраняемая парковка', 'подземная парковка']);
+                    crumb_select(result, params, 'ТолькоНовые', ['include', 'only'], ['только новые (впервые опубликованные)', 'кроме новых (впервые опубликованных)']);
+                    crumb_select(result, params, 'sold', ['include', 'except'], ['кроме снятых с продажи', 'только снятые с продажи']);
+                    crumb_select(result, params, 'photo', ['include', 'except'], ['с фото', 'без фото']);
+                    crumb_select(result, params, 'video', ['include', 'except'], ['с видео', 'без видео']);
+                    {
+                        const deep = params['deep'] == null ? 7 : params['deep'];
+                        const caption = 'глубина поиска: ' + (!deep ? 'сегодня' :
+                            deep == Infinity ? 'за все время' :
+                                deep + ' ' + $$.$me_word_plural(deep, 'день', 'дня', 'дней'));
+                        result['deep'] = { caption };
+                    }
+                    return result;
+                }),
+                crumb_ids: $$.$me_atom2_prop_keys(['.crumbs']),
+                crumb_fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                crumb_fontFamily: '.fontFamily',
+                crumb_fontWeight: () => 400,
+                ctx: () => document.createElement('CANVAS').getContext('2d'),
+                ctx_prepared: $$.$me_atom2_prop(['.ctx', '.crumb_fontFamily', '.crumb_fontSize', '.crumb_fontWeight', '/.#pixelRatio'], ({ masters: [ctx, fontFamily, fontSize, fontWeight, pixelRatio] }) => {
+                    const ctxFontSize = pixelRatio * fontSize;
+                    ctx.font = fontWeight + ' ' + ctxFontSize + 'px ' + fontFamily;
+                    return ctx;
+                }),
+                crumb_pos: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.crumb_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        const result = ['.ctx_prepared', '/.#pixelRatio', '.crumbs', '.crumb_ids', '.crumb_ofsHor', '.crumb_ofsVer', '.crumb_paddingHor'];
+                        if (idx) {
+                            result.push('.#width', '@mode_switcher.#width', '@mode_switcher.#height', '.crumb_spaceHor', '.crumb_spaceVer', `.crumb_pos[${ids[idx - 1]}]`, `.crumb_width[${ids[idx - 1]}]`, '.crumb_height');
+                        }
+                        return result;
+                    }),
+                }, ({ len, key: [id], masters: [ctx, pixelRatio, crumbs, crumb_ids, crumb_ofsHor, crumb_ofsVer, crumb_paddingHor, width, mode_switcher_width, mode_switcher_height, crumb_spaceHor, crumb_spaceVer, crumb_pos_prev, crumb_width_prev, crumb_height] }) => {
+                    let result;
+                    const idx = crumb_ids.indexOf(id);
+                    let crumb_width = Math.ceil(ctx.measureText(crumbs[id].caption).width / pixelRatio) + 2 * crumb_paddingHor;
+                    if (!idx) {
+                        result = {
+                            left: crumb_ofsHor,
+                            top: crumb_ofsVer,
+                            width: crumb_width,
+                        };
+                    }
+                    else {
+                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ? width : width - mode_switcher_width - crumb_spaceHor;
+                        if (crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor + crumb_width + crumb_spaceHor > limitHor) {
+                            result = {
+                                left: crumb_ofsHor,
+                                top: crumb_pos_prev.top + crumb_height + crumb_spaceVer,
+                                width: crumb_width,
+                            };
+                        }
+                        else {
+                            result = {
+                                left: crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor,
+                                top: crumb_pos_prev.top,
+                                width: crumb_width,
+                            };
+                        }
+                    }
+                    return result;
+                }),
+                crumb_left: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ key: [id], masters: [crumb_pos] }) => crumb_pos.left),
+                crumb_top: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ masters: [crumb_pos] }) => crumb_pos.top),
+                crumb_width: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ masters: [crumb_pos] }) => crumb_pos.width),
             },
             elem: {
                 mode_switcher: () => ({
@@ -7069,11 +7663,38 @@ var $;
                         no_adjust: () => true,
                     },
                 }),
-                tabs: () => ({
+                crumb: $$.$me_atom2_prop({ keys: ['.crumb_ids'], masters: ['.crumbs'] }, ({ key: [id], masters: [crumbs] }) => ({
+                    type: crumbs[id].caption,
                     prop: {
-                        '#ofsVer': () => 74,
+                        '#ofsHor': `<.crumb_left[${id}]`,
+                        '#ofsVer': `<.crumb_top[${id}]`,
+                        '#width': `<.crumb_width[${id}]`,
+                        '#height': '<.crumb_height',
+                    },
+                    style: {
+                        border: () => 'solid 1px #bdc3d1',
+                        background: () => '#fcfcfd',
+                        borderRadius: () => 3,
+                    },
+                    control: {
+                        label: () => ({
+                            base: $$.$me_label,
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': '<.#height',
+                                text: () => crumbs[id].caption,
+                                fontSize: '<<.crumb_fontSize',
+                                paddingHor: '<<.crumb_paddingHor',
+                                alignVer: () => $$.$me_align.center,
+                            },
+                        }),
+                    },
+                })),
+                tabs: $$.$me_atom2_prop(['<.param_mode'], ({ masters: [param_mode] }) => param_mode == 'СЖАТЫЙ' ? null : {
+                    prop: {
+                        '#ofsVer': '<.header_height',
                         '#height': $$.$me_atom2_prop(['<.#height', '<@found.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
-                        options: $$.$me_atom2_prop([], () => ({
+                        options: () => ({
                             Местоположение: {
                                 icon: 'icons-8-place-marker',
                                 params: {
@@ -7096,6 +7717,7 @@ var $;
                                         })
                                     },
                                     НоваяМосква: {
+                                        hidden: $$.$me_atom2_prop(['<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only'),
                                         row: () => 1,
                                         type: 'select',
                                         options: () => ({
@@ -7122,16 +7744,7 @@ var $;
                                         label: () => 'От станции',
                                         label_width: () => 90,
                                         type: 'picker',
-                                        options: () => ({
-                                            '': { caption: 'не важно' },
-                                            'до 2 мин пешком': {},
-                                            'до 5 мин пешком': {},
-                                            'до 7 мин пешком': {},
-                                            'до 10 мин пешком': {},
-                                            'до 12 мин пешком': {},
-                                            'до 15 мин пешком': {},
-                                            'до 5 мин транспортом': {},
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['ОтСтанции'],
                                     },
                                 },
                             },
@@ -7151,8 +7764,8 @@ var $;
                                                     text: 'Не важно',
                                                 },
                                             },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
-                                            except: { caption: ({ isSelected }) => isSelected ? {
+                                            except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
                                                     width: 210,
                                                     text: 'Только апартаменты',
                                                 } : {
@@ -7167,16 +7780,7 @@ var $;
                                         label: () => 'Квартира',
                                         label_width: () => 90,
                                         none: () => 'с любым количеством комнат',
-                                        options: () => ({
-                                            'free': { caption: 'Св.планировка' },
-                                            'studio': { caption: 'Студия' },
-                                            'rmqt1': { caption: '1-комн.' },
-                                            'rmqt2': { caption: '2-комн.' },
-                                            'rmqt3': { caption: '3-комн.' },
-                                            'rmqt4': { caption: '4-комн.' },
-                                            'rmqt5': { caption: '5-комн.' },
-                                            'rmqt6': { caption: '6+ комн.' },
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['rmqt'],
                                     },
                                     plan: {
                                         row: () => 2,
@@ -7233,44 +7837,21 @@ var $;
                                         label: () => 'Ремонт',
                                         label_width: () => 90,
                                         none: () => 'не важен',
-                                        options: () => ({
-                                            'требуется капитальный ремонт': {},
-                                            'без отделки': {},
-                                            'требуется ремонт': {},
-                                            'среднее состояние': {},
-                                            'хорошее состояние': {},
-                                            'отличное состояние': {},
-                                            'евроремонт': {},
-                                            'дизайнерский ремонт': {},
-                                            'первичная отделка': {},
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['remont'],
                                     },
                                     lavatory: {
                                         row: () => 1,
                                         type: 'picker',
                                         label: () => 'Санузел',
                                         label_width: () => 90,
-                                        options: () => ({
-                                            '0': { caption: 'может быть совмещенным' },
-                                            '1': { caption: 'только раздельный' },
-                                            '2': { caption: 'не менее 2-х' },
-                                            '3': { caption: 'не менее 3-х' },
-                                            '4': { caption: 'не менее 4-х' },
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['lavatory'],
                                     },
                                     balcony: {
                                         row: () => 2,
                                         type: 'picker',
                                         label: () => 'Балкон',
                                         label_width: () => 90,
-                                        options: () => ({
-                                            '0': { caption: 'можно без балкона' },
-                                            '1': { caption: 'нужен балкон' },
-                                            '2': { caption: 'нужна лоджия' },
-                                            '3': { caption: 'не менее 2-х балконов/лоджий' },
-                                            '4': { caption: 'не менее 3-х балконов/лоджий' },
-                                            '5': { caption: 'не менее 4-х балконов/лоджий' },
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['balcony'],
                                     },
                                     okna: {
                                         row: () => 3,
@@ -7490,17 +8071,7 @@ var $;
                                         label: () => 'Тип дома',
                                         label_width: () => 110,
                                         none: () => 'не важен',
-                                        options: () => ({
-                                            'панельный': {},
-                                            'блочный': {},
-                                            'монолитный': {},
-                                            'монолитно-кирпичный': {},
-                                            'кирпичный': {},
-                                            'деревянный': {},
-                                            'шлакоблоки/шлакобетон': {},
-                                            'железобетон': {},
-                                            'сталинский': {},
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['ТипДома'],
                                     },
                                     СерияДома: {
                                         row: () => 2,
@@ -7508,289 +8079,7 @@ var $;
                                         label: () => 'Серия дома',
                                         label_width: () => 110,
                                         none: () => 'не важна',
-                                        options: () => ({
-                                            '02/98-НМ': {},
-                                            '1385 АР-3': {},
-                                            '1605/12': {},
-                                            '1605/9': {},
-                                            '1605/Б': {},
-                                            '17/2004-АС': {},
-                                            '1МГ-600': {},
-                                            '1МГ-601': {},
-                                            '2-71/358': {},
-                                            '2548-01-АР': {},
-                                            '2548-02-АР': {},
-                                            '32/2005-АС': {},
-                                            '349/01': {},
-                                            '355/24': {},
-                                            '7040-01': {},
-                                            'I-303': {},
-                                            'I-335': {},
-                                            'I-447': {},
-                                            'I-510': {},
-                                            'I-511': {},
-                                            'I-513': {},
-                                            'I-515': {},
-                                            'I605-АМ': {},
-                                            'II-04': {},
-                                            'II-05': {},
-                                            'II-08': {},
-                                            'II-18': {},
-                                            'II-18-01-МН': {},
-                                            'II-18-31/12': {},
-                                            'II-29': {},
-                                            'II-32': {},
-                                            'II-49': {},
-                                            'II-57': {},
-                                            'II-68-02': {},
-                                            'II-68-03': {},
-                                            'II-89-01-МН': {},
-                                            'III/17': {},
-                                            'VI-23': {},
-                                            'VII-51': {},
-                                            'VII-58': {},
-                                            'А-41K': {},
-                                            'башня Вулыха': {},
-                                            'Бекерон': {},
-                                            'БОД-1': {},
-                                            'В-2000': {},
-                                            'В-2002': {},
-                                            'В-2005': {},
-                                            'ГМС-1': {},
-                                            'ГМС-3': {},
-                                            'И-1168 А3': {},
-                                            'И-1168 А4': {},
-                                            'И-1233': {},
-                                            'И-1254': {},
-                                            'И-1262А': {},
-                                            'И-1429': {},
-                                            'И-1430': {},
-                                            'И-1459-132': {},
-                                            'И-1491-17': {},
-                                            'И-1501': {},
-                                            'И-155': {},
-                                            'И-155МК': {},
-                                            'И-155Н': {},
-                                            'И-1602': {},
-                                            'И-1677': {},
-                                            'И-1723': {},
-                                            'И-1724': {},
-                                            'И-1731': {},
-                                            'И-1782/1': {},
-                                            'И-1812/1': {},
-                                            'И-1834': {},
-                                            'И-1836': {},
-                                            'И-1838': {},
-                                            'И-1839': {},
-                                            'И-1849': {},
-                                            'И-1932': {},
-                                            'И-208': {},
-                                            'И-209А': {},
-                                            'И-2342': {},
-                                            'И-241': {},
-                                            'И-491А': {},
-                                            'И-515-5М': {},
-                                            'И-515/9ш': {},
-                                            'И-522': {},
-                                            'И-522А': {},
-                                            'И-679': {},
-                                            'И-700': {},
-                                            'И-700А': {},
-                                            'И-760А': {},
-                                            'И-79-99': {},
-                                            'И-99-47/405': {},
-                                            'И-99-47/406': {},
-                                            'индивидуальный проект': {},
-                                            'ИП-46С': {},
-                                            'ИШ3/12': {},
-                                            'К-7': {},
-                                            'КМС-101': {},
-                                            'Колос': {},
-                                            'КОПЭ': {},
-                                            'КОПЭ-М-ПАРУС': {},
-                                            'КТЖС': {},
-                                            'КТЖС-11/22': {},
-                                            '1МГ-300': {},
-                                            'МОНОЛИТ': {},
-                                            'МЭС-84': {},
-                                            'НП-46с': {},
-                                            'П-06': {},
-                                            'П-111': {},
-                                            'П-111М': {},
-                                            'П-111МО': {},
-                                            'П-12-31/12': {},
-                                            'II-14': {},
-                                            'П-14/35': {},
-                                            'П-18/22': {},
-                                            'П-20': {},
-                                            'П-21': {},
-                                            'П-22': {},
-                                            'П-23': {},
-                                            'П-28': {},
-                                            'П-29': {},
-                                            'П-3': {},
-                                            'П-3/16': {},
-                                            'П-3/17': {},
-                                            'П-3/22': {},
-                                            'П-30': {},
-                                            'П-31': {},
-                                            'П-32': {},
-                                            'П-321-60': {},
-                                            'II-34': {},
-                                            'II-35': {},
-                                            'П-37': {},
-                                            'II-38': {},
-                                            'П-39': {},
-                                            'П-3М': {},
-                                            'П-4': {},
-                                            'П-40': {},
-                                            'П-41': {},
-                                            'П-42': {},
-                                            'П-43': {},
-                                            'П-44': {},
-                                            'П-44К': {},
-                                            'П-44М': {},
-                                            'П-44Т': {},
-                                            'П-44ТМ': {},
-                                            'П-45': {},
-                                            'П-46': {},
-                                            'П-46М': {},
-                                            'П-47': {},
-                                            'П-49 Д': {},
-                                            'П-50': {},
-                                            'П-53': {},
-                                            'П-55': {},
-                                            'П-55М': {},
-                                            'II-29-41/37': {},
-                                            'II-66': {},
-                                            'II-67': {},
-                                            'II-68': {},
-                                            'ПД-4': {},
-                                            'ПД-4/12': {},
-                                            'Пд4-1/12Н1': {},
-                                            'ПД4-1/8Н1': {},
-                                            'ПЗМ-1/14': {},
-                                            'ПЗМ-1/16': {},
-                                            'ПЗМ-2/16': {},
-                                            'ПЗМ-3/16': {},
-                                            'ПП-70': {},
-                                            'Призма': {},
-                                            'РД-90': {},
-                                            'С-111М': {},
-                                            'С-220': {},
-                                            'С-222': {},
-                                            'ТИП-441': {},
-                                            'ЦВП-4570-II-63': {},
-                                            'Юбилейный': {},
-                                            'II-02': {},
-                                            'II-01': {},
-                                            'II-18-01/08': {},
-                                            'II-18-01/09': {},
-                                            '1605-АМ/9': {},
-                                            '1605-АМ/12': {},
-                                            'II-49П': {},
-                                            'II-49Д': {},
-                                            'II-03': {},
-                                            'II-18-01/12': {},
-                                            'II-18-02/12': {},
-                                            'II-18/12': {},
-                                            'II-20': {},
-                                            '1605-АМ/5': {},
-                                            'И-III-3': {},
-                                            'II-28': {},
-                                            'II-68-02/16М': {},
-                                            'КПД-4570': {},
-                                            'II-68-01': {},
-                                            '1-515/9': {},
-                                            'К4/16': {},
-                                            'И-155Б': {},
-                                            '1-515/5': {},
-                                            'II-18-01/12А': {},
-                                            'СМ-1 ': {},
-                                            'П-44ТМ/25': {},
-                                            'И-701': {},
-                                            'И-155-с': {},
-                                            'Айсберг': {},
-                                            'II-14/35': {},
-                                            'И-99-47/407': {},
-                                            'П-101': {},
-                                            '1-300': {},
-                                            'II-18-01/09К': {},
-                                            'И-1900': {},
-                                            'М-10': {},
-                                            'МПСМ': {},
-                                            'ИП-46М': {},
-                                            'П-30М': {},
-                                            'II-07': {},
-                                            'ПБ-01': {},
-                                            'И-1414': {},
-                                            'И-2111': {},
-                                            '1605-АМЛ/5': {},
-                                            '1-447С-26': {},
-                                            '1-447С-1': {},
-                                            '1-447С-36': {},
-                                            '1-447С-2': {},
-                                            '1-447С-5': {},
-                                            '1-446': {},
-                                            'ПБ-02': {},
-                                            'КПД-4572А': {},
-                                            'II-68-04': {},
-                                            '124-124-1': {},
-                                            '1605-А': {},
-                                            '1-439': {},
-                                            'Мм1-3': {},
-                                            'И-1168': {},
-                                            'СМ-06': {},
-                                            'СМ-03': {},
-                                            '1-419': {},
-                                            '1-203': {},
-                                            'ЭС-24': {},
-                                            '8966': {},
-                                            '1-126': {},
-                                            '1-225': {},
-                                            '1-402': {},
-                                            '16/2188': {},
-                                            'Т-1': {},
-                                            'Т-3': {},
-                                            '1-233': {},
-                                            '1-260': {},
-                                            'К-8-49': {},
-                                            '1-255': {},
-                                            'КС-8-50': {},
-                                            'Д-23': {},
-                                            'Д-25Н1': {},
-                                            'ПП-83': {},
-                                            'К2/16': {},
-                                            'К7/16': {},
-                                            'К8/16': {},
-                                            '1-464А': {},
-                                            'КОПЭ-87': {},
-                                            'П-121М': {},
-                                            '121-041': {},
-                                            '121-042': {},
-                                            '121-043': {},
-                                            'II-29-208': {},
-                                            'II-29-3': {},
-                                            'II-29-9': {},
-                                            'II-29-160': {},
-                                            'ПД-1': {},
-                                            'И-02/98-НМ': {},
-                                            '1-467': {},
-                                            'ЭЖРЧС': {},
-                                            'П-3МК': {},
-                                            'II-18-02/09': {},
-                                            'ПД-3': {},
-                                            'И-580': {},
-                                            'II-18-03/12': {},
-                                            'К-14': {},
-                                            'И-700Н': {},
-                                            'Юникон': {},
-                                            '111-121': {},
-                                            '1-211': {},
-                                            'II-68-01/22': {},
-                                            'Лебедь': {},
-                                            'И-99-47': {},
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['СерияДома'],
                                     },
                                     ГодПостройки: {
                                         row: () => 3,
@@ -7858,7 +8147,7 @@ var $;
                                                     text: 'Есть',
                                                     width: 40,
                                                 } },
-                                            guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая территория' : 'Охраняемая' },
+                                            guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая парковка' : 'Охраняемая' },
                                             underground: { caption: ({ isSelected }) => isSelected ? 'Только подземная парковка' : 'Подземная' },
                                         })
                                     },
@@ -7867,6 +8156,55 @@ var $;
                             Объявление: {
                                 icon: 'icons-8-create-new-3',
                                 params: {
+                                    deep: {
+                                        row: () => 0,
+                                        label_width: () => 135,
+                                        label: () => 'Глубина поиска',
+                                        type: 'pickerdate',
+                                    },
+                                    ТолькоНовые: {
+                                        row: () => 1,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: { text: 'Все', width: 60 } },
+                                            only: { caption: ({ isSelected, val }) => val != 'except' ? 'Только новые (впервые опубликованные)' : {
+                                                    width: 80,
+                                                    text: 'Только',
+                                                } },
+                                            except: { caption: ({ isSelected }) => isSelected ? 'Кроме новых (впервые опубликованных)' : {
+                                                    width: 75,
+                                                    text: 'Кроме',
+                                                } },
+                                        })
+                                    },
+                                    Источник: {
+                                        type: 'pickermulti',
+                                        row: () => 2,
+                                        label: () => 'Источники',
+                                        label_width: () => 100,
+                                        none: () => 'все',
+                                        options: () => $$.$nl_search_panel_param_options['Источник'],
+                                    },
+                                    sold: {
+                                        row: () => 3,
+                                        type: 'select',
+                                        options: () => ({
+                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
+                                                    width: 60,
+                                                    text: 'Все',
+                                                } },
+                                            except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
+                                                    text: 'Кроме',
+                                                } },
+                                            only: { caption: ({ isSelected }) => isSelected ? {
+                                                    width: 250,
+                                                    text: 'Только снятые с продажи',
+                                                } : {
+                                                    width: 75,
+                                                    text: 'Только',
+                                                } },
+                                        })
+                                    },
                                     photo: {
                                         row: () => 4,
                                         type: 'select',
@@ -7897,8 +8235,7 @@ var $;
                                                     width: 60,
                                                     text: 'Все',
                                                 }) },
-                                            except: { caption: ({ isSelected, val }) => 'С видео',
-                                            },
+                                            except: { caption: ({ isSelected, val }) => 'С видео' },
                                             only: { caption: ({ isSelected }) => isSelected ? {
                                                     text: 'Без видео',
                                                 } : {
@@ -7907,94 +8244,14 @@ var $;
                                                 } },
                                         })
                                     },
-                                    deep: {
-                                        row: () => 0,
-                                        label_width: () => 135,
-                                        label: () => 'Глубина поиска',
-                                        type: 'pickerdate',
-                                    },
-                                    ТолькоНовые: {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: { text: 'Все', width: 60 } },
-                                            only: { caption: ({ isSelected, val }) => val != 'except' ? 'Только новые (впервые опубликованные)' : {
-                                                    width: 80,
-                                                    text: 'Только',
-                                                } },
-                                            except: { caption: ({ isSelected }) => isSelected ? 'Кроме новых (впервые опубликованных)' : {
-                                                    width: 75,
-                                                    text: 'Кроме',
-                                                } },
-                                        })
-                                    },
-                                    Источник: {
-                                        type: 'pickermulti',
-                                        row: () => 2,
-                                        label: () => 'Источники',
-                                        label_width: () => 100,
-                                        none: () => 'все',
-                                        options: () => ({
-                                            winner: {
-                                                caption: 'WinNER',
-                                            },
-                                            winnerPro: {
-                                                caption: 'WinNER PRO',
-                                            },
-                                            sob: {
-                                                caption: 'Sob.ru',
-                                            },
-                                            avito: {
-                                                caption: 'Avito.ru',
-                                            },
-                                            cian: {
-                                                caption: 'Cian.ru',
-                                            },
-                                            irr: {
-                                                caption: 'Irr.ru',
-                                            },
-                                            other: {
-                                                caption: 'Прочие',
-                                            },
-                                            yandex: {
-                                                caption: 'Яндекс',
-                                            },
-                                        }),
-                                    },
-                                    sold: {
-                                        row: () => 3,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
-                                                    width: 60,
-                                                    text: 'Все',
-                                                } },
-                                            except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
-                                                    text: 'Кроме',
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Только снятые с продажи',
-                                                } : {
-                                                    width: 75,
-                                                    text: 'Только',
-                                                } },
-                                        })
-                                    },
                                 },
                             },
-                        })),
+                        }),
                         option_ids: $$.$me_atom2_prop_keys(['.options'], true),
                         option_height: () => 44,
-                        option_fontSize: $$.$me_atom2_prop([
-                            '.em'
-                        ], ({ masters: [em] }) => em / 16 * 14),
-                        option_iconSize: $$.$me_atom2_prop([
-                            '.em'
-                        ], ({ masters: [em] }) => 22),
-                        option_label_ofsHor: $$.$me_atom2_prop([
-                            '.em'
-                        ], ({ masters: [em] }) => 16 + 16 + 22),
+                        option_fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em / 16 * 14),
+                        option_iconSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 22),
+                        option_label_ofsHor: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 16 + 16 + 22),
                         option_width: () => 210,
                         option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
                         value: $$.$me_atom2_prop_store({
@@ -8019,8 +8276,7 @@ var $;
                                 borderRight: () => '1px solid #bdc3d1',
                             },
                         }),
-                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'
-                            ] }, ({ key: [id], masters: [params] }) => {
+                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'] }, ({ key: [id], masters: [params] }) => {
                             const def = params[id];
                             if (def.type == 'select') {
                                 return {
@@ -8061,8 +8317,14 @@ var $;
                                                 '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
                                                 '#alignHor': () => $$.$me_align.right,
                                                 options: def.options,
-                                                value: def.type == 'picker' ? null : () => new Map(),
                                                 none: def.type == 'picker' ? null : def.none,
+                                                value: $$.$me_atom2_prop(['.option_ids', '<<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || (def.type == 'picker' ? ids[0] : new Map()), ({ val }) => {
+                                                    const order = $$.a('<<<.order');
+                                                    if (!order.params)
+                                                        order.params = {};
+                                                    order.params[id] = val;
+                                                    $$.a('<<<.order', order, true);
+                                                }),
                                             },
                                         }),
                                     },
@@ -8072,7 +8334,15 @@ var $;
                             else if (def.type == 'diap') {
                                 return {
                                     base: diap,
-                                    prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space }),
+                                    prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
+                                            const order = $$.a('<<.order');
+                                            if (!order.params)
+                                                order.params = {};
+                                            if (!order.params[id])
+                                                order.params[id] = {};
+                                            order.params[id][kind] = val;
+                                            $$.a('<<.order', order, true);
+                                        }) }),
                                 };
                             }
                             else if (def.type == 'pickerdate') {
@@ -8095,6 +8365,13 @@ var $;
                                             prop: {
                                                 '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
                                                 '#alignHor': () => $$.$me_align.right,
+                                                value: $$.$me_atom2_prop(['<<<.order'], ({ masters: [order] }) => 7, ({ val }) => {
+                                                    const order = $$.a('<<<.order');
+                                                    if (!order.params)
+                                                        order.params = {};
+                                                    order.params[id] = val;
+                                                    $$.a('<<<.order', order, true);
+                                                }),
                                             },
                                         }),
                                     },
@@ -8200,7 +8477,6 @@ var $;
                             },
                         })),
                     },
-                    style: {},
                 }),
                 found: () => ({
                     prop: {
@@ -8223,6 +8499,7 @@ var $;
         const diap = {
             prop: {
                 ids: () => ['min', 'max'],
+                value: $$.$me_atom2_prop({ keys: ['.ids'] }, () => 0),
                 label: $$.$me_atom2_prop_abstract(),
                 label_width: $$.$me_atom2_prop_abstract(),
                 diap_space: $$.$me_atom2_prop_abstract(),
@@ -8241,11 +8518,23 @@ var $;
                 }),
                 input: $$.$me_atom2_prop({ keys: ['.ids'] }, ({ key: [id] }) => ({
                     base: $$.$nl_input,
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'change') {
+                            $$.a(`<.value[${id}]`, dispatch_arg == '' ? 0 : Number.parseInt(dispatch_arg, 10));
+                            return true;
+                        }
+                        return false;
+                    },
                     prop: {
                         '#alignHor': () => $$.$me_align.right,
                         '#ofsHor': id == 'max' ? null : $$.$me_atom2_prop(['.#width', '<.diap_space'], $$.$me_atom2_prop_compute_fn_sum()),
                         '#width': $$.$me_atom2_prop(['<.#width', '<.label_width', '<.diap_space'], ({ masters: [width, label_width, diap_space] }) => (width - label_width - diap_space) / 2),
                         placeholder: () => id == 'min' ? 'от' : 'до',
+                    },
+                    dom: {
+                        value: $$.$me_atom2_prop([`<.value[${id}]`], ({ masters: [value] }) => {
+                            return !value ? '' : value + '';
+                        }),
                     },
                 })),
             },
@@ -10204,7 +10493,7 @@ var $;
                     dom: {
                         innerText: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => (count < 0 ?
                             `Загрузка предложений` :
-                            `Показано ${count} предложений`).toUpperCase()),
+                            `Показано ${count} ` + $$.$me_word_plural(count, 'предложение', 'предложения', 'предложений')).toUpperCase()),
                     },
                 }),
                 filter: () => ({
@@ -10609,16 +10898,12 @@ var $;
                     'id2': {
                         id: 'id2',
                         title: 'Заказ 2',
-                        params: {
-                            rmqt: new Set(['1', '2']),
-                        },
+                        params: {},
                     },
                     'id1': {
                         id: 'id1',
                         title: 'Заказ 1',
-                        params: {
-                            rmqt: new Set(['4', '6+']),
-                        },
+                        params: {},
                     },
                 }),
                 order_ids: $$.$me_atom2_prop_keys(['.orders']),
@@ -10630,10 +10915,10 @@ var $;
                 }),
                 param_modes: () => ({
                     ПОЛНЫЙ: {
-                        height: 518 - 44,
+                        height: 8 * 44,
                     },
                     СЖАТЫЙ: {
-                        height: 120,
+                        height: 0,
                     },
                 }),
                 param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
@@ -10671,7 +10956,10 @@ var $;
                             $$.a(`<.order[${$$.a('<.selected')}]`, val, true);
                         }),
                         '#ofsVer': '<@tabs.#height',
-                        height_target: $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => modes[mode].height),
+                        height_target: $$.$me_atom2_prop(['<.param_mode', '<.param_modes', '.header_height', '.footer_height'], ({ masters: [mode, modes, header_height, footer_height] }) => {
+                            const result = modes[mode].height + header_height + footer_height;
+                            return result;
+                        }),
                         '#height': $$.$me_atom2_prop(['.height_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
                             path_active: $$.a.get('.height_anim_is').path
                         })),
@@ -10718,40 +11006,8 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        function $nl_app_defaults_init() {
-            $$.$me_atom2_entity.root().props({
-                em: () => 16,
-                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
-                fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-                fontWeight: () => 400,
-                СвернутьРазвернуть: $$.$me_atom2_prop_store({
-                    default: () => false,
-                    valid: (val) => typeof val == 'boolean' ? val : null,
-                }),
-                СписокБарабан: $$.$me_atom2_prop_store({
-                    default: () => false,
-                    valid: (val) => typeof val == 'boolean' ? val : null,
-                }),
-                theme: $$.$me_atom2_prop_store({
-                    default: () => $$.$me_theme.light,
-                    valid: (val) => val == $$.$me_theme.light || val == $$.$me_theme.dark ? val : null,
-                }),
-            });
-            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
-            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
-        }
-        $$.$nl_app_defaults_init = $nl_app_defaults_init;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//defaults.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$nl_app = (rootElem) => {
-            $$.$nl_app_defaults_init();
+            $$.$nl_defaults_init();
             return new $$.$me_atom2_elem({ tail: 'app', cnf: {
                     node: rootElem,
                     dispatch(dispatch_name, dispatch_arg) {
