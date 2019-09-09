@@ -7114,6 +7114,12 @@ var $;
                 '4': { caption: 'не менее 3-х балконов/лоджий' },
                 '5': { caption: 'не менее 4-х балконов/лоджий' },
             },
+            КлассЖилья: {
+                'эконом': {},
+                'комфорт': {},
+                'бизнес': {},
+                'элитный': {},
+            },
             ТипДома: {
                 'панельный': {},
                 'блочный': {},
@@ -7470,7 +7476,7 @@ var $;
         }
         function crumb_picker(result, params, fld_name, fld_caption = '') {
             let size;
-            if (params[fld_name]) {
+            if (params[fld_name] && Object.keys($$.$nl_search_panel_param_options[fld_name]).indexOf(params[fld_name])) {
                 const caption = (!fld_caption ? '' : fld_caption + ': ') +
                     $$.$nl_search_panel_param_options[fld_name][params[fld_name]].caption;
                 result[fld_name] = { caption };
@@ -7496,8 +7502,9 @@ var $;
                 if (suffix)
                     suffix = ' ' + suffix;
                 const caption = (!fld_caption ? '' : fld_caption + ': ') +
-                    (params[fld_name].min && params[fld_name].max ?
-                        params[fld_name].min + '-' + params[fld_name].max + suffix :
+                    (params[fld_name].min && params[fld_name].max ? (params[fld_name].min == params[fld_name].max ?
+                        params[fld_name].min + suffix :
+                        params[fld_name].min + '-' + params[fld_name].max + suffix) :
                         params[fld_name].min ?
                             'от ' + params[fld_name].min + suffix :
                             'до ' + params[fld_name].min + suffix);
@@ -7526,7 +7533,6 @@ var $;
                 crumb_paddingHor: () => 8,
                 crumbs: $$.$me_atom2_prop(['.order'], ({ masters: [order] }) => {
                     const params = order.params;
-                    console.log(params);
                     const result = {
                         'раздел': { caption: 'Купить квартиру' },
                     };
@@ -7550,11 +7556,12 @@ var $;
                     crumb_pickermulti(result, params, 'rmqt');
                     crumb_select(result, params, 'plan', ['no_matter', 'only'], ['изолированные комнаты', 'только смежные комнаты']);
                     crumb_diap(result, params, 'total_sq', 'м²', 'общая');
-                    crumb_diap(result, params, 'price', 'м²', 'жилая');
-                    crumb_diap(result, params, 'price', 'м²', 'кухня');
+                    crumb_diap(result, params, 'life_sq', 'м²', 'жилая');
+                    crumb_diap(result, params, 'kitchen_sq', 'м²', 'кухня');
                     crumb_pickermulti(result, params, 'remont', 'ремонт');
                     crumb_picker(result, params, 'lavatory', 'санузел');
                     crumb_picker(result, params, 'balcony');
+                    crumb_select(result, params, 'okna', ['0', '1'], ['окна только во двор', 'окна только на улицу']);
                     crumb_select(result, params, 'Ипотека', ['include', 'only'], ['по ипотеке', 'продажа по ипотеке невозможна']);
                     crumb_select(result, params, 'ТипСделки', ['0', '1'], ['прямая продажа', 'только с альтернативой']);
                     crumb_diap(result, params, 'price', '₽', 'цена');
@@ -7574,10 +7581,6 @@ var $;
                     crumb_select(result, params, 'Новостройки', ['include', 'exclude'], ['кроме новостроек', 'только в новостройке']);
                     crumb_select(result, params, 'Территория', ['no_matter', 'fenced'], ['огороженная территория', 'охраняемая территория']);
                     crumb_select(result, params, 'Парковка', ['no_matter', 'exists', 'guarded'], ['с парковкой', 'охраняемая парковка', 'подземная парковка']);
-                    crumb_select(result, params, 'ТолькоНовые', ['include', 'only'], ['только новые (впервые опубликованные)', 'кроме новых (впервые опубликованных)']);
-                    crumb_select(result, params, 'sold', ['include', 'except'], ['кроме снятых с продажи', 'только снятые с продажи']);
-                    crumb_select(result, params, 'photo', ['include', 'except'], ['с фото', 'без фото']);
-                    crumb_select(result, params, 'video', ['include', 'except'], ['с видео', 'без видео']);
                     {
                         const deep = params['deep'] == null ? 7 : params['deep'];
                         const caption = 'глубина поиска: ' + (!deep ? 'сегодня' :
@@ -7585,6 +7588,11 @@ var $;
                                 deep + ' ' + $$.$me_word_plural(deep, 'день', 'дня', 'дней'));
                         result['deep'] = { caption };
                     }
+                    crumb_select(result, params, 'ТолькоНовые', ['include', 'only'], ['только новые (впервые опубликованные)', 'кроме новых (впервые опубликованных)']);
+                    crumb_pickermulti(result, params, 'Источник', 'источники');
+                    crumb_select(result, params, 'sold', ['include', 'except'], ['кроме снятых с продажи', 'только снятые с продажи']);
+                    crumb_select(result, params, 'photo', ['include', 'except'], ['с фото', 'без фото']);
+                    crumb_select(result, params, 'video', ['include', 'except'], ['с видео', 'без видео']);
                     return result;
                 }),
                 crumb_ids: $$.$me_atom2_prop_keys(['.crumbs']),
@@ -7619,7 +7627,7 @@ var $;
                         };
                     }
                     else {
-                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ? width : width - mode_switcher_width - crumb_spaceHor;
+                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ? width - crumb_spaceHor : width - mode_switcher_width - crumb_spaceHor;
                         if (crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor + crumb_width + crumb_spaceHor > limitHor) {
                             result = {
                                 left: crumb_ofsHor,
@@ -7672,8 +7680,10 @@ var $;
                         '#height': '<.crumb_height',
                     },
                     style: {
-                        border: () => 'solid 1px #bdc3d1',
-                        background: () => '#fcfcfd',
+                        border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                            'solid 1px #bdc3d1' :
+                            'solid 1px #d8dce3'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b'),
                         borderRadius: () => 3,
                     },
                     control: {
@@ -8058,12 +8068,7 @@ var $;
                                         label: () => 'Класс жилья',
                                         label_width: () => 110,
                                         none: () => 'не важен',
-                                        options: () => ({
-                                            'эконом': {},
-                                            'комфорт': {},
-                                            'бизнес': {},
-                                            'элитный': {},
-                                        }),
+                                        options: () => $$.$nl_search_panel_param_options['КлассЖилья'],
                                     },
                                     ТипДома: {
                                         row: () => 1,
@@ -10440,6 +10445,7 @@ var $;
                 on_order_changed: $$.$me_atom2_prop(['.order'], null, ({ val }) => {
                     $$.a('.provider_tag', val.id);
                 }),
+                isZoomed: () => false,
                 count: $$.$me_atom2_prop(['.provider_tag'], ({ masters: [tag] }) => {
                     $$.a('.dataWorker').postMessage({ cmd: 'count', tag });
                     return -1;
@@ -10477,6 +10483,37 @@ var $;
                 userSelect: () => 'none',
             },
             elem: {
+                resizer: () => ({
+                    prop: {
+                        '#width': () => 44,
+                        '#height': () => 44,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': () => 'pointer',
+                    },
+                    elem: {
+                        img: () => ({
+                            node: 'img',
+                            prop: {
+                                '#height': () => 34,
+                                '#width': () => 34,
+                                '#ofsVer': () => -2,
+                                '#ofsHor': () => -4,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['/.theme', '<<.isZoomed'], ({ masters: [theme, isZoomed] }) => `assets/${$$.$me_theme[theme]}-slide-${isZoomed ? 'downright' : 'upleft'}@2x.png`),
+                            },
+                            style: {
+                                userSelect: () => 'none',
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('<.isZoomed', !$$.a('<.isZoomed'));
+                            return true;
+                        },
+                    },
+                }),
                 shown: () => ({
                     node: 'span',
                     prop: {
@@ -10982,9 +11019,14 @@ var $;
                             order.result_mode = val;
                             $$.a(`.order`, order, true);
                         }),
-                        ofsVer_target: $$.$me_atom2_prop(['<@panelParam.#ofsVer', '<@panelParam.height_target', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
+                        ofsHor_target: $$.$me_atom2_prop(['.isZoomed', '.em', '/@app@menu.#width'], ({ masters: [isZoomed, em, menu_width] }) => !isZoomed ? em : -menu_width),
+                        ofsVer_target: $$.$me_atom2_prop([
+                            '.isZoomed',
+                            '<@panelParam.#ofsVer', '<@panelParam.height_target', '.em',
+                        ], ({ masters: [isZoomed, ofsVer, height_target, em] }) => isZoomed ? 0 : ofsVer + height_target + em),
+                        '#ofsHor': $$.$me_atom2_prop(['.ofsHor_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400 })),
                         '#ofsVer': $$.$me_atom2_prop(['.ofsVer_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400 })),
-                        height_target: $$.$me_atom2_prop(['<.#height', '.ofsVer_target'], ({ masters: [height, ofsVer] }) => height - ofsVer, ({ val, prev }) => {
+                        height_target: $$.$me_atom2_prop(['<.#height', '.ofsVer_target', '.isZoomed', '/.#viewportHeight'], ({ masters: [height, ofsVer, isZoomed, viewportHeight] }) => !isZoomed ? height - ofsVer : viewportHeight, ({ val, prev }) => {
                             if (prev != null && val != prev) {
                                 $$.a('.height_anim_is', true);
                             }
@@ -10993,6 +11035,9 @@ var $;
                             path_active: $$.a.get('.height_anim_is').path
                         })),
                         height_anim_is: $$.$me_atom2_prop([], () => false),
+                        'width_target': $$.$me_atom2_prop(['.isZoomed', '/.#viewportWidth', '<.#width', '.em'], ({ masters: [isZoomed, viewportWidth, width, em] }) => isZoomed ? viewportWidth : width - 2 * em),
+                        '#width': $$.$me_atom2_prop(['.width_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
+                        })),
                     },
                 }),
             },
