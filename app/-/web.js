@@ -6410,7 +6410,6 @@ var $;
         function onChange(event) {
             const prev = $$.a.curr;
             $$.a.curr = this;
-            console.log(event.target.value);
             $$.a.dispatch('', 'change', event.target.value);
             $$.a.curr = prev;
         }
@@ -10487,7 +10486,7 @@ var $;
                     prop: {
                         '#width': () => 44,
                         '#height': () => 44,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
                         '#cursor': () => 'pointer',
                     },
                     elem: {
@@ -11019,25 +11018,32 @@ var $;
                             order.result_mode = val;
                             $$.a(`.order`, order, true);
                         }),
-                        ofsHor_target: $$.$me_atom2_prop(['.isZoomed', '.em', '/@app@menu.#width'], ({ masters: [isZoomed, em, menu_width] }) => !isZoomed ? em : -menu_width),
+                        '#ofsHor': $$.$me_atom2_prop(['.isZoomed', '.em', '/@app@menu.#width'], ({ masters: [isZoomed, em, menu_width] }) => !isZoomed ? em : -menu_width),
                         ofsVer_target: $$.$me_atom2_prop([
-                            '.isZoomed',
-                            '<@panelParam.#ofsVer', '<@panelParam.height_target', '.em',
-                        ], ({ masters: [isZoomed, ofsVer, height_target, em] }) => isZoomed ? 0 : ofsVer + height_target + em),
-                        '#ofsHor': $$.$me_atom2_prop(['.ofsHor_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400 })),
-                        '#ofsVer': $$.$me_atom2_prop(['.ofsVer_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400 })),
-                        height_target: $$.$me_atom2_prop(['<.#height', '.ofsVer_target', '.isZoomed', '/.#viewportHeight'], ({ masters: [height, ofsVer, isZoomed, viewportHeight] }) => !isZoomed ? height - ofsVer : viewportHeight, ({ val, prev }) => {
-                            if (prev != null && val != prev) {
-                                $$.a('.height_anim_is', true);
+                            '<@panelParam.#ofsVer', '<@panelParam.height_target', '.em'
+                        ], ({ masters: [ofsVer, height_target, em] }) => ofsVer + height_target + em),
+                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isZoomed'], ({ masters: [isZoomed] }) => isZoomed ? [] : ['.ofsVer_target']), ({ len, masters: [to], prev }) => !len ? 0 : !prev ? to : $$.$me_atom2_anim({ to, duration: 400 })),
+                        height_target: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isZoomed'], ({ masters: [isZoomed] }) => isZoomed ? ['/.#viewportHeight'] : ['<.#height', '.ofsVer_target']), ({ len, masters }) => {
+                            if (len == 1) {
+                                const [viewportHeight] = masters;
+                                return viewportHeight;
+                            }
+                            else {
+                                const [height, ofsVer] = masters;
+                                return height - ofsVer;
                             }
                         }),
-                        '#height': $$.$me_atom2_prop(['.height_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
-                            path_active: $$.a.get('.height_anim_is').path
-                        })),
+                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isZoomed'], ({ masters: [isZoomed] }) => isZoomed ?
+                            ['.isZoomed', '/.#viewportHeight'] :
+                            ['.isZoomed', '/.#viewportHeight', '.height_target']), ({ masters: [isZoomed, viewportHeight, to], prev }) => isZoomed ?
+                            viewportHeight :
+                            prev == viewportHeight ?
+                                to :
+                                $$.$me_atom2_anim({ to, duration: 400,
+                                    path_active: $$.a.get('.height_anim_is').path
+                                })),
                         height_anim_is: $$.$me_atom2_prop([], () => false),
-                        'width_target': $$.$me_atom2_prop(['.isZoomed', '/.#viewportWidth', '<.#width', '.em'], ({ masters: [isZoomed, viewportWidth, width, em] }) => isZoomed ? viewportWidth : width - 2 * em),
-                        '#width': $$.$me_atom2_prop(['.width_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
-                        })),
+                        '#width': $$.$me_atom2_prop(['.isZoomed', '/.#viewportWidth', '<.#width', '.em'], ({ masters: [isZoomed, viewportWidth, width, em] }) => isZoomed ? viewportWidth : width - 2 * em),
                     },
                 }),
             },
