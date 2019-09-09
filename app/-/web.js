@@ -5453,7 +5453,6 @@ var $;
             if (!delta)
                 return;
             if (delta < 0) {
-                console.error(atom.name(), { delta, prev, val });
                 const top = $$.a(`.row_top[${row_i}]`);
                 const delta_bottom = top + val - $$.a('.height_actual');
                 if (delta_bottom > 0) {
@@ -11009,6 +11008,7 @@ var $;
                     type: '$nl_search_panel_result',
                     base: $$.$nl_search_panel_result,
                     prop: {
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
                         '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new'),
                         order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new' ? null : $$.a(`<.order[${selected}]`)),
                         mode: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == 'new' ? '' : $$.a(`<.order[${selected}]`).result_mode || 'ТАБЛИЦА', ({ val }) => {
