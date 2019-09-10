@@ -1006,6 +1006,9 @@ var $;
 //prop.js.map
 ;
 "use strict";
+//control.js.map
+;
+"use strict";
 var $;
 (function ($) {
     var $$;
@@ -1186,10 +1189,10 @@ var $;
                         if (prev && val && (prev === val || prev.type == val.type))
                             return;
                         const control = this.by_path(path);
-                        if (control instanceof $$.$me_atom2_control)
+                        if (control instanceof $me_atom2_control)
                             control.destroy();
                         if (val) {
-                            $$.$me_atom2_control.to_def.push({
+                            $me_atom2_control.to_def.push({
                                 cnf: val,
                                 parent: this,
                                 tail,
@@ -1338,6 +1341,333 @@ var $;
                     document.body.style.cursor = cursor;
             },
         });
+        let $me_atom2_control_render_state_enum;
+        (function ($me_atom2_control_render_state_enum) {
+            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["cleaned"] = 0] = "cleaned";
+            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["rendered"] = 1] = "rendered";
+        })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
+        class $me_atom2_control extends $me_atom2_ec {
+            constructor(p) {
+                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
+                this._mk_controls(this.level = p.level || 1);
+                this._mk_props('<'.repeat(this.level));
+            }
+            static pixelRatio() {
+                return $$.$me_atom2_entity.root()._entities.prop['#pixelRatio'].value();
+            }
+            _wait_for_child_did_helper() {
+                const parent = this.parent(true);
+                if (parent)
+                    parent._wait_for_child_did(this.name());
+            }
+            destroy() {
+                if (this.level > 1) {
+                    $me_atom2_control._to_render.add(this.parent(true).path);
+                    $$.$me_atom2_async();
+                }
+                else {
+                    $me_atom2_control.clean([this]);
+                }
+                super.destroy();
+            }
+            _mk_props(s_level) {
+                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_default || {});
+                const prop_render = this.props([
+                    this.cnf_items('prop'),
+                    defaults,
+                    defaults_relative,
+                    {
+                        '#hidden': () => false,
+                        '#zIndex': '<.#zIndex',
+                    },
+                    {
+                        '#_isReady': () => false,
+                        '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
+                            if (val)
+                                $me_atom2_ec._to_init.push(this.path);
+                        }),
+                        '#visible': $$.$me_atom2_prop(['.#hidden', '<.#visible'], ({ masters: [hidden, visible] }) => !hidden && visible, ({ val }) => {
+                            if (val) {
+                                $me_atom2_control._to_render.add(this.path);
+                            }
+                            else if (this.level > 1) {
+                                $me_atom2_control._to_render.add(this.parent(true).path);
+                            }
+                            else {
+                                $me_atom2_control._to_clean.add(this.path);
+                            }
+                            $$.$me_atom2_async();
+                        }),
+                        '#ctxSize': s_level + '.#ctxSize',
+                        '#ctx': s_level + '.#ctx',
+                        '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'].concat(s_level.length < 2 ? [] : ['<.#left']), ({ masters: [alignHor, width_parent, width, ofsHor, left_parent] }) => {
+                            left_parent = left_parent || 0;
+                            const result = alignHor === $$.$me_align.left ? left_parent + ofsHor :
+                                alignHor === $$.$me_align.right ? left_parent + width_parent - ofsHor :
+                                    left_parent + (width_parent - width) / 2 + ofsHor;
+                            return result;
+                        }),
+                        '#top': $$.$me_atom2_prop(['.#alignVer', '<.#height', '.#height', '.#ofsVer'].concat(s_level.length < 2 ? [] : ['<.#top']), ({ masters: [alignVer, height_parent, height, ofsVer, top_parent] }) => {
+                            top_parent = top_parent || 0;
+                            const result = alignVer === $$.$me_align.top ? top_parent + ofsVer :
+                                alignVer === $$.$me_align.bottom ? top_parent + height_parent - ofsVer :
+                                    top_parent + (height_parent - height) / 2 + ofsVer;
+                            return result;
+                        }),
+                    },
+                ], {
+                    def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
+                        if (tail == '#cursor') {
+                            console.error(`${this.name()}: prop "#cursor" must be defined in "prop_non_render" section`);
+                            return null;
+                        }
+                    },
+                    dup: ({ tail, prop_defined, idx, len }) => {
+                        if (idx === len - 1)
+                            $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
+                    }
+                });
+                {
+                    const { defaults, defaults_relative } = this._prepare('prop_non_render_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_non_render_default || {});
+                    const prop_non_render = this.props([
+                        this.cnf_items('prop_non_render'),
+                        defaults,
+                        defaults_relative,
+                        {
+                            '#isHover': () => false,
+                        },
+                        {
+                            '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
+                                $$.$me_atom2_ec_body_cursor({ origin: atom.path, val: val });
+                            }),
+                        },
+                    ], {
+                        def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
+                            if (idx === len - 2 && tail == '#isHover') {
+                                if (prop_defined['#cursor'] === void 0)
+                                    return null;
+                            }
+                            else if (idx === len - 1 && tail == '#_cursor') {
+                                if (prop_defined['#cursor'] === void 0)
+                                    return null;
+                            }
+                        },
+                        dup: ({ tail, prop_defined, idx, len }) => {
+                            if (idx === len - 1)
+                                $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
+                        }
+                    });
+                }
+                for (const prop of ['#width', '#height', '#alignHor', '#alignVer', '#ofsHor', '#ofsVer'])
+                    if (prop_render[prop] === void 0)
+                        $$.$me_throw(`${this.name()}: requires .${prop} to be defined`);
+                this.props({
+                    '#render': $$.$me_atom2_prop(Object.keys(prop_render).map((s) => '.' + s), ({ masters }) => !(this.active() && $$.a('.#visible') && $$.a('.#isReady')) ? null : masters, ({ val, prev, atom }) => {
+                        if (!val)
+                            return;
+                        $me_atom2_control._to_render.add(this.path);
+                        $$.$me_atom2_async();
+                    }),
+                    '#offsetRect': () => $$.$me_rect(),
+                    '#clientRect': $$.$me_atom2_prop([s_level + '.#clientRect', '.#offsetRect'], ({ masters: [clientRect, offsetRect] }) => {
+                        return {
+                            left: clientRect.left + offsetRect.left,
+                            top: clientRect.top + offsetRect.top,
+                            right: clientRect.left + offsetRect.right,
+                            bottom: clientRect.top + offsetRect.bottom,
+                        };
+                    }, prop_render['#isHover'] === void 0 ? null :
+                        ({ val, atom }) => {
+                            if ($$.$me_atom2_event_mousemove_last && !$$.$me_atom2_event_mousemove_to_process) {
+                                $$.$me_atom2_event_mousemove_to_process = $$.$me_atom2_event_mousemove_last;
+                                $$.$me_atom2_async();
+                            }
+                        }),
+                });
+            }
+            static font_prepare(ctx, pixelRatio, prefix = '') {
+                const ctxFontSize = Math.round($me_atom2_control.font_size(pixelRatio, prefix));
+                ctx.font = $me_atom2_control._fontWeight(prefix) + ' ' + ctxFontSize + 'px ' + $me_atom2_control._fontFamily(prefix);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                return ctxFontSize;
+            }
+            static font_size(pixelRatio, prefix = '') {
+                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontSize', prefix));
+                if (typeof prop === 'string')
+                    $$.$me_throw(prop);
+                const result = prop.value() * pixelRatio;
+                return result;
+            }
+            static _fontProp(prop, prefix) {
+                const result = '.' + (!prefix ? prop : prefix + prop.slice(0, 1).toUpperCase() + prop.slice(1));
+                return result;
+            }
+            static _fontFamily(prefix = '') {
+                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontFamily', prefix));
+                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontFamily');
+            }
+            static _fontWeight(prefix = '') {
+                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontWeight', prefix));
+                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontWeight');
+            }
+            static clean(controls, force = false) {
+                let count = 0;
+                for (let control of controls) {
+                    if (control.render_state !== $me_atom2_control_render_state_enum.rendered)
+                        continue;
+                    count++;
+                    const ctxRect = control._ctxRect();
+                    const p = {
+                        ctx: control._entities.prop['#ctx'].value(),
+                        ctxRect,
+                    };
+                    if (p.ctx) {
+                        const prev = $$.a.curr;
+                        $$.a.curr = control;
+                        if (!control._clean_helper(p, control.cnf))
+                            p.ctx.clearRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left + 1, p.ctxRect.bottom - p.ctxRect.top + 1);
+                        $$.a.curr = prev;
+                    }
+                    control.render_state = $me_atom2_control_render_state_enum.cleaned;
+                    let controls;
+                    if ($me_atom2_control._fill_controls_cache.has(control)) {
+                        controls = $me_atom2_control._fill_controls_cache.get(control);
+                    }
+                    else {
+                        controls = [];
+                        const entities_control = control._entities.control;
+                        $me_atom2_control._fill_controls(controls, control._entities.control);
+                        $me_atom2_control._fill_controls_cache.set(control, controls);
+                    }
+                    if (controls.length)
+                        $me_atom2_control.clean($me_atom2_control.zIndex_sort(controls), force);
+                }
+                return count;
+            }
+            _ctxRect() {
+                const prop = this._entities.prop;
+                const prop_offsetRect = prop['#offsetRect'];
+                const offsetRect = prop_offsetRect.value();
+                const pixelRatio = $me_atom2_control.pixelRatio();
+                return {
+                    left: offsetRect.left * pixelRatio,
+                    top: offsetRect.top * pixelRatio,
+                    right: offsetRect.right * pixelRatio,
+                    bottom: offsetRect.bottom * pixelRatio,
+                };
+            }
+            _clean_helper(p, cnf) {
+                let result = false;
+                if (cnf) {
+                    if (cnf.clean)
+                        result = cnf.clean(p);
+                    result = this._clean_helper(p, cnf.base) || result;
+                }
+                return result;
+            }
+            static fill_controls_cache_clear() {
+                $me_atom2_control._fill_controls_cache.clear();
+            }
+            static _fill_controls(controls, entities_of_type) {
+                for (const tail in entities_of_type) {
+                    const entity = entities_of_type[tail];
+                    if (!entity._entities.key) {
+                        controls.push(entity);
+                    }
+                    else {
+                        $me_atom2_control._fill_controls(controls, entity._entities.key);
+                    }
+                }
+            }
+            static render(controls, pixelRatio) {
+                if (pixelRatio === void 0)
+                    pixelRatio = $me_atom2_control.pixelRatio();
+                let count = 0;
+                for (let control of controls) {
+                    if (control.render_state === $me_atom2_control_render_state_enum.rendered) {
+                        continue;
+                    }
+                    count++;
+                    const prop = control._entities.prop;
+                    const prop_offsetRect = prop['#offsetRect'];
+                    const prop_width = prop['#width'];
+                    const prop_heght = prop['#height'];
+                    const prop_left = prop['#left'];
+                    const prop_top = prop['#top'];
+                    const ctxWidth = Math.round(prop_width.value() * pixelRatio);
+                    const ctxHeight = Math.round(prop_heght.value() * pixelRatio);
+                    const left = Math.round(prop_left.value() * pixelRatio);
+                    const top = Math.round(prop_top.value() * pixelRatio);
+                    const right = left + ctxWidth;
+                    const bottom = top + ctxHeight;
+                    const ctxRect = { left, top, right, bottom };
+                    prop_offsetRect.value({
+                        left: left / pixelRatio,
+                        top: top / pixelRatio,
+                        right: right / pixelRatio,
+                        bottom: bottom / pixelRatio,
+                    });
+                    const p = {
+                        self: control,
+                        ctx: control._entities.prop['#ctx'].value(),
+                        ctxSize: control._entities.prop['#ctxSize'].value(),
+                        pixelRatio,
+                        ctxRect,
+                        ctxWidth,
+                        ctxHeight,
+                    };
+                    {
+                        const prev = $$.a.curr;
+                        $$.a.curr = control;
+                        control._render_helper(p, control.cnf);
+                        if (typeof $$.a.curr.by_path_s('.#border') !== 'string') {
+                            p.ctx.strokeStyle = $$.a('.#border');
+                            p.ctx.strokeRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left, p.ctxRect.bottom - p.ctxRect.top);
+                        }
+                        $$.a.curr = prev;
+                    }
+                    let controls;
+                    if ($me_atom2_control._fill_controls_cache.has(control)) {
+                        controls = $me_atom2_control._fill_controls_cache.get(control);
+                    }
+                    else {
+                        controls = [];
+                        const entities_control = control._entities.control;
+                        $me_atom2_control._fill_controls(controls, control._entities.control);
+                        $me_atom2_control._fill_controls_cache.set(control, controls);
+                    }
+                    if (controls.length)
+                        $me_atom2_control.render($me_atom2_control.zIndex_sort(controls), pixelRatio);
+                    control.render_state = $me_atom2_control_render_state_enum.rendered;
+                }
+                return count;
+            }
+            _render_helper(p, cnf) {
+                if (!cnf)
+                    return;
+                this._render_helper(p, cnf.base);
+                if (cnf.render)
+                    cnf.render(p);
+            }
+            static zIndex_sort(ss, to_render = false) {
+                return (Array.isArray(ss) ? ss :
+                    [...ss].map(path => $$.$me_atom2_entity.root().by_path(path)))
+                    .filter(control => control && control.active &&
+                    (() => {
+                        if (!control._entities.prop)
+                            $$.$me_throw(control.name());
+                        return true;
+                    })() &&
+                    (!to_render || control._entities.prop['#visible'].value()));
+            }
+        }
+        $me_atom2_control.to_def = Array();
+        $me_atom2_control._to_render = new Set();
+        $me_atom2_control._to_clean = new Set();
+        $me_atom2_control.prop_non_render_default = {};
+        $me_atom2_control._fill_controls_cache = new Map();
+        $$.$me_atom2_control = $me_atom2_control;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //ec.js.map
@@ -2326,342 +2656,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //event.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        let $me_atom2_control_render_state_enum;
-        (function ($me_atom2_control_render_state_enum) {
-            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["cleaned"] = 0] = "cleaned";
-            $me_atom2_control_render_state_enum[$me_atom2_control_render_state_enum["rendered"] = 1] = "rendered";
-        })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
-        class $me_atom2_control extends $$.$me_atom2_ec {
-            constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
-                this._mk_controls(this.level = p.level || 1);
-                this._mk_props('<'.repeat(this.level));
-            }
-            static pixelRatio() {
-                return $$.$me_atom2_entity.root()._entities.prop['#pixelRatio'].value();
-            }
-            _wait_for_child_did_helper() {
-                const parent = this.parent(true);
-                if (parent)
-                    parent._wait_for_child_did(this.name());
-            }
-            destroy() {
-                if (this.level > 1) {
-                    $me_atom2_control._to_render.add(this.parent(true).path);
-                    $$.$me_atom2_async();
-                }
-                else {
-                    $me_atom2_control.clean([this]);
-                }
-                super.destroy();
-            }
-            _mk_props(s_level) {
-                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_default || {});
-                const prop_render = this.props([
-                    this.cnf_items('prop'),
-                    defaults,
-                    defaults_relative,
-                    {
-                        '#hidden': () => false,
-                        '#zIndex': '<.#zIndex',
-                    },
-                    {
-                        '#_isReady': () => false,
-                        '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
-                            if (val)
-                                $$.$me_atom2_ec._to_init.push(this.path);
-                        }),
-                        '#visible': $$.$me_atom2_prop(['.#hidden', '<.#visible'], ({ masters: [hidden, visible] }) => !hidden && visible, ({ val }) => {
-                            if (val) {
-                                $me_atom2_control._to_render.add(this.path);
-                            }
-                            else if (this.level > 1) {
-                                $me_atom2_control._to_render.add(this.parent(true).path);
-                            }
-                            else {
-                                $me_atom2_control._to_clean.add(this.path);
-                            }
-                            $$.$me_atom2_async();
-                        }),
-                        '#ctxSize': s_level + '.#ctxSize',
-                        '#ctx': s_level + '.#ctx',
-                        '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'].concat(s_level.length < 2 ? [] : ['<.#left']), ({ masters: [alignHor, width_parent, width, ofsHor, left_parent] }) => {
-                            left_parent = left_parent || 0;
-                            const result = alignHor === $$.$me_align.left ? left_parent + ofsHor :
-                                alignHor === $$.$me_align.right ? left_parent + width_parent - ofsHor :
-                                    left_parent + (width_parent - width) / 2 + ofsHor;
-                            return result;
-                        }),
-                        '#top': $$.$me_atom2_prop(['.#alignVer', '<.#height', '.#height', '.#ofsVer'].concat(s_level.length < 2 ? [] : ['<.#top']), ({ masters: [alignVer, height_parent, height, ofsVer, top_parent] }) => {
-                            top_parent = top_parent || 0;
-                            const result = alignVer === $$.$me_align.top ? top_parent + ofsVer :
-                                alignVer === $$.$me_align.bottom ? top_parent + height_parent - ofsVer :
-                                    top_parent + (height_parent - height) / 2 + ofsVer;
-                            return result;
-                        }),
-                    },
-                ], {
-                    def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
-                        if (tail == '#cursor') {
-                            console.error(`${this.name()}: prop "#cursor" must be defined in "prop_non_render" section`);
-                            return null;
-                        }
-                    },
-                    dup: ({ tail, prop_defined, idx, len }) => {
-                        if (idx === len - 1)
-                            $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
-                    }
-                });
-                {
-                    const { defaults, defaults_relative } = this._prepare('prop_non_render_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_non_render_default || {});
-                    const prop_non_render = this.props([
-                        this.cnf_items('prop_non_render'),
-                        defaults,
-                        defaults_relative,
-                        {
-                            '#isHover': () => false,
-                        },
-                        {
-                            '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
-                                $$.$me_atom2_ec_body_cursor({ origin: atom.path, val: val });
-                            }),
-                        },
-                    ], {
-                        def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
-                            if (idx === len - 2 && tail == '#isHover') {
-                                if (prop_defined['#cursor'] === void 0)
-                                    return null;
-                            }
-                            else if (idx === len - 1 && tail == '#_cursor') {
-                                if (prop_defined['#cursor'] === void 0)
-                                    return null;
-                            }
-                        },
-                        dup: ({ tail, prop_defined, idx, len }) => {
-                            if (idx === len - 1)
-                                $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
-                        }
-                    });
-                }
-                for (const prop of ['#width', '#height', '#alignHor', '#alignVer', '#ofsHor', '#ofsVer'])
-                    if (prop_render[prop] === void 0)
-                        $$.$me_throw(`${this.name()}: requires .${prop} to be defined`);
-                this.props({
-                    '#render': $$.$me_atom2_prop(Object.keys(prop_render).map((s) => '.' + s), ({ masters }) => !(this.active() && $$.a('.#visible') && $$.a('.#isReady')) ? null : masters, ({ val, prev, atom }) => {
-                        if (!val)
-                            return;
-                        $me_atom2_control._to_render.add(this.path);
-                        $$.$me_atom2_async();
-                    }),
-                    '#offsetRect': () => $$.$me_rect(),
-                    '#clientRect': $$.$me_atom2_prop([s_level + '.#clientRect', '.#offsetRect'], ({ masters: [clientRect, offsetRect] }) => {
-                        return {
-                            left: clientRect.left + offsetRect.left,
-                            top: clientRect.top + offsetRect.top,
-                            right: clientRect.left + offsetRect.right,
-                            bottom: clientRect.top + offsetRect.bottom,
-                        };
-                    }, prop_render['#isHover'] === void 0 ? null :
-                        ({ val, atom }) => {
-                            if ($$.$me_atom2_event_mousemove_last && !$$.$me_atom2_event_mousemove_to_process) {
-                                $$.$me_atom2_event_mousemove_to_process = $$.$me_atom2_event_mousemove_last;
-                                $$.$me_atom2_async();
-                            }
-                        }),
-                });
-            }
-            static font_prepare(ctx, pixelRatio, prefix = '') {
-                const ctxFontSize = Math.round($me_atom2_control.font_size(pixelRatio, prefix));
-                ctx.font = $me_atom2_control._fontWeight(prefix) + ' ' + ctxFontSize + 'px ' + $me_atom2_control._fontFamily(prefix);
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'bottom';
-                return ctxFontSize;
-            }
-            static font_size(pixelRatio, prefix = '') {
-                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontSize', prefix));
-                if (typeof prop === 'string')
-                    $$.$me_throw(prop);
-                const result = prop.value() * pixelRatio;
-                return result;
-            }
-            static _fontProp(prop, prefix) {
-                const result = '.' + (!prefix ? prop : prefix + prop.slice(0, 1).toUpperCase() + prop.slice(1));
-                return result;
-            }
-            static _fontFamily(prefix = '') {
-                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontFamily', prefix));
-                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontFamily');
-            }
-            static _fontWeight(prefix = '') {
-                const prop = $$.a.curr.by_path_s($me_atom2_control._fontProp('fontWeight', prefix));
-                return !prefix || typeof prop !== 'string' ? prop.value() : $$.a('.fontWeight');
-            }
-            static clean(controls, force = false) {
-                let count = 0;
-                for (let control of controls) {
-                    if (control.render_state !== $me_atom2_control_render_state_enum.rendered)
-                        continue;
-                    count++;
-                    const ctxRect = control._ctxRect();
-                    const p = {
-                        ctx: control._entities.prop['#ctx'].value(),
-                        ctxRect,
-                    };
-                    if (p.ctx) {
-                        const prev = $$.a.curr;
-                        $$.a.curr = control;
-                        if (!control._clean_helper(p, control.cnf))
-                            p.ctx.clearRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left + 1, p.ctxRect.bottom - p.ctxRect.top + 1);
-                        $$.a.curr = prev;
-                    }
-                    control.render_state = $me_atom2_control_render_state_enum.cleaned;
-                    let controls;
-                    if ($me_atom2_control._fill_controls_cache.has(control)) {
-                        controls = $me_atom2_control._fill_controls_cache.get(control);
-                    }
-                    else {
-                        controls = [];
-                        const entities_control = control._entities.control;
-                        $me_atom2_control._fill_controls(controls, control._entities.control);
-                        $me_atom2_control._fill_controls_cache.set(control, controls);
-                    }
-                    if (controls.length)
-                        $me_atom2_control.clean($me_atom2_control.zIndex_sort(controls), force);
-                }
-                return count;
-            }
-            _ctxRect() {
-                const prop = this._entities.prop;
-                const prop_offsetRect = prop['#offsetRect'];
-                const offsetRect = prop_offsetRect.value();
-                const pixelRatio = $me_atom2_control.pixelRatio();
-                return {
-                    left: offsetRect.left * pixelRatio,
-                    top: offsetRect.top * pixelRatio,
-                    right: offsetRect.right * pixelRatio,
-                    bottom: offsetRect.bottom * pixelRatio,
-                };
-            }
-            _clean_helper(p, cnf) {
-                let result = false;
-                if (cnf) {
-                    if (cnf.clean)
-                        result = cnf.clean(p);
-                    result = this._clean_helper(p, cnf.base) || result;
-                }
-                return result;
-            }
-            static fill_controls_cache_clear() {
-                $me_atom2_control._fill_controls_cache.clear();
-            }
-            static _fill_controls(controls, entities_of_type) {
-                for (const tail in entities_of_type) {
-                    const entity = entities_of_type[tail];
-                    if (!entity._entities.key) {
-                        controls.push(entity);
-                    }
-                    else {
-                        $me_atom2_control._fill_controls(controls, entity._entities.key);
-                    }
-                }
-            }
-            static render(controls, pixelRatio) {
-                if (pixelRatio === void 0)
-                    pixelRatio = $me_atom2_control.pixelRatio();
-                let count = 0;
-                for (let control of controls) {
-                    if (control.render_state === $me_atom2_control_render_state_enum.rendered) {
-                        continue;
-                    }
-                    count++;
-                    const prop = control._entities.prop;
-                    const prop_offsetRect = prop['#offsetRect'];
-                    const prop_width = prop['#width'];
-                    const prop_heght = prop['#height'];
-                    const prop_left = prop['#left'];
-                    const prop_top = prop['#top'];
-                    const ctxWidth = Math.round(prop_width.value() * pixelRatio);
-                    const ctxHeight = Math.round(prop_heght.value() * pixelRatio);
-                    const left = Math.round(prop_left.value() * pixelRatio);
-                    const top = Math.round(prop_top.value() * pixelRatio);
-                    const right = left + ctxWidth;
-                    const bottom = top + ctxHeight;
-                    const ctxRect = { left, top, right, bottom };
-                    prop_offsetRect.value({
-                        left: left / pixelRatio,
-                        top: top / pixelRatio,
-                        right: right / pixelRatio,
-                        bottom: bottom / pixelRatio,
-                    });
-                    const p = {
-                        self: control,
-                        ctx: control._entities.prop['#ctx'].value(),
-                        ctxSize: control._entities.prop['#ctxSize'].value(),
-                        pixelRatio,
-                        ctxRect,
-                        ctxWidth,
-                        ctxHeight,
-                    };
-                    {
-                        const prev = $$.a.curr;
-                        $$.a.curr = control;
-                        control._render_helper(p, control.cnf);
-                        if (typeof $$.a.curr.by_path_s('.#border') !== 'string') {
-                            p.ctx.strokeStyle = $$.a('.#border');
-                            p.ctx.strokeRect(p.ctxRect.left, p.ctxRect.top, p.ctxRect.right - p.ctxRect.left, p.ctxRect.bottom - p.ctxRect.top);
-                        }
-                        $$.a.curr = prev;
-                    }
-                    let controls;
-                    if ($me_atom2_control._fill_controls_cache.has(control)) {
-                        controls = $me_atom2_control._fill_controls_cache.get(control);
-                    }
-                    else {
-                        controls = [];
-                        const entities_control = control._entities.control;
-                        $me_atom2_control._fill_controls(controls, control._entities.control);
-                        $me_atom2_control._fill_controls_cache.set(control, controls);
-                    }
-                    if (controls.length)
-                        $me_atom2_control.render($me_atom2_control.zIndex_sort(controls), pixelRatio);
-                    control.render_state = $me_atom2_control_render_state_enum.rendered;
-                }
-                return count;
-            }
-            _render_helper(p, cnf) {
-                if (!cnf)
-                    return;
-                this._render_helper(p, cnf.base);
-                if (cnf.render)
-                    cnf.render(p);
-            }
-            static zIndex_sort(ss, to_render = false) {
-                return (Array.isArray(ss) ? ss :
-                    [...ss].map(path => $$.$me_atom2_entity.root().by_path(path)))
-                    .filter(control => control && control.active &&
-                    (() => {
-                        if (!control._entities.prop)
-                            $$.$me_throw(control.name());
-                        return true;
-                    })() &&
-                    (!to_render || control._entities.prop['#visible'].value()));
-            }
-        }
-        $me_atom2_control.to_def = Array();
-        $me_atom2_control._to_render = new Set();
-        $me_atom2_control._to_clean = new Set();
-        $me_atom2_control.prop_non_render_default = {};
-        $me_atom2_control._fill_controls_cache = new Map();
-        $$.$me_atom2_control = $me_atom2_control;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//control.js.map
 ;
 "use strict";
 var $;
@@ -7613,7 +7607,7 @@ var $;
                         }
                         return result;
                     }),
-                }, ({ len, key: [id], masters: [ctx, pixelRatio, crumbs, crumb_ids, crumb_ofsHor, crumb_ofsVer, crumb_paddingHor, width, mode_switcher_width, mode_switcher_height, crumb_spaceHor, crumb_spaceVer, crumb_pos_prev, crumb_width_prev, crumb_height] }) => {
+                }, ({ key: [id], masters: [ctx, pixelRatio, crumbs, crumb_ids, crumb_ofsHor, crumb_ofsVer, crumb_paddingHor, width, mode_switcher_width, mode_switcher_height, crumb_spaceHor, crumb_spaceVer, crumb_pos_prev, crumb_width_prev, crumb_height] }) => {
                     let result;
                     const idx = crumb_ids.indexOf(id);
                     let crumb_width = Math.ceil(ctx.measureText(crumbs[id].caption).width / pixelRatio) + 2 * crumb_paddingHor;
@@ -7625,7 +7619,9 @@ var $;
                         };
                     }
                     else {
-                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ? width - crumb_spaceHor : width - mode_switcher_width - crumb_spaceHor;
+                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ?
+                            width - crumb_spaceHor :
+                            width - mode_switcher_width - crumb_spaceHor;
                         if (crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor + crumb_width + crumb_spaceHor > limitHor) {
                             result = {
                                 left: crumb_ofsHor,
@@ -9658,6 +9654,11 @@ var $;
                 cell_text_store: () => ({}),
                 row_opens_store: () => new Map(),
                 row_opens: $$.$me_atom2_prop(['.provider_tag', '.row_opens_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Set())),
+                row_count: $$.$me_atom2_prop(['/.#viewportHeight', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => rec_count < 0 ? 0 :
+                    2 + Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min)), ({ prev, val }) => {
+                    const result = prev != null && prev > val ? prev : val;
+                    return result;
+                }),
                 row_open: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
