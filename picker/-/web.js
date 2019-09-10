@@ -146,6 +146,11 @@ var $;
         }
         $$.$me_throw = $me_throw;
         $$.$me_stop = false;
+        let $me_theme;
+        (function ($me_theme) {
+            $me_theme[$me_theme["light"] = 0] = "light";
+            $me_theme[$me_theme["dark"] = 1] = "dark";
+        })($me_theme = $$.$me_theme || ($$.$me_theme = {}));
         $$.$me_rect = () => ({ left: 0, top: 0, right: 0, bottom: 0 });
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
@@ -164,6 +169,25 @@ var $;
             return result;
         }
         $$.$me_point_in_rect_offset = $me_point_in_rect_offset;
+        function $me_option_caption(id, options, val) {
+            const isSelected = typeof val == 'string' ? val == id :
+                val instanceof Set ? val.has(id) :
+                    val instanceof Map ? val.has(id) :
+                        false;
+            const caption = typeof options[id].caption != 'function' ?
+                options[id].caption :
+                options[id].caption({ val, isSelected });
+            return caption;
+        }
+        $$.$me_option_caption = $me_option_caption;
+        function $me_option_caption_text(id, options, val) {
+            const caption = $me_option_caption(id, options, val);
+            const result = typeof caption == 'string' ? caption :
+                !caption || typeof caption.text != 'string' ? id :
+                    caption.text;
+            return result;
+        }
+        $$.$me_option_caption_text = $me_option_caption_text;
         $$.$me_enum_names = (val) => {
             if (_enum_names_cache.has(val))
                 return _enum_names_cache.get(val);
@@ -890,7 +914,7 @@ var $;
         $$.$me_atom2_prop_compute_fn_diff = (initial) => initial === void 0 ? compute_fn_diff :
             (p) => compute_fn_diff(p, initial);
         const compute_fn_diff = (p, initial) => p.masters.reduce((result, val, idx) => result + (!idx ? val : -val), initial === void 0 ? 0 : initial);
-        $$.$me_atom2_prop_keys = (masters) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]));
+        $$.$me_atom2_prop_keys = (masters, strip_null = false) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]).filter((key) => !strip_null || masters[0][key] != null));
         function $me_atom2_prop_same_def(prop_def, props) {
             const result = {};
             for (const prop of props)
@@ -1119,7 +1143,7 @@ var $;
                     return;
                 }
                 if (prop_clientRect.state() === $$.$me_atom2_state_enum.valid)
-                    prop_clientRect.set_state($$.$me_atom2_state_enum.invalid);
+                    prop_clientRect.set_state($$.$me_atom2_state_enum.need_check);
                 for (const ec_kind of ['elem', 'control']) {
                     const entities_of_kind = this._entities[ec_kind];
                     if (!entities_of_kind)
@@ -2963,7 +2987,7 @@ var $;
                         let state;
                         if (ma && ma._state !== $me_atom2_state_enum.valid) {
                             state = new Set();
-                            state.add('#masters');
+                            state.add(this.name() + '.#masters');
                             return { state };
                         }
                         let store = this._masters_store;
@@ -2983,8 +3007,6 @@ var $;
                                             this._state instanceof Set ?
                                                 this._state :
                                                 new Set();
-                                    if (this.name() == '/@demo@dialog@invisible@row[3]@content@wrapper@item.#hidden')
-                                        console.error(this.name(), name_master);
                                     state.add(name_master);
                                 }
                             }
@@ -3125,7 +3147,13 @@ var $;
                         const entity = this.parent(true);
                         if (entity instanceof $$.$me_atom2_elem) {
                             const elem = entity;
-                            if (elem.node.style.width == 'auto' || elem.node.style.height == 'auto') {
+                            if (elem.node.style.width == 'auto' ||
+                                elem.node.style.height == 'auto' ||
+                                (() => {
+                                    const prop_width = $$.$me_atom2_entity.root().by_path($$.$me_atom2_path.fromString('.#width'));
+                                    const prop_height = $$.$me_atom2_entity.root().by_path($$.$me_atom2_path.fromString('.#height'));
+                                    return prop_width && prop_height && (prop_width.value() == null || prop_height.value() == null);
+                                })) {
                                 $me_atom2.add_to_update(this);
                             }
                             else {
@@ -4419,6 +4447,101 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let instances;
+        $$.$me_dropdown = {
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
+                    $$.a('.instance', null);
+                    return true;
+                }
+                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
+                    if (!instances)
+                        instances = new Map();
+                    const ids = [...instances].map(([spinner, id]) => id).sort();
+                    let id;
+                    for (let i = 0; i < ids.length; i++)
+                        if (i != ids[i]) {
+                            id = i;
+                            break;
+                        }
+                    if (id === void 0)
+                        id = ids.length;
+                    const prop_dropdownTarget = $$.a.get('.#clientRect');
+                    const prop_clientRect = $$.a.get('.dropdownTargetClientRect');
+                    const isTouch = $$.a('.isTouch');
+                    const prop_isDropdown = $$.a.get('.isDropdown');
+                    const prop_zIndex = $$.a.get('.#zIndex');
+                    const cnf = $$.a.dispatch('', 'dropdown', {
+                        id,
+                        prop_clientRect,
+                        prop_isDropdown,
+                        prop_zIndex,
+                        isTouch,
+                        result: null,
+                    }).result;
+                    if (!cnf)
+                        $$.$me_throw($$.a.curr.name());
+                    if (!cnf.prop)
+                        cnf.prop = {};
+                    if (!cnf.prop['#ofsHor'])
+                        cnf.prop['#ofsHor'] = !isTouch ?
+                            $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.left) :
+                            $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2);
+                    if (!cnf.prop['#ofsVer'])
+                        cnf.prop['#ofsVer'] = !isTouch ?
+                            $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom)
+                            : $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2);
+                    if (!cnf.prop['#zIndex'])
+                        cnf.prop['#zIndex'] = $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 10);
+                    const dropdown = new $$.$me_atom2_elem({
+                        tail: 'me_dropdown' + id,
+                        parent: $$.a.get('/@app'),
+                        cnf,
+                    });
+                    $$.a('.instance', dropdown);
+                    return true;
+                }
+                return false;
+            },
+            prop: {
+                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
+                    if (!val && prev) {
+                        instances.delete(prev);
+                        prev.destroy();
+                    }
+                }),
+                isTouch: '/.#isTouch',
+                dropdownTarget: () => '',
+                dropdownTargetClientRect: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.dropdownTarget'], ({ masters: [target] }) => [target + '.#clientRect'])),
+                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
+                    if (val) {
+                        $$.a.dispatch('', 'show');
+                    }
+                    else if (prev) {
+                        $$.a.dispatch('', 'hide');
+                    }
+                }),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.isDropdown', !$$.a('.isDropdown'));
+                    return true;
+                },
+                clickOrTapOutside: () => {
+                    $$.a('.isDropdown', false);
+                    return false;
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//dropdown.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         function $me_ribbon_effect(p) {
             const flush = () => {
                 delete effect_timers[p.id];
@@ -4520,7 +4643,6 @@ var $;
             if (!delta)
                 return;
             if (delta < 0) {
-                console.error(atom.name(), { delta, prev, val });
                 const top = $$.a(`.row_top[${row_i}]`);
                 const delta_bottom = top + val - $$.a('.height_actual');
                 if (delta_bottom > 0) {
@@ -5027,7 +5149,7 @@ var $;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign({ period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
                     '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
                 ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
@@ -5036,7 +5158,7 @@ var $;
                 }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
                 '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
                 '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
-            }), { text: () => '' }),
+            })),
             render: p => {
                 let { ctxWidth, ctxHeight } = p;
                 const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
@@ -5075,478 +5197,40 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_iospicker = {
-            dispatch: (dispatch_name, dispatch_arg) => {
-                console.warn($$.a.curr.name(), dispatch_name, dispatch_arg);
-                return true;
-            },
-            prop: {
-                СвернутьРазвернуть: $$.$me_atom2_prop(['/.СвернутьРазвернуть'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                    $$.a('/.СвернутьРазвернуть', val);
-                }),
-                СписокБарабан: $$.$me_atom2_prop(['/.СписокБарабан'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                    $$.a('/.СписокБарабан', val);
-                }),
-                itemMarginTopFirst: () => 16,
-                itemMarginBottomLast: () => 16,
-                itemMarginVer: () => 0,
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                '#width': () => 374,
-                non_current_facets_semi_count_max: () => 12,
-                non_current_facets_semi_count: $$.$me_atom2_prop(['.option_ids', '.non_current_facets_semi_count_max', '.СвернутьРазвернуть'], ({ masters: [option_ids, non_current_facets_semi_count_max, СвернутьРазвернуть] }) => !СвернутьРазвернуть ?
-                    Math.max(1, Math.min(non_current_facets_semi_count_max, option_ids.length + (option_ids.length < 5 ? -1 : option_ids.length < 7 ? 0 : 1))) :
-                    Math.max(1, Math.min(non_current_facets_semi_count_max, Math.ceil(option_ids.length - 1) / 2 + (option_ids.length > 7 ? 1 : 0)))),
-                '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.СписокБарабан'], ({ masters: [СписокБарабан] }) => {
-                    if (!СписокБарабан) {
-                        return ['.row_current_top', '.row_current_height'];
-                    }
-                    else {
-                        return ['.option_ids', '.non_current_facets_semi_count_max', '.row_current_height', '.itemMarginTopFirst', '.itemMarginBottomLast', '.itemMarginVer'];
-                    }
-                }), ({ len, masters }) => {
-                    if (len == 2) {
-                        const [row_current_top, row_current_height] = masters;
-                        return 2 * row_current_top + row_current_height;
-                    }
-                    else {
-                        const [option_ids, non_current_facets_semi_count_max, row_current_height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
-                        const rec_count = option_ids.length;
-                        const max = non_current_facets_semi_count_max;
-                        const result = rec_count > max ?
-                            max * row_current_height :
-                            rec_count * row_current_height + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
-                        return result;
-                    }
-                }),
-                row_current_height: () => 38,
-                fontSize: $$.$me_atom2_prop(['.row_current_height'], $$.$me_atom2_prop_compute_fn_mul(22 / 38)),
-                row_angles: $$.$me_atom2_prop(['.non_current_facets_semi_count'], ({ masters: [count] }) => {
-                    const step = 90 / (count + 2);
-                    const result = [];
-                    for (let i = 0; i <= count + 2; i++)
-                        result.push(i * step);
-                    return result;
-                }),
-                row_heights: $$.$me_atom2_prop(['.row_angles', '.row_current_height'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
-                row_label_heights: $$.$me_atom2_prop(['.row_angles', '.fontSize'], ({ masters: [angles, height] }) => angles.map((angle) => Math.round(height * Math.cos(angle * Math.PI / 180)))),
-                row_count: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => (row_heights.length - 2) * 2 + 1),
-                row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')),
-                row_current_top: $$.$me_atom2_prop(['.row_heights'], ({ masters: [row_heights] }) => {
-                    let result = 0;
-                    for (let i = 1; i < row_heights.length - 1; i++)
-                        result += row_heights[i];
-                    return result;
-                }),
-                ofs: () => 0,
-                ofs_rem: $$.$me_atom2_prop(['.ofs', '.row_current_height'], ({ masters: [ofs, row_current_height] }) => {
-                    const result = ofs - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) * row_current_height;
-                    return result;
-                }),
-                rec_idx: $$.$me_atom2_prop(['.ofs', '.row_current_height', '.value', '.option_ids'], ({ masters: [ofs, row_current_height, id, ids], prev }) => {
-                    let result;
-                    if (prev == null) {
-                        const idx = ids.indexOf(id);
-                        if (~idx)
-                            result = idx;
-                    }
-                    if (result == null)
-                        result = -Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height);
-                    return result;
-                }, ({ val, prev }) => {
-                    if (prev == null)
-                        $$.a('.ofs', -val * $$.a('.row_current_height'));
-                    $$.a('.value', $$.a('.option_ids')[val]);
-                }),
-                on_change_value: $$.$me_atom2_prop(['.value', '.option_ids'], null, ({ val: [id, ids] }) => {
-                    const idx = ids.indexOf(id);
-                    if (~idx)
-                        $$.a('.rec_idx', idx);
-                }),
-                row_i_current: $$.$me_atom2_prop(['.ofs', '.row_count', '.row_current_height', '.rec_idx'], ({ masters: [ofs, row_count, row_current_height, rec_idx] }) => {
-                    const result = (rec_idx - Math.sign(ofs) * Math.round(Math.abs(ofs) / row_current_height) % row_count + row_count) % row_count;
-                    return result;
-                }, ({ val, prev }) => {
-                    if (prev == null)
-                        return;
-                    for (let i = 0; i < $$.a('.row_count'); i++) {
-                        $$.a(`.row_top[${i}].#masters`, null);
-                        $$.a(`.row_top[${i}]`, null);
-                    }
-                }),
-                row_i_rel: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: ['.row_i_current', '.row_count'],
-                }, ({ key: [row_i], masters: [row_i_current, row_count] }) => {
-                    const row_count_semi = (row_count - 1) / 2;
-                    let result = +row_i - row_i_current;
-                    if (result > row_count_semi) {
-                        result = result - row_count;
-                    }
-                    else if (result < -row_count_semi) {
-                        result = row_count + result;
-                    }
-                    return result;
-                }),
-                row_top: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.row_i_current', '.row_count', '.row_i_rel[]'], ({ key: [row_i], masters: [row_i_current, row_count, row_i_rel] }) => {
-                        const result = [];
-                        if (!row_i_rel) {
-                            result.push('.row_current_top');
-                            result.push('.ofs_rem');
-                        }
-                        else {
-                            const i_rel_abs = Math.abs(row_i_rel);
-                            const i_rel_sign = Math.sign(row_i_rel);
-                            const row_i_top = (row_i_current + (i_rel_abs - 1) * i_rel_sign + row_count) % row_count;
-                            const row_i_height = i_rel_sign >= 0 ? row_i_top : (row_i_top + row_count - 1) % row_count;
-                            result.push(`.row_top[${row_i_top}]`);
-                            result.push(`.row_height[${row_i_height}]`);
-                            result.push(`.row_i_rel[]`);
-                        }
-                        return result;
-                    }),
-                }, ({ len, masters }) => {
-                    if (len <= 2) {
-                        const [row_current_top, ofs_rem] = masters;
-                        return row_current_top + ofs_rem;
-                    }
-                    else {
-                        const [row_top, row_height, row_i_rel] = masters;
-                        return row_top + row_height * Math.sign(row_i_rel);
-                    }
-                }),
-                lambda: $$.$me_atom2_prop(['.ofs_rem', '.row_current_height'], ({ masters: [ofs_rem, row_current_height] }) => {
-                    let result = Math.abs(ofs_rem) / row_current_height;
-                    if (ofs_rem < 0)
-                        result = 1 - result;
-                    return result;
-                }),
-                row_i_rel_abs_from: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
-                    const row_i_rel_abs = Math.abs(row_i_rel);
-                    const row_i_rel_sign = Math.sign(row_i_rel);
-                    const result = ofs_rem >= 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign > 0 ? -1 : 1);
-                    return result;
-                }),
-                row_i_rel_abs_to: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel[]', '.ofs_rem'] }, ({ masters: [row_i_rel, ofs_rem] }) => {
-                    const row_i_rel_abs = Math.abs(row_i_rel);
-                    const row_i_rel_sign = Math.sign(row_i_rel);
-                    const result = ofs_rem < 0 ? row_i_rel_abs : row_i_rel_abs + (row_i_rel_sign < 0 ? -1 : 1);
-                    return result;
-                }),
-                row_height: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_heights'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_heights] }) => {
-                    const result = (1 - lambda) * row_heights[row_i_rel_abs_from] + lambda * row_heights[row_i_rel_abs_to];
-                    return result;
-                }),
-                row_angle: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_rel_abs_from[]', '.row_i_rel_abs_to[]', '.lambda', '.row_angles', '.row_i_rel[]'] }, ({ key: [row_i], masters: [row_i_rel_abs_from, row_i_rel_abs_to, lambda, row_angles, row_i_rel] }) => {
-                    const result = -Math.sign(row_i_rel) * ((1 - lambda) * row_angles[row_i_rel_abs_from] + lambda * row_angles[row_i_rel_abs_to]);
-                    return result;
-                }),
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                '#order': () => ['row', 'curtain', 'cursor'],
-                curtain: () => ['top', 'bottom'],
-            },
-            event: {
-                wheel: p => p.isInRect(p.event.clientX, p.event.clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-                wheelDrag: p => p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-                wheelTouch: p => p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
-            },
-            elem: {
-                СписокБарабан: () => ({
-                    base: ear,
-                    prop: {
-                        captions: () => ['Список', 'Барабан'],
-                        isOn: $$.$me_atom2_prop(['<.СписокБарабан'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                            $$.a('<.СписокБарабан', val);
-                        }),
-                    },
-                }),
-                СвернутьРазвернуть: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
-                    {
-                        base: ear,
-                        prop: {
-                            '#alignHor': () => $$.$me_align.right,
-                            captions: () => ['Свернуть', 'Развернуть'],
-                            isOn: $$.$me_atom2_prop(['<.СвернутьРазвернуть'], ({ masters: [isOn] }) => isOn, ({ val }) => {
-                                $$.a('<.СвернутьРазвернуть', val);
-                            }),
-                        },
-                    }),
-                cursor: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [isOn] }) => isOn ? null :
-                    {
-                        prop: {
-                            '#ofsVer': '<.row_current_top',
-                            '#height': '<.row_current_height',
-                        },
-                        style: {
-                            borderTop: () => '1px solid #D5D5D3',
-                            borderBottom: () => '1px solid #D5D5D3',
-                            boxSizing: () => 'border-box',
-                        },
-                    }),
-                curtain: $$.$me_atom2_prop({ keys: ['.curtain'],
-                    masters: ['.СписокБарабан']
-                }, ({ key: [curtain], masters: [СписокБарабан] }) => {
-                    return СписокБарабан ? null : {
-                        prop: {
-                            '#height': '<.row_current_top',
-                            '#alignVer': () => $$.$me_align[curtain],
-                        },
-                        style: {
-                            background: () => `linear-gradient(${curtain == 'bottom' ? 0 : 180}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.6) 50%, rgba(255,255,255,0.3) 100%)`,
-                            pointerEvents: () => 'none',
-                        },
-                    };
-                }),
-                row: $$.$me_atom2_prop({ keys: ['.row_i'],
-                    masters: ['.СписокБарабан']
-                }, ({ key: [row_i], masters: [СписокБарабан] }) => СписокБарабан ? null : {
-                    prop: {
-                        '#height': `<.row_height[${row_i}]`,
-                        '#ofsVer': `<.row_top[${row_i}]`,
-                    },
-                    style: {
-                        boxSizing: () => 'border-box',
-                        overflow: () => 'hidden',
-                    },
-                    elem: {
-                        label: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => null,
-                                '#alignHor': () => $$.$me_align.center,
-                                '#ofsVer': $$.$me_atom2_prop([`<<.row_angle[${row_i}]`, '.#height', '<.#height'], ({ masters: [angle, height_own, height_parent] }) => {
-                                    const result = Math.floor(Math.pow(Math.cos(angle * Math.PI / 180), 2) *
-                                        (height_parent - height_own) / 2);
-                                    return result;
-                                }),
-                                fontSize: '<<.fontSize',
-                            },
-                            style: {
-                                transform: $$.$me_atom2_prop([`<<.row_angle[${row_i}]`], ({ masters: [angle] }) => {
-                                    return `rotateX(${angle}deg)`;
-                                }),
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop([`<<.row_i_rel[${row_i}]`, '<<.option_ids', '<<.options', '<<.rec_idx'], ({ masters: [row_i_rel, option_ids, options, rec_idx] }) => {
-                                    const idx = rec_idx + row_i_rel;
-                                    if (!(0 <= idx && idx < option_ids.length))
-                                        return '';
-                                    const id = option_ids[idx];
-                                    return options[id].caption || id;
-                                }),
-                            },
-                        }),
-                    },
-                }),
-                list: $$.$me_atom2_prop(['.СписокБарабан'], ({ masters: [СписокБарабан] }) => !СписокБарабан ? null : {
-                    base: $$.$me_list,
-                    dispatch: (dispatch_name, dispatch_arg) => {
-                        if (dispatch_name == 'row_height_default') {
-                            const idx = dispatch_arg.idx;
-                            dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
-                                (!idx ? $$.a('.itemMarginTopFirst') : $$.a('.itemMarginBottomLast')) - $$.a('.itemMarginVer'));
-                            return true;
-                        }
-                        return false;
-                    },
-                    prop: {
-                        rec_count: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.length),
-                        row_height_min: '<.row_current_height',
-                        curtain_kind: () => 'white',
-                        header_height: () => 0,
-                        provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
-                        itemMarginTopFirst: '<.itemMarginTopFirst',
-                        itemMarginBottomLast: '<.itemMarginBottomLast',
-                        itemMarginVer: '<.itemMarginVer',
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        rec_idx_selected: $$.$me_atom2_prop(['<.value', '<.option_ids'], ({ masters: [id, ids] }) => ids.indexOf(id)),
-                        row_i_selected: $$.$me_atom2_prop(['.rec_idx_selected', '.row_i_min', '.row_i_max', '.row_count', '.visible_idx_min', '.visible_idx_max'], ({ masters: [idx, row_i_min, row_i_max, row_count, visible_idx_min, visible_idx_max] }) => {
-                            if (idx < 0)
-                                return -1;
-                            if (row_i_max < 0)
-                                return -1;
-                            if (!(visible_idx_min <= idx && idx <= visible_idx_max))
-                                return -1;
-                            return (row_i_min + (idx - visible_idx_min)) % row_count;
-                        }),
-                        header_content: () => ({}),
-                        row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                            base: row,
-                            prop: {
-                                row_i: () => row_i,
-                                rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                                id: $$.$me_atom2_prop(['<<<.option_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                                    return !~idx || idx >= rec_count ? '' : ids[idx];
-                                }),
-                                fontSize: '<<<.fontSize',
-                                options: '<<<.options',
-                                rec_count: '<<.rec_count',
-                                itemMarginTopFirst: '<<.itemMarginTopFirst',
-                                itemMarginBottomLast: '<<.itemMarginBottomLast',
-                                itemMarginVer: '<<.itemMarginVer',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a('<<<.value', $$.a('.id'));
-                                    $$.a.dispatch('<<<', null, 'didSelect');
-                                    return true;
-                                },
-                            },
-                            style: {
-                                background: () => 'white',
-                            },
-                        })),
-                    },
-                    elem: {
-                        header: () => null,
-                        cursor: $$.$me_atom2_prop(['.row_i_selected', '.rec_idx_selected'], ({ masters: [row_i_selected, rec_idx_selected] }) => row_i_selected < 0 ? null : {
-                            prop: {
-                                '#height': '<<.row_current_height',
-                                '#ofsVer': rec_idx_selected ?
-                                    `<.row_top[${row_i_selected}]` :
-                                    $$.$me_atom2_prop([`<.row_top[${row_i_selected}]`, '<.itemMarginTopFirst'], $$.$me_atom2_prop_compute_fn_sum()),
-                            },
-                            style: {
-                                borderTop: () => '1px solid #D5D5D3',
-                                borderBottom: () => '1px solid #D5D5D3',
-                                boxSizing: () => 'border-box',
-                            },
-                        })
-                    },
-                }),
-            },
-            style: {
-                perspective: () => '900px',
-                background: () => 'white',
-            },
-        };
-        const ear = {
-            prop: {
-                '#height': () => null,
-                '#width': () => null,
-                '#cursor': () => 'pointer',
-                '#ofsVer': $$.$me_atom2_prop(['.#height'], ({ masters: [height] }) => -height),
-                captions: $$.$me_atom2_prop_abstract(),
-            },
-            style: {
-                padding: () => 8,
-                paddingLeft: () => 16,
-                paddingRight: () => 16,
-                color: () => 'rgb(0, 112, 164)',
-                userSelect: () => 'none',
-                background: () => 'rgb(217, 220, 226)',
-                borderTop: () => '1px solid #bdc3d1',
-                borderLeft: () => '1px solid #bdc3d1',
-                borderRight: () => '1px solid #bdc3d1',
-                borderTopLeftRadius: () => '4px',
-                borderTopRightRadius: () => '4px',
-            },
-            dom: {
-                innerText: $$.$me_atom2_prop(['.isOn', '.captions'], ({ masters: [isOn, captions] }) => isOn ? captions[1] : captions[0]),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('.isOn', !$$.a('.isOn'));
-                    return true;
-                },
-            },
-        };
-        const row = {
-            prop: {
-                '#cursor': () => 'pointer',
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        fontSize: '<.fontSize',
-                        '#width': '<.#width',
-                        '#height': '<.#height',
-                        alignVer: () => $$.$me_align.center,
-                        alignHor: () => $$.$me_align.center,
-                        '#ofsVer': $$.$me_atom2_prop([`<.rec_idx`, '<.rec_count', '<.itemMarginTopFirst', '<.itemMarginBottomLast', '<.itemMarginVer'], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
-                            if (!~rec_idx)
-                                return 0;
-                            const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
-                                rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
-                                    0);
-                            return result;
-                        }),
-                        paddingHor: () => 8,
-                        text: $$.$me_atom2_prop([`<.rec_idx`, '<.options'], ({ masters: [rec_idx, options] }) => {
-                            if (!~rec_idx)
-                                return '';
-                            const id = Object.keys(options)[rec_idx];
-                            return options[id].caption || id;
-                        }),
-                    },
-                })
-            },
-        };
-        let timer;
-        let prevDeltaY;
-        function wheel(deltaY) {
-            if (timer != null)
-                clearTimeout(timer);
-            const prop_ofs = $$.a.get('.ofs');
-            const prop_ofs_rem = $$.a.get('.ofs_rem');
-            timer = setTimeout(() => {
-                timer = null;
-                const ofs_rem = prop_ofs_rem.value();
-                if (!ofs_rem)
-                    return;
-                prop_ofs.value($$.$me_atom2_anim({ to: prop_ofs.value() - ofs_rem, duration: 100 }));
-            }, 100);
-            const min = -($$.a('.option_ids').length - 1) * $$.a('.row_current_height');
-            prop_ofs.value(Math.min(0, Math.max(min, prop_ofs.value() - deltaY)));
-            return true;
-        }
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//iospicker.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$me_triangle = {
             prop: {
                 direction: () => $$.$me_rect_sides_enum.bottom,
                 size: '.em',
                 color: '.colorText',
                 k: () => 2 / Math.sqrt(3),
-                height: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
                     size :
                     Math.round(size * k)),
-                width: $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
                     size :
                     Math.round(size * k)),
-                '#width': () => 0,
-                '#height': () => 0,
             },
-            style: {
-                borderTop: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
-                    direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
-                borderLeft: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
-                    direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderRight: $$.$me_atom2_prop(['.direction', '.width', '.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
-                    direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
-                        `${width / 2}px solid transparent`),
-                borderBottom: $$.$me_atom2_prop(['.direction', '.height', '.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
-                    direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
-                        `${height / 2}px solid transparent`),
+            elem: {
+                content: () => ({
+                    prop: {
+                        '#width': () => 0,
+                        '#height': () => 0,
+                    },
+                    style: {
+                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
+                            direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                                `${height / 2}px solid transparent`),
+                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
+                            direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                                `${width / 2}px solid transparent`),
+                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
+                            direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                                `${width / 2}px solid transparent`),
+                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
+                            direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                                `${height / 2}px solid transparent`),
+                    },
+                }),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -5558,273 +5242,346 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let instances;
+        $$.$nl_triangle = {
+            base: $$.$me_triangle,
+            prop: {
+                '#alignHor': () => $$.$me_align.right,
+                '#ofsHor': () => 9,
+                '#alignVer': () => $$.$me_align.center,
+                size: () => 7,
+                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#444956' : 'white'),
+                k: () => 9 / 7,
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_picker = {
+            base: $$.$me_dropdown,
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'hide' && $$.a('.instance') != null) {
-                    $$.a('.instance', null);
-                }
-                else if (dispatch_name == 'show' && $$.a('.instance') == null) {
-                    if (!instances)
-                        instances = new Map();
-                    const ids = [...instances].map(([spinner, id]) => id).sort();
-                    let id;
-                    for (let i = 0; i < ids.length; i++)
-                        if (i != ids[i]) {
-                            id = i;
-                            break;
-                        }
-                    if (id === void 0)
-                        id = ids.length;
+                if (dispatch_name == 'dropdown') {
+                    const { prop_isDropdown, prop_clientRect, isTouch } = dispatch_arg;
                     const prop_itemMarginTopFirst = $$.a.get('.itemMarginTopFirst');
                     const prop_itemMarginBottomLast = $$.a.get('.itemMarginBottomLast');
                     const prop_itemMarginVer = $$.a.get('.itemMarginVer');
                     const prop_options = $$.a.get('.options');
                     const prop_option_ids = $$.a.get('.option_ids');
-                    const prop_maxDrodownCount = $$.a.get('.maxDrodownCount');
-                    const prop_clientRect = $$.a.get('.#clientRect');
-                    const prop_height = $$.a.get('.#height');
-                    const prop_fontSize = $$.a.get('.fontSize');
                     const prop_value = $$.a.get('.value');
-                    const prop_isDropdown = $$.a.get('.isDropdown');
-                    const prop_borderRadius = $$.a.get('.style.borderRadius');
-                    const prop_border = $$.a.get('.style.border');
-                    const prop_zIndex = $$.a.get('.#zIndex');
-                    const prop_isTouch = $$.a.get('.isTouch');
-                    const list = $$.a('.isTouch') ?
-                        new $$.$me_atom2_elem({
-                            tail: 'nl_picker_list' + id,
-                            parent: $$.a.get('/@app'),
-                            cnf: {
-                                base: $$.$nl_iospicker,
-                                dispatch: (dispatch_name, dispatch_arg) => {
-                                    if (dispatch_arg == 'didSelect') {
-                                        prop_isDropdown.value(false);
-                                        return true;
-                                    }
-                                    console.error({ dispatch_name, dispatch_arg });
-                                    return false;
-                                },
+                    const prop_itemFontSize = $$.a.get('.itemFontSize');
+                    const prop_row_height_min = $$.a.get('.row_height_min');
+                    const prop_dropdownWidth = $$.a.get('.dropdownWidth');
+                    const prop_dropdownHeight = $$.a.get('.dropdownHeight');
+                    const prop_theme = $$.a.get('/.theme');
+                    dispatch_arg.result = {
+                        base: $$.$me_list,
+                        dispatch: (dispatch_name, dispatch_arg) => {
+                            if (dispatch_name == 'row_height_default') {
+                                const idx = dispatch_arg.idx;
+                                dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
+                                    (!idx ? prop_itemMarginTopFirst.value() : prop_itemMarginBottomLast.value()) - prop_itemMarginVer.value());
+                                return true;
+                            }
+                            return false;
+                        },
+                        prop: {
+                            '#width': prop_dropdownWidth.name(),
+                            '#height': prop_dropdownHeight.name(),
+                            rec_count: $$.$me_atom2_prop([prop_option_ids.name()], ({ masters: [ids] }) => ids.length),
+                            row_height_min: prop_row_height_min.name(),
+                            curtain_kind: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'black'),
+                            header_height: () => 0,
+                            provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
+                            rec_idx_selected: $$.$me_atom2_prop([prop_value.name(), prop_option_ids.name()], ({ masters: [value, ids] }) => (typeof value == 'string' ?
+                                [ids.indexOf(value)] :
+                                value instanceof Set ?
+                                    [...value].map((id) => ids.indexOf(id)) :
+                                    value instanceof Map ?
+                                        [...value].map(([id]) => ids.indexOf(id)) :
+                                        []).filter((idx) => ~idx)),
+                            row_i_selected: $$.$me_atom2_prop(['.rec_idx_selected', '.row_i_min', '.row_i_max', '.row_count', '.visible_idx_min', '.visible_idx_max'], ({ masters: [idx, row_i_min, row_i_max, row_count, visible_idx_min, visible_idx_max] }) => {
+                                return idx.map((idx) => {
+                                    if (idx < 0)
+                                        return -1;
+                                    if (row_i_max < 0)
+                                        return -1;
+                                    if (!(visible_idx_min <= idx && idx <= visible_idx_max))
+                                        return -1;
+                                    return (row_i_min + (idx - visible_idx_min)) % row_count;
+                                }).filter((idx) => ~idx);
+                            }),
+                            header_content: () => ({}),
+                            row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
                                 prop: {
-                                    options: prop_options.name(),
-                                    value: $$.$me_atom2_prop([prop_value.name()], null, ({ val }) => {
-                                        prop_value.value(val);
+                                    isTouch: () => isTouch,
+                                    row_i: () => row_i,
+                                    rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
+                                    id: $$.$me_atom2_prop([prop_option_ids.name(), `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
+                                        return !~idx || idx >= rec_count ? '' : ids[idx];
                                     }),
-                                    '#ofsHor': $$.$me_atom2_prop(['.#width', '/.#viewportWidth'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                    '#ofsVer': $$.$me_atom2_prop(['.#height', '/.#viewportHeight'], ({ masters: [width, viewportWidth] }) => (viewportWidth - width) / 2),
-                                    '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
-                                },
-                                style: {
-                                    boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
+                                    isSelected: $$.$me_atom2_prop(['<<.row_i_selected'], ({ masters: [row_i_selected] }) => !!~row_i_selected.indexOf(+row_i)),
+                                    rec_count: '<<.rec_count',
+                                    '#cursor': () => 'pointer',
+                                    '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                    row_cursor_src: $$.$me_atom2_prop(['.isTouch', '.#isHover', '.row_i'], ({ masters: [isTouch, isHover, row_i] }) => isTouch || !isHover ? '' : row_i, ({ atom, val }) => {
+                                        $$.$nl_picker_cursor({ origin: atom, val: val });
+                                    }),
                                 },
                                 event: {
-                                    mousedown: p => p.isInRect(p.event.clientX, p.event.clientY),
-                                    touchstart: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY),
-                                },
-                            }
-                        }) :
-                        new $$.$me_atom2_elem({
-                            tail: 'nl_picker_list' + id,
-                            parent: $$.a.get('/@app'),
-                            cnf: {
-                                base: $$.$me_list,
-                                dispatch: (dispatch_name, dispatch_arg) => {
-                                    if (dispatch_name == 'row_height_default') {
-                                        const idx = dispatch_arg.idx;
-                                        dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
-                                            (!idx ? prop_itemMarginTopFirst.value() : prop_itemMarginBottomLast.value()) - prop_itemMarginVer.value());
+                                    clickOrTap: () => {
+                                        const value = prop_value.value();
+                                        const id = $$.a('.id');
+                                        if (value instanceof Set) {
+                                            const ss = value;
+                                            if (ss.has(id)) {
+                                                ss.delete(id);
+                                            }
+                                            else {
+                                                ss.add(id);
+                                            }
+                                            prop_value.value(ss, true);
+                                        }
+                                        else if (value instanceof Map) {
+                                            const ss = value;
+                                            if (ss.has(id)) {
+                                                ss.delete(id);
+                                            }
+                                            else {
+                                                ss.set(id, null);
+                                            }
+                                            prop_value.value(ss, true);
+                                        }
+                                        else {
+                                            prop_value.value(id);
+                                            prop_isDropdown.value(false);
+                                        }
                                         return true;
-                                    }
-                                    return false;
-                                },
-                                prop: {
-                                    '#height': $$.$me_atom2_prop([prop_options.name(), prop_maxDrodownCount.name(), prop_clientRect.name(), '/.#viewportHeight', '.row_height_min', prop_itemMarginTopFirst.name(), prop_itemMarginBottomLast.name(), prop_itemMarginVer.name()], ({ masters: [options, maxDropdownCount, clientRect, viewportHeight, height, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => Math.max(0, Math.min(Object.keys(options).length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom) / height))) * height + (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer)),
-                                    '#width': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.right - clientRect.left),
-                                    '#ofsHor': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.left),
-                                    '#ofsVer': $$.$me_atom2_prop([prop_clientRect.name()], ({ masters: [clientRect] }) => clientRect.bottom),
-                                    '#isHover': () => false,
-                                    rec_count: $$.$me_atom2_prop([prop_option_ids.name()], ({ masters: [ids] }) => ids.length),
-                                    row_height_min: prop_height.name(),
-                                    curtain_kind: () => 'white',
-                                    header_height: () => 0,
-                                    provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
-                                    header_content: () => ({}),
-                                    row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                                        base: row,
-                                        prop: {
-                                            row_i: () => row_i,
-                                            rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                                            id: $$.$me_atom2_prop([prop_option_ids.name(), `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                                                return !~idx || idx >= rec_count ? '' : ids[idx];
-                                            }),
-                                            rec_count: '<<.rec_count',
-                                            fontSize: prop_fontSize.name(),
-                                            itemMarginTopFirst: prop_itemMarginTopFirst.name(),
-                                            itemMarginBottomLast: prop_itemMarginBottomLast.name(),
-                                            itemMarginVer: prop_itemMarginVer.name(),
-                                            options: prop_options.name(),
-                                            '#isHover': () => false,
-                                        },
-                                        event: {
-                                            clickOrTap: () => {
-                                                prop_value.value($$.a('.id'));
-                                                prop_isDropdown.value(false);
-                                                return true;
-                                            },
-                                        },
-                                        style: {
-                                            background: () => 'white',
-                                        },
-                                    })),
-                                    '#zIndex': $$.$me_atom2_prop([prop_zIndex.name()], ({ masters: [zIndex] }) => zIndex + 1),
-                                    row_cursor: () => '',
-                                    '#order': () => ['row', 'cursor'],
-                                },
-                                elem: {
-                                    header: () => null,
-                                    cursor: () => ({
-                                        prop: {
-                                            '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
-                                            '#ofsHor': () => 3,
-                                            '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`]), ({ len, masters: [top, rec_idx] }) => !len ? null : rec_idx ? top : 3),
-                                            '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count']), ({ len, masters: [val, rec_idx, rec_count] }) => !len ? null : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
-                                            '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor - 2),
-                                        },
-                                        style: {
-                                            boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
-                                            pointerEvents: () => 'none',
-                                        },
-                                    }),
+                                    },
                                 },
                                 style: {
-                                    background: () => 'white',
-                                    borderRadius: prop_borderRadius.name(),
-                                    border: $$.$me_atom2_prop([
-                                        prop_border.name()
-                                    ], ({ masters: [border] }) => 'solid 1px #bdc3d1'),
-                                    boxSizing: () => 'border-box',
-                                    boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
+                                    background: () => 'transparent',
                                 },
-                            },
-                        });
-                    $$.a('.instance', list);
+                                control: {
+                                    label: () => ({
+                                        base: $$.$me_label,
+                                        prop: {
+                                            fontSize: prop_itemFontSize.name(),
+                                            '#width': '<.#width',
+                                            '#height': '<.#height',
+                                            alignVer: () => $$.$me_align.center,
+                                            alignHor: $$.$me_atom2_prop(['<.isTouch'], ({ masters: [isTouch] }) => isTouch ? $$.$me_align.center : $$.$me_align.left),
+                                            paddingLeft: $$.$me_atom2_prop([prop_value.name(), '<.isTouch', prop_itemFontSize.name()], ({ masters: [value, isTouch, fontSize] }) => isTouch ? 0 :
+                                                !(value instanceof Set || value instanceof Map) ? 8 :
+                                                    2 * fontSize),
+                                            '#ofsVer': $$.$me_atom2_prop([
+                                                `<.rec_idx`,
+                                                '<.rec_count',
+                                                prop_itemMarginTopFirst.name(),
+                                                prop_itemMarginBottomLast.name(),
+                                                prop_itemMarginVer.name(),
+                                            ], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
+                                                if (!~rec_idx)
+                                                    return 0;
+                                                const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
+                                                    rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
+                                                        0);
+                                                return result;
+                                            }),
+                                            paddingRight: () => 8,
+                                            text: $$.$me_atom2_prop([`<.rec_idx`, prop_options.name()], ({ masters: [rec_idx, options] }) => {
+                                                if (!~rec_idx)
+                                                    return '';
+                                                const id = Object.keys(options)[rec_idx];
+                                                return options[id].caption || id;
+                                            }),
+                                            isSelected: '<.isSelected',
+                                        },
+                                        render: p => {
+                                            const value = prop_value.value();
+                                            if (!((value instanceof Set || value instanceof Map) &&
+                                                $$.a('.isSelected')))
+                                                return;
+                                            const fontSize = $$.a('.fontSize');
+                                            const h = fontSize * .9;
+                                            const w = h * 1.2;
+                                            const ctxHeight = h * p.pixelRatio;
+                                            const ctxWidth = w * p.pixelRatio;
+                                            const lineWidth = 1;
+                                            const rec_idx = $$.a(`<.rec_idx`);
+                                            const rec_count = $$.a('<.rec_count');
+                                            const itemMarginTopFirst = prop_itemMarginTopFirst.value();
+                                            const itemMarginBottomLast = prop_itemMarginBottomLast.value();
+                                            const itemMarginVer = prop_itemMarginVer.value();
+                                            const ofsVer = ($$.a('.#height') - h) / 2;
+                                            const ofsHor = $$.a('<.isTouch') ? 20 : (2 * fontSize - w) / 2;
+                                            $$.$me_atom2_ctx_check({
+                                                ctx: p.ctx,
+                                                ctxLeft: p.ctxRect.left + ofsHor * p.pixelRatio,
+                                                ctxTop: p.ctxRect.top + ofsVer * p.pixelRatio,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                stroke: {
+                                                    style: $$.a('.colorText'),
+                                                    ctxWidth: lineWidth * p.pixelRatio,
+                                                },
+                                                lambda: 0.38,
+                                                mu: 0.6,
+                                            });
+                                        },
+                                    })
+                                },
+                            })),
+                            row_cursor: () => '',
+                            '#order': () => ['row', 'cursor'],
+                        },
+                        elem: {
+                            header: () => null,
+                            cursor: isTouch ?
+                                $$.$me_atom2_prop([prop_value.name(), '.row_i_selected', '.rec_idx_selected'], ({ masters: [value, row_i_selected, rec_idx_selected] }) => value instanceof Set || value instanceof Map || row_i_selected.length != 1 ? null :
+                                    {
+                                        prop: {
+                                            '#height': '<.row_height_min',
+                                            '#ofsVer': rec_idx_selected[0] ?
+                                                `<.row_top[${row_i_selected[0]}]` :
+                                                $$.$me_atom2_prop([`<.row_top[${row_i_selected[0]}]`, prop_itemMarginTopFirst.name()], $$.$me_atom2_prop_compute_fn_sum()),
+                                        },
+                                        style: {
+                                            borderTop: () => '1px solid #D5D5D3',
+                                            borderBottom: () => '1px solid #D5D5D3',
+                                            boxSizing: () => 'border-box',
+                                        },
+                                    }) :
+                                () => ({
+                                    prop: {
+                                        '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
+                                        '#ofsHor': () => 3,
+                                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`, `<.rec_idx[${row_i}]`]), ({ len, masters: [top, rec_idx] }) => !len ? null : rec_idx ? top : 3),
+                                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`, `<.rec_idx[${row_i}]`, '<.rec_count']), ({ len, masters: [val, rec_idx, rec_count] }) => !len ? null : !rec_idx ? val - 3 : rec_idx < rec_count - 1 ? val : val - 6),
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor - 2),
+                                    },
+                                    style: {
+                                        boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
+                                        pointerEvents: () => 'none',
+                                    },
+                                }),
+                        },
+                        style: {
+                            background: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b'),
+                            boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
+                        },
+                        event: {
+                            mousedown: p => p.isInRect(p.event.clientX, p.event.clientY),
+                            touchstart: p => p.isInRect(p.event.touches[0].clientX, p.event.touches[0].clientY),
+                        },
+                    };
+                    return true;
                 }
-                return true;
+                return false;
             },
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
-                maxDrodownCount: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 9 : Infinity),
-                instance: $$.$me_atom2_prop([], () => null, ({ val, prev }) => {
-                    if (!val && prev) {
-                        instances.delete(prev);
-                        prev.destroy();
-                    }
-                }),
-                isTouch: '/.#isTouch',
+                dropdownCountMax: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 9 : Infinity),
+                none: () => 'ничего не выбрано',
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 '#cursor': () => 'pointer',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                itemMarginTopFirst: () => 4,
-                itemMarginBottomLast: () => 4,
-                itemMarginVer: () => 0,
-                isDropdown: $$.$me_atom2_prop(['.#visible'], () => false, ({ val, prev }) => {
-                    if (val) {
-                        $$.a.dispatch('', 'show');
+                dropdownWidth: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? [] : ['.dropdownTargetClientRect']), ({ len, masters: [clientRect] }) => !len ? 374 : clientRect.right - clientRect.left),
+                dropdownHeight: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isTouch'], ({ masters: [isTouch] }) => (isTouch ?
+                    ['.row_height_min'] :
+                    ['/.#viewportHeight', '.dropdownTargetClientRect', '.row_height_min'])
+                    .concat([
+                    '.option_ids',
+                    '.dropdownCountMax',
+                    '.itemMarginTopFirst',
+                    '.itemMarginBottomLast',
+                    '.itemMarginVer',
+                ])), ({ len, masters }) => {
+                    if (len <= 7) {
+                        const [row_height_min, option_ids, maxDropdownCount, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
+                        const rec_count = option_ids.length;
+                        const max = maxDropdownCount;
+                        const result = rec_count > max ?
+                            max * row_height_min :
+                            rec_count * row_height_min + itemMarginTopFirst + itemMarginBottomLast - 2 * itemMarginVer;
+                        return result;
                     }
-                    else if (prev) {
-                        $$.a.dispatch('', 'hide');
+                    else {
+                        const minMargin = 10;
+                        const [viewportHeight, clientRect, row_height_min, option_ids, maxDropdownCount, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] = masters;
+                        const correction = (itemMarginTopFirst - itemMarginVer) + (itemMarginBottomLast - itemMarginVer);
+                        const result = Math.max(0, Math.min(option_ids.length, maxDropdownCount, Math.floor((viewportHeight - clientRect.bottom - correction - minMargin) / row_height_min))) * row_height_min + correction;
+                        return result;
                     }
                 }),
+                itemFontSize: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isTouch'], ({ masters: [isTouch] }) => ['.isTouch', isTouch ? '.row_height_min' : '.em']), ({ masters: [isTouch, val] }) => val * (isTouch ? 22 / 38 : 14 / 16)),
+                itemMarginTopFirst: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
+                itemMarginBottomLast: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 16 : 4),
+                itemMarginVer: () => 0,
+                row_height_min: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 38 : 24),
             },
             style: {
                 borderRadius: () => 3,
-                border: $$.$me_atom2_prop(['.isDropdown'], ({ masters: [isDropdown] }) => (!isDropdown ?
-                    'solid 1px #bdc3d1' :
-                    'solid 1px #313745')),
+                border: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
+                    (theme == $$.$me_theme.light ? 'solid 1px #bdc3d1' : 'solid 1px #d8dce3') :
+                    (theme == $$.$me_theme.light ? 'solid 1px #313745' : 'solid 1px white'))),
                 boxSizing: () => 'border-box',
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                background: () => 'white',
+                background: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
+                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b') :
+                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'))),
                 userSelect: () => 'none',
             },
-            event: {
-                clickOrTap: () => {
-                    $$.a('.isDropdown', !$$.a('.isDropdown'));
-                    return true;
-                },
-                clickOrTapOutside: () => {
-                    $$.a('.isDropdown', false);
-                    return false;
-                },
-            },
             elem: {
-                triangle: () => ({
-                    base: $$.$me_triangle,
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        marginRight: () => 9,
-                        '#ofsHor': $$.$me_atom2_prop(['.size', '.marginRight'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#ofsVer': () => -3,
-                        '#alignVer': () => $$.$me_align.center,
-                        size: () => 7,
-                        color: () => '#444956',
-                        k: () => 9 / 7,
-                    },
-                }),
+                triangle: () => $$.$nl_triangle,
                 text: () => ({
                     prop: {
-                        fontSize: '<.fontSize',
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#ofsVer': () => -1,
                         '#ofsHor': () => 8,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.size', '<@triangle.marginRight'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.#ofsHor', '<@triangle.#width', '<@triangle.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
                     },
-                    style: {
-                        whiteSpace: () => 'nowrap',
-                        overflow: () => 'hidden',
-                        textOverflow: () => 'ellipses',
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['<.value', '<.options'], ({ masters: [id, options] }) => options[id].caption || id),
-                    },
-                }),
-            },
-        };
-        const row = {
-            prop: {
-                '#cursor': () => 'pointer',
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                row_cursor_src: $$.$me_atom2_prop(['.#isHover', '.row_i'], ({ masters: [isHover, row_i] }) => !isHover ? '' : row_i, ({ atom, val }) => {
-                    $$.$nl_picker_cursor({ origin: atom, val: val });
-                }),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        fontSize: '<.fontSize',
-                        '#width': '<.#width',
-                        '#height': '<.#height',
-                        alignVer: () => $$.$me_align.center,
-                        '#ofsVer': $$.$me_atom2_prop([`<.rec_idx`, '<.rec_count', '<.itemMarginTopFirst', '<.itemMarginBottomLast', '<.itemMarginVer'], ({ len, masters: [rec_idx, rec_count, itemMarginTopFirst, itemMarginBottomLast, itemMarginVer] }) => {
-                            if (!~rec_idx)
-                                return 0;
-                            const result = (!rec_idx ? +(itemMarginTopFirst - itemMarginVer) / 2 :
-                                rec_idx == rec_count - 1 ? -(itemMarginBottomLast - itemMarginVer) / 2 :
-                                    0);
-                            return result;
-                        }),
-                        paddingHor: () => 8,
-                        text: $$.$me_atom2_prop([`<.rec_idx`, '<.options'], ({ masters: [rec_idx, options] }) => {
-                            if (!~rec_idx)
-                                return '';
-                            const id = Object.keys(options)[rec_idx];
-                            return options[id].caption || id;
+                    control: {
+                        label: () => ({
+                            base: $$.$me_label,
+                            prop: {
+                                '#height': '<.#height',
+                                '#width': '<.#width',
+                                text: $$.$me_atom2_prop(['<<.value', '<<.options', '<<.option_ids', '<<.none', '.#width', '/.#pixelRatio', '.#ctx'], ({ masters: [value, options, option_ids, none, width, pixelRatio, ctx] }) => {
+                                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                                    const ctxWidth = width * pixelRatio;
+                                    let result = none;
+                                    const ids = typeof value == 'string' ? [value] :
+                                        value instanceof Set ? [...value].sort((valA, valB) => option_ids.indexOf(valA) - option_ids.indexOf(valB)) :
+                                            value instanceof Map ? [...value].map(([id, _]) => id) :
+                                                [];
+                                    if (ids.length) {
+                                        let i = 0;
+                                        result = $$.$me_option_caption_text(ids[i], options);
+                                        while (i + 1 < ids.length && ctx.measureText(result + ' и еще ' + (ids.length - (i + 1))).width < ctxWidth) {
+                                            let text = result + ', ' + $$.$me_option_caption_text(ids[i + 1], options);
+                                            if (ctx.measureText(text + (ids.length <= i + 2 ? '' : ' и еще ' + (ids.length - (i + 2)))).width >= ctxWidth) {
+                                                break;
+                                            }
+                                            else {
+                                                result = text;
+                                                i++;
+                                            }
+                                        }
+                                        if (i + 1 < ids.length)
+                                            result += ' и еще ' + (ids.length - (i + 1));
+                                    }
+                                    return result;
+                                }),
+                                fontSize: '<<.fontSize',
+                                alignVer: () => $$.$me_align.center,
+                            },
                         }),
                     },
-                })
+                }),
             },
         };
         $$.$nl_picker_cursor = $$.$me_atom2_async_multi_origin({
@@ -5843,3731 +5600,24 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_search_tabs = {
-            elem: {
-                new: () => ({
-                    base: tab,
-                    prop: {
-                        idx: () => '',
-                    },
-                    dom: {
-                        innerText: () => 'Новый заказ +'.toUpperCase(),
-                    },
-                }),
-                tab: $$.$me_atom2_prop({ keys: ['<.order_idx'] }, ({ key: [idx] }) => ({
-                    base: tab,
-                    prop: {
-                        idx: () => idx,
-                    },
-                    dom: {
-                        innerText: `<<.order_title[${idx}]`,
-                    },
-                })),
-            },
-        };
-        const tab = {
-            node: 'span',
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<<.selected', '.idx'], ({ masters: [selected, idx] }) => selected == idx),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('<<.selected', $$.a('.idx'));
-                    return true;
-                },
-            },
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 10,
-                paddingRight: () => 10,
-                paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => `3px solid rgba(49, 55, 69, ${isSelected ? 1 : .2})`),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//tabs.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_panel = {
-            style: {
-                background: () => 'white',
-                borderRadius: () => '2px',
-                boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_new = {
-            prop: {
-                data: () => ({
-                    Продажа: {
-                        'Москва': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Загородная: {
-                                'Вся база': 500000,
-                                'За сегодня': 500,
-                                'Новые': 500,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                            Доли: {
-                                'Вся база': 700,
-                                'За сегодня': 70,
-                                'Новые': 70,
-                            },
-                        },
-                        'Московская область': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                            Доли: {
-                                'Вся база': 700,
-                                'За сегодня': 70,
-                                'Новые': 70,
-                            },
-                        },
-                    },
-                    Аренда: {
-                        'Москва': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Загородная: {
-                                'Вся база': 500000,
-                                'За сегодня': 500,
-                                'Новые': 500,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                        },
-                        'Московская область': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                        },
-                    },
-                }),
-                panel_names: $$.$me_atom2_prop_keys(['.data']),
-                panel_data: $$.$me_atom2_prop({ keys: ['.panel_names'], masters: ['.data'] }, ({ key: [panel_name], masters: [data] }) => data[panel_name]),
-                panel_left_first: '.em',
-                panel_top_first: () => 0,
-                panel_width: () => 536,
-                panel_height: () => 580,
-                panel_space_hor: '.em',
-                panel_space_ver: '.em',
-                panel_pos: $$.$me_atom2_prop({
-                    keys: ['.panel_names'],
-                    masters: $$.$me_atom2_prop_masters(['.panel_names'], ({ key: [panel_name], masters: [panel_names] }) => {
-                        const idx = panel_names.indexOf(panel_name);
-                        return !idx ?
-                            ['.panel_left_first', '.panel_top_first'] :
-                            [
-                                '.panel_left_first',
-                                '.panel_top_first',
-                                '.#width',
-                                `.panel_pos[${panel_names[idx - 1]}]`,
-                                '.panel_width',
-                                '.panel_height',
-                                '.panel_space_hor',
-                                '.panel_space_ver',
-                            ];
-                    }),
-                }, ({ key: [panel_name], len, masters: [left, top, width, pos, panel_width, panel_height, space_hor, space_ver] }) => {
-                    if (len <= 2) {
-                        return { left, top };
-                    }
-                    else {
-                        let result = {
-                            left: pos.left + panel_width + space_hor,
-                            top: pos.top,
-                        };
-                        if (result.left + panel_width + space_hor > width) {
-                            result.left = left;
-                            result.top += panel_height + space_ver;
-                        }
-                        return result;
-                    }
-                }),
-            },
-            elem: {
-                panel: $$.$me_atom2_prop({ keys: ['.panel_names'] }, ({ key: [panel_name] }) => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        colorBackground: () => 'white',
-                        '#width': '<.panel_width',
-                        '#height': '<.panel_height',
-                        '#ofsHor': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.left, duration: 800 })),
-                        '#ofsVer': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.top, duration: 800 })),
-                        tables: `<.panel_data[${panel_name}]`,
-                        table_keys: $$.$me_atom2_prop_keys(['.tables']),
-                        table: $$.$me_atom2_prop({ keys: ['.table_keys'], masters: ['.tables'] }, ({ key: [table_key], masters: [tables] }) => tables[table_key]),
-                        table_height: $$.$me_atom2_prop({ keys: ['.table_keys'], masters: ['.table_header_height', '.table_row_keys[]', '.table_row_height', '.table_row_space'] }, ({ masters: [header_height, table_row_key, row_height, row_space] }) => header_height + 2 * row_space + table_row_key.length * (row_height + row_space)),
-                        table_row_height: () => 32,
-                        table_header_height: () => 40,
-                        table_ver_ofs: () => 69,
-                        table_ver_space: '.em',
-                        table_row_space: () => 1,
-                        table_top: $$.$me_atom2_prop({
-                            keys: ['.table_keys'],
-                            masters: $$.$me_atom2_prop_masters(['.table_keys'], ({ key: [table_key], masters: [table_keys] }) => {
-                                const idx = table_keys.indexOf(table_key);
-                                return (!idx ? ['.table_ver_ofs'] :
-                                    [
-                                        `.table_top[${table_keys[idx - 1]}]`,
-                                        `.table_height[${table_keys[idx - 1]}]`,
-                                        '.table_ver_space',
-                                    ]);
-                            }),
-                        }, $$.$me_atom2_prop_compute_fn_sum()),
-                        table_row_keys: $$.$me_atom2_prop_keys({ keys: ['.table_keys'], masters: ['.table[]'] }),
-                        table_row: $$.$me_atom2_prop({ keys: ['.table_keys', '.table_row_keys[]'], masters: ['.table[]'] }, ({ key: [table_key, table_row_key], masters: [table, key] }) => table[table_row_key]),
-                        table_flds: () => ({
-                            'Вся база': {
-                                width: 66 + 2 * (26 - (33 - 24)),
-                                opacity: 1,
-                            },
-                            'За сегодня': {
-                                width: 83 + 2 * (33 - 24),
-                                opacity: 0.7,
-                            },
-                            'Новые': {
-                                width: 51 + 2 * 24,
-                                opacity: 0.7,
-                            },
-                        }),
-                        table_cell_keys: $$.$me_atom2_prop_keys(['.table_flds']),
-                        table_fld: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_flds'] }, ({ key: [key], masters: [table_flds] }) => table_flds[key]),
-                        table_fld_width: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_fld[]'] }, ({ key: [key], masters: [table_fld] }) => table_fld.width),
-                        table_fld_opacity: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_fld[]'] }, ({ key: [key], masters: [table_fld] }) => table_fld.opacity),
-                        table_fld_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.table_cell_keys'], ({ masters: [table_cell_keys] }) => table_cell_keys.map(key => `.table_fld_width[${key}]`)), p => p.masters.reduce((result, w) => result + w, 0)),
-                        table_cell: $$.$me_atom2_prop({ keys: ['.table_keys', '.table_row_keys[]', '.table_cell_keys'], masters: ['.table_row[][]'] }, ({ key: [table_key, table_row_key, table_cell_key], masters: [row] }) => {
-                            var x = (row[table_cell_key] + '').split('.');
-                            var x1 = x[0];
-                            var x2 = x.length > 1 ? '.' + x[1] : '';
-                            var rgx = /(\d+)(\d{3})/;
-                            while (rgx.test(x1))
-                                x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                            return x1 + x2;
-                        }),
-                    },
-                    elem: {
-                        header: () => ({
-                            prop: {
-                                '#ofsHor': () => 24,
-                                '#ofsVer': () => 32,
-                                '#width': () => null,
-                                '#height': () => null,
-                                em: $$.$me_atom2_prop(['/.em'], ({ masters: [em] }) => em / 16 * 18),
-                                fontWeight: () => 500,
-                            },
-                            dom: {
-                                innerText: () => panel_name.toUpperCase(),
-                            },
-                        }),
-                        table: $$.$me_atom2_prop({ keys: ['.table_keys'] }, ({ key: [table_key] }) => ({
-                            node: 'table',
-                            prop: {
-                                '#ofsVer': `<.table_top[${table_key}]`,
-                                '#ofsHor': '.em',
-                                '#height': `<.table_height[${table_key}]`,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                            },
-                            style: {
-                                borderCollapse: () => 'separate',
-                                borderSpacing: $$.$me_atom2_prop(['<.table_row_space'], ({ masters: [table_row_space] }) => `0 ${table_row_space}px`),
-                            },
-                            elem: {
-                                header: () => ({
-                                    node: 'tr',
-                                    prop: {
-                                        '#height': '<<.table_header_height',
-                                    },
-                                    style: {
-                                        position: () => 'relative',
-                                        background: () => '#d8dce3',
-                                    },
-                                    elem: {
-                                        key: () => ({
-                                            base: th,
-                                            prop: {
-                                                '#width': $$.$me_atom2_prop(['<.#width', '<<<.table_fld_width_sum'], ({ masters: [width, table_fld_width_sum] }) => width - table_fld_width_sum),
-                                            },
-                                            style: {
-                                                textAlign: () => 'left',
-                                                paddingLeft: () => 8,
-                                            },
-                                            dom: {
-                                                innerText: () => table_key,
-                                            },
-                                        }),
-                                        fld: $$.$me_atom2_prop({ keys: ['<<.table_cell_keys'] }, ({ key: [caption] }) => ({
-                                            base: th,
-                                            prop: {
-                                                '#width': `<<<.table_fld_width[${caption}]`,
-                                            },
-                                            style: {
-                                                textAlign: () => 'center',
-                                            },
-                                            dom: {
-                                                innerText: () => caption,
-                                            },
-                                        })),
-                                    },
-                                }),
-                                row: $$.$me_atom2_prop({ keys: [`<.table_row_keys[${table_key}]`] }, ({ key: [table_row_key] }) => ({
-                                    node: 'tr',
-                                    prop: {
-                                        '#height': '<<.table_row_height',
-                                        '#cursor': () => 'pointer',
-                                    },
-                                    event: {
-                                        clickOrTap: () => {
-                                            console.log(panel_name, table_key, table_row_key);
-                                            return true;
-                                        }
-                                    },
-                                    style: {
-                                        position: () => 'relative',
-                                        background: () => '#f0f1f4',
-                                    },
-                                    elem: {
-                                        key: () => ({
-                                            base: td,
-                                            prop: {
-                                                '#width': $$.$me_atom2_prop(['<.#width', '<<<.table_fld_width_sum'], ({ masters: [width, table_fld_width_sum] }) => width - table_fld_width_sum),
-                                            },
-                                            style: {
-                                                paddingLeft: () => 8,
-                                                color: () => '#53adff',
-                                            },
-                                            dom: {
-                                                innerText: () => table_row_key,
-                                            },
-                                        }),
-                                        fld: $$.$me_atom2_prop({ keys: ['<<.table_cell_keys'] }, ({ key: [col] }) => ({
-                                            base: td,
-                                            prop: {
-                                                '#width': `<<<.table_fld_width[${col}]`,
-                                            },
-                                            style: {
-                                                textAlign: () => 'center',
-                                                color: () => '#6a6c74',
-                                                opacity: `<<<.table_fld_opacity[${col}]`,
-                                            },
-                                            dom: {
-                                                innerText: `<<<.table_cell[${table_key}][${table_row_key}][${col}]`,
-                                            },
-                                        })),
-                                    },
-                                }))
-                            },
-                        })),
-                    },
-                }))
-            },
-        };
-        const td = {
-            node: 'td',
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 0,
-                paddingTop: () => 0,
-                paddingRight: () => 0,
-                paddingBottom: () => 0,
-            },
-        };
-        const th = {
-            base: td,
-            node: 'th',
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//new.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_panel = {
-            base: $$.$nl_panel,
-            prop: {
-                '#ofsHor': '.em',
-                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_select = {
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                colorBorder: $$.$me_atom2_prop_abstract(),
-                colorBorderSelected: $$.$me_atom2_prop_abstract(),
-                colorText: $$.$me_atom2_prop_abstract(),
-                colorTextSelected: $$.$me_atom2_prop_abstract(),
-                colorBackgroundSelected: $$.$me_atom2_prop_abstract(),
-                borderRadius: $$.$me_atom2_prop_abstract(),
-                borderWidth: $$.$me_atom2_prop_abstract(),
-                paddingHor: $$.$me_atom2_prop_abstract(),
-                '#width': $$.$me_atom2_prop_abstract(),
-                '#height': $$.$me_atom2_prop_abstract(),
-                option_width_min: $$.$me_atom2_prop_abstract(),
-                fontFamily: $$.$me_atom2_prop_abstract(),
-                fontWeight: $$.$me_atom2_prop_abstract(),
-                fontWeightSelected: $$.$me_atom2_prop_abstract(),
-                fontSize: $$.$me_atom2_prop_abstract(),
-                alignVer: () => $$.$me_align.center,
-                ofsVer: () => 0,
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                _option_width: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [option_ids] }) => {
-                    const result = ['.option_ids', '.options', '.value', '.#width'];
-                    for (const id of option_ids)
-                        result.push(`^option[${id}]._textWidth`, `^option[${id}].paddingLeft`, `^option[${id}].paddingRight`);
-                    return result;
-                }), ({ masters }) => {
-                    const [option_ids, options, value, width_total] = masters;
-                    const width = {};
-                    let width_sum = 0;
-                    let width_excess_base = 0;
-                    const ids = [];
-                    for (let i = 0; i < option_ids.length; i++) {
-                        const id = option_ids[i];
-                        const caption = typeof options[id].caption == 'function' ?
-                            options[id].caption(value) :
-                            options[id].caption;
-                        const isSpecifiedWidth = typeof caption != 'string' && typeof caption.width == 'number';
-                        const w = width[id] =
-                            isSpecifiedWidth ?
-                                caption.width :
-                                masters[4 + i * 3] + masters[5 + i * 3] + masters[6 + i * 3];
-                        width_sum += w;
-                        console.log(w, masters[4 + i * 3], masters[5 + i * 3], masters[6 + i * 3]);
-                        if (!isSpecifiedWidth) {
-                            width_excess_base += w;
-                            ids.push(id);
-                        }
-                    }
-                    const width_excess = width_total - width_sum;
-                    console.log(ids, { width_excess, width_total, width_sum });
-                    for (const id of ids)
-                        width[id] *= (1 + width_excess / width_excess_base);
-                    return width;
-                }, ({ val }) => {
-                    console.warn(val);
-                    for (const id in val)
-                        $$.a(`.option_width[${id}]`, val[id]);
-                }),
-                option_width: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['._option_width'] }, ({ key: [id], masters: [width] }) => width[id]),
-                option_left: $$.$me_atom2_prop({
-                    keys: ['.option_ids'],
-                    masters: $$.$me_atom2_prop_masters(['.option_ids'], ({ key: [id], masters: [ids] }) => {
-                        const idx = ids.indexOf(id);
-                        const result = [];
-                        if (!idx)
-                            return result;
-                        for (let i = 0; i < idx; i++)
-                            result.push(`.option_width[${ids[i]}]`);
-                        return result;
-                    }),
-                }, $$.$me_atom2_prop_compute_fn_sum()),
-                idx_selected: $$.$me_atom2_prop(['.option_ids', '.value'], ({ masters: [ids, id] }) => typeof id == 'string' ? [ids.indexOf(id)].filter(idx => ~idx) :
-                    id instanceof Set ? [...id].map((id) => ids.indexOf(id)).filter(idx => ~idx) :
-                        []),
-            },
-            event: {},
-            control: {
-                option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
-                    base: $$.$me_label,
-                    prop: {
-                        fontSize: '<.fontSize',
-                        fontWeight: $$.$me_atom2_prop(['.isSelected', '<.fontWeightSelected', '<.fontWeight'], ({ masters: [isSelected, fontWeightSelected, fontWeight] }) => isSelected ? fontWeightSelected : fontWeight),
-                        fontFamily: '<.fontFamily',
-                        isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set ? value.has(id) : value == id),
-                        paddingHor: '<.paddingHor',
-                        text: $$.$me_atom2_prop(['<.options', '<.option_ids', '<.value'], ({ masters: [options, option_ids, value] }) => {
-                            const caption = options[id].caption;
-                            const result = typeof caption == 'string' ? caption :
-                                typeof caption == 'function' ? caption(value) :
-                                    $$.$me_throw(caption);
-                            return result;
-                        }),
-                        alignHor: () => $$.$me_align.center,
-                        alignVer: '<.alignVer',
-                        ofsVer: '<.ofsVer',
-                        '#width': $$.$me_atom2_prop([`<.option_width[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
-                        '#height': '<.#height',
-                        '#ofsHor': $$.$me_atom2_prop([`<.option_left[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
-                        idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
-                        _ctxLeft: $$.$me_atom2_prop([
-                            '.#ctx', '.text', '.period', '/.#pixelRatio', `<.option_width[${id}]`, `<.option_left[${id}]`, '.paddingLeft', '.paddingRight'
-                        ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $$.$me_atom2_anim({ to: $$.$me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight).ctxLeft
-                        })),
-                        borderWidthVer: '<.borderWidth',
-                        colorBorderVer: $$.$me_atom2_prop(['.isSelected', '<.colorBorder', '<.colorBorderSelected'], ({ masters: [isSelected, colorBorder, colorBorderSelected] }) => isSelected ? colorBorderSelected : colorBorder),
-                        borderLeft: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
-                            const idx = option_ids.indexOf(id);
-                            const result = ~idx_selected.indexOf(idx) ?
-                                (~idx_selected.indexOf(idx - 1) ? { width: borderWidth, color: 'transparent' } : { width: borderWidth, color: colorBorderSelected }) :
-                                !idx ? { width: borderWidth, color: colorBorder } :
-                                    !idx ? { width: borderWidth, color: colorBorder } : { width: borderWidth, color: 'transparent' };
-                            return result;
-                        }),
-                        colorBorderLeft: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.color || 'transparent'),
-                        borderWidthLeft: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.width || 0),
-                        borderRight: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
-                            const idx = option_ids.indexOf(id);
-                            const result = ~idx_selected.indexOf(idx) ? { width: borderWidth, color: colorBorderSelected } :
-                                idx == option_ids.length - 1 || !~idx_selected.indexOf(idx + 1) ? { width: borderWidth, color: colorBorder } :
-                                    { width: borderWidth, color: 'transparent' };
-                            return result;
-                        }),
-                        colorBorderRight: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.color || 'transparent'),
-                        borderWidthRight: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.width || 0),
-                        borderRadiusLeftTop: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
-                        borderRadiusLeftBottom: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
-                        borderRadiusRightTop: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
-                        borderRadiusRightBottom: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
-                        colorBackground: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected'], ({ masters: [isSelected, colorBackgroundSelected] }) => isSelected ? colorBackgroundSelected : 'transparent'),
-                        colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                    },
-                    prop_non_render: {
-                        '#cursor': $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set || value != id ? 'pointer' : null),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            let value = $$.a('<.value');
-                            if (typeof value == 'string' && value == id)
-                                return false;
-                            if (value instanceof Set) {
-                                if (value.has(id)) {
-                                    value.delete(id);
-                                }
-                                else {
-                                    value.add(id);
-                                }
-                            }
-                            else
-                                value = id;
-                            $$.a('<.value', value, true);
-                            return true;
-                        },
-                    },
-                })),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//select.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_switch = {
-            base: $$.$me_select,
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                colorBorder: () => 'transparent',
-                colorBorderSelected: () => 'transparent',
-                colorBackgroundSelected: () => '#0070a4',
-                borderRadius: () => 0,
-                borderWidth: () => 0,
-                paddingHor: () => 0,
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                option_width_min: () => 40,
-                colorText: () => '#0070a4',
-                colorTextSelected: () => 'white',
-                fontFamily: '/.fontFamily',
-                fontWeight: '/.fontWeight',
-                fontWeightSelected: () => 500,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                alignVer: () => $$.$me_align.bottom,
-                ofsVer: $$.$me_atom2_prop_abstract(),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//switch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_select = {
-            base: $$.$me_select,
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
-                colorBorder: () => '#bdc3d1',
-                colorBorderSelected: () => '#008ecf',
-                colorBackgroundSelected: () => '#f0f1f4',
-                borderRadius: () => 4,
-                borderWidth: () => 1,
-                paddingHor: () => 0,
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                '#width': () => 440,
-                '#height': () => 32,
-                option_width_min: () => 40,
-                colorText: '/.colorText',
-                colorTextSelected: '.colorText',
-                fontFamily: '/.fontFamily',
-                fontWeight: '/.fontWeight',
-                fontWeightSelected: '.fontWeight',
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//select.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_stylesheet = {
-            prop: {
-                styleSheetName: $$.$me_atom2_prop_abstract(),
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
-                styleSheetCommon: () => '',
-                instanceId: () => null,
-                styleSheet_apply: $$.$me_atom2_prop(['.styleSheetName', '.instanceId', '.styleSheet'], null, ({ val: [styleSheetName, instanceId, innerHTML] }) => {
-                    let sheet;
-                    const id = styleSheetId(styleSheetName, instanceId);
-                    if (!innerHTML) {
-                        removeStyleSheet(id);
-                    }
-                    else if (sheet = document.getElementById(id)) {
-                        sheet.innerHTML = innerHTML;
-                    }
-                    else {
-                        sheet = document.createElement('style');
-                        sheet.id = id;
-                        sheet.innerHTML = innerHTML;
-                        let head = document.head || document.getElementsByTagName('head')[0];
-                        head.appendChild(sheet);
-                    }
-                }),
-                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
-            },
-            dom: {
-                className: '.className',
-            },
-            init: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                if (!instances[styleSheetName])
-                    instances[styleSheetName] = new Map();
-                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
-                let id;
-                for (let i = 0; i < ids.length; i++)
-                    if (i != ids[i]) {
-                        id = i;
-                        break;
-                    }
-                if (id === void 0)
-                    id = ids.length;
-                $$.a('.instanceId', id);
-                instances[styleSheetName].set(self, id);
-                const styleSheetCommon = $$.a('.styleSheetCommon');
-                if (!styleSheetCommon)
-                    return;
-                const styleSheetCommonId = styleSheetId(styleSheetName);
-                if (document.getElementById(styleSheetCommonId))
-                    return;
-                let sheet = document.createElement('style');
-                sheet.id = styleSheetCommonId;
-                sheet.innerHTML = styleSheetCommon;
-                let head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(sheet);
-            },
-            fini: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
-                instances[styleSheetName].delete(self);
-                if (instances[styleSheetName].size)
-                    return;
-                instances[styleSheetName] = null;
-                removeStyleSheet(styleSheetId(styleSheetName));
-            },
-        };
-        function removeStyleSheet(styleSheetId) {
-            let sheet = document.getElementById(styleSheetId);
-            if (sheet && sheet.parentElement)
-                sheet.parentElement.removeChild(sheet);
-        }
-        let instances = {};
-        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//stylesheet.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const row_height = 30;
-        const row_space = 20;
-        const prop_common = (def) => ({
-            row: def.row,
-            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'], ({ masters: [row, row_height, row_space] }) => row * (row_height + row_space)),
-            '#ofsHor': '<.row_left',
-            '#height': '<.row_height',
-            '#width': '<.row_width',
-        });
-        $$.$nl_search_panel_param = {
-            base: $$.$nl_search_panel,
-            prop: {
-                ofsHor: () => 0,
-            },
-            elem: {
-                mode_switcher: () => ({
-                    base: $$.$nl_switch,
-                    prop: {
-                        '#width': () => 124 + 32,
-                        '#height': () => 44,
-                        ofsVer: () => 8,
-                        '#alignHor': () => $$.$me_align.right,
-                        options: '<<.param_modes',
-                        value: $$.$me_atom2_prop(['<<.param_mode'], null, ({ val }) => { $$.a('<<.param_mode', val); }),
-                    },
-                }),
-                common: () => ({
-                    base: input_with_button,
-                    prop: {
-                        '#width': () => 314,
-                        '#height': () => row_height,
-                        '#ofsHor': () => 16,
-                        '#ofsVer': () => 16,
-                        placeholder: () => 'Параметры',
-                    },
-                }),
-                tabs: () => ({
-                    prop: {
-                        '#ofsVer': () => 74,
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@found.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
-                        options: () => ({
-                            Местоположение: {
-                                icon: 'icons-8-place-marker',
-                                params: {
-                                    Область: {
-                                        row: () => 0,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: 'Включая Московскую область', captionShort: 'Включая' },
-                                            only: { caption: 'Только Московская область', captionShort: 'Только' },
-                                            exclude: { caption: 'Кроме Московской области', captionShort: 'Кроме' },
-                                        })
-                                    },
-                                    НоваяМосква: {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: 'Включая Новую Москву', captionShort: 'Включая' },
-                                            only: { caption: 'Только Новая Москва', captionShort: 'Только' },
-                                            exclude: { caption: 'Кроме Новой Москвы', captionShort: 'Кроме' },
-                                        })
-                                    },
-                                    Адрес: {
-                                        type: 'address',
-                                        row: () => 2,
-                                    },
-                                    ОтСтанции: {
-                                        row: () => 3,
-                                        label: () => 'От станции',
-                                        type: 'picker',
-                                        options: () => ({
-                                            '': { caption: 'не важно' },
-                                            'до 2 мин пешком': {},
-                                            'до 5 мин пешком': {},
-                                            'до 7 мин пешком': {},
-                                            'до 10 мин пешком': {},
-                                            'до 12 мин пешком': {},
-                                            'до 15 мин пешком': {},
-                                            'до 5 мин транспортом': {},
-                                        }),
-                                    },
-                                },
-                            },
-                            Инфраструктура: {
-                                icon: 'icons-8-city-square',
-                            },
-                            Дом: {
-                                icon: 'icons-8-building',
-                            },
-                            Квартира: {
-                                icon: 'icons-8-key',
-                            },
-                            'Цена и условия': {
-                                icon: 'icons-8-money',
-                            },
-                            Объявление: {
-                                icon: 'icons-8-create-new-3',
-                            },
-                            Контакты: {
-                                icon: 'icons-8-list',
-                            },
-                        }),
-                        option_ids: $$.$me_atom2_prop_keys(['.options']),
-                        option_height: () => 54,
-                        option_width: () => 210,
-                        option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
-                        value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
-                        params: $$.$me_atom2_prop(['.value', '.options'], ({ masters: [value, options] }) => options[value].params || {}),
-                        param_ids: $$.$me_atom2_prop_keys(['.params']),
-                        row_height: () => row_height,
-                        row_space: () => row_space,
-                        row_left: $$.$me_atom2_prop(['.option_width', '.marginHor'], $$.$me_atom2_prop_compute_fn_sum()),
-                        row_width: () => 428,
-                        marginHor: () => 32,
-                    },
-                    elem: {
-                        separator: () => ({
-                            prop: {
-                                '#width': '<.option_width',
-                            },
-                            style: {
-                                borderRight: () => '1px solid #bdc3d1',
-                            },
-                        }),
-                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'] }, ({ key: [id], masters: [params] }) => {
-                            const def = params[id];
-                            if (def.type == 'select') {
-                                return {
-                                    base: $$.$nl_select,
-                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]) }),
-                                };
-                            }
-                            else if (def.type == 'address') {
-                                return {
-                                    base: input_with_button,
-                                    prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
-                                };
-                            }
-                            else if (def.type == 'picker') {
-                                return {
-                                    base: $$.$nl_picker,
-                                    prop: Object.assign({}, prop_common(def), { options: def.options }),
-                                };
-                            }
-                            else {
-                                $$.$me_throw(def.type);
-                            }
-                        }),
-                        option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
-                            prop: {
-                                '#ofsVer': `<.option_top[${id}]`,
-                                '#width': '<.option_width',
-                                '#height': '<.option_height',
-                                isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value == id),
-                                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? null : 'pointer'),
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a('<.value', id);
-                                    return true;
-                                },
-                            },
-                            style: {
-                                background: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? '#0070a4' : 'white'),
-                            },
-                            elem: {
-                                icon: () => ({
-                                    node: 'img',
-                                    prop: {
-                                        '#width': () => 28,
-                                        '#height': () => 28,
-                                        '#alignVer': () => $$.$me_align.center,
-                                        '#ofsHor': () => 16,
-                                    },
-                                    attr: {
-                                        src: $$.$me_atom2_prop(['<<.options'], ({ masters: [options] }) => `assets/${options[id].icon}@2x.png`),
-                                        draggable: () => false,
-                                    },
-                                    style: {
-                                        filter: $$.$me_atom2_prop(['<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
-                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
-                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
-                                    },
-                                }),
-                                label: () => ({
-                                    prop: {
-                                        '#ofsHor': () => 61,
-                                        '#alignVer': () => $$.$me_align.center,
-                                        '#height': () => null,
-                                    },
-                                    dom: {
-                                        innerText: () => id,
-                                    },
-                                    style: {
-                                        color: $$.$me_atom2_prop(['<.isSelected', '.colorText'], ({ masters: [isSelected, colorText] }) => isSelected ? 'white' : colorText),
-                                    },
-                                }),
-                            },
-                        })),
-                    },
-                    style: {},
-                }),
-                found: () => ({
-                    prop: {
-                        '#alignVer': () => $$.$me_align.bottom,
-                        '#height': $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 3 * em),
-                    },
-                    style: {
-                        fontWeight: () => 500,
-                        background: '<.style.background',
-                        paddingLeft: () => 16,
-                        paddingTop: () => 16,
-                        boxSizing: () => 'border-box',
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['<<.offerCount', '<<.objCount'], ({ masters: [offerCount, objCount] }) => `Найдено ${objCount} объектов / ${offerCount} предложений`.toUpperCase()),
-                    },
-                }),
-            },
-        };
-        const input = {
-            base: $$.$me_stylesheet,
-            node: 'input',
-            prop: {
-                styleSheetName: () => 'param_input',
-                className: '.styleSheetName',
-                styleSheet: () => '',
-                styleSheetCommon: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => {
-                    return (`
-          .${className}::placeholder {
-            color: rgba(49,55,69,0.5);
-          }
-          .${className} {
-            border: solid 1px #bdc3d1;
-          }
-          .${className}:focus {
-            outline: none;
-            border: 1px solid #313745;
-          }
-        `);
-                }),
-            },
-            style: {
-                borderRadius: () => 3,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                paddingLeft: () => 8,
-                boxSizing: () => 'border-box',
-                '-webkit-appearance': () => 'none',
-            },
-            attr: {
-                placeholder: '.placeholder',
-            },
-            event: {
-                clickOrTap: () => {
-                    return true;
-                },
-                clickOrTapOutside: () => {
-                    $$.a.curr.node.blur();
-                    return false;
-                },
-            },
-        };
-        const input_with_button = {
-            elem: {
-                input: () => ({
-                    base: input,
-                    prop: {
-                        placeholder: '<.placeholder',
-                    },
-                }),
-                button: () => ({
-                    node: 'img',
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#ofsHor': () => 8,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#width': () => 16,
-                        '#height': () => 16,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        '#cursor': () => 'pointer',
-                    },
-                    attr: {
-                        src: () => 'assets/icons-8-plus-2-math@2x.png',
-                        draggable: () => false,
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            console.log($$.a.curr.name());
-                            return true;
-                        },
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//param.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_spinner = {
-            base: $$.$me_stylesheet,
-            prop: {
-                color: () => 'white',
-                size: () => 64,
-                period: () => 1.2,
-                qt: () => 12,
-                k_height: () => 14 / 32,
-                k_width: () => 5 / 32,
-                '#width': '.size',
-                '#height': '.size',
-                '#align': () => $$.$me_align.center,
-                idx: $$.$me_atom2_prop(['.qt'], ({ masters: [qt] }) => [...Array(Math.floor(qt)).keys()]),
-                styleSheetName: () => 'spinner',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [styleSheetName] }) => `
-        @keyframes ${styleSheetName} {
-          0% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0;
-          }
-        }
-      `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName', '.idx', '.color', '.size', '.qt', '.period', '.k_height', '.k_width'], ({ masters: [className, styleSheetName, idx, color, size, qt, period, k_height, k_width], atom }) => {
-                    const semiSize = Math.round(size / 2);
-                    const top = Math.round(semiSize / 10);
-                    const left = semiSize - top;
-                    const width = Math.round(semiSize * k_width);
-                    const height = Math.round(semiSize * k_height);
-                    const step = period / qt;
-                    return (`
-            .${className} div {
-              transform-origin: ${semiSize}px ${semiSize}px;
-              animation: ${styleSheetName} ${period.toFixed(1)}s linear infinite;
-            }
-            .${className} div:after {
-              content: " ";
-              display: block;
-              position: absolute;
-              top: ${top}px;
-              left: ${left}px;
-              width: ${width}px;
-              height: ${height}px;
-              border-radius: 20%;
-              background: ${color};
-            }
-          ` + idx.map((idx) => `
-            .${className} div:nth-child(${+idx + 1}) {
-              transform: rotate(${Math.round(+idx * 360 / qt)}deg);
-              animation-delay: ${(-period + step * (+idx + 1)).toFixed(2)}s;
-            }
-          `).join(''));
-                }),
-            },
-            elem: {
-                div: $$.$me_atom2_prop({ keys: ['.idx'] }, () => ({})),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//spinner.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_iosmenu = {
-            prop: {
-                target: $$.$me_atom2_prop_abstract(),
-                limitRight: '/.#viewportWidth',
-                limitLeft: () => 0,
-                triangleSize: () => 15,
-                paddingHor: () => 6,
-                borderRadius: () => 8,
-                colorBackground: () => 'black',
-                '#width': () => 0,
-                lambda: () => .5,
-                '#height': () => 34,
-                '#ofsVer': $$.$me_atom2_prop(['.triangleSize', '.#height'], ({ masters: [triangleSize, height] }) => -(triangleSize + height)),
-            },
-            elem: {
-                triangle: () => ({
-                    base: $$.$me_triangle,
-                    prop: {
-                        k: () => 2,
-                        size: '<.triangleSize',
-                        color: '<.colorBackground',
-                        '#ofsVer': '<.#height',
-                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.width', '<.lambda', '<.paddingHor'], ({ masters: [width_parent, width_own, lambda, paddingHor] }) => paddingHor + Math.round((width_parent - 2 * paddingHor - width_own) * lambda)),
-                    },
-                }),
-                items: () => ({
-                    control: {
-                        item: $$.$me_atom2_prop({ keys: ['<.items'] }, ({ key: [item] }) => ({
-                            base: $$.$me_label,
-                            prop_non_render: {
-                                '#cursor': () => 'pointer',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a.dispatch('<<' + $$.a('<<.target'));
-                                    return true;
-                                },
-                            },
-                            prop: {
-                                '#height': '<.#height',
-                                alignVer: () => $$.$me_align.center,
-                                '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.items'], ({ masters: [items] }) => {
-                                    const idx = items.indexOf(item);
-                                    const result = !idx ? ['<<.paddingHor'] :
-                                        [`<^item[${items[idx - 1]}].#ofsHor`, `<^item[${items[idx - 1]}].#width`
-                                        ];
-                                    return result;
-                                }), ({ len, masters: [left, width, space] }) => len == 1 ? left : left + width),
-                                borderWidthLeft: $$.$me_atom2_prop(['<<.items'], ({ masters: [items] }) => {
-                                    const idx = items.indexOf(item);
-                                    return !idx ? 0 : 1;
-                                }),
-                                colorBorderLeft: () => 'rgba(255,255,255,0.5)',
-                                paddingHor: () => 10,
-                                text: () => item,
-                                fontSize: () => 14,
-                                fontWeight: () => 400,
-                                fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-                                colorText: () => 'white',
-                            },
-                        })),
-                    },
-                }),
-            },
-            init: () => {
-                const items = $$.a('.items');
-                const item_last = items[items.length - 1];
-                const width = $$.a(`@items^item[${item_last}].#ofsHor`) + $$.a(`@items^item[${item_last}].#width`) + $$.a('.paddingHor');
-                const ofsHor = Math.round(($$.a('<.#width') - width) / 2);
-                const clientRect = $$.a('<.#clientRect');
-                const limitRight = $$.a('.limitRight') - clientRect.left - width;
-                const limitLeft = $$.a('.limitLeft') - clientRect.left;
-                const ofsHor_valid = Math.max(limitLeft, Math.min(ofsHor, limitRight));
-                const lambda = .5 + Math.min(.5, (ofsHor - ofsHor_valid) / (width - 2 * $$.a('.paddingHor') - $$.a('@triangle.width')));
-                $$.a('.#ofsHor', ofsHor_valid);
-                $$.a('.#width', width);
-                $$.a('.lambda', lambda);
-            },
-            style: {
-                background: '.colorBackground',
-                borderRadius: '.borderRadius',
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//iosmenu.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const width_compute_fn = (p) => {
-            const [maxWidth, minWidth, minMarginHor, viewportWidth] = p.masters;
-            return Math.max(minWidth, Math.min(maxWidth, viewportWidth - minMarginHor * 2));
-        };
-        $$.$me_dialog = {
-            prop: {
-                content: $$.$me_atom2_prop_abstract(),
-                target: $$.$me_atom2_prop_abstract(),
-                minMarginVer: () => 50,
-                minMarginHor: () => 50,
-                maxWidth: '/.#viewportWidth',
-                maxHeight: '/.#viewportHeight',
-                minWidth: () => 100,
-                minHeight: () => 100,
-                '#width': '/.#viewportWidth',
-                '#height': '/.#viewportHeight',
-                '#ofsHor': $$.$me_atom2_prop(['<.#clientRect'], ({ masters: [clientRect] }) => -clientRect.left),
-                '#ofsVer': $$.$me_atom2_prop(['<.#clientRect'], ({ masters: [clientRect] }) => -clientRect.top),
-                '#zIndex': () => 10,
-                '#cursor': () => 'not-allowed',
-            },
-            event: {
-                mousemove: () => {
-                    return true;
-                },
-                mousedown: () => {
-                    return true;
-                },
-                touchstart: () => {
-                    return true;
-                },
-            },
-            style: {
-                background: () => 'rgba(0,0,0,.1)'
-            },
-            elem: {
-                wrapper: () => ({
-                    prop: {
-                        '#width': $$.$me_atom2_prop(['<.maxWidth', '<.minWidth', '<.minMarginHor', '<.#width'], width_compute_fn),
-                        '#height': $$.$me_atom2_prop(['<.maxHeight', '<.minHeight', '<.minMarginVer', '<.#height'], width_compute_fn),
-                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.#width'], ({ masters: [width_upper, width] }) => (width_upper - width) / 2),
-                        '#ofsVer': $$.$me_atom2_prop(['<.#height', '.#height'], ({ masters: [height_upper, height] }) => (height_upper - height) / 2),
-                        '#cursor': () => null,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                    },
-                    style: {
-                        background: () => 'white',
-                        boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)',
-                    },
-                    elem: {
-                        content: '<.content',
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//dialog.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_button = {
-            prop: {
-                caption: $$.$me_atom2_prop_abstract(),
-                target: $$.$me_atom2_prop_abstract(),
-                cmd: () => null,
-                '#width': () => 200,
-                '#height': () => 40,
-                '#cursor': () => 'pointer',
-                source: () => null,
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        text: '<.caption',
-                        colorText: () => 'white',
-                        padding: () => 0,
-                        align: () => $$.$me_align.center,
-                        '#height': '<.#height',
-                        '#width': '<.#width',
-                    },
-                }),
-            },
-            style: {
-                background: () => '#0070a4',
-                borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
-                    return true;
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//button.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_grid_dialog = {
-            base: $$.$me_dialog,
-            prop: {
-                cols: $$.$me_atom2_prop_abstract(),
-                col_ids_visible: $$.$me_atom2_prop_abstract(),
-                col_ids_invisible: $$.$me_atom2_prop(['.col_ids_visible', '.cols'], ({ masters: [ids, cols] }) => {
-                    const ids_all = Object.keys(cols);
-                    return ids_all.filter(id => !~ids.indexOf(id));
-                }),
-                maxWidth: () => 872,
-                minWidth: () => 600,
-                minHeight: () => 600,
-                content: () => ({
-                    prop: {
-                        listSpace: () => 24,
-                        listWidth: $$.$me_atom2_prop(['.#width', '.paddingHor', '.listSpace'], ({ masters: [width, paddingHor, listSpace] }) => Math.round((width - 2 * paddingHor - listSpace) / 2)),
-                        listOfsVer: () => 94,
-                        headerHeight: () => 30,
-                        listHeight: $$.$me_atom2_prop(['.#height', '.listOfsVer', '.paddingVer', '@buttonApply.#height'], ({ masters: [height, listOfsVer, paddingVer, buttonApplyHeight] }) => height - listOfsVer - 2 * paddingVer - buttonApplyHeight),
-                        row_height: $$.$me_atom2_prop(['.itemHeight', '.itemMarginVer'], ({ masters: [itemHeight, itemMarginVer] }) => itemHeight + 2 * itemMarginVer),
-                        itemMarginTopFirst: $$.$me_atom2_prop(['.itemMarginVer'], $$.$me_atom2_prop_compute_fn_mul(16 / 6)),
-                        itemMarginBottomLast: $$.$me_atom2_prop(['.itemMarginVer'], $$.$me_atom2_prop_compute_fn_mul(16 / 6)),
-                        itemMarginVer: () => 6,
-                        itemHeight: () => 37,
-                        itemSpace: () => 8,
-                        itemMarginHor: () => 16,
-                        moving: () => '',
-                        movingAnim: () => false,
-                        source: () => '',
-                        target: () => '',
-                        ofs_clientX: () => -1,
-                        ofs_clientY: () => -1,
-                        start_clientX: () => -1,
-                        start_clientY: () => -1,
-                        start_ofsHor: () => -1,
-                        start_ofsVer: () => -1,
-                        isRight: () => false,
-                        paddingHor: () => 32,
-                        paddingVer: () => 32,
-                    },
-                    style: {
-                        background: () => 'white',
-                        boxShadow: () => '0 12px 12px 0 rgba(0, 0, 0, 0.5)',
-                    },
-                    elem: {
-                        header: () => ({
-                            prop: {
-                                '#ofsHor': '<.paddingHor',
-                                '#ofsVer': '<.paddingVer',
-                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                                '#height': () => 19,
-                            },
-                            control: {
-                                label: () => ({
-                                    base: $$.$me_label,
-                                    prop: {
-                                        '#width': '<.#width',
-                                        '#height': '<.#height',
-                                        text: () => 'Настройка таблицы'.toUpperCase(),
-                                        alignVer: () => $$.$me_align.center,
-                                    },
-                                }),
-                            },
-                        }),
-                        invisibleHeader: () => ({
-                            base: header_list,
-                            prop: {
-                                text: () => 'Скрытые поля',
-                            },
-                        }),
-                        visibleHeader: () => ({
-                            base: header_list,
-                            prop: {
-                                text: () => 'Видимые поля',
-                                '#alignHor': () => $$.$me_align.right,
-                            },
-                        }),
-                        invisible: () => ({
-                            base: list,
-                            prop: {
-                                source: () => 'invisible',
-                                target: () => 'visible',
-                            },
-                        }),
-                        visible: () => ({
-                            base: list,
-                            prop: {
-                                '#alignHor': () => $$.$me_align.right,
-                                source: () => 'visible',
-                                target: () => 'invisible',
-                                isRight: () => true,
-                            },
-                        }),
-                        buttonCancel: () => ({
-                            node: 'img',
-                            prop: {
-                                '#alignHor': () => $$.$me_align.right,
-                                '#ofsHor': '<.paddingHor',
-                                '#ofsVer': '<.paddingVer',
-                                '#width': () => 15,
-                                '#height': () => 15,
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': () => 'pointer',
-                            },
-                            attr: {
-                                src: () => 'assets/close-btn@2x.png',
-                                draggable: () => false,
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a.dispatch('<<<' + $$.a('<<<.target'));
-                                    return true;
-                                },
-                            },
-                        }),
-                        buttonApply: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 200,
-                                '#alignVer': () => $$.$me_align.bottom,
-                                '#alignHor': () => $$.$me_align.center,
-                                '#ofsVer': () => 24,
-                                caption: () => 'Применить',
-                                target: $$.$me_atom2_prop(['<<<.target'], ({ masters: [target] }) => '<<<' + target),
-                            },
-                        }),
-                        moving: $$.$me_atom2_prop(['.moving'], ({ masters: [id] }) => !id ? null : {
-                            base: item,
-                            prop: {
-                                '#ofsHor': '<.start_ofsHor',
-                                '#ofsVer': '<.start_ofsVer',
-                                '#height': '<.itemHeight',
-                                '#width': $$.$me_atom2_prop(['<.listWidth', '<.itemMarginHor'], ({ masters: [width, margin] }) => {
-                                    const result = width - 2 * margin;
-                                    return result;
-                                }),
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex, isMoving] }) => zIndex + 2),
-                                '#cursor': () => 'grabbing',
-                                isRight: '<.isRight',
-                                text: $$.$me_atom2_prop(['<<<.cols'], ({ masters: [cols] }) => {
-                                    return cols[id].caption || id;
-                                }),
-                            },
-                            style: {
-                                boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)'
-                            },
-                            event: {
-                                mousemove: p => dragDo(p.event.clientX, p.event.clientY),
-                                mouseup: () => dragEnd(),
-                                touchmove: p => dragDo(p.event.touches[0].clientX, p.event.touches[0].clientY),
-                                touchend: () => dragEnd(),
-                            },
-                        }),
-                    },
-                }),
-            },
-        };
-        const header_list = {
-            prop: {
-                '#width': '<.listWidth',
-                '#height': '<.headerHeight',
-                '#ofsVer': () => 67,
-                '#ofsHor': '<.paddingHor',
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        text: '<.text',
-                        padding: () => 0,
-                        alignVer: () => $$.$me_align.top,
-                        '#height': '<.#height',
-                        '#width': '<.#width',
-                        fontWeight: () => 500,
-                    },
-                }),
-            },
-        };
-        const list = {
-            base: $$.$me_list,
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'row_height_default') {
-                    const idx = dispatch_arg.idx;
-                    dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
-                        (!idx ? $$.a('<.itemMarginTopFirst') : $$.a('<.itemMarginBottomLast')) - $$.a('<.itemMarginVer'));
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                isRight: () => false,
-                '#width': '<.listWidth',
-                '#height': '<.listHeight',
-                '#ofsVer': '<.listOfsVer',
-                '#ofsHor': '<.paddingHor',
-                col_ids: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.source'], ({ masters: [source] }) => [`<<<.col_ids_${source}`])),
-                rec_count: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => {
-                    const result = ids.length;
-                    return result;
-                }),
-                disabledScroll: $$.$me_atom2_prop(['<.moving'], ({ masters: [moving] }) => !!moving),
-                curtain_kind: () => 'white',
-                row_height_min: '<.row_height',
-                header_height: () => 0,
-                provider_tag: '.source',
-                header_content: () => ({}),
-                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                    base: row,
-                    prop: {
-                        row_i: () => row_i,
-                        rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                        id: $$.$me_atom2_prop(['<<.col_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                            return !~idx || idx >= rec_count ? '' : ids[idx];
-                        }),
-                    },
-                })),
-            },
-            elem: {
-                header: () => null,
-            },
-            style: {
-                background: () => '#f0f1f4',
-            },
-        };
-        const row = {
-            elem: {
-                wrapper: () => ({
-                    prop: {
-                        '#width': $$.$me_atom2_prop(['<.#width', '<<<<.itemMarginHor'], ({ masters: [width, itemMarginHor] }) => width - 2 * itemMarginHor),
-                        '#height': '<<<<.itemHeight',
-                        '#ofsHor': '<<<<.itemMarginHor',
-                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.rec_idx'], ({ masters: [rec_idx] }) => rec_idx ?
-                            ['<<<<.itemMarginVer'] :
-                            ['<<<<.itemMarginTopFirst'])),
-                    },
-                    elem: {
-                        item: () => ({
-                            base: item,
-                            event: {
-                                wheelDrag: p => {
-                                    if ($$.$me_atom2_event_wheel_y_is(p.event))
-                                        return false;
-                                    if (!p.isInRect(p.event.start.clientX, p.event.start.clientY))
-                                        return false;
-                                    return dragStart($$.a('<<.id'), p.event.start.clientX, p.event.start.clientY);
-                                },
-                                wheelTouch: p => {
-                                    if ($$.$me_atom2_event_wheel_y_is(p.event))
-                                        return false;
-                                    const touchTolerance = $$.a('/.#touchTolerance');
-                                    const dist = p.distToRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY);
-                                    if (dist > touchTolerance)
-                                        return false;
-                                    return dragStart($$.a('<<.id'), p.event.start.touches[0].clientX, p.event.start.touches[0].clientY);
-                                },
-                            },
-                            prop: {
-                                isRight: '<<<<.isRight',
-                                '#hidden': $$.$me_atom2_prop(['<.#visible', '<<<<<.moving', '<<.id'], ({ masters: [visible, moving, id] }) => !visible || id == 'stub' || id && id == moving, ({ val, atom }) => {
-                                    if (val == null)
-                                        console.error(atom.name());
-                                }),
-                                '#zIndex': $$.$me_atom2_prop(['<<<<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<<.source'], ({ masters: [source] }) => source != 'visible' ? [] : [`<<<<<<<.col_ids_${source}`]), ({ len, masters: [ids] }) => !len || ids.length >= 2 ? 'grab' : 'not-allowed'),
-                                text: $$.$me_atom2_prop(['<<.id', '<<<<<<<.cols'], ({ masters: [id, cols] }) => {
-                                    return id && id != 'stub' && (cols[id].caption || id);
-                                }),
-                            },
-                        }),
-                    }
-                }),
-            },
-        };
-        const item = {
-            style: {
-                background: () => '#d8dce3',
-                border: () => 'solid 1px #adb0b8',
-                boxSizing: () => 'border-box',
-                userSelect: () => 'none',
-            },
-            elem: {
-                text: () => ({
-                    prop: {
-                        '#height': '<.#height',
-                        '#width': $$.$me_atom2_prop(['<.#width', '<@moveMark.#width', '<@moveMark.#ofsHor'], ({ masters: [width, moveMarkWidth, moveMarkOfsHor] }) => {
-                            const result = width - moveMarkWidth - moveMarkOfsHor;
-                            return result;
-                        }),
-                        '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.isRight'], ({ masters: [isRight] }) => !isRight ? [] : ['<@moveMark.#width', '<@moveMark.#ofsHor']), $$.$me_atom2_prop_compute_fn_sum(0)),
-                    },
-                    control: {
-                        label: () => ({
-                            base: $$.$me_label,
-                            prop: {
-                                text: '<<.text',
-                                paddingHor: () => 12,
-                                alignVer: () => $$.$me_align.center,
-                                alignHor: $$.$me_atom2_prop(['<<.isRight'], ({ masters: [isRight] }) => isRight ? $$.$me_align.right : $$.$me_align.left),
-                                '#height': '<.#height',
-                                '#width': '<.#width',
-                                fontWeight: () => 500,
-                            },
-                        }),
-                    },
-                }),
-                moveMark: () => ({
-                    node: 'img',
-                    prop: {
-                        '#width': () => 9,
-                        '#height': () => 17,
-                        '#alignHor': $$.$me_atom2_prop(['<.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.right : $$.$me_align.left),
-                        '#ofsHor': () => 18,
-                        '#alignVer': () => $$.$me_align.center,
-                    },
-                    attr: {
-                        src: () => 'assets/move@2x.png',
-                        draggable: () => false,
-                    },
-                }),
-            },
-        };
-        function dragStart(id, clientX, clientY) {
-            if ($$.a('<<<<<.moving') || $$.a('<<<<<.movingAnim'))
-                return false;
-            const source = $$.a('<<<<.source');
-            if (source == 'visible' && $$.a(`<<<<<<<.col_ids_${source}`).length < 2)
-                return false;
-            $$.a('<<<<<.moving', id);
-            $$.a('<<<<<.isRight', $$.a('.isRight'));
-            $$.a('<<<<<.source', source);
-            $$.a('<<<<<.target', $$.a('<<<<.target'));
-            $$.a('<<<<<.start_clientX', clientX);
-            $$.a('<<<<<.start_clientY', clientY);
-            const clientRect = $$.a('.#clientRect');
-            $$.a('<<<<<.ofs_clientX', clientRect.left - clientX);
-            $$.a('<<<<<.ofs_clientY', clientRect.top - clientY);
-            const clientRectDialog = $$.a('<<<<<.#clientRect');
-            $$.a('<<<<<.start_ofsHor', clientRect.left - clientRectDialog.left);
-            $$.a('<<<<<.start_ofsVer', clientRect.top - clientRectDialog.top);
-            return true;
-        }
-        function dragDo(clientX, clientY) {
-            if (!$$.a('<.moving'))
-                return false;
-            if ($$.a('<.movingAnim'))
-                return false;
-            $$.a('.#ofsHor', clientX - $$.a('<.start_clientX') + $$.a('<.start_ofsHor'));
-            $$.a('.#ofsVer', clientY - $$.a('<.start_clientY') + $$.a('<.start_ofsVer'));
-            const left = clientX + $$.a('<.ofs_clientX');
-            const right = left + $$.a('.#width');
-            const top = clientY + $$.a('<.ofs_clientY');
-            const bottom = top + $$.a('.#height');
-            const target = $$.a('<.target');
-            const clientRect = $$.a(`<@${target}.#clientRect`);
-            const ids = $$.a(`<<<.col_ids_${target}`);
-            if (intersects(left, right, clientRect.left, clientRect.right) &&
-                intersects(top, bottom, clientRect.top, clientRect.bottom)) {
-                let idx_found = ids.length;
-                $$.a.dispatch(`<@${target}`, 'iterate_rows', (row_i) => {
-                    const clientRect = $$.a(`<@${target}@row[${row_i}].#clientRect`);
-                    if (intersects(top, bottom, clientRect.top, clientRect.bottom)) {
-                        idx_found = $$.a(`<@${target}.rec_idx[${row_i}]`);
-                        if (idx_found == ids.length - 1 && top > clientRect.top)
-                            idx_found++;
-                    }
-                });
-                if (ids[idx_found] != 'stub') {
-                    const ids_new = ids.slice();
-                    const idx = ids.indexOf('stub');
-                    if (~idx) {
-                        ids_new.splice(idx, 1);
-                        if (idx_found > idx)
-                            idx_found--;
-                    }
-                    ids_new.splice(idx_found, 0, 'stub');
-                    $$.a(`<<<.col_ids_${target}`, ids_new);
-                }
-                return true;
-            }
-            const idx = ids.indexOf('stub');
-            if (~idx) {
-                const ids_new = ids.slice();
-                ids_new.splice(idx, 1);
-                $$.a(`<<<.col_ids_${target}`, ids_new);
-            }
-            return true;
-        }
-        function dragEnd() {
-            const id = $$.a('<.moving');
-            if (!id)
-                return false;
-            if ($$.$me_atom2_wheel_drag)
-                $$.$me_atom2_wheel_drag.cancel();
-            if ($$.$me_atom2_wheel_touch)
-                $$.$me_atom2_wheel_touch.cancel();
-            let count = 2;
-            const target = $$.a('<.target');
-            const fini = () => {
-                if (!--count) {
-                    $$.a('<.moving', '');
-                    $$.a('<.movingAnim', false);
-                    const ids = $$.a(`<<<.col_ids_${target}`);
-                    const idx = ids.indexOf('stub');
-                    if (~idx) {
-                        const ids_new = ids.slice();
-                        ids_new.splice(idx, 1, id);
-                        $$.a(`<<<.col_ids_${target}`, ids_new);
-                        {
-                            const source = $$.a('<.source');
-                            const ids = $$.a(`<<<.col_ids_${source}`);
-                            const idx = ids.indexOf(id);
-                            const ids_new = ids.slice();
-                            ids_new.splice(idx, 1);
-                            $$.a(`<<<.col_ids_${source}`, ids_new);
-                        }
-                    }
-                }
-            };
-            $$.a('<.movingAnim', true);
-            let i_found;
-            const list = $$.a.dispatch(`<@${target}`, 'iterate_rows', (row_i) => {
-                if ($$.a(`@row[${row_i}]@content.id`) == 'stub') {
-                    i_found = row_i;
-                    return false;
-                }
-            });
-            let ofsHor;
-            let ofsVer;
-            if (i_found === void 0) {
-                ofsHor = $$.a('<.start_ofsHor');
-                ofsVer = $$.a('<.start_ofsVer');
-            }
-            else {
-                const clientRectDialog = $$.a('<.#clientRect');
-                const clientRectTarget = $$.a(`<@${target}@row[${i_found}]@content@wrapper.#clientRect`);
-                ofsHor = clientRectTarget.left - clientRectDialog.left;
-                ofsVer = clientRectTarget.top - clientRectDialog.top;
-            }
-            $$.a('.#ofsHor', $$.$me_atom2_anim({ to: ofsHor, fini }));
-            $$.a('.#ofsVer', $$.$me_atom2_anim({ to: ofsVer, fini }));
-            return true;
-        }
-        const intersects = (leftA, rightA, leftB, rightB) => leftB <= leftA && leftA <= rightB ||
-            leftB <= rightA && rightA <= rightB ||
-            leftA <= leftB && rightA >= leftB ||
-            leftA <= rightB && rightA >= rightB;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//dialog.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
-        let by_idx = {};
-        let timerId;
-        $$.$nl_search_grid = {
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'set_view') {
-                    const val = dispatch_arg || {};
-                    const col_width_store = val.col_width_actual || {};
-                    const col_ids = val.col_ids || (() => {
-                        const cols = $$.a('.cols');
-                        return Object.keys(cols).filter(id => !cols[id].hidden);
-                    })();
-                    const min = $$.a('.#width') - $$.a('.col_width_sum_actual') - $$.a('.col_fixed_width');
-                    const ofsHor = Math.min(0, Math.max(min, val.ofsHor || 0)) + $$.a('.col_fixed_width');
-                    for (const id of $$.a('.col_ids'))
-                        $$.a(`.col_width_actual[${id}]`, null);
-                    $$.a('.col_width_store', col_width_store);
-                    $$.a('.col_ids', col_ids);
-                    $$.a('.ofsHor', ofsHor);
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                influence: $$.$me_atom2_prop(['.cols'], ({ masters: [cols] }) => {
-                    const result = {};
-                    for (const col_id in cols) {
-                        const col = cols[col_id];
-                        const fld = col.fld;
-                        if (!fld)
-                            continue;
-                        for (const s of fld)
-                            (result[s] || (result[s] = new Set())).add(col_id);
-                    }
-                    return result;
-                }),
-                col_width_store: () => ({}),
-                col_ids: () => [],
-                col_id_last: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => !ids.length ? null : ids[ids.length - 1]),
-                col_id_last_prev: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => ids.length < 2 ? null : ids[ids.length - 2]),
-                col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]),
-                col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]', '.col_width_store'] }, ({ key: [id], masters: [col, col_width_store] }) => {
-                    return col_width_store[id] || col.width;
-                }),
-                col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                col_width_excess: $$.$me_atom2_prop(['.#width', '.col_fixed_width', '.col_width_sum'], $$.$me_atom2_prop_compute_fn_diff()),
-                col_width_actual: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.col_width_sum', '.col_width_excess'] }, ({ key: [id], masters: [col_width, col_width_sum, col_width_excess] }) => {
-                    return col_width + (col_width_excess <= 0 ? 0 : col_width / col_width_sum * col_width_excess);
-                }),
-                col_width_sum_actual: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width_actual[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                col_align: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.align || $$.$me_align.left),
-                col_width_min: () => 24,
-                col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
-                col_fixed_width: () => 37,
-                ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev),
-                ofsHor_adjust: $$.$me_atom2_prop(['.#width'], null, ({ val, prev }) => {
-                    const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum_actual'), val);
-                    $$.a('.ofsHor', ofsHor_adjusted($$.a('.ofsHor'), min, max));
-                }),
-                col_left: $$.$me_atom2_prop({
-                    keys: ['.col_ids'],
-                    masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
-                        const idx = ids.indexOf(id);
-                        return !idx ? [] : [`.col_left[${ids[idx - 1]}]`, `.col_width_actual[${ids[idx - 1]}]`];
-                    }),
-                }, ({ len, masters: [left, width] }) => !len ? 0 : left + width),
-                header_height: () => 32,
-                row_height_min: () => 28,
-                hidden_curtain: $$.$me_atom2_prop(['@header.colSelected'], ({ masters: [colSelected] }) => !!colSelected),
-                width_curtain: () => 40,
-                curtain_kind: () => 'black',
-                curtain: () => ['left', 'right'],
-                curtainVisible: $$.$me_atom2_prop({
-                    keys: ['.curtain'],
-                    masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
-                        if (curtain == 'left') {
-                            return ['.ofsHor', '.col_fixed_width'];
-                        }
-                        else {
-                            return ['.ofsHor', '.col_width_sum_actual', '.#width'];
-                        }
-                    }),
-                }, ({ key: [curtain], masters }) => {
-                    if (curtain == 'left') {
-                        const [ofsHor, col_fixed_width] = masters;
-                        return ofsHor < col_fixed_width;
-                    }
-                    else {
-                        const [ofsHor, col_width_sum_actual, width] = masters;
-                        return ofsHor + col_width_sum_actual > width;
-                    }
-                }),
-                '#order': () => ['list', 'cursor', 'header'],
-            },
-            event: {
-                wheel: p => !$$.a('@header.colSelected') &&
-                    p.isInRect(p.event.clientX, p.event.clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
-                wheelDrag: p => !$$.a('@header.colSelected') &&
-                    p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
-                wheelTouch: p => !$$.a('@header.colSelected') &&
-                    p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
-            },
-            elem: {
-                header: () => ({
-                    base: header,
-                    prop: {
-                        '#height': '<.header_height',
-                    },
-                }),
-                list: () => ({
-                    base: list,
-                    prop: {
-                        provider_tag: '<.provider_tag',
-                        provider: '<.provider',
-                        rec_count: '<.rec_count',
-                        '#ofsVer': '<@header.#height',
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@header.#height'], ({ masters: [height_gross, height_header] }) => height_gross - height_header),
-                        row_height_min: '<.row_height_min',
-                        width_curtain: $$.$me_atom2_prop(['<.ofsHor', '<.col_width_sum_actual', '<.#width'], ({ masters: [ofsHor, col_width_sum_actual, width] }) => Math.min(width, ofsHor + col_width_sum_actual)),
-                    },
-                }),
-                curtain: $$.$me_atom2_prop({ keys: ['.curtain'], masters: ['.hidden_curtain', '.curtainVisible[]'] }, ({ key: [curtain], masters: [hidden_curtain, curtainVisible] }) => hidden_curtain || !curtainVisible ? null : {
-                    prop: {
-                        '#width': '<.width_curtain',
-                        '#height': $$.$me_atom2_prop(['<.header_height', '<@list.curtainVisible[bottom]', '<@list.#height', '<@list.visible_bottom'], ({ masters: [header_height, curtainVisible, height, visible_bottom] }) => {
-                            return header_height + (curtainVisible ? height : visible_bottom);
-                        }),
-                        '#ofsHor': curtain == 'right' ? null : '<.col_fixed_width',
-                        '#alignHor': () => $$.$me_align[curtain],
-                    },
-                    style: {
-                        background: $$.$me_atom2_prop(['<.curtain_kind'], ({ masters: [kind] }) => kind == 'black' ?
-                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(0,0,0,.24) 0%, rgba(0,0,0,.1) 33%, rgba(0,0,0,0) 100%)` :
-                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%)`),
-                        pointerEvents: () => 'none',
-                    },
-                }),
-                spinner: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => count >= 0 ? null : {
-                    base: $$.$me_spinner,
-                    prop: {
-                        color: () => '#D9DCE2',
-                    },
-                }),
-            }
-        };
-        const grid_wheel = (deltaX) => {
-            const prop_ofsHor = $$.a.get('.ofsHor');
-            const ofsHor = prop_ofsHor.value() - deltaX;
-            const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum_actual'), $$.a('.#width'));
-            if (deltaX > 0 && ofsHor >= min ||
-                deltaX < 0 && ofsHor <= max) {
-                prop_ofsHor.value(ofsHor);
-            }
-            else if (deltaX) {
-                $$.$me_ribbon_effect({
-                    id: $$.a.curr.name(),
-                    adjust: '.ofsHor',
-                    from: '.ofsHor',
-                    to: ofsHor > max ? max : min,
-                    delta: deltaX,
-                    fromBack: deltaX < 0,
-                });
-            }
-            return true;
-        };
-        function ofsHor_min_max(col_fixed_width, col_width_sum_actual, width) {
-            const max = col_fixed_width;
-            const min = Math.min(max, width - col_width_sum_actual);
-            return [min, max];
-        }
-        function ofsHor_adjusted(ofsHor, min, max) {
-            return Math.min(max, Math.max(min, ofsHor));
-        }
-        const get_row_open = (idx, _provider, provider_tag) => {
-            return $$.a.dispatch(_provider, 'get_row_open', { idx, tag: provider_tag }).val;
-        };
-        const set_row_open = (idx, _provider, provider_tag, val) => {
-            $$.a.dispatch(_provider, 'set_row_open', { idx, val, tag: provider_tag });
-        };
-        $$.$nl_search_grid_cursor = $$.$me_atom2_async_multi_origin({
-            default: '',
-            raf_order: 100,
-            flush: (row_i, prev, _value) => {
-                _value.origin.by_path_s('<<.row_cursor').value(row_i);
-            },
-        });
-        const header = {
-            prop: {
-                colSelected: $$.$me_atom2_prop([], () => '', ({ val, prev }) => {
-                    $$.a('.colSelectedOpacity', val ? 1 : $$.$me_atom2_anim({ to: 0 }));
-                    if (!val && prev)
-                        $$.a('.colSelectedWas', prev);
-                }),
-                colReplace: () => '',
-                replaceToRight: () => false,
-                col_ids_new: () => [],
-                colSelectedWas: () => '',
-                colSelectedOpacity: () => 0,
-                colSelectedHeaderVisible: $$.$me_atom2_prop(['.colSelectedOpacity'], ({ masters: [opacity] }) => !!opacity),
-                '#order': () => ['wrapper', 'fixed', 'colSelectedStub', 'colResizerLeft', 'colResizerRight', 'colSelected'],
-                '#zIndex': () => 1,
-            },
-            elem: {
-                colSelectedStub: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
-                    type: id || id_was,
-                    prop: {
-                        '#ofsHor': $$.$me_atom2_prop([`<<.col_left[${id || id_was}]`, '<<.ofsHor', '<<.col_fixed_width'], ({ masters: [left, ofs, min] }) => Math.max(min, left + ofs)),
-                        '#width': $$.$me_atom2_prop([`<<.col_left[${id || id_was}]`, '<<.ofsHor', '<<.col_fixed_width', `<<.col_width_actual[${id || id_was}]`], ({ masters: [left, ofs, min, width] }) => Math.max(0, width + Math.min(0, left + ofs - min))),
-                        '#height': '<<.#height',
-                    },
-                    style: {
-                        background: () => 'white',
-                        opacity: '<.colSelectedOpacity',
-                    },
-                }),
-                colSelected: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
-                    type: id || id_was,
-                    prop: {
-                        '#ofsVer': $$.$me_atom2_prop(['<.colSelected'], ({ masters: [id] }) => $$.$me_atom2_anim({
-                            from: id ? 0 : null,
-                            to: id ? -20 : 0,
-                        })),
-                        '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isMoving', '.isMovingAnim'], ({ masters: [isMoving, isMovingAnim] }) => isMoving || isMovingAnim ? [] : [`<<.col_left[${id || id_was}]`, '<<.ofsHor']), ({ len, masters: [left, ofs], prev }) => !len ? prev : left + ofs),
-                        '#width': `<<.col_width_actual[${id || id_was}]`,
-                        on_chaned_width: $$.$me_atom2_prop(['.#width'], null),
-                        '#height': '<<.#height',
-                        '#cursor': $$.$me_atom2_prop(['.isMoving'], ({ masters: [isMoving] }) => isMoving ? 'grabbing' : 'grab'),
-                        '#zIndex': () => 3,
-                        last_clientX: () => -1,
-                        ofs: () => -1,
-                        start_clientX: () => -1,
-                        isShownDialog: () => false,
-                        isResizing: () => false,
-                        isMoving: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
-                            if (!val && prev) {
-                                const id = $$.a('<.colSelected');
-                                const left = $$.a(`<<.col_left[${id}]`);
-                                const prop_ofsHor = $$.a.get('<<.ofsHor');
-                                const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
-                                    $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
-                                    prop_ofsHor.value();
-                                const min = $$.a('<<.col_fixed_width');
-                                const to = Math.max(min, left + ofs);
-                                $$.a('.#ofsHor', $$.$me_atom2_anim({ to, path_active: $$.a.get('.isMovingAnim').path }));
-                            }
-                        }),
-                        isMovingAnim: () => false,
-                        '#order': () => ['colResizerLeft', 'colResizerRight', 'cells', 'header', 'menu'],
-                    },
-                    style: {
-                        background: () => 'rgb(250,250,250)',
-                        opacity: '<.colSelectedOpacity',
-                        pointerEvents: $$.$me_atom2_prop(['.colSelected'], ({ masters: [colSelected] }) => colSelected ? 'auto' : 'none'),
-                        boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.5)',
-                    },
-                    init: () => {
-                        const left = $$.a(`<<.col_left[${id || id_was}]`);
-                        const prop_ofsHor = $$.a.get('<<.ofsHor');
-                        const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
-                            $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
-                            prop_ofsHor.value();
-                        const min = $$.a('<<.col_fixed_width');
-                        const val = Math.max(min, left + ofs);
-                        $$.a('.#ofsHor', val);
-                    },
-                    dispatch: (dispatch_name, dispatch_arg) => {
-                        const s = $$.a.curr.name();
-                        if (!dispatch_name.startsWith(s))
-                            return false;
-                        dispatch_name = dispatch_name.slice(s.length);
-                        if (dispatch_name.startsWith('@menu')) {
-                            if (dispatch_name.endsWith('[Скрыть]')) {
-                                $$.a('<.colSelected', '');
-                                const col_ids = $$.a('<<.col_ids');
-                                const col_ids_new = col_ids.slice();
-                                const idx = col_ids.indexOf(id);
-                                col_ids_new.splice(idx, 1);
-                                $$.a('<<.col_ids', col_ids_new);
-                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a(`<<.col_width_sum_actual`), $$.a('<.#width'));
-                                const to = ofsHor_adjusted($$.a('<<.ofsHor'), min, max);
-                                const prop_isResizing = $$.a.get('.isResizing');
-                                $$.a('<<.ofsHor', $$.$me_atom2_anim({
-                                    to,
-                                    fini: () => {
-                                        prop_isResizing.value(false);
-                                    },
-                                }));
-                            }
-                            else if (dispatch_name.endsWith('[Показать...]')) {
-                                $$.a('.isShownDialog', true);
-                            }
-                            else
-                                return false;
-                            return true;
-                        }
-                        else if (dispatch_name.startsWith('@dialog')) {
-                            console.log(dispatch_name);
-                            if (dispatch_name.endsWith('Apply')) {
-                                $$.a('<.colSelected', '');
-                                $$.a('<<.col_ids', $$.a('@dialog.col_ids_visible'));
-                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
-                                $$.a('<<.ofsHor', ofsHor_adjusted($$.a('<<.ofsHor'), min, max));
-                            }
-                            $$.a('.isShownDialog', false);
-                            return true;
-                        }
-                        return false;
-                    },
-                    elem: {
-                        colResizerLeft: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '<.colSelectedOpacity'], ({ masters: [isMoving, isMovingAnim, colSelectedOpacity] }) => isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
-                            base: colResizer,
-                            prop: {
-                                id: () => id,
-                                isRight: () => false,
-                            },
-                        }),
-                        colResizerRight: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '<.colSelectedOpacity'], ({ masters: [isMoving, isMovingAnim, colSelectedOpacity] }) => isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
-                            base: colResizer,
-                            prop: {
-                                id: () => id,
-                                isRight: () => true,
-                            },
-                        }),
-                        menu: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '.isResizing'], ({ masters: [isMoving, isMovingAnim, isResizing] }) => isMoving || isMovingAnim || isResizing ?
-                            null :
-                            {
-                                base: $$.$me_iosmenu,
-                                prop: {
-                                    target: () => '<',
-                                    items: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [col_ids] }) => {
-                                        const result = ['Показать...'];
-                                        if (col_ids.length > 1)
-                                            result.unshift('Скрыть');
-                                        return result;
-                                    }),
-                                    '#zIndex': () => 6,
-                                },
-                            }),
-                        dialog: $$.$me_atom2_prop(['.isShownDialog'], ({ masters: [isShownDialog] }) => !isShownDialog ? null : {
-                            base: $$.$nl_search_grid_dialog,
-                            prop: {
-                                target: () => '<',
-                                cols: '<<<.cols',
-                                col_ids_visible: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [ids] }) => ids),
-                                col_ids_invisible: $$.$me_atom2_prop(['<<<.col_ids', '<<<.cols'], ({ masters: [ids, cols] }) => {
-                                    const ids_all = Object.keys(cols);
-                                    return ids_all.filter(id => !~ids.indexOf(id));
-                                }),
-                            },
-                        }),
-                        header: () => ({
-                            prop: {
-                                '#height': $$.$me_atom2_prop(['<<<.header_height'], ({ masters: [height] }) => height + 2),
-                            },
-                            control: {
-                                content: () => ({
-                                    base: $$.$me_label,
-                                    prop: {
-                                        '#width': `<<<<.col_width_actual[${id}]`,
-                                        '#height': '<.#height',
-                                        text: `<<<<.col_caption[${id}]`,
-                                        borderWidth: () => 1,
-                                        colorBorder: () => '#adb0b8',
-                                        colorBackground: () => '#d8dce3',
-                                        align: () => $$.$me_align.center,
-                                        fontSize: () => 14,
-                                        paddingHor: () => 4,
-                                    },
-                                }),
-                            },
-                        }),
-                        cells: () => ({
-                            control: {
-                                cell: $$.$me_atom2_prop({
-                                    keys: ['<<<@list.row_i'],
-                                    masters: ['<<<@list.row_i_min', '<<<@list.row_i_max'],
-                                }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ?
-                                    null :
-                                    {
-                                        base: $$.$me_label,
-                                        prop: {
-                                            '#ofsVer': $$.$me_atom2_prop(['<<@header.#height', `<<<<@list.row_top[${row_i}]`], ({ masters: [ofs, top] }) => ofs + top),
-                                            '#height': '<<<<@list.row_height_min',
-                                            '#width': '<.#width',
-                                            text: `<<<<@list.cell_text[${row_i}][${id}]`,
-                                            borderWidth: () => 1,
-                                            colorBorder: () => '#adb0b8',
-                                            borderWidthTop: () => 0,
-                                            colorBackground: () => '#F5F8F8',
-                                            fontSize: () => 14,
-                                            paddingHor: () => 4,
-                                            alignVer: () => $$.$me_align.center,
-                                            alignHor: `<<<<.col_align[${id}]`,
-                                        },
-                                    }),
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTapOutside: () => {
-                            const colSelected = $$.a('<.colSelected');
-                            if (!colSelected || colSelected != id)
-                                return false;
-                            $$.a('<.colSelected', '');
-                            return true;
-                        },
-                        touchstart: p => {
-                            const touchTolerance = $$.a('/.#touchTolerance');
-                            const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                            if (dist > touchTolerance)
-                                return false;
-                            reorderStart(p.event.touches[0].clientX);
-                            return true;
-                        },
-                        touchend: () => {
-                            reorderEnd();
-                            return true;
-                        },
-                        touchmove: p => {
-                            reorderDo(p.event.touches[0].clientX);
-                            return true;
-                        },
-                        mousedown: p => {
-                            if (!p.isInRect(p.event.clientX, p.event.clientY))
-                                return false;
-                            reorderStart(p.event.clientX);
-                            return true;
-                        },
-                        mouseup: () => {
-                            reorderEnd();
-                            return true;
-                        },
-                        mousemove: p => {
-                            if (p.event.buttons != 1) {
-                                $$.a('.isMoving', false);
-                                return false;
-                            }
-                            reorderDo(p.event.clientX);
-                            return true;
-                        },
-                    },
-                }),
-                fixed: () => ({
-                    prop: {
-                        '#width': '<<.col_fixed_width',
-                    },
-                    control: {
-                        cell: () => ({
-                            base: $$.$me_panel,
-                            prop: Object.assign({}, cell_borders, { colorBackground: () => '#d8dce3' }),
-                        }),
-                    },
-                }),
-                wrapper: () => ({
-                    style: {
-                        overflow: () => 'hidden',
-                    },
-                    elem: {
-                        cells: () => ({
-                            prop: {
-                                '#width': '<<<.col_width_sum_actual',
-                                '#ofsHor': '<<<.ofsHor',
-                                '#zIndex': () => 1,
-                            },
-                            control: {
-                                cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
-                                    base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
-                                    prop_non_render: {
-                                        '#cursor': () => 'pointer',
-                                    },
-                                    event: {
-                                        clickOrTap: () => {
-                                            const ofsHor = $$.a('<<<<.ofsHor');
-                                            const left = $$.a(`<<<<.col_left[${id}]`);
-                                            const min = $$.a('<<<<.col_fixed_width') - left;
-                                            const max = $$.a('<<<.#width') - $$.a(`<<<<.col_width_actual[${id}]`) - left;
-                                            const to = Math.max(min, Math.min(max, ofsHor));
-                                            const prop_colSelected = $$.a.get('<<<.colSelected');
-                                            if (to == ofsHor) {
-                                                prop_colSelected.value(id);
-                                            }
-                                            else {
-                                                $$.a('<<<<.ofsHor', $$.$me_atom2_anim({ to,
-                                                    fini: () => {
-                                                        prop_colSelected.value(id);
-                                                    }
-                                                }));
-                                            }
-                                            return true;
-                                        },
-                                    },
-                                })),
-                            },
-                        }),
-                    }
-                }),
-            },
-        };
-        function reorderStart(clientX) {
-            $$.a('.isMoving', true);
-            $$.a('.last_clientX', clientX);
-            $$.a('.ofs', clientX - $$.a('.#clientRect').left);
-            $$.a('.start_clientX', clientX);
-        }
-        function reorderDo(clientX) {
-            const delta = clientX - $$.a('.last_clientX');
-            if (!delta)
-                return;
-            if (!reorderDo_helper(clientX, Math.sign(delta)))
-                return;
-            $$.a('.#ofsHor', $$.a('.#ofsHor') + delta);
-            $$.a('.last_clientX', clientX);
-        }
-        function reorderDo_helper(clientX, sign) {
-            if (!$$.a('.isMoving'))
-                return false;
-            const is_valid_idx = (idx) => 0 <= idx && idx < col_ids.length;
-            const col_ids = $$.a('<<.col_ids');
-            const id = $$.a('<.colSelected');
-            const idx = col_ids.indexOf(id);
-            let idx_replace;
-            let col_ids_new;
-            let ofsHor;
-            let need_reorder = false;
-            if (sign > 0 && idx < col_ids.length - 1 || sign < 0 && idx) {
-                const overlap_border = clientX - $$.a('.ofs') - $$.a(`<@wrapper.#clientRect`).left - $$.a('<<.ofsHor') +
-                    (sign < 0 ? 0 : $$.a(`<<.col_width_actual[${id}]`));
-                let i = 0;
-                const threshold = $$.a('<<.col_width_min') / 2;
-                let overlap;
-                while (is_valid_idx(idx + (i + 1) * sign)) {
-                    const id = col_ids[idx + (i + 1) * sign];
-                    const left = $$.a(`<<.col_left[${id}]`);
-                    const val = (overlap_border - left) * sign + (sign > 0 ? 0 : $$.a(`<<.col_width_actual[${id}]`));
-                    if (val >= threshold) {
-                        i++;
-                        overlap = val;
-                    }
-                    else
-                        break;
-                }
-                if (i) {
-                    idx_replace = idx + i * sign;
-                    const limit = sign > 0 ?
-                        $$.a('<<.#width') - $$.a('<<.ofsHor') - threshold * 2 :
-                        $$.a('<<.col_fixed_width') - $$.a('<<.ofsHor') + threshold * 2;
-                    const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
-                    if (idx_replace == col_ids.length - 1) {
-                        ofsHor = min;
-                    }
-                    else if (idx_replace == 0) {
-                        ofsHor = max;
-                    }
-                    else {
-                        const need_scroll = sign > 0 ?
-                            $$.a(`<<.col_left[${col_ids[idx + i]}]`) + $$.a(`<<.col_width_actual[${col_ids[idx + i]}]`) >= limit :
-                            $$.a(`<<.col_left[${col_ids[idx_replace]}]`) <= limit;
-                        if (need_scroll) {
-                            const prop_ofsHor = $$.a.get('<<.ofsHor');
-                            ofsHor =
-                                $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
-                                    $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
-                                    prop_ofsHor.value();
-                            ofsHor += sign * threshold / 2;
-                            for (let j = idx + sign; j * sign <= (idx_replace) * sign; j += sign)
-                                ofsHor -= sign * $$.a(`<<.col_width_actual[${col_ids[j]}]`);
-                        }
-                    }
-                }
-            }
-            if (idx_replace !== void 0) {
-                col_ids_new = col_ids.slice();
-                col_ids_new.splice(idx, 1);
-                col_ids_new.splice(idx_replace, 0, id);
-                $$.a('<<.col_ids', col_ids_new);
-            }
-            if (ofsHor !== void 0) {
-                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
-                const val = ofsHor_adjusted(ofsHor, min, max);
-                const curr = $$.a.curr;
-                if (val != $$.a('<<.ofsHor')) {
-                    $$.a('<<.ofsHor', $$.$me_atom2_anim({
-                        to: val,
-                        fini: () => {
-                            const prev = $$.a.curr;
-                            $$.a.curr = curr;
-                            reorderDo_helper(clientX, sign);
-                            $$.a.curr = prev;
-                        }
-                    }));
-                }
-            }
-            return true;
-        }
-        function reorderEnd() {
-            $$.a('.isMoving', false);
-        }
-        const colResizer = {
-            node: 'img',
-            prop: {
-                '#width': () => 27,
-                '#height': () => 50,
-                '#cursor': () => 'col-resize',
-                '#zIndex': () => 5,
-                start_clientX: () => -1,
-                start_width_actual: () => -1,
-                start_width: () => -1,
-                start_ofsHor: () => -1,
-                '#alignHor': $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.left : $$.$me_align.right),
-                '#ofsHor': () => -19,
-                '#ofsVer': () => -4,
-            },
-            attr: {
-                src: () => 'assets/stretch@2x.png',
-                draggable: () => false,
-            },
-            style: {
-                boxSizing: () => 'border-box',
-                transform: $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? '' : 'scaleX(-1)'),
-            },
-            event: {
-                touchstart: p => {
-                    const touchTolerance = $$.a('/.#touchTolerance');
-                    const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                    if (dist > touchTolerance)
-                        return false;
-                    resizeStart(p.event.touches[0].clientX);
-                    return true;
-                },
-                touchmove: p => {
-                    const start_clientX = $$.a('.start_clientX');
-                    if (start_clientX == -1)
-                        return false;
-                    resizeDo(p.event.touches[0].clientX);
-                    return true;
-                },
-                touchend: () => resizeFini(),
-                mousedown: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    resizeStart(p.event.clientX);
-                    return true;
-                },
-                mousemove: p => {
-                    const start_clientX = $$.a('.start_clientX');
-                    const clientX = p.event.clientX;
-                    if (start_clientX == -1)
-                        return false;
-                    if (!p.event.buttons
-                        && start_clientX != clientX) {
-                        return resizeFini(false);
-                    }
-                    resizeDo(p.event.clientX);
-                    return true;
-                },
-                mouseup: () => resizeFini(),
-            },
-        };
-        function resizeStart(clientX) {
-            $$.a('.start_clientX', clientX);
-            const id = $$.a('.id');
-            $$.a('.start_width_actual', $$.a(`<<<.col_width_actual[${id}]`));
-            $$.a('.start_width', $$.a(`<<<.col_width[${id}]`));
-            $$.a(`<<<.col_width_actual[${id}]`);
-            const isRight = $$.a('.isRight');
-            if (!isRight)
-                $$.a('.start_ofsHor', $$.a('<<<.ofsHor'));
-            $$.a('<.isResizing', true);
-        }
-        function resizeDo(clientX) {
-            const start_clientX = $$.a('.start_clientX');
-            const isRight = $$.a('.isRight');
-            const id = $$.a('.id');
-            const start_width_actual = $$.a('.start_width_actual');
-            const max = isRight ?
-                $$.a('<<<.#width') - $$.a(`<<<.col_left[${id}]`) - $$.a('<<<.ofsHor') - start_width_actual :
-                $$.a(`<<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<<.col_fixed_width');
-            const min = $$.a('<<<.col_width_min') - start_width_actual;
-            const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
-            if (!isRight)
-                $$.a('<<<.ofsHor', $$.a('.start_ofsHor') - delta);
-            $$.a(`<<<.col_width_actual[${id}]`, start_width_actual + delta);
-        }
-        function resizeFini(dontSkip = true) {
-            const clientX = $$.a('.start_clientX');
-            if (clientX == -1)
-                return false;
-            if (dontSkip) {
-                const id = $$.a('.id');
-                const col_width_excess = $$.a('<<<.col_width_excess');
-                let width;
-                if (col_width_excess <= 0) {
-                    width = $$.a(`<<<.col_width_actual[${id}]`);
-                }
-                else {
-                    const delta = $$.a(`<<<.col_width_actual[${id}]`) - $$.a('.start_width_actual');
-                    const col_width_sum = $$.a('<<<.col_width_sum');
-                    const col_width = $$.a(`<<<.col_width[${id}]`);
-                    const k = col_width_excess / col_width_sum * col_width + delta;
-                    const gamma = (col_width_sum * k - col_width * col_width_excess) / ((col_width_sum - k) - (col_width - col_width_excess));
-                    width = $$.a('.start_width') + Math.min(gamma, col_width_excess);
-                }
-                $$.a(`<<<.col_width[${id}]`, width);
-                $$.a(`<<<.col_width_actual[${id}]`, null);
-                const [min, max] = ofsHor_min_max($$.a('<<<.col_fixed_width'), $$.a(`<<<.col_width_sum_actual`), $$.a('<<<.#width'));
-                const to = ofsHor_adjusted($$.a('<<<.ofsHor'), min, max);
-                const prop_isResizing = $$.a.get('<.isResizing');
-                $$.a('<<<.ofsHor', $$.$me_atom2_anim({
-                    to,
-                    fini: () => {
-                        prop_isResizing.value(false);
-                    },
-                }));
-            }
-            $$.a('.start_clientX', -1);
-            return dontSkip;
-        }
-        const list = {
-            base: $$.$me_list,
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_row_open') {
-                    const row_opens = $$.a('.row_opens');
-                    dispatch_arg.val = row_opens.has(dispatch_arg.idx);
-                    return true;
-                }
-                else if (dispatch_name == 'set_row_open') {
-                    const row_opens = $$.a('.row_opens');
-                    if (dispatch_arg.val) {
-                        row_opens.add(dispatch_arg.idx);
-                    }
-                    else if (row_opens.has(dispatch_arg.idx)) {
-                        row_opens.delete(dispatch_arg.idx);
-                    }
-                    return true;
-                }
-                if (dispatch_name == 'get_cell_text') {
-                    const { rec_idx, col_id, tag } = dispatch_arg;
-                    const cell_text_store = $$.a('.cell_text_store');
-                    const store_rec = cell_text_store[rec_idx];
-                    if (store_rec) {
-                        const result = store_rec[col_id];
-                        if (result != null) {
-                            dispatch_arg.val = result;
-                            return true;
-                        }
-                    }
-                    const col = $$.a(`<.col[${col_id}]`);
-                    if (col.fld) {
-                        const rec = by_idx[rec_idx] || (by_idx[rec_idx] = new Set());
-                        for (const s of col.fld)
-                            rec.add(s);
-                        const row_count = $$.a('.row_count');
-                        if (timerId == null) {
-                            const path = $$.a('.provider');
-                            const row_count = $$.a('.row_count');
-                            const rec_idx_max = $$.a('.rec_idx_max');
-                            timerId = setTimeout(() => {
-                                timerId = null;
-                                let idx_min, idx_max;
-                                const ss = new Set();
-                                for (const idx in by_idx) {
-                                    if (idx_min == null || idx_min > +idx)
-                                        idx_min = +idx;
-                                    if (idx_max == null || idx_max < +idx)
-                                        idx_max = +idx;
-                                    for (const s of by_idx[idx])
-                                        ss.add(s);
-                                }
-                                const to = Math.min(rec_idx_max, idx_max + Math.max(10, row_count));
-                                for (let idx = Math.max(0, idx_min - Math.max(10, row_count)); idx <= to; idx++)
-                                    by_idx[idx] = ss;
-                                $$.a.dispatch(path, 'get_recs', { by_idx });
-                            });
-                        }
-                    }
-                    dispatch_arg.val = '';
-                    return true;
-                }
-                else if (dispatch_name == 'recs') {
-                    const cell_text_store = $$.a('.cell_text_store');
-                    const rec_fld_store = $$.a('.rec_fld_store');
-                    const influence = $$.a('<.influence');
-                    const by_idx = dispatch_arg.by_idx;
-                    const cols = $$.a('<.cols');
-                    const changed = {};
-                    let changed_did = false;
-                    for (const idx in by_idx) {
-                        const src = by_idx[idx];
-                        const rec = rec_fld_store[idx] || (rec_fld_store[idx] = {});
-                        const influenced = new Set();
-                        for (const s in src) {
-                            if (rec[s] == src[s])
-                                continue;
-                            rec[s] = src[s];
-                            const ss = influence[s];
-                            for (const col_id of ss)
-                                influenced.add(col_id);
-                        }
-                        COL: for (const col_id of influenced) {
-                            const col = cols[col_id];
-                            const fn = col.fn;
-                            if (!fn)
-                                continue;
-                            const masters = [];
-                            for (const s of col.fld) {
-                                const val = rec[s];
-                                masters.push(val);
-                            }
-                            const text = fn(...masters);
-                            if (!text)
-                                continue;
-                            const text_rec = cell_text_store[idx] || (cell_text_store[idx] = {});
-                            if (text_rec[col_id] == text)
-                                continue;
-                            text_rec[col_id] = text;
-                            const rec_changed = changed[idx] || (changed[idx] = new Set());
-                            rec_changed.add(col_id);
-                            changed_did = true;
-                        }
-                    }
-                    if (changed_did) {
-                        let i = 0;
-                        let idx_min, idx_max;
-                        $$.a.dispatch('', 'iterate_rows', (row_i) => {
-                            const idx = $$.a(`.rec_idx[${row_i}]`);
-                            if (idx_min == null || idx_min > +idx)
-                                idx_min = +idx;
-                            if (idx_max == null || idx_max < +idx)
-                                idx_max = +idx;
-                            const rec = changed[idx];
-                            if (!rec)
-                                return;
-                            for (const col_id of rec) {
-                                const text = cell_text_store[idx][col_id];
-                                $$.a(`.cell_text[${row_i}][${col_id}]`, text);
-                            }
-                            if (++i > 50) {
-                                console.error(i);
-                                return false;
-                            }
-                        });
-                        const lim = 2 * Math.max(10, $$.a('.row_count'));
-                        idx_min -= lim;
-                        idx_max += lim;
-                        for (const idx in cell_text_store)
-                            if (+idx < idx_min || +idx > idx_max)
-                                delete cell_text_store[idx];
-                        for (const idx in rec_fld_store)
-                            if (+idx < idx_min || +idx > idx_max)
-                                delete rec_fld_store[idx];
-                    }
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                rec_fld_store: () => ({}),
-                disabledScroll: '<@header.colSelected',
-                hidden_curtain: '<@header.colSelected',
-                cell_text_store: () => ({}),
-                row_opens_store: () => new Map(),
-                row_opens: $$.$me_atom2_prop(['.provider_tag', '.row_opens_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Set())),
-                row_open: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
-                        [`.rec_idx[${row_i}]`, '._provider', '.provider_tag']),
-                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => {
-                    const result = !len || !_provider || !provider_tag ? -1 : get_row_open(rec_idx, _provider, provider_tag);
-                    return result;
-                }, ({ key: [row_i], val, prev }) => {
-                    if (val == null || val < 0 ||
-                        +row_i >= $$.a('.row_count') ||
-                        $$.$me_list_row_i_out_of_range_is(+row_i, $$.a('.row_i_min'), $$.a('.row_i_max')))
-                        return;
-                    set_row_open($$.a(`.rec_idx[${row_i}]`), $$.a('._provider'), $$.a('.provider_tag'), val);
-                }),
-                adjust_row_height_source: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_open[]', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_open, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
-                        !row_open ? ['.row_height_min'] :
-                            ['.row_height_min', `@row[${row_i}]@content@comment.#height`]),
-                }, ({ len, masters: [row_height_min, comment_height] }) => !len ? null : len == 1 ? row_height_min : [row_height_min, comment_height], ({ key: [row_i], val, prev }) => {
-                    if (!val)
-                        return;
-                    const height = !Array.isArray(val) ? val : val[0] + val[1];
-                    $$.a(`.row_height_source[${row_i}]`, height);
-                }),
-                cell_text: $$.$me_atom2_prop({ keys: ['.row_i', '<.col_ids'], masters: ['.rec_idx[]', '._provider', '.provider_tag'] }, ({ key: [row_i, col_id], masters: [rec_idx, _provider, tag] }) => {
-                    const dispatch_arg = { tag, rec_idx, col_id };
-                    $$.a.dispatch(_provider, 'get_cell_text', dispatch_arg);
-                    return dispatch_arg.val;
-                }),
-                header_height: () => 0,
-                header_content: () => ({}),
-                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                    base: row,
-                    prop: {
-                        row_i: () => row_i,
-                    },
-                })),
-                row_cursor: () => '',
-                '#order': () => ['row', 'cursor'],
-            },
-            elem: {
-                header: () => null,
-                cursor: () => ({
-                    base: cursor,
-                    prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
-                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`]), ({ len, masters: [top] }) => !len ? null : top),
-                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`]), ({ len, masters: [val] }) => !len ? null : val),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                    },
-                }),
-            },
-        };
-        const cursor = {
-            prop: {
-                '#ofsHor': () => 2,
-            },
-            style: {
-                boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
-                pointerEvents: () => 'none',
-            },
-        };
-        const row = {
-            prop: {
-                '#order': () => ['cell', 'fixed'],
-                '#isHover': () => false,
-                row_cursor_src: $$.$me_atom2_prop(['.#isHover', '.row_i', '<<<@header.colSelected'], ({ masters: [isHover, row_i, colSelected] }) => colSelected || !isHover ? '' : row_i, ({ atom, val }) => {
-                    $$.$nl_search_grid_cursor({ origin: atom, val: val });
-                }),
-            },
-            style: {
-                overflow: () => 'hidden',
-            },
-            elem: {
-                cells: () => ({
-                    prop: {
-                        '#height': '<<<.row_height_min',
-                        '#order': () => ['cells', 'fixed'],
-                    },
-                    elem: {
-                        fixed: () => ({
-                            prop: {
-                                '#width': '<<<<<.col_fixed_width',
-                            },
-                            control: {
-                                text: () => ({
-                                    base: $$.$me_label,
-                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: () => '#d8dce3', align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
-                                }),
-                            },
-                        }),
-                        cells: () => ({
-                            prop: {
-                                '#width': '<<<<<.col_width_sum_actual',
-                                '#ofsHor': '<<<<<.ofsHor',
-                                '#cursor': () => 'pointer',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    const row_open = $$.a(`<<<<.row_open[${$$.a('<<.row_i')}]`);
-                                    $$.a(`<<<<.row_open[${$$.a('<<.row_i')}]`, !row_open);
-                                    return true;
-                                },
-                            },
-                            control: {
-                                cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
-                                    base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: () => '#F5F8F8', fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
-                                })),
-                            },
-                        }),
-                    },
-                }),
-                comment: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i'], ({ masters: [row_i] }) => ['<<.rec_count', `<<.row_open[${row_i}]`]), ({ masters: [rec_count, row_open] }) => rec_count <= 0 || !row_open ? null : {
-                    dom: {
-                        innerText: () => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ornare nisl et tortor euismod, ut consequat nunc vehicula. Integer sit amet quam ante. Integer bibendum ante vel semper auctor. Mauris vitae erat gravida, ultrices libero id, pellentesque enim. Phasellus molestie malesuada tellus, in commodo lectus dictum at. Aliquam malesuada venenatis tellus a feugiat. Ut ac.'
-                    },
-                    prop: {
-                        '#ofsVer': '<<<.row_height_min',
-                        '#height': () => null,
-                        '#width': '<.#width',
-                    },
-                    style: {
-                        fontSize: () => 14,
-                        padding: () => 8,
-                        boxSizing: () => 'border-box',
-                        userSelect: () => 'text',
-                    },
-                }),
-            },
-        };
-        const cell_borders = {
-            borderWidthRight: () => 1,
-            colorBorderRight: () => '#adb0b8',
-            borderWidthBottom: () => 1,
-            colorBorderBottom: () => '#adb0b8',
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//grid.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        let _dataWorker;
-        $$.$nl_search_panel_result = {
-            base: $$.$nl_search_panel,
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_recs') {
-                    $$.a('.dataWorker').postMessage(Object.assign({}, dispatch_arg, { cmd: 'recs', tag: $$.a('.provider_tag') }));
-                    return true;
-                }
-                else if (dispatch_name == 'recs') {
-                    $$.a.dispatch('@grid@list', dispatch_name, dispatch_arg);
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                _provider: () => $$.a.curr.parent(true).path,
-                provider_tag: () => null,
-                on_order_changed: $$.$me_atom2_prop(['.order'], null, ({ val }) => {
-                    $$.a('.provider_tag', val.id);
-                }),
-                count: $$.$me_atom2_prop(['.provider_tag'], ({ masters: [tag] }) => {
-                    $$.a('.dataWorker').postMessage({ cmd: 'count', tag });
-                    return -1;
-                }),
-                dataWorker: () => {
-                    if (!_dataWorker) {
-                        const base = window.location.href.slice(0, -window.location.search.length);
-                        _dataWorker = new Worker(base + 'data/-/web.js');
-                        const curr = $$.a.curr;
-                        _dataWorker.onmessage = (event) => {
-                            const prev = $$.a.curr;
-                            $$.a.curr = curr;
-                            if (event.data.tag != $$.a('.provider_tag')) {
-                                console.warn({ tag: event.data.tag, provider_tag: $$.a('.provider_tag') }, event.data);
-                            }
-                            else if (event.data.status != 'ok') {
-                                console.error(event.data);
-                            }
-                            else if (event.data.cmd == 'count') {
-                                $$.a('.count', event.data.count);
-                            }
-                            else if (event.data.cmd == 'recs') {
-                                $$.a.dispatch('', event.data.cmd, event.data);
-                            }
-                            else {
-                                console.error(event.data);
-                            }
-                            $$.a.curr = prev;
-                        };
-                    }
-                    return _dataWorker;
-                },
-            },
-            style: {
-                userSelect: () => 'none',
-            },
-            elem: {
-                shown: () => ({
-                    node: 'span',
-                    prop: {
-                        '#height': () => null,
-                        '#width': () => null,
-                        '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(19 / 16)),
-                    },
-                    style: {
-                        position: () => 'relative',
-                        fontWeight: () => 500,
-                        userSelect: () => 'none',
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => (count < 0 ?
-                            `Загрузка предложений` :
-                            `Показано ${count} предложений`).toUpperCase()),
-                    },
-                }),
-                filter: () => ({
-                    node: 'img',
-                    prop: {
-                        '#height': () => 18,
-                        '#width': () => 18,
-                        '#ofsVer': () => 18,
-                        '#ofsHor': $$.$me_atom2_prop(['<@shown.#ofsHor', '<@shown.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
-                        '#cursor': () => 'pointer',
-                    },
-                    style: {
-                        userSelect: () => 'none',
-                    },
-                    attr: {
-                        src: () => 'assets/icons-8-filter@2x.png'
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            console.log('filter');
-                            return true;
-                        },
-                    },
-                }),
-                mode_switcher: () => ({
-                    base: $$.$nl_switch,
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#width': () => 265,
-                        '#height': () => 40,
-                        ofsVer: () => 5,
-                        options: () => ({
-                            'ТАБЛИЦА': {},
-                            'ПЛИТКА': {},
-                            'КАРТА': {},
-                        }),
-                        value: $$.$me_atom2_prop([`<.mode`], null, ({ val }) => {
-                            $$.a('<.mode', val);
-                        }),
-                        paddingHor: () => 16,
-                    },
-                }),
-                grid: $$.$me_atom2_prop(['.mode'], ({ masters: [mode], prev }) => mode != 'ТАБЛИЦА' ? prev || null : {
-                    type: '$nl_search_grid',
-                    base: $$.$nl_search_grid,
-                    prop: {
-                        provider: () => $$.a.get('<').path,
-                        rec_count: '<.count',
-                        row_opens: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.row_opens || (order.row_opens = new Set())),
-                        on_order_changed: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
-                            if (!val)
-                                return;
-                            const order = val;
-                            $$.a.dispatch('', 'set_view', order);
-                        }),
-                        on_order_changed_and_ready: $$.$me_atom2_prop(['<.order', '.rec_count'], ({ masters: [order, rec_count] }) => rec_count < 0 ? null : [order, rec_count], ({ val }) => {
-                            if (!val)
-                                return;
-                            const [order, rec_count] = val;
-                            $$.a.dispatch('@list', 'set_view', order);
-                        }),
-                        on_change_col_ids: $$.$me_atom2_prop(['.col_ids', '<.order'], null, ({ val: [col_ids, order] }) => {
-                            order.col_ids = col_ids;
-                        }),
-                        on_change_ofsHor: $$.$me_atom2_prop(['.ofsHor', '.col_fixed_width', '<.order'], null, ({ val: [ofsHor, col_fixed_width, order] }) => {
-                            order.ofsHor = ofsHor - col_fixed_width;
-                        }),
-                        on_change_col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.cols', '<.order'] }, null, ({ key: [id], val }) => {
-                            if (val == null)
-                                return;
-                            const [width, cols, order] = val;
-                            if (width != cols[id].width) {
-                                if (!order.col_width)
-                                    order.col_width = {};
-                                order.col_width[id] = width;
-                            }
-                        }),
-                        on_change_row_i_min: $$.$me_atom2_prop(['@list.row_i_min', '<.order', '.rec_count'], null, ({ val: [row_i_min, order, rec_count] }) => {
-                            if (rec_count < 0)
-                                return;
-                            order.row_i_min = row_i_min;
-                        }),
-                        on_change_visible_idx_min: $$.$me_atom2_prop(['@list.visible_idx_min', '<.order', '.rec_count'], null, ({ val: [visible_idx_min, order, rec_count] }) => {
-                            if (rec_count < 0)
-                                return;
-                            order.visible_idx_min = visible_idx_min;
-                        }),
-                        on_change_visible_top: $$.$me_atom2_prop(['@list.visible_top', '<.order', '.rec_count'], null, ({ val: [visible_top, order, rec_count] }) => {
-                            if (rec_count < 0)
-                                return;
-                            order.visible_top = visible_top;
-                        }),
-                        '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'ТАБЛИЦА'),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, em] }) => width - 2 * em),
-                        '#ofsHor': '.em',
-                        '#ofsVer': () => 56,
-                        '#height': $$.$me_atom2_prop(['<.height_target', '<.height_anim_is', '.#ofsVer'], ({ masters: [height, height_anim_is, ofsVer], prev }) => {
-                            const val = height - ofsVer;
-                            const result = prev == null || val > prev || !height_anim_is ? val : prev;
-                            return result;
-                        }),
-                        cols: () => ({
-                            photo: {
-                                caption: 'Фото',
-                                width: 37,
-                            },
-                            'Комнат': {
-                                align: $$.$me_align.center,
-                                width: 42,
-                                fld: ['total_room_count', 'offer_room_count'],
-                                fn: (total_room_count, offer_room_count) => (!offer_room_count ? '' : offer_room_count + '/') +
-                                    (total_room_count == null ? '?' : total_room_count)
-                            },
-                            'Метро/ЖД': {
-                                width: 170,
-                                fld: ['geo_cache_subway_station_name_1'],
-                                fn: (geo_cache_subway_station_name_1) => geo_cache_subway_station_name_1,
-                            },
-                            'От станции': {
-                                align: $$.$me_align.center,
-                                width: 50,
-                                fld: ['walking_access_1', 'transport_access_1'],
-                                fn: (walking_access_1, transport_access_1) => walking_access_1 ? walking_access_1 + 'п' :
-                                    transport_access_1 ? transport_access_1 + 'т' :
-                                        '',
-                            },
-                            'Адрес': {
-                                width: 220,
-                                fld: ['geo_cache_street_name', 'geo_cache_building_name'],
-                                fn: (geo_cache_street_name, geo_cache_building_name) => geo_cache_street_name ? (!geo_cache_building_name ? geo_cache_street_name :
-                                    geo_cache_street_name + ', ' + geo_cache_building_name) : geo_cache_building_name ? geo_cache_building_name : ''
-                            },
-                            'Дом': {
-                                width: 64,
-                                align: $$.$me_align.center,
-                                fld: ['storey', 'storeys_count', 'walls_material_type_id'],
-                                fn: (storey, storeys_count, walls_material_type_id) => (!storey ? '?' : storey) + '/' +
-                                    (!storeys_count ? '?' : storeys_count) + ' ' +
-                                    dic_fld_value('walls_material_type', walls_material_type_id, 'code', '?')
-                            },
-                            'Балкон': {
-                                width: 38,
-                                align: $$.$me_align.center,
-                                fld: ['balcony_type_id'],
-                                fn: (type_id) => dic_fld_value('balcony_type', type_id, 'code', '?'),
-                            },
-                            'Санузел': {
-                                width: 38,
-                                fld: ['water_closet_type_id'],
-                                fn: (type_id) => dic_fld_value('water_closet_type', type_id, 'code', '?'),
-                            },
-                            'Парковка': {
-                                width: 38,
-                                fld: ['parking_type_id'],
-                                fn: (type_id) => dic_fld_value('parking_type', type_id, 'code', '?'),
-                            },
-                            'Территория': {
-                                width: 112,
-                                fld: ['territory_type_id'],
-                                fn: (type_id) => dic_fld_value('territory_type', type_id, 'code', '?'),
-                            },
-                            'Окна': {
-                                width: 41,
-                                fld: ['window_overlook_type_id'],
-                                fn: (type_id) => dic_fld_value('window_overlook_type', type_id, 'code', '?'),
-                            },
-                            'Ремонт': {
-                                width: 92,
-                                fld: ['apartment_condition_type_id'],
-                                fn: (type_id) => dic_fld_value('apartment_condition_type', type_id, 'code', '?'),
-                            },
-                            'Лифт': {
-                                width: 41,
-                                fld: ['elevator_type_id'],
-                                fn: (type_id) => dic_fld_value('elevator_type', type_id, 'code', '?'),
-                            },
-                            'Площадь': {
-                                align: $$.$me_align.center,
-                                width: 130,
-                                fld: ['total_square', 'life_square', 'kitchen_square'],
-                                fn: (total_square, life_square, kitchen_square) => (total_square || '?') + '/' + (life_square || '?') + '/' + (kitchen_square || '?'),
-                            },
-                            'Площадь комнат': {
-                                align: $$.$me_align.center,
-                                width: 138,
-                                fld: ['square_explication'],
-                                fn: (square_explication) => square_explication,
-                            },
-                            'Ипотека': {
-                                width: 41,
-                            },
-                            'Цена': {
-                                align: $$.$me_align.right,
-                                caption: 'Цена ₽',
-                                width: 96,
-                                fld: ['price_rub'],
-                                fn: (val) => {
-                                    var x = (val + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена, $': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: 'Цена $',
-                                width: 96,
-                                fld: ['price_usd'],
-                                fn: (val) => {
-                                    var x = (val + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена, €': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: 'Цена €',
-                                width: 96,
-                                fld: ['price_eur'],
-                                fn: (val) => {
-                                    var x = (val + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена за кв.м.': {
-                                align: $$.$me_align.right,
-                                caption: '₽/м²',
-                                width: 93,
-                                fld: ['meter_price_rub'],
-                                fn: (meter_price_rub) => {
-                                    var x = (Math.round(meter_price_rub) + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена $ за кв.м.': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: '$/м²',
-                                width: 93,
-                                fld: ['meter_price_usd'],
-                                fn: (val) => {
-                                    var x = (Math.round(val) + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена € за кв.м.': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: '€/м²',
-                                width: 93,
-                                fld: ['meter_price_eur'],
-                                fn: (val) => {
-                                    var x = (Math.round(val) + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Дата': {
-                                align: $$.$me_align.right,
-                                width: 85,
-                                fld: ['pub_datetime'],
-                                fn: (val) => {
-                                    const dt = new Date(val);
-                                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                                },
-                            },
-                            'Дата создания': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                width: 85,
-                                fld: ['creation_datetime'],
-                                fn: (val) => {
-                                    const dt = new Date(val);
-                                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                                },
-                            },
-                            'Год постройки': {
-                                hidden: true,
-                                align: $$.$me_align.center,
-                                width: 85,
-                                fld: ['built_year'],
-                                fn: (val) => {
-                                    return val;
-                                },
-                            },
-                            'Источник': {
-                                width: 140,
-                                fld: ['broker', 'media_name'],
-                                fn: (broker, media_name) => broker && broker.short_name ? broker.short_name : media_name,
-                            },
-                            'Телефон': {
-                                width: 260,
-                                fld: ['phone_list'],
-                                fn: (phone_list) => !phone_list ? '' : phone_list
-                                    .split(/\D+/)
-                                    .map(phone => '8-' + phone.slice(1, 4) + '-' + phone.slice(4, 7) + '-' + phone.slice(7, 9) + '-' + phone.slice(9, 11)).join(', ')
-                            },
-                        }),
-                    },
-                }),
-            },
-        };
-        const _dics = new Map();
-        function dic_fld_value(dic_name, id, fld, default_value) {
-            let result;
-            let dic = _dics.get(dic_name);
-            if (!dic) {
-                const dic_def = DICTIONARIES[dic_name];
-                if (dic_def) {
-                    dic = new Map(dic_def.map((item) => [item.id, item]));
-                    _dics.set(dic_name, dic);
-                }
-            }
-            if (dic && dic.has(id)) {
-                const value = dic.get(id);
-                if (value)
-                    result = value[fld];
-            }
-            if (result === void 0 && default_value !== void 0)
-                result = default_value;
-            return result;
-        }
-        const DICTIONARIES = {
-            apartment_condition_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "треб.кап/р", "name": "требуется капитальный ремонт" }, { "id": 3, "code": "без отд.", "name": "без отделки" }, { "id": 4, "code": "треб.рем.", "name": "требуется ремонт" }, { "id": 5, "code": "ср.сост.", "name": "среднее состояние" }, { "id": 6, "code": "хор.сост.", "name": "хорошее состояние" }, { "id": 8, "code": "отл.сост.", "name": "отличное состояние" }, { "id": 9, "code": "евр.рем.", "name": "евроремонт" }, { "id": 10, "code": "дизайн.рем.", "name": "дизайнерский ремонт" }, { "id": 11, "code": "перв.отд.", "name": "первичная отделка" }],
-            building_batch: [{ "id": 0, "name": "" }, { "id": 1, "name": "02/98-НМ" }, { "id": 2, "name": "1385 АР-3" }, { "id": 3, "name": "1605/12" }, { "id": 4, "name": "1605/9" }, { "id": 5, "name": "1605/Б" }, { "id": 6, "name": "17/2004-АС" }, { "id": 7, "name": "1МГ-600" }, { "id": 8, "name": "1МГ-601" }, { "id": 9, "name": "2-71/358" }, { "id": 10, "name": "2548-01-АР" }, { "id": 11, "name": "2548-02-АР" }, { "id": 12, "name": "32/2005-АС" }, { "id": 13, "name": "349/01" }, { "id": 14, "name": "355/24" }, { "id": 15, "name": "7040-01" }, { "id": 16, "name": "I-303" }, { "id": 17, "name": "I-335" }, { "id": 18, "name": "I-447" }, { "id": 19, "name": "I-510" }, { "id": 20, "name": "I-511" }, { "id": 21, "name": "I-513" }, { "id": 22, "name": "I-515" }, { "id": 23, "name": "I605-АМ" }, { "id": 24, "name": "II-04" }, { "id": 25, "name": "II-05" }, { "id": 26, "name": "II-08" }, { "id": 27, "name": "II-18" }, { "id": 28, "name": "II-18-01-МН" }, { "id": 29, "name": "II-18-31/12" }, { "id": 30, "name": "II-29" }, { "id": 31, "name": "II-32" }, { "id": 32, "name": "II-49" }, { "id": 33, "name": "II-57" }, { "id": 34, "name": "II-68-02" }, { "id": 35, "name": "II-68-03" }, { "id": 36, "name": "II-89-01-МН" }, { "id": 37, "name": "III/17" }, { "id": 38, "name": "VI-23" }, { "id": 39, "name": "VII-51" }, { "id": 40, "name": "VII-58" }, { "id": 41, "name": "А-41K" }, { "id": 42, "name": "башня Вулыха" }, { "id": 43, "name": "Бекерон" }, { "id": 44, "name": "БОД-1" }, { "id": 45, "name": "В-2000" }, { "id": 46, "name": "В-2002" }, { "id": 47, "name": "В-2005" }, { "id": 48, "name": "ГМС-1" }, { "id": 49, "name": "ГМС-3" }, { "id": 50, "name": "И-1168 А3" }, { "id": 51, "name": "И-1168 А4" }, { "id": 52, "name": "И-1233" }, { "id": 53, "name": "И-1254" }, { "id": 54, "name": "И-1262А" }, { "id": 55, "name": "И-1429" }, { "id": 56, "name": "И-1430" }, { "id": 57, "name": "И-1459-132" }, { "id": 58, "name": "И-1491-17" }, { "id": 59, "name": "И-1501" }, { "id": 60, "name": "И-155" }, { "id": 61, "name": "И-155МК" }, { "id": 62, "name": "И-155Н" }, { "id": 63, "name": "И-1602" }, { "id": 64, "name": "И-1677" }, { "id": 65, "name": "И-1723" }, { "id": 66, "name": "И-1724" }, { "id": 67, "name": "И-1731" }, { "id": 68, "name": "И-1782/1" }, { "id": 69, "name": "И-1812/1" }, { "id": 70, "name": "И-1834" }, { "id": 71, "name": "И-1836" }, { "id": 72, "name": "И-1838" }, { "id": 73, "name": "И-1839" }, { "id": 74, "name": "И-1849" }, { "id": 75, "name": "И-1932" }, { "id": 76, "name": "И-208" }, { "id": 77, "name": "И-209А" }, { "id": 78, "name": "И-2342" }, { "id": 79, "name": "И-241" }, { "id": 80, "name": "И-491А" }, { "id": 81, "name": "И-515-5М" }, { "id": 82, "name": "И-515/9ш" }, { "id": 83, "name": "И-522" }, { "id": 84, "name": "И-522А" }, { "id": 85, "name": "И-679" }, { "id": 86, "name": "И-700" }, { "id": 87, "name": "И-700А" }, { "id": 88, "name": "И-760А" }, { "id": 89, "name": "И-79-99" }, { "id": 90, "name": "И-99-47/405" }, { "id": 91, "name": "И-99-47/406" }, { "id": 92, "name": "индивидуальный проект" }, { "id": 93, "name": "ИП-46С" }, { "id": 94, "name": "ИШ3/12" }, { "id": 95, "name": "К-7" }, { "id": 96, "name": "КМС-101" }, { "id": 97, "name": "Колос" }, { "id": 98, "name": "КОПЭ" }, { "id": 99, "name": "КОПЭ-М-ПАРУС" }, { "id": 100, "name": "КТЖС" }, { "id": 101, "name": "КТЖС-11/22" }, { "id": 102, "name": "1МГ-300" }, { "id": 103, "name": "МОНОЛИТ" }, { "id": 105, "name": "МЭС-84" }, { "id": 107, "name": "НП-46с" }, { "id": 108, "name": "П-06" }, { "id": 109, "name": "П-111" }, { "id": 110, "name": "П-111М" }, { "id": 111, "name": "П-111МО" }, { "id": 112, "name": "П-12-31/12" }, { "id": 113, "name": "II-14" }, { "id": 114, "name": "П-14/35" }, { "id": 115, "name": "П-18/22" }, { "id": 116, "name": "П-20" }, { "id": 117, "name": "П-21" }, { "id": 118, "name": "П-22" }, { "id": 119, "name": "П-23" }, { "id": 120, "name": "П-28" }, { "id": 121, "name": "П-29" }, { "id": 122, "name": "П-3" }, { "id": 123, "name": "П-3/16" }, { "id": 124, "name": "П-3/17" }, { "id": 125, "name": "П-3/22" }, { "id": 126, "name": "П-30" }, { "id": 127, "name": "П-31" }, { "id": 128, "name": "П-32" }, { "id": 129, "name": "П-321-60" }, { "id": 130, "name": "II-34" }, { "id": 131, "name": "II-35" }, { "id": 132, "name": "П-37" }, { "id": 133, "name": "II-38" }, { "id": 134, "name": "П-39" }, { "id": 135, "name": "П-3М" }, { "id": 136, "name": "П-4" }, { "id": 137, "name": "П-40" }, { "id": 138, "name": "П-41" }, { "id": 139, "name": "П-42" }, { "id": 140, "name": "П-43" }, { "id": 141, "name": "П-44" }, { "id": 142, "name": "П-44К" }, { "id": 143, "name": "П-44М" }, { "id": 144, "name": "П-44Т" }, { "id": 145, "name": "П-44ТМ" }, { "id": 146, "name": "П-45" }, { "id": 147, "name": "П-46" }, { "id": 148, "name": "П-46М" }, { "id": 149, "name": "П-47" }, { "id": 150, "name": "П-49 Д" }, { "id": 151, "name": "П-50" }, { "id": 152, "name": "П-53" }, { "id": 153, "name": "П-55" }, { "id": 154, "name": "П-55М" }, { "id": 155, "name": "II-29-41/37" }, { "id": 156, "name": "II-66" }, { "id": 157, "name": "II-67" }, { "id": 158, "name": "II-68" }, { "id": 159, "name": "ПД-4" }, { "id": 160, "name": "ПД-4/12" }, { "id": 161, "name": "Пд4-1/12Н1" }, { "id": 162, "name": "ПД4-1/8Н1" }, { "id": 163, "name": "ПЗМ-1/14" }, { "id": 164, "name": "ПЗМ-1/16" }, { "id": 165, "name": "ПЗМ-2/16" }, { "id": 166, "name": "ПЗМ-3/16" }, { "id": 167, "name": "ПП-70" }, { "id": 168, "name": "Призма" }, { "id": 169, "name": "РД-90" }, { "id": 170, "name": "С-111М" }, { "id": 171, "name": "С-220" }, { "id": 172, "name": "С-222" }, { "id": 173, "name": "ТИП-441" }, { "id": 174, "name": "ЦВП-4570-II-63" }, { "id": 175, "name": "Юбилейный" }, { "id": 176, "name": "II-02" }, { "id": 177, "name": "II-01" }, { "id": 178, "name": "II-18-01/08" }, { "id": 179, "name": "II-18-01/09" }, { "id": 180, "name": "1605-АМ/9" }, { "id": 181, "name": "1605-АМ/12" }, { "id": 182, "name": "II-49П" }, { "id": 183, "name": "II-49Д" }, { "id": 184, "name": "II-03" }, { "id": 185, "name": "II-18-01/12" }, { "id": 186, "name": "II-18-02/12" }, { "id": 187, "name": "II-18/12" }, { "id": 188, "name": "II-20" }, { "id": 189, "name": "1605-АМ/5" }, { "id": 190, "name": "И-III-3" }, { "id": 191, "name": "II-28" }, { "id": 192, "name": "II-68-02/16М" }, { "id": 193, "name": "КПД-4570" }, { "id": 194, "name": "II-68-01" }, { "id": 195, "name": "1-515/9" }, { "id": 196, "name": "К4/16" }, { "id": 197, "name": "И-155Б" }, { "id": 198, "name": "1-515/5" }, { "id": 199, "name": "II-18-01/12А" }, { "id": 200, "name": "СМ-1 " }, { "id": 201, "name": "П-44ТМ/25" }, { "id": 202, "name": "И-701" }, { "id": 203, "name": "И-155-с" }, { "id": 204, "name": "Айсберг" }, { "id": 205, "name": "II-14/35" }, { "id": 206, "name": "И-99-47/407" }, { "id": 207, "name": "П-101" }, { "id": 208, "name": "1-300" }, { "id": 209, "name": "II-18-01/09К" }, { "id": 210, "name": "И-1900" }, { "id": 211, "name": "М-10" }, { "id": 212, "name": "МПСМ" }, { "id": 213, "name": "ИП-46М" }, { "id": 214, "name": "П-30М" }, { "id": 215, "name": "II-07" }, { "id": 216, "name": "ПБ-01" }, { "id": 217, "name": "И-1414" }, { "id": 218, "name": "И-2111" }, { "id": 219, "name": "1605-АМЛ/5" }, { "id": 220, "name": "1-447С-26" }, { "id": 221, "name": "1-447С-1" }, { "id": 222, "name": "1-447С-36" }, { "id": 223, "name": "1-447С-2" }, { "id": 224, "name": "1-447С-5" }, { "id": 225, "name": "1-446" }, { "id": 226, "name": "ПБ-02" }, { "id": 227, "name": "КПД-4572А" }, { "id": 228, "name": "II-68-04" }, { "id": 229, "name": "124-124-1" }, { "id": 231, "name": "1605-А" }, { "id": 232, "name": "1-439" }, { "id": 233, "name": "Мм1-3" }, { "id": 234, "name": "И-1168" }, { "id": 235, "name": "СМ-06" }, { "id": 236, "name": "СМ-03" }, { "id": 237, "name": "1-419" }, { "id": 238, "name": "1-203" }, { "id": 239, "name": "ЭС-24" }, { "id": 240, "name": "8966" }, { "id": 242, "name": "1-126" }, { "id": 243, "name": "1-225" }, { "id": 244, "name": "1-402" }, { "id": 245, "name": "16/2188" }, { "id": 246, "name": "Т-1" }, { "id": 247, "name": "Т-3" }, { "id": 248, "name": "1-233" }, { "id": 249, "name": "1-260" }, { "id": 250, "name": "К-8-49" }, { "id": 251, "name": "1-255" }, { "id": 252, "name": "КС-8-50" }, { "id": 253, "name": "Д-23" }, { "id": 254, "name": "Д-25Н1" }, { "id": 256, "name": "ПП-83" }, { "id": 258, "name": "К2/16" }, { "id": 259, "name": "К7/16" }, { "id": 260, "name": "К8/16" }, { "id": 262, "name": "1-464А" }, { "id": 263, "name": "КОПЭ-87" }, { "id": 264, "name": "П-121М" }, { "id": 265, "name": "121-041" }, { "id": 266, "name": "121-042" }, { "id": 267, "name": "121-043" }, { "id": 268, "name": "II-29-208" }, { "id": 269, "name": "II-29-3" }, { "id": 270, "name": "II-29-9" }, { "id": 271, "name": "II-29-160" }, { "id": 272, "name": "ПД-1" }, { "id": 273, "name": "И-02/98-НМ" }, { "id": 274, "name": "1-467" }, { "id": 275, "name": "ЭЖРЧС" }, { "id": 276, "name": "П-3МК" }, { "id": 277, "name": "II-18-02/09" }, { "id": 278, "name": "ПД-3" }, { "id": 279, "name": "И-580" }, { "id": 280, "name": "II-18-03/12" }, { "id": 281, "name": "К-14" }, { "id": 282, "name": "И-700Н" }, { "id": 283, "name": "Юникон" }, { "id": 284, "name": "111-121" }, { "id": 285, "name": "1-211" }, { "id": 286, "name": "II-68-01/22" }, { "id": 287, "name": "Лебедь" }, { "id": 288, "name": "И-99-47" }],
-            balcony_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "Б", "name": "балкон" }, { "id": 3, "code": "Л", "name": "лоджия" }, { "id": 4, "code": "БЛ", "name": "балкон + лоджия" }, { "id": 5, "code": "2Б", "name": "два балкона" }, { "id": 6, "code": "2Л", "name": "две лоджии" }, { "id": 7, "code": "3Л", "name": "три лоджии" }, { "id": 8, "code": "4Л", "name": "четыре лоджии" }, { "id": 9, "code": "3Б", "name": "три балкона" }, { "id": 10, "code": "Б2Л", "name": "балкон + две лоджии" }, { "id": 11, "code": "2Б2Л", "name": "два балкона + две лоджии" }, { "id": 12, "code": "Эрк", "name": "эркер" }, { "id": 13, "code": "ЭркЛ", "name": "эркер + лоджия" }, { "id": 14, "code": "*Б", "name": "несколько балконов" }, { "id": 15, "code": "*Л", "name": "несколько лоджий" }],
-            currency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "руб", "name": "RUB" }, { "id": 2, "code": "$", "name": "USD" }, { "id": 3, "code": "€", "name": "EUR" }, { "id": 4, "code": "TL", "name": "TL" }, { "id": 5, "code": "BYR", "name": "BYR" }],
-            deal_status: [{ "id": 1, "code": "продается/арендуется", "name": "продается/арендуется" }, { "id": 2, "code": "аванс/задаток", "name": "аванс/задаток" }, { "id": 3, "code": "продана/арендована", "name": "продана/арендована" }],
-            deal_type: [{ "id": 1, "code": "продажа", "name": "продажа" }, { "id": 2, "code": "аренда", "name": "аренда" }],
-            location_type: [{ "id": 13, "code": "ГСК", "name": "ГСК" }, { "id": 14, "code": "ГК", "name": "ГК" }, { "id": 15, "code": "ЖК", "name": "ЖК" }, { "id": 16, "code": "двор", "name": "двор" }, { "id": 17, "code": "паркинг", "name": "паркинг" }],
-            electricity_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "220В", "name": "220В" }, { "id": 4, "code": "380В", "name": "380В" }, { "id": 5, "code": "П", "name": "в перспективе" }, { "id": 6, "code": "ГУ", "name": "по границе" }, { "id": 7, "code": "10кВ", "name": "10кВ" }, { "id": 8, "code": "И", "name": "иное" }],
-            elevator_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "пасс.", "name": "лифт пассажирский" }, { "id": 2, "code": "груз.", "name": "лифт грузовой" }, { "id": 3, "code": "пасс.+ груз.", "name": "лифт пассажирский и лифт грузовой" }, { "id": 4, "code": "нет", "name": "нет лифта" }, { "id": 5, "code": "есть", "name": "есть лифт" }],
-            floor_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "полы не настелены", "master_realty_type_id": 1 }, { "id": 2, "code": "Д", "name": "дерево", "master_realty_type_id": 1 }, { "id": 3, "code": "п/д", "name": "паркетная доска", "master_realty_type_id": 1 }, { "id": 4, "code": "ЛМ", "name": "ламинат", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "ковролин", "master_realty_type_id": 1 }, { "id": 6, "code": "П", "name": "паркет", "master_realty_type_id": 1 }, { "id": 7, "code": "ЛН", "name": "линолеум", "master_realty_type_id": 1 }, { "id": 8, "code": "Стяж", "name": "стяжка", "master_realty_type_id": 1 }, { "id": 9, "code": "асфальт", "name": "асфальт", "master_realty_type_id": 4 }, { "id": 10, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 11, "code": "грунт", "name": "грунт", "master_realty_type_id": 4 }, { "id": 12, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 13, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 14, "code": "полимерное покрытие", "name": "полимерное покрытие", "master_realty_type_id": 4 }],
-            gas_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ГУ", "name": "по границе" }, { "id": 4, "code": "П", "name": "перспектива" }, { "id": 5, "code": "Р", "name": "рядом" }, { "id": 6, "code": "Б", "name": "баллоны" }, { "id": 7, "code": "М", "name": "магистральный" }, { "id": 8, "code": "И", "name": "иное" }, { "id": 9, "code": "Ц", "name": "центральный" }],
-            habit_class: [{ "id": 1, "name": "эконом" }, { "id": 2, "name": "комфорт" }, { "id": 3, "name": "бизнес" }, { "id": 4, "name": "элитный" }],
-            heating_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ЭК", "name": "электрокотел" }, { "id": 4, "code": "ГК", "name": "газовый котел" }, { "id": 5, "code": "ЖТК", "name": "жидкотопливный котел" }, { "id": 6, "code": "АГВ", "name": "автоматический газовый водонагреватель" }, { "id": 7, "code": "П", "name": "печь" }, { "id": 8, "code": "Ц", "name": "центральное" }, { "id": 9, "code": "И", "name": "иное" }],
-            media: [{ "id": 0, "name": "Прочие", "is_active": 1, "order_number": 1000 }, { "id": 1, "name": "Руки", "is_active": 1, "order_number": 50 }, { "id": 3, "name": "WinNER (зелёная зона)", "is_active": 1, "order_number": 10 }, { "id": 4, "name": "Крис", "is_active": 0, "order_number": 140 }, { "id": 5, "name": "Realty.dmir.ru", "is_active": 0, "order_number": 60 }, { "id": 6, "name": "БН", "is_active": 1, "order_number": 130 }, { "id": 7, "name": "Навигатор", "is_active": 0, "order_number": 1000 }, { "id": 8, "name": "БКН", "is_active": 1, "order_number": 120 }, { "id": 9, "name": "Собственники", "is_active": 0, "order_number": 900 }, { "id": 11, "name": "Приан", "is_active": 0, "order_number": 150 }, { "id": 12, "name": "eip.ru", "is_active": 0, "order_number": 110 }, { "id": 15, "name": "Sob.ru", "is_active": 1, "order_number": 20 }, { "id": 17, "name": "cian.ru", "is_active": 1, "order_number": 40 }, { "id": 20, "name": "A.baza-winner", "is_active": 0, "order_number": 15 }, { "id": 21, "name": "AVITO.ru", "is_active": 1, "order_number": 30 }, { "id": 22, "name": "WinNER Lite", "is_active": 1, "order_number": 16 }, { "id": 23, "name": "Яндекс", "is_active": 1, "order_number": 70 }, { "id": 24, "name": "WinNER (белая зона)", "is_active": 1, "order_number": 15 }],
-            office_class: [{ "id": 2, "name": "A+" }, { "id": 3, "name": "A" }, { "id": 4, "name": "B+" }, { "id": 5, "name": "B" }, { "id": 6, "name": "C+" }, { "id": 7, "name": "C" }, { "id": 8, "name": "D+" }, { "id": 9, "name": "D" }],
-            fire_alarm_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "name": "пожарная сигнализация", "code": "пожарная сигнализация" }, { "id": 2, "name": "система пожаротушения", "code": "система пожаротушения" }],
-            ownership_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "купля/продажа", "name": "купля/продажа" }, { "id": 2, "code": "ЖСК", "name": "ЖСК" }, { "id": 3, "code": "приватиз.", "name": "приватизация" }, { "id": 4, "code": "дар.", "name": "дарение" }, { "id": 5, "code": "наслед.", "name": "наследство" }, { "id": 6, "code": "мена", "name": "мена" }, { "id": 7, "code": "инвест.", "name": "инвестирование" }, { "id": 8, "code": "рента", "name": "рента" }, { "id": 9, "code": "реш.суда", "name": "решение суда" }, { "id": 10, "code": "залог(ипотека)", "name": "залог (ипотека)" }, { "id": 11, "code": "иное", "name": "иное" }, { "id": 12, "code": "кооператив", "name": "кооператив" }, { "id": 13, "code": "собственность", "name": "собственность" }, { "id": 14, "code": "по доверенности", "name": "по доверенности" }, { "id": 15, "code": "ДДУ", "name": "договор долевого участия" }, { "id": 16, "code": "ДУ", "name": "договор уступки прав требования" }, { "id": 17, "code": "ПДДК", "name": "предварительный договор купли-продажи" }],
-            parking_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "о", "name": "охраняемая" }, { "id": 4, "code": "п", "name": "подземная" }, { "id": 5, "code": "с", "name": "стихийная" }, { "id": 6, "code": "з", "name": "закрепленное место" }],
-            pay_period_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "в год", "name": "в год" }, { "id": 2, "code": "в мес.", "name": "в месяц" }, { "id": 3, "code": "в кв.", "name": "в квартал" }, { "id": 4, "code": "в сут.", "name": "в сутки" }],
-            plumbing_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "С", "name": "скважина" }, { "id": 4, "code": "К", "name": "колодец" }, { "id": 5, "code": "М", "name": "магистральный" }, { "id": 6, "code": "И", "name": "иное" }, { "id": 7, "code": "Ц", "name": "центральный" }, { "id": 8, "code": "Л", "name": "летний" }],
-            price_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "вся площадь", "name": "за всю площадь" }, { "id": 2, "code": "сотка", "name": "за сотку" }, { "id": 3, "code": "кв.м.", "name": "за кв.м." }],
-            realty_type: [{ "id": 1, "code": "кв.", "name": "квартира", "master_realty_type_id": 1 }, { "id": 2, "code": "комн.", "name": "комната", "master_realty_type_id": 1 }, { "id": 3, "code": "дом", "name": "дом", "master_realty_type_id": 2 }, { "id": 4, "code": "ЗУ", "name": "земельный участок", "master_realty_type_id": 2 }, { "id": 5, "code": "дача", "name": "дача", "master_realty_type_id": 2 }, { "id": 6, "code": "дуплекс", "name": "дуплекс", "master_realty_type_id": 2 }, { "id": 7, "code": "квадрохаус", "name": "квадрохаус", "master_realty_type_id": 2 }, { "id": 8, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 2 }, { "id": 9, "code": "коттедж в КП", "name": "коттедж в КП", "master_realty_type_id": 2 }, { "id": 10, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 2 }, { "id": 11, "code": "усадьба", "name": "усадьба", "master_realty_type_id": 2 }, { "id": 12, "code": "часть дома", "name": "часть дома", "master_realty_type_id": 2 }, { "id": 15, "code": "офис", "name": "офис", "master_realty_type_id": 3 }, { "id": 16, "code": "маг", "name": "магазин", "master_realty_type_id": 3 }, { "id": 17, "code": "склад", "name": "склад", "master_realty_type_id": 3 }, { "id": 18, "code": "другое", "name": "другое", "master_realty_type_id": 3 }, { "id": 19, "code": "БЦ", "name": "бизнес-центр", "master_realty_type_id": 3 }, { "id": 20, "code": "ТЦ", "name": "торговый центр", "master_realty_type_id": 3 }, { "id": 21, "code": "ППП", "name": "произв.-пром помещение", "master_realty_type_id": 3 }, { "id": 22, "code": "ПП", "name": "предприятие питания", "master_realty_type_id": 3 }, { "id": 23, "code": "ПСН", "name": "помещ.свободного назначения", "master_realty_type_id": 3 }, { "id": 24, "code": "ОСЗ", "name": "отдельно стоящее здание", "master_realty_type_id": 3 }, { "id": 25, "code": "гостиница/отель", "name": "гостиница/отель", "master_realty_type_id": 3 }, { "id": 26, "code": "КЗУ", "name": "ком.земельный участок", "master_realty_type_id": 3 }, { "id": 27, "code": "гар", "name": "гараж", "master_realty_type_id": 3 }, { "id": 28, "code": "автомойка", "name": "автомойка", "master_realty_type_id": 3 }, { "id": 29, "code": "автосервис", "name": "автосервис", "master_realty_type_id": 3 }, { "id": 30, "code": "ателье", "name": "ателье", "master_realty_type_id": 3 }, { "id": 31, "code": "гараж.комплекс", "name": "гараж.комплекс", "master_realty_type_id": 3 }, { "id": 32, "code": "медцентр", "name": "медцентр", "master_realty_type_id": 3 }, { "id": 33, "code": "парикмахерская", "name": "парикмахерская", "master_realty_type_id": 3 }, { "id": 34, "code": "стоматология", "name": "стоматология", "master_realty_type_id": 3 }, { "id": 35, "code": "турфирма", "name": "турфирма", "master_realty_type_id": 3 }, { "id": 36, "code": "учеб.цели", "name": "учеб.цели", "master_realty_type_id": 3 }, { "id": 37, "code": "фотоателье", "name": "фотоателье", "master_realty_type_id": 3 }, { "id": 38, "code": "химчистка", "name": "химчистка", "master_realty_type_id": 3 }, { "id": 39, "code": "офисное здание", "name": "офисное здание", "master_realty_type_id": 3 }, { "id": 40, "code": "торг.площадь", "name": "торговая площадь", "master_realty_type_id": 3 }, { "id": 41, "code": "пром.земли", "name": "промышленные земли", "master_realty_type_id": 3 }, { "id": 42, "code": "сельхоз.земли", "name": "сельхоз.земли", "master_realty_type_id": 3 }, { "id": 43, "code": "банк", "name": "банк", "master_realty_type_id": 3 }, { "id": 44, "code": "кафе/ресторан", "name": "кафе/ресторан", "master_realty_type_id": 3 }, { "id": 45, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 3 }, { "id": 46, "code": "инвест.проект", "name": "инвестиционный проект", "master_realty_type_id": 3 }, { "id": 47, "code": "готовый бизнес", "name": "готовый бизнес", "master_realty_type_id": 3 }, { "id": 48, "code": "база отдыха/лагерь", "name": "база отдыха/лагерь", "master_realty_type_id": 3 }, { "id": 49, "code": "ферма", "name": "ферма", "master_realty_type_id": 3 }, { "id": 50, "code": "бизнес-проект", "name": "бизнес-проект", "master_realty_type_id": 3 }, { "id": 51, "code": "доходный дом", "name": "доходный дом", "master_realty_type_id": 3 }, { "id": 52, "code": "фабрика/завод", "name": "фабрика/завод", "master_realty_type_id": 3 }, { "id": 53, "code": "курортный комплекс", "name": "курортный комплекс", "master_realty_type_id": 3 }, { "id": 54, "code": "апартаменты", "name": "апартаменты", "master_realty_type_id": 1 }, { "id": 55, "code": "пентхаус", "name": "пентхаус", "master_realty_type_id": 1 }, { "id": 56, "code": "дом", "name": "дом", "master_realty_type_id": 1 }, { "id": 57, "code": "элит.недвижимость(поместье, замок, особняк)", "name": "элитная недвижимость(поместье, замок, особняк)", "master_realty_type_id": 1 }, { "id": 59, "code": "гараж", "name": "гараж", "master_realty_type_id": 4 }, { "id": 60, "code": "бокс", "name": "бокс", "master_realty_type_id": 4 }, { "id": 61, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 4 }, { "id": 62, "code": "доля", "name": "доля", "master_realty_type_id": 1 }, { "id": 63, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 1 }, { "id": 64, "code": "вилла", "name": "вилла", "master_realty_type_id": 1 }, { "id": 65, "code": "бунгало", "name": "бунгало", "master_realty_type_id": 1 }, { "id": 66, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 1 }, { "id": 67, "code": "квартира", "name": "квартира", "master_realty_type_id": 5 }],
-            rent_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "любой срок", "name": "любой срок" }, { "id": 2, "code": "длительный срок", "name": "длительный срок" }, { "id": 3, "code": "посуточно", "name": "посуточно" }, { "id": 4, "code": "от месяца и более", "name": "от месяца и более" }, { "id": 5, "code": "сезонная сдача", "name": "сезонная сдача" }],
-            security_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }],
-            sewerage_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ВД", "name": "вне дома" }, { "id": 4, "code": "С", "name": "септик" }, { "id": 5, "code": "Ц", "name": "центральная" }, { "id": 6, "code": "И", "name": "иное" }],
-            territory_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "огорож.", "name": "огороженная" }, { "id": 2, "code": "огорож.+охран.", "name": "огороженная и охраняемая" }, { "id": 3, "code": "не огорож.", "name": "не огорожена" }],
-            walls_material_type: [{ "id": 0, "code": "", "name": "", "master_realty_type_id": null }, { "id": 1, "code": "П", "name": "панельный", "master_realty_type_id": 1 }, { "id": 2, "code": "Б", "name": "блочный", "master_realty_type_id": 1 }, { "id": 3, "code": "М", "name": "монолитный", "master_realty_type_id": 1 }, { "id": 4, "code": "М-К", "name": "монолитно-кирпичный", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "кирпичный", "master_realty_type_id": 1 }, { "id": 6, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 1 }, { "id": 9, "code": "Шлакоблок", "name": "шлакоблоки/шлакобетон", "master_realty_type_id": 1 }, { "id": 11, "code": "Ж-б", "name": "железобетон", "master_realty_type_id": 1 }, { "id": 18, "code": "Стал.", "name": "сталинский", "master_realty_type_id": 1 }, { "id": 19, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 20, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 21, "code": "кирпич", "name": "кирпич", "master_realty_type_id": 4 }, { "id": 22, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 23, "code": "пластик", "name": "пластик", "master_realty_type_id": 4 }, { "id": 24, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 2 }, { "id": 25, "code": "Газоблок.", "name": "газоблочный", "master_realty_type_id": 2 }, { "id": 26, "code": "Кам.", "name": "каменный", "master_realty_type_id": 2 }, { "id": 27, "code": "Каркас.", "name": "каркасный", "master_realty_type_id": 2 }, { "id": 28, "code": "Кирп.", "name": "кирпичный", "master_realty_type_id": 2 }, { "id": 29, "code": "Легкобетон.", "name": "легкобетонный", "master_realty_type_id": 2 }, { "id": 30, "code": "Многослой.", "name": "многослойный", "master_realty_type_id": 2 }, { "id": 31, "code": "Монолит.", "name": "монолитный", "master_realty_type_id": 2 }, { "id": 32, "code": "Щит.", "name": "щитовой", "master_realty_type_id": 2 }],
-            water_closet_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "отсутствует" }, { "id": 2, "code": "С", "name": "совмещенный" }, { "id": 3, "code": "Р", "name": "раздельный" }, { "id": 4, "code": "2", "name": "два санузла" }, { "id": 5, "code": "3", "name": "три санузла" }, { "id": 6, "code": "4", "name": "четыре санузла" }, { "id": 7, "code": "2С", "name": "два совмещенных санузла" }, { "id": 8, "code": "2Р", "name": "два раздельных санузла" }, { "id": 9, "code": "3С", "name": "три совмещенных санузла" }, { "id": 10, "code": "3Р", "name": "три раздельных санузла" }, { "id": 11, "code": "4С", "name": "четыре совмещенных санузла" }, { "id": 12, "code": "4Р", "name": "четыре раздельных санузла" }, { "id": 13, "code": "+", "name": "есть санузел" }],
-            window_overlook_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "на улицу", "name": "окна на улицу" }, { "id": 2, "code": "во двор", "name": "окна во двор" }, { "id": 3, "code": "во двор и на улицу", "name": "окна во двор и на улицу" }],
-            rooms_adjacency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "С", "name": "смежные" }, { "id": 2, "code": "Р", "name": "раздельные" }, { "id": 3, "code": "С+Р", "name": "смежные+раздельные" }],
-            sale_type: [{ "id": 0, "name": "" }, { "id": 9, "name": "прямая продажа" }, { "id": 10, "name": "альтернатива" }],
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//result.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_workspace = {
-            prop: {
-                orders: () => [
-                    {
-                        id: 'id2',
-                        title: 'Заказ 2',
-                        params: {
-                            rmqt: new Set(['1', '2']),
-                        },
-                    },
-                    {
-                        id: 'id1',
-                        title: 'Заказ 1',
-                        params: {
-                            rmqt: new Set(['4', '6+']),
-                        },
-                    },
-                ],
-                order_idx: $$.$me_atom2_prop_keys(['.orders']),
-                order: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.orders'] }, ({ key: [idx], masters: [orders] }) => orders[idx]),
-                order_title: $$.$me_atom2_prop({ keys: ['.order_idx'], masters: ['.order[]'] }, ({ masters: [order] }) => order.title.toUpperCase()),
-                selected: $$.$me_atom2_prop_store({
-                    default: () => '',
-                    valid: (val) => ~$$.a('.order_idx').indexOf(val) ? val : null,
-                }),
-                param_modes: () => ({
-                    ПОЛНЫЙ: {
-                        height: 563,
-                    },
-                    СЖАТЫЙ: {
-                        height: 120,
-                    },
-                }),
-                param_mode_keys: $$.$me_atom2_prop_keys(['.param_modes']),
-                param_mode: $$.$me_atom2_prop_store({
-                    default: () => 'ПОЛНЫЙ',
-                    valid: (val) => ~$$.a('.param_mode_keys').indexOf(val) ? val : null,
-                }),
-                offerCount: () => 1200,
-                objCount: () => 800,
-            },
-            elem: {
-                tabs: () => ({
-                    base: $$.$nl_search_tabs,
-                    prop: {
-                        '#height': '/@app@menu@login.#height',
-                        '#ofsHor': () => 36,
-                        '#ofsVer': () => 16,
-                    },
-                }),
-                new: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => selected ? prev || null : {
-                    type: '$nl_search_new',
-                    base: $$.$nl_search_new,
-                    prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected),
-                        '#ofsVer': '<@tabs.#height',
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@tabs.#height'], ({ masters: [height_parent, height_tabs] }) => height_parent - height_tabs),
-                    },
-                }),
-                panelParam: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => !selected ? prev || null : {
-                    type: '$nl_search_panel_param',
-                    base: $$.$nl_search_panel_param,
-                    prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
-                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
-                        '#ofsVer': '<@tabs.#height',
-                        height_target: $$.$me_atom2_prop(['<.param_mode', '<.param_modes'], ({ masters: [mode, modes] }) => modes[mode].height),
-                        '#height': $$.$me_atom2_prop(['.height_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
-                            path_active: $$.a.get('.height_anim_is').path
-                        })),
-                        height_anim_is: $$.$me_atom2_prop([], () => false),
-                    },
-                    style: {
-                        overflow: () => 'hidden',
-                    },
-                }),
-                panelResult: $$.$me_atom2_prop(['.selected'], ({ masters: [selected], prev }) => !selected ? prev || null : {
-                    type: '$nl_search_panel_result',
-                    base: $$.$nl_search_panel_result,
-                    prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected),
-                        order: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? null : $$.a(`<.order[${selected}]`)),
-                        mode: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => !selected ? '' : $$.a(`<.order[${selected}]`).result_mode || 'ТАБЛИЦА', ({ val }) => {
-                            if (!val)
-                                return;
-                            const order = $$.a(`.order`);
-                            order.result_mode = val;
-                            $$.a(`.order`, order, true);
-                        }),
-                        ofsVer_target: $$.$me_atom2_prop(['<@panelParam.#ofsVer', '<@panelParam.height_target', '.em'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#ofsVer': $$.$me_atom2_prop(['.ofsVer_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400 })),
-                        height_target: $$.$me_atom2_prop(['<.#height', '.ofsVer_target'], ({ masters: [height, ofsVer] }) => height - ofsVer, ({ val, prev }) => {
-                            if (prev != null && val != prev) {
-                                $$.a('.height_anim_is', true);
-                            }
-                        }),
-                        '#height': $$.$me_atom2_prop(['.height_target'], ({ masters: [to] }) => $$.$me_atom2_anim({ to, duration: 400,
-                            path_active: $$.a.get('.height_anim_is').path
-                        })),
-                        height_anim_is: $$.$me_atom2_prop([], () => false),
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//workspace.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        function $nl_app_defaults_init() {
+        function $nl_defaults_init() {
             $$.$me_atom2_entity.root().props({
                 em: () => 16,
-                colorText: () => '#313745',
+                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
-                СвернутьРазвернуть: $$.$me_atom2_prop_store({
-                    default: () => false,
-                    valid: (val) => typeof val == 'boolean' ? val : null,
-                }),
-                СписокБарабан: $$.$me_atom2_prop_store({
-                    default: () => false,
-                    valid: (val) => typeof val == 'boolean' ? val : null,
+                theme: $$.$me_atom2_prop_store({
+                    default: () => $$.$me_theme.light,
+                    valid: (val) => val == $$.$me_theme.light || val == $$.$me_theme.dark ? val : null,
                 }),
             });
-            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em' });
+            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
             $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
         }
-        $$.$nl_app_defaults_init = $nl_app_defaults_init;
+        $$.$nl_defaults_init = $nl_defaults_init;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //defaults.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_app = (rootElem) => {
-            $$.$nl_app_defaults_init();
-            return new $$.$me_atom2_elem({ tail: 'app', cnf: {
-                    node: rootElem,
-                    dispatch(dispatch_name, dispatch_arg) {
-                        if (dispatch_name == 'tapEffect') {
-                            $$.a('.tapTarget', 0);
-                            $$.a('.tapTarget', dispatch_arg);
-                            return true;
-                        }
-                        return false;
-                    },
-                    style: {
-                        margin: () => 0,
-                        background: () => '#D9DCE2',
-                        touchAction: () => 'none,'
-                    },
-                    prop: {
-                        tapTarget: () => 0,
-                        '#order': () => ['menu', 'workspace', 'tapEffect'],
-                    },
-                    elem: {
-                        menu: () => menu,
-                        workspace: () => workspace,
-                        tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
-                            if (!tapTarget)
-                                return null;
-                            const size = 70;
-                            const prop_clientRect = tapTarget.ec.by_path_s('.#clientRect');
-                            const name_prop_clientRect = prop_clientRect.name();
-                            const clientRect = prop_clientRect.value();
-                            const ofsHor = tapTarget.event.touches[0].clientX - clientRect.left - size / 2;
-                            const ofsVer = tapTarget.event.touches[0].clientY - clientRect.top - size / 2;
-                            const prop_tapTarget = $$.a.get('.tapTarget');
-                            const animationEndHandler = () => {
-                                prop_tapTarget.value(0);
-                            };
-                            const animEndEventNames = { 'WebkitAnimation': 'webkitAnimationEnd', 'OAnimation': 'oAnimationEnd', 'msAnimation': 'MSAnimationEnd', 'animation': 'animationend' };
-                            const animEndEventName = animEndEventNames[window.Modernizr.prefixed('animation')];
-                            return {
-                                type: name_prop_clientRect,
-                                dom: {
-                                    className: () => 'tapEffect',
-                                },
-                                prop: {
-                                    '#width': () => size,
-                                    '#height': () => size,
-                                    '#ofsHor': $$.$me_atom2_prop([name_prop_clientRect], ({ masters: [clientRect] }) => clientRect.left + ofsHor),
-                                    '#ofsVer': $$.$me_atom2_prop([name_prop_clientRect], ({ masters: [clientRect] }) => clientRect.top + ofsVer),
-                                },
-                                init: ec => {
-                                    ec.node.addEventListener(animEndEventName, animationEndHandler);
-                                },
-                                fini: ec => {
-                                    ec.node.removeEventListener(animEndEventName, animationEndHandler);
-                                },
-                            };
-                        }),
-                    },
-                } });
-        };
-        const workspace = {
-            prop: {
-                '#ofsHor': '<@menu.#width',
-                '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.#ofsHor'], ({ masters: [viewportWidth, ofsHor] }) => viewportWidth - ofsHor),
-            },
-            elem: {
-                search: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'search' ? prev || null : {
-                    type: '$nl_search_workspace',
-                    base: $$.$nl_search_workspace,
-                    prop: {
-                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'search'),
-                    },
-                }),
-            },
-            style: {},
-        };
-        const menu = {
-            prop: {
-                isShrinked: $$.$me_atom2_prop_store({
-                    default: () => false,
-                    valid: (val) => typeof val == 'boolean' ? val : null,
-                }),
-                '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                    to: isShrinked ? 64 : 290,
-                    path_active: $$.a.get('.isShrinked_animActive').path,
-                })),
-                isShrinked_animActive: $$.$me_atom2_prop([], () => false),
-                '#order': () => ['ear', 'login', 'list'],
-            },
-            elem: {
-                login: () => login,
-                ear: () => ear,
-                list: () => list,
-            },
-        };
-        const login = {
-            prop: {
-                '#height': () => 54,
-                '#cursor': () => 'pointer',
-                'colorBackground': () => '#3c4354',
-            },
-            style: {
-                background: '.colorBackground',
-                overflow: () => 'hidden',
-                userSelect: () => 'none',
-            },
-            elem: {
-                iconSquare: () => ({
-                    prop: {
-                        '#width': () => 28,
-                        '#height': () => 28,
-                        '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? 18 : 16
-                        })),
-                        '#alignVer': () => $$.$me_align.center,
-                    },
-                    elem: {
-                        icon: () => ({
-                            node: 'img',
-                            prop: {
-                                '#width': () => 20,
-                                '#height': () => 22,
-                                '#align': () => $$.$me_align.center,
-                            },
-                            attr: {
-                                src: () => 'assets/' + 'icons-8-enter-2' + '@2x.png',
-                            },
-                            style: {
-                                filter: () => 'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'
-                            },
-                        }),
-                    },
-                }),
-                text: () => ({
-                    prop: {
-                        '#width': () => null,
-                        '#ofsHor': () => 61,
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
-                    },
-                    style: {
-                        color: () => 'white',
-                    },
-                    dom: {
-                        innerText: () => 'Авторизация',
-                    },
-                }),
-            },
-        };
-        const ear = {
-            prop: {
-                '#height': '<@login.#height',
-                '#width': () => 17,
-                '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive] }) => {
-                    if (isHover)
-                        isShrinked = !isShrinked;
-                    return width + (isShrinked ? 0 : 2);
-                }),
-                '#cursor': () => 'pointer',
-            },
-            elem: {
-                img: () => ({
-                    node: 'img',
-                    prop: {
-                        '#height': () => 72,
-                        '#width': () => 35,
-                        '#ofsVer': () => -3,
-                        '#ofsHor': () => -9,
-                    },
-                    attr: {
-                        src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => {
-                            if (isShrinked_animActive)
-                                isShrinked = !isShrinked;
-                            return `assets/light-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
-                        }),
-                    },
-                }),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('<.isShrinked', !$$.a('<.isShrinked'));
-                    return true;
-                },
-            },
-        };
-        const list = {
-            prop: {
-                '#ofsVer': '<@login.#height',
-                '#height': $$.$me_atom2_prop(['.#ofsVer', '<.#height'], ({ masters: [ofsVer, height] }) => height - ofsVer),
-                colorBorder: () => 'blue',
-                items: () => ({
-                    'main': { title: 'Главная', icon: 'icons-8-home', icon_width: 26, icon_height: 23 },
-                    'search': { title: 'Поиск', icon: 'icons-8-search' },
-                    'orders': { title: 'Заказы', icon: 'icons-8-buy' },
-                    'clients': { title: 'Клиенты', icon: 'icons-8-meeting', icon_width: 22 },
-                    'advs': { title: 'Мои объявления', icon: 'icons-8-resume-website', icon_width: 22, icon_height: 22 },
-                    'docs': { title: 'Документы', icon: 'icons-8-wipes' },
-                    'users': { title: 'Пользователи', icon: 'icons-8-add-user-group', icon_width: 27 },
-                    'feedback': { title: 'Обратная связь', icon: 'icons-8-info-popup', icon_width: 22 },
-                    'subscription': { title: 'Подписка', icon: 'icons-8-wallet-copy-2', icon_width: 22, icon_height: 22 },
-                    'settings': { title: 'Настройки', icon: 'icons-8-settings' },
-                    'sma': { title: 'СМА', icon: 'icons-8-sell-property', icon_width: 26, icon_height: 23 },
-                    'history': { title: 'История поиска', icon: 'icons-8-last-hour' },
-                    'favorites': { title: 'Избранное', icon: 'icons-8-star', icon_width: 26, icon_height: 25 },
-                    'archive': { title: 'Архивные данные', icon: 'icons-8-winrar', icon_height: 22, },
-                }),
-                item_id: $$.$me_atom2_prop_keys(['.items']),
-                item: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
-                item_top: $$.$me_atom2_prop({
-                    keys: ['.item_id'],
-                    masters: $$.$me_atom2_prop_masters(['.item_id'], ({ key: [id], masters: [ids] }) => {
-                        const idx = ids.indexOf(id);
-                        return !idx ? [] : [`.item_top[${ids[idx - 1]}]`, '.item_height'];
-                    }),
-                }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
-                item_title: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
-                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => 'assets/' + item.icon + '@2x.png'),
-                item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
-                item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
-                item_height: () => 52,
-                selected: $$.$me_atom2_prop_store({
-                    default: () => '',
-                    valid: (val) => typeof val == 'string' ? val : null,
-                }),
-            },
-            style: {
-                background: () => 'white',
-            },
-            elem: {
-                item: $$.$me_atom2_prop({ keys: ['.item_id'] }, ({ key: [id] }) => ({
-                    prop: {
-                        '#ofsVer': `<.item_top[${id}]`,
-                        '#height': '<.item_height',
-                        '#cursor': () => 'pointer',
-                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => id == selected),
-                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover'], ({ masters: [isSelected, isHover] }) => isSelected ? '#0070a4' :
-                            isHover ? '#cce2ed' :
-                                'white'),
-                        'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
-                    },
-                    style: {
-                        background: '.colorBackground',
-                        overflow: () => 'hidden',
-                        userSelect: () => 'none',
-                    },
-                    elem: {
-                        iconSquare: () => ({
-                            prop: {
-                                '#width': () => 28,
-                                '#height': () => 28,
-                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                                    to: isShrinked ? 18 : 16
-                                })),
-                                '#alignVer': () => $$.$me_align.center,
-                            },
-                            elem: {
-                                icon: () => ({
-                                    node: 'img',
-                                    prop: {
-                                        '#width': `<<<.item_icon_width[${id}]`,
-                                        '#height': `<<<.item_icon_height[${id}]`,
-                                        '#align': () => $$.$me_align.center,
-                                    },
-                                    attr: {
-                                        src: `<<<.item_icon[${id}]`
-                                    },
-                                    style: {
-                                        filter: $$.$me_atom2_prop(['<<.isSelected'], ({ masters: [isSelected] }) => !isSelected ?
-                                            'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
-                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
-                                    },
-                                }),
-                            },
-                        }),
-                        text: () => ({
-                            prop: {
-                                '#alignVer': () => $$.$me_align.center,
-                                '#height': () => null,
-                                '#ofsHor': () => 61,
-                                '#width': () => null,
-                                '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
-                            },
-                            dom: {
-                                innerText: `<<.item_title[${id}]`,
-                            },
-                            style: {
-                                color: '<.colorText',
-                                whiteSpace: () => 'nowrap',
-                                opacity: $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({ to: isShrinked ? 0 : 1 })),
-                            },
-                        }),
-                        separator: $$.$me_atom2_prop(['<.item_id', '.isSelected'], ({ masters: [ids, isSelected] }) => isSelected || !ids.indexOf(id) ? null : {
-                            prop: {
-                                '#hidden': $$.$me_atom2_prop(['<.isSelected', '<.#isHover'], $$.$me_atom2_prop_compute_fn_or()),
-                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                                    to: isShrinked ? 12 : 16
-                                })),
-                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                            },
-                            style: {
-                                borderTop: () => '1px solid #eceff5',
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a('<.selected', id);
-                            return true;
-                        },
-                    },
-                })),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//app.js.map
-;
-/*! modernizr 3.6.0 (Custom Build) | MIT *
- * https://modernizr.com/download/?-prefixed !*/
-!function(e,n,t){function r(e,n){return typeof e===n}function o(){var e,n,t,o,i,s,l;for(var u in h)if(h.hasOwnProperty(u)){if(e=[],n=h[u],n.name&&(e.push(n.name.toLowerCase()),n.options&&n.options.aliases&&n.options.aliases.length))for(t=0;t<n.options.aliases.length;t++)e.push(n.options.aliases[t].toLowerCase());for(o=r(n.fn,"function")?n.fn():n.fn,i=0;i<e.length;i++)s=e[i],l=s.split("."),1===l.length?Modernizr[l[0]]=o:(!Modernizr[l[0]]||Modernizr[l[0]]instanceof Boolean||(Modernizr[l[0]]=new Boolean(Modernizr[l[0]])),Modernizr[l[0]][l[1]]=o),C.push((o?"":"no-")+l.join("-"))}}function i(e){return e.replace(/([a-z])-([a-z])/g,function(e,n,t){return n+t.toUpperCase()}).replace(/^-/,"")}function s(e,n){return function(){return e.apply(n,arguments)}}function l(e,n,t){var o;for(var i in e)if(e[i]in n)return t===!1?e[i]:(o=n[e[i]],r(o,"function")?s(o,t||n):o);return!1}function u(e,n){return!!~(""+e).indexOf(n)}function f(e){return e.replace(/([A-Z])/g,function(e,n){return"-"+n.toLowerCase()}).replace(/^ms-/,"-ms-")}function a(n,t,r){var o;if("getComputedStyle"in e){o=getComputedStyle.call(e,n,t);var i=e.console;if(null!==o)r&&(o=o.getPropertyValue(r));else if(i){var s=i.error?"error":"log";i[s].call(i,"getComputedStyle returning null, its possible modernizr test results are inaccurate")}}else o=!t&&n.currentStyle&&n.currentStyle[r];return o}function p(){return"function"!=typeof n.createElement?n.createElement(arguments[0]):E?n.createElementNS.call(n,"http://www.w3.org/2000/svg",arguments[0]):n.createElement.apply(n,arguments)}function d(){var e=n.body;return e||(e=p(E?"svg":"body"),e.fake=!0),e}function c(e,t,r,o){var i,s,l,u,f="modernizr",a=p("div"),c=d();if(parseInt(r,10))for(;r--;)l=p("div"),l.id=o?o[r]:f+(r+1),a.appendChild(l);return i=p("style"),i.type="text/css",i.id="s"+f,(c.fake?c:a).appendChild(i),c.appendChild(a),i.styleSheet?i.styleSheet.cssText=e:i.appendChild(n.createTextNode(e)),a.id=f,c.fake&&(c.style.background="",c.style.overflow="hidden",u=z.style.overflow,z.style.overflow="hidden",z.appendChild(c)),s=t(a,e),c.fake?(c.parentNode.removeChild(c),z.style.overflow=u,z.offsetHeight):a.parentNode.removeChild(a),!!s}function m(n,r){var o=n.length;if("CSS"in e&&"supports"in e.CSS){for(;o--;)if(e.CSS.supports(f(n[o]),r))return!0;return!1}if("CSSSupportsRule"in e){for(var i=[];o--;)i.push("("+f(n[o])+":"+r+")");return i=i.join(" or "),c("@supports ("+i+") { #modernizr { position: absolute; } }",function(e){return"absolute"==a(e,null,"position")})}return t}function y(e,n,o,s){function l(){a&&(delete P.style,delete P.modElem)}if(s=r(s,"undefined")?!1:s,!r(o,"undefined")){var f=m(e,o);if(!r(f,"undefined"))return f}for(var a,d,c,y,v,h=["modernizr","tspan","samp"];!P.style&&h.length;)a=!0,P.modElem=p(h.shift()),P.style=P.modElem.style;for(c=e.length,d=0;c>d;d++)if(y=e[d],v=P.style[y],u(y,"-")&&(y=i(y)),P.style[y]!==t){if(s||r(o,"undefined"))return l(),"pfx"==n?y:!0;try{P.style[y]=o}catch(g){}if(P.style[y]!=v)return l(),"pfx"==n?y:!0}return l(),!1}function v(e,n,t,o,i){var s=e.charAt(0).toUpperCase()+e.slice(1),u=(e+" "+w.join(s+" ")+s).split(" ");return r(n,"string")||r(n,"undefined")?y(u,n,o,i):(u=(e+" "+_.join(s+" ")+s).split(" "),l(u,n,t))}var h=[],g={_version:"3.6.0",_config:{classPrefix:"",enableClasses:!0,enableJSClass:!0,usePrefixes:!0},_q:[],on:function(e,n){var t=this;setTimeout(function(){n(t[e])},0)},addTest:function(e,n,t){h.push({name:e,fn:n,options:t})},addAsyncTest:function(e){h.push({name:null,fn:e})}},Modernizr=function(){};Modernizr.prototype=g,Modernizr=new Modernizr;var C=[],S="Moz O ms Webkit",w=g._config.usePrefixes?S.split(" "):[];g._cssomPrefixes=w;var x=function(n){var r,o=prefixes.length,i=e.CSSRule;if("undefined"==typeof i)return t;if(!n)return!1;if(n=n.replace(/^@/,""),r=n.replace(/-/g,"_").toUpperCase()+"_RULE",r in i)return"@"+n;for(var s=0;o>s;s++){var l=prefixes[s],u=l.toUpperCase()+"_"+r;if(u in i)return"@-"+l.toLowerCase()+"-"+n}return!1};g.atRule=x;var _=g._config.usePrefixes?S.toLowerCase().split(" "):[];g._domPrefixes=_;var z=n.documentElement,E="svg"===z.nodeName.toLowerCase(),b={elem:p("modernizr")};Modernizr._q.push(function(){delete b.elem});var P={style:b.elem.style};Modernizr._q.unshift(function(){delete P.style}),g.testAllProps=v;g.prefixed=function(e,n,t){return 0===e.indexOf("@")?x(e):(-1!=e.indexOf("-")&&(e=i(e)),n?v(e,n,t):v(e,"pfx"))};o(),delete g.addTest,delete g.addAsyncTest;for(var L=0;L<Modernizr._q.length;L++)Modernizr._q[L]();e.Modernizr=Modernizr}(window,document);
 ;
 "use strict";
 var $;
@@ -9581,6 +5631,7 @@ var $;
             },
             prop: {
                 corners: () => $$.$me_enum_names($$.$me_rect_corners_enum),
+                defs: $$.$me_atom2_prop_abstract(),
             },
             elem: {
                 panel: $$.$me_atom2_prop({ keys: ['.corners'] }, ({ key: [corner] }) => ({
@@ -9633,11 +5684,14 @@ var $;
                     if (isOff)
                         return null;
                     const prop = {};
-                    for (const p in def)
-                        prop[p] = def[p];
                     return {
                         base: $.$$[demoFor],
-                        prop: Object.assign({ '#align': () => $$.$me_align.center }, prop),
+                        dispatch: def.dispatch,
+                        prop: Object.assign({ '#align': () => $$.$me_align.center }, (!def.prop ? {} : def.prop)),
+                        style: def.style,
+                        event: def.event,
+                        elem: def.elem,
+                        control: def.control,
                     };
                 }),
             },
@@ -9651,22 +5705,91 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_demo4 = {
+            base: $$.$me_demo4,
+            style: {
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//demo4.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_picker_demo = (rootElem) => {
-            $$.$nl_app_defaults_init();
+            $$.$nl_defaults_init();
             return new $$.$me_atom2_elem({ tail: 'app', cnf: {
                     node: rootElem,
-                    base: $$.$me_demo4,
+                    base: $$.$nl_demo4,
                     prop: {
                         demoFor: () => '$nl_picker',
                         defs: () => ({
-                            leftTop: Object.assign({}, defaults, { isTouch: () => true }),
-                            rightTop: Object.assign({}, defaults, { isTouch: () => true }),
-                            leftBottom: Object.assign({}, defaults),
-                            rightBottom: Object.assign({}, defaults),
+                            leftTop: {
+                                prop: Object.assign({}, defaults, { isTouch: () => false }),
+                            },
+                            rightTop: {
+                                prop: Object.assign({}, defaults, { isTouch: () => true }),
+                            },
+                            leftBottom: {
+                                prop: Object.assign({}, defaults2, { isTouch: () => false }),
+                            },
+                            rightBottom: {
+                                prop: {
+                                    isTouch: () => true,
+                                    '#width': () => 318,
+                                    '#height': () => 24,
+                                    none: () => 'все',
+                                    options: () => ({
+                                        winner: {
+                                            caption: 'WinNER',
+                                        },
+                                        winnerPro: {
+                                            caption: 'WinNER PRO',
+                                        },
+                                        sob: {
+                                            caption: 'Sob.ru',
+                                        },
+                                        avito: {
+                                            caption: 'Avito.ru',
+                                        },
+                                        cian: {
+                                            caption: 'Cian.ru',
+                                        },
+                                        irr: {
+                                            caption: 'Irr.ru',
+                                        },
+                                        other: {
+                                            caption: 'Прочие',
+                                        },
+                                        yandex: {
+                                            caption: 'Яндекс',
+                                        },
+                                    }),
+                                    value: $$.$me_atom2_prop_store({
+                                        default: () => new Map(),
+                                        valid: val => {
+                                            const isMap = val instanceof Map;
+                                            const result = isMap ? val : new Map();
+                                            if (isMap) {
+                                                const valid_ids = new Set($$.a('.option_ids'));
+                                                for (const [id] of result)
+                                                    if (!valid_ids.has(id))
+                                                        result.delete(id);
+                                            }
+                                            return result;
+                                        },
+                                        toJSON: val => [...val].map(([id]) => id),
+                                        fromJSON: val => !Array.isArray(val) ?
+                                            new Map() :
+                                            new Map(val.map(id => [id, null])),
+                                    }),
+                                },
+                            },
                         }),
-                    },
-                    style: {
-                        background: () => '#D9DCE2',
                     },
                 } });
         };
@@ -9682,6 +5805,37 @@ var $;
                 '6+': {},
             }),
             value: $$.$me_atom2_prop([], () => $$.a('.option_ids')[0], ({ val, atom }) => console.log(atom.name(), val)),
+        };
+        const defaults2 = {
+            '#width': () => 318,
+            '#height': () => 24,
+            options: () => ({
+                'панельный': {},
+                'блочный': {},
+                'монолитный': {},
+                'монолитно-кирпичный': {},
+                'кирпичный': {},
+                'деревянный': {},
+                'шлакоблоки/шлакобетон': {},
+                'железобетон': {},
+                'сталинский': {},
+            }),
+            value: $$.$me_atom2_prop_store({
+                default: () => new Set(),
+                valid: val => {
+                    const isSet = val instanceof Set;
+                    const result = isSet ? val : new Set();
+                    if (isSet) {
+                        const valid_ids = new Set($$.a('.option_ids'));
+                        for (const s of result)
+                            if (!valid_ids.has(s))
+                                result.delete(s);
+                    }
+                    return result;
+                },
+                toJSON: val => [...val],
+                fromJSON: val => !val ? val : new Set(val),
+            }),
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
