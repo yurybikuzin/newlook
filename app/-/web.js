@@ -1403,7 +1403,7 @@ var $;
                         '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'].concat(s_level.length < 2 ? [] : ['<.#left']), ({ masters: [alignHor, width_parent, width, ofsHor, left_parent] }) => {
                             left_parent = left_parent || 0;
                             const result = alignHor === $$.$me_align.left ? left_parent + ofsHor :
-                                alignHor === $$.$me_align.right ? left_parent + width_parent - ofsHor :
+                                alignHor === $$.$me_align.right ? left_parent + width_parent - width - ofsHor :
                                     left_parent + (width_parent - width) / 2 + ofsHor;
                             return result;
                         }),
@@ -8696,6 +8696,342 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_plitka = {
+            base: $$.$me_list,
+            prop: {
+                row_height_min: () => 176 + 12,
+                header_height: () => 0,
+                header_content: () => ({}),
+                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
+                    base: row,
+                    prop: {
+                        row_i: () => row_i,
+                        rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
+                        id: $$.$me_atom2_prop(['<<.col_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
+                            return !~idx || idx >= rec_count ? '' : ids[idx];
+                        }),
+                    },
+                })),
+            },
+            elem: {
+                header: () => null,
+            },
+        };
+        const row = {
+            elem: {
+                inner: () => ({
+                    prop: {
+                        '#height': () => 176,
+                        '#width': $$.$me_atom2_prop(['<.#width'], $$.$me_atom2_prop_compute_fn_sum(-2)),
+                    },
+                    style: {
+                        border: () => '1px solid #989ba2',
+                        borderRadius: () => '4px',
+                    },
+                    elem: {
+                        leftPanel: () => ({
+                            base: leftPanel,
+                            prop: {
+                                '#width': () => 38,
+                            },
+                            style: {
+                                background: () => '#ebedf1',
+                                borderTopLeftRadius: '<.style.borderRadius',
+                                borderBottomLeftRadius: '<.style.borderRadius',
+                            },
+                        }),
+                        photo: () => ({
+                            prop: {
+                                '#width': () => 190,
+                                '#height': () => 160,
+                                '#ofsVer': () => 8,
+                                '#ofsHor': $$.$me_atom2_prop(['<@leftPanel.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
+                            },
+                            style: {
+                                border: () => '1px solid red',
+                            },
+                        }),
+                        h1: () => ({
+                            base: label,
+                            prop: {
+                                '#ofsHor': $$.$me_atom2_prop(['<@photo.#ofsHor', '<@photo.#width'], $$.$me_atom2_prop_compute_fn_sum(16)),
+                                '#ofsVer': () => 18,
+                            },
+                            style: {
+                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(20 / 16)),
+                                fontWeight: () => 'bold',
+                                color: () => '#172a3f',
+                            },
+                            dom: {
+                                innerText: () => '3-комн.кв., 120м², 4/5 этаж',
+                            },
+                        }),
+                        metro: () => ({
+                            base: label,
+                            prop: {
+                                '#ofsHor': $$.$me_atom2_prop(['<@h1.#ofsHor', '<@h1.#width'], $$.$me_atom2_prop_compute_fn_sum(12)),
+                                '#ofsVer': $$.$me_atom2_prop(['<@h1.#ofsVer', '<@h1.#height', '.#height'], ({ masters: [target_ofsVer, target_height, height] }) => target_ofsVer + target_height - height),
+                            },
+                            style: {
+                                color: () => '#0070a4',
+                            },
+                            dom: {
+                                innerText: () => 'Бульвар Дмитрия Донского м.',
+                            },
+                        }),
+                        far: () => ({
+                            base: label,
+                            prop: {
+                                '#ofsHor': $$.$me_atom2_prop(['<@metro.#ofsHor', '<@metro.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
+                                '#ofsVer': '<@metro.#ofsVer',
+                            },
+                            style: {
+                                color: () => '#0070a4',
+                            },
+                            dom: {
+                                innerText: () => '15 мин.пеш.',
+                            },
+                        }),
+                        address: () => ({
+                            base: label,
+                            prop: {
+                                '#ofsHor': '<@h1.#ofsHor',
+                                '#ofsVer': () => 54,
+                            },
+                            style: {
+                                color: () => '#6a6c74',
+                            },
+                            dom: {
+                                innerText: () => 'Улица Двадцати Шести Бакинских Комиссаров. 20 дом 130 П',
+                            },
+                        }),
+                        price: () => ({
+                            base: label,
+                            prop: {
+                                '#ofsHor': $$.$me_atom2_prop(['<@h1.#ofsHor'], $$.$me_atom2_prop_compute_fn_sum(27)),
+                                '#ofsVer': () => 97,
+                            },
+                            style: {
+                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(20 / 16)),
+                                fontWeight: () => 500,
+                            },
+                            dom: {
+                                innerText: () => '8 640 000 ₽',
+                            },
+                        }),
+                        price_per_sq_wrapper: () => ({
+                            prop: {
+                                '#ofsVer': () => 127,
+                                '#ofsHor': '<@price.#ofsHor',
+                                '#width': '<@price.#width',
+                                '#height': () => null,
+                            },
+                            elem: {
+                                price_per_sq: () => ({
+                                    base: label,
+                                    prop: {
+                                        '#alignHor': () => $$.$me_align.center,
+                                    },
+                                    style: {
+                                        opacity: () => .5,
+                                    },
+                                    dom: {
+                                        innerText: () => '7 000 ₽/м²',
+                                    },
+                                }),
+                            },
+                        }),
+                        phone: () => ({
+                            base: label,
+                            prop: {
+                                '#ofsVer': $$.$me_atom2_prop(['<@price.#ofsVer', '<@price.#height', '.#height'], ({ masters: [target_ofsVer, target_height, height] }) => target_ofsVer + target_height - height),
+                                '#ofsHor': $$.$me_atom2_prop(['<@price.#ofsHor', '<@price.#width'], $$.$me_atom2_prop_compute_fn_sum(27)),
+                            },
+                            style: {
+                                color: () => '#0070a4',
+                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                            },
+                            dom: {
+                                innerText: () => '+7 (911) 22-60-222',
+                            },
+                        }),
+                        source_wrapper: () => ({
+                            prop: {
+                                '#ofsVer': () => 127,
+                                '#ofsHor': '<@phone.#ofsHor',
+                                '#width': '<@phone.#width',
+                                '#height': () => null,
+                            },
+                            elem: {
+                                source: () => ({
+                                    base: label,
+                                    prop: {
+                                        '#alignHor': () => $$.$me_align.center,
+                                    },
+                                    style: {
+                                        color: '<<@phone.style.color',
+                                    },
+                                    dom: {
+                                        innerText: () => 'AVITO.RU',
+                                    },
+                                }),
+                            },
+                        }),
+                        group: () => ({
+                            base: group,
+                            prop: {
+                                '#ofsHor': () => 965,
+                                '#ofsVer': () => 24,
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        const group = {
+            prop: {
+                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
+                '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
+                def: () => ({
+                    colSpaceHor: 40,
+                    fldSpaceVer: 10,
+                    fldSpaceHor: 5,
+                    cols: [
+                        {
+                            width: () => 80,
+                            flds: {
+                                'Балкон': { value: 'Л' },
+                                'Санузел': { value: 'C' },
+                                'Окна': { value: 'Д+У' },
+                                'Лифт': { value: 'П+Г' },
+                                'Парковка': { value: 'П' },
+                            },
+                        },
+                        {
+                            width: () => 140,
+                            flds: {
+                                'Ипотека': { value: '+' },
+                                'Год постройки': { value: '2000' },
+                                'Площадь': { value: '50.6/29.3/9.1' },
+                                'Ремонт': { value: 'Дизайн.рем.' },
+                                'Территория': { value: 'Охр.' },
+                            },
+                        },
+                    ],
+                }),
+                cols: $$.$me_atom2_prop(['.def'], ({ masters: [def] }) => Array.from(Array(def.cols.length).keys()).map(i => i + '')),
+                flds: $$.$me_atom2_prop({ keys: ['.cols'], masters: ['.def'] }, ({ key: [col], masters: [def] }) => Object.keys(def.cols[col].flds)),
+                value: $$.$me_atom2_prop({ keys: ['.cols', '.flds[]'], masters: ['.def'] }, ({ key: [col, fld], masters: [def] }) => def.cols[col].flds[fld].value),
+            },
+            elem: {
+                col: $$.$me_atom2_prop({ keys: ['.cols'], masters: ['.def', '.cols'] }, ({ key: [col], masters: [def, cols] }) => {
+                    const idx = cols.indexOf(col);
+                    return {
+                        prop: {
+                            '#width': def.cols[col].width,
+                            '#ofsHor': !idx ? null :
+                                $$.$me_atom2_prop([`<@col[${cols[idx - 1]}].#ofsHor`, `<@col[${cols[idx - 1]}].#width`], $$.$me_atom2_prop_compute_fn_sum(def.colSpaceHor)),
+                        },
+                        elem: {
+                            fld: $$.$me_atom2_prop({ keys: [`<.flds[${col}]`], masters: ['<.def', `<.flds[${col}]`] }, ({ key: [fld], masters: [def, flds] }) => {
+                                const idx = flds.indexOf(fld);
+                                return {
+                                    prop: {
+                                        '#height': () => 14,
+                                        '#ofsVer': !idx ? null :
+                                            $$.$me_atom2_prop([`<@fld[${flds[idx - 1]}].#ofsVer`, `<@fld[${flds[idx - 1]}].#height`], $$.$me_atom2_prop_compute_fn_sum(def.fldSpaceVer)),
+                                    },
+                                    elem: {
+                                        label: () => ({
+                                            base: label,
+                                            dom: {
+                                                innerText: () => $$.$me_option_caption_text(fld, def.cols[col].flds),
+                                            },
+                                            style: {
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(12 / 16)),
+                                                fontWeight: () => 'bold',
+                                                color: () => '#6a6c74',
+                                            },
+                                        }),
+                                        value: () => ({
+                                            base: label,
+                                            prop: {
+                                                '#ofsHor': $$.$me_atom2_prop(['<@label.#width'], $$.$me_atom2_prop_compute_fn_sum(def.fldSpaceHor)),
+                                            },
+                                            style: {
+                                                fontSize: '<@label.style.fontSize',
+                                            },
+                                            dom: {
+                                                innerText: () => def.cols[col].flds[fld].value,
+                                            },
+                                        }),
+                                        shape: () => ({
+                                            base: shape,
+                                            prop: {
+                                                '#alignHor': () => $$.$me_align.right,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                size: () => 12,
+                                                '#ofsHor': $$.$me_atom2_prop(['.size'], ({ masters: [size] }) => -size),
+                                                color: () => '#0070a4',
+                                            },
+                                        }),
+                                    },
+                                };
+                            }),
+                        },
+                    };
+                }),
+            },
+        };
+        const shape = {
+            prop: {
+                size: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                '#width': '.size',
+                '#height': '.size',
+            },
+            style: {
+                borderRadius: () => '50%',
+                border: $$.$me_atom2_prop(['.color'], ({ masters: [color] }) => `1px solid ${color}`),
+            },
+            elem: {
+                quest: () => ({
+                    base: label,
+                    prop: {
+                        '#align': () => $$.$me_align.center,
+                        '#ofsHor': () => .5,
+                        '#ofsVer': () => .3,
+                    },
+                    dom: {
+                        innerText: () => '?',
+                    },
+                    style: {
+                        color: '<.color',
+                        fontSize: $$.$me_atom2_prop(['<.size'], ({ masters: [size] }) => size * .8),
+                    },
+                }),
+            },
+        };
+        const label = {
+            prop: {
+                '#height': () => null,
+                '#width': () => null,
+            },
+            style: {
+                whiteSpace: () => 'nowrap',
+                overflow: () => 'hidden',
+            },
+        };
+        const leftPanel = {};
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//plitka.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_iosmenu = {
             prop: {
                 target: $$.$me_atom2_prop_abstract(),
@@ -8903,7 +9239,7 @@ var $;
                 list: () => ({
                     base: list,
                     prop: {
-                        provider_tag: '<.provider_tag',
+                        provider_tag: () => '',
                         provider: '<.provider',
                         rec_count: '<.rec_count',
                         '#ofsVer': '<@header.#height',
@@ -8926,12 +9262,6 @@ var $;
                             `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(0,0,0,.24) 0%, rgba(0,0,0,.1) 33%, rgba(0,0,0,0) 100%)` :
                             `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%)`),
                         pointerEvents: () => 'none',
-                    },
-                }),
-                spinner: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => count >= 0 ? null : {
-                    base: $$.$me_spinner,
-                    prop: {
-                        color: () => '#D9DCE2',
                     },
                 }),
             }
@@ -10424,6 +10754,293 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_search_panel_result_cols = {
+            photo: {
+                caption: 'Фото',
+                width: 37,
+            },
+            'Комнат': {
+                align: $$.$me_align.center,
+                width: 42,
+                fld: ['total_room_count', 'offer_room_count'],
+                fn: (total_room_count, offer_room_count) => (!offer_room_count ? '' : offer_room_count + '/') +
+                    (total_room_count == null ? '?' : total_room_count)
+            },
+            'Метро/ЖД': {
+                width: 170,
+                fld: ['geo_cache_subway_station_name_1'],
+                fn: (geo_cache_subway_station_name_1) => geo_cache_subway_station_name_1,
+            },
+            'От станции': {
+                align: $$.$me_align.center,
+                width: 50,
+                fld: ['walking_access_1', 'transport_access_1'],
+                fn: (walking_access_1, transport_access_1) => walking_access_1 ? walking_access_1 + 'п' :
+                    transport_access_1 ? transport_access_1 + 'т' :
+                        '',
+            },
+            'Адрес': {
+                width: 220,
+                fld: ['geo_cache_street_name', 'geo_cache_building_name'],
+                fn: (geo_cache_street_name, geo_cache_building_name) => geo_cache_street_name ? (!geo_cache_building_name ? geo_cache_street_name :
+                    geo_cache_street_name + ', ' + geo_cache_building_name) : geo_cache_building_name ? geo_cache_building_name : ''
+            },
+            'Дом': {
+                width: 64,
+                align: $$.$me_align.center,
+                fld: ['storey', 'storeys_count', 'walls_material_type_id'],
+                fn: (storey, storeys_count, walls_material_type_id) => (!storey ? '?' : storey) + '/' +
+                    (!storeys_count ? '?' : storeys_count) + ' ' +
+                    dic_fld_value('walls_material_type', walls_material_type_id, 'code', '?')
+            },
+            'Балкон': {
+                width: 38,
+                align: $$.$me_align.center,
+                fld: ['balcony_type_id'],
+                fn: (type_id) => dic_fld_value('balcony_type', type_id, 'code', '?'),
+            },
+            'Санузел': {
+                width: 38,
+                fld: ['water_closet_type_id'],
+                fn: (type_id) => dic_fld_value('water_closet_type', type_id, 'code', '?'),
+            },
+            'Парковка': {
+                width: 38,
+                fld: ['parking_type_id'],
+                fn: (type_id) => dic_fld_value('parking_type', type_id, 'code', '?'),
+            },
+            'Территория': {
+                width: 112,
+                fld: ['territory_type_id'],
+                fn: (type_id) => dic_fld_value('territory_type', type_id, 'code', '?'),
+            },
+            'Окна': {
+                width: 41,
+                fld: ['window_overlook_type_id'],
+                fn: (type_id) => dic_fld_value('window_overlook_type', type_id, 'code', '?'),
+            },
+            'Ремонт': {
+                width: 92,
+                fld: ['apartment_condition_type_id'],
+                fn: (type_id) => dic_fld_value('apartment_condition_type', type_id, 'code', '?'),
+            },
+            'Лифт': {
+                width: 41,
+                fld: ['elevator_type_id'],
+                fn: (type_id) => dic_fld_value('elevator_type', type_id, 'code', '?'),
+            },
+            'Площадь': {
+                align: $$.$me_align.center,
+                width: 130,
+                fld: ['total_square', 'life_square', 'kitchen_square'],
+                fn: (total_square, life_square, kitchen_square) => (total_square || '?') + '/' + (life_square || '?') + '/' + (kitchen_square || '?'),
+            },
+            'Площадь комнат': {
+                align: $$.$me_align.center,
+                width: 138,
+                fld: ['square_explication'],
+                fn: (square_explication) => square_explication,
+            },
+            'Ипотека': {
+                width: 41,
+            },
+            'Цена': {
+                align: $$.$me_align.right,
+                caption: 'Цена ₽',
+                width: 96,
+                fld: ['price_rub'],
+                fn: (val) => {
+                    var x = (val + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена, $': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: 'Цена $',
+                width: 96,
+                fld: ['price_usd'],
+                fn: (val) => {
+                    var x = (val + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена, €': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: 'Цена €',
+                width: 96,
+                fld: ['price_eur'],
+                fn: (val) => {
+                    var x = (val + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена за кв.м.': {
+                align: $$.$me_align.right,
+                caption: '₽/м²',
+                width: 93,
+                fld: ['meter_price_rub'],
+                fn: (meter_price_rub) => {
+                    var x = (Math.round(meter_price_rub) + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена $ за кв.м.': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: '$/м²',
+                width: 93,
+                fld: ['meter_price_usd'],
+                fn: (val) => {
+                    var x = (Math.round(val) + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена € за кв.м.': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: '€/м²',
+                width: 93,
+                fld: ['meter_price_eur'],
+                fn: (val) => {
+                    var x = (Math.round(val) + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Дата': {
+                align: $$.$me_align.right,
+                width: 85,
+                fld: ['pub_datetime'],
+                fn: (val) => {
+                    const dt = new Date(val);
+                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                },
+            },
+            'Дата создания': {
+                hidden: true,
+                align: $$.$me_align.right,
+                width: 85,
+                fld: ['creation_datetime'],
+                fn: (val) => {
+                    const dt = new Date(val);
+                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                },
+            },
+            'Год постройки': {
+                hidden: true,
+                align: $$.$me_align.center,
+                width: 85,
+                fld: ['built_year'],
+                fn: (val) => {
+                    return val;
+                },
+            },
+            'Источник': {
+                width: 140,
+                fld: ['broker', 'media_name'],
+                fn: (broker, media_name) => broker && broker.short_name ? broker.short_name : media_name,
+            },
+            'Телефон': {
+                width: 260,
+                fld: ['phone_list'],
+                fn: (phone_list) => !phone_list ? '' : phone_list
+                    .split(/\D+/)
+                    .map(phone => '8-' + phone.slice(1, 4) + '-' + phone.slice(4, 7) + '-' + phone.slice(7, 9) + '-' + phone.slice(9, 11)).join(', ')
+            },
+        };
+        const _dics = new Map();
+        function dic_fld_value(dic_name, id, fld, default_value) {
+            let result;
+            let dic = _dics.get(dic_name);
+            if (!dic) {
+                const dic_def = DICTIONARIES[dic_name];
+                if (dic_def) {
+                    dic = new Map(dic_def.map((item) => [item.id, item]));
+                    _dics.set(dic_name, dic);
+                }
+            }
+            if (dic && dic.has(id)) {
+                const value = dic.get(id);
+                if (value)
+                    result = value[fld];
+            }
+            if (result === void 0 && default_value !== void 0)
+                result = default_value;
+            return result;
+        }
+        const DICTIONARIES = {
+            apartment_condition_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "треб.кап/р", "name": "требуется капитальный ремонт" }, { "id": 3, "code": "без отд.", "name": "без отделки" }, { "id": 4, "code": "треб.рем.", "name": "требуется ремонт" }, { "id": 5, "code": "ср.сост.", "name": "среднее состояние" }, { "id": 6, "code": "хор.сост.", "name": "хорошее состояние" }, { "id": 8, "code": "отл.сост.", "name": "отличное состояние" }, { "id": 9, "code": "евр.рем.", "name": "евроремонт" }, { "id": 10, "code": "дизайн.рем.", "name": "дизайнерский ремонт" }, { "id": 11, "code": "перв.отд.", "name": "первичная отделка" }],
+            building_batch: [{ "id": 0, "name": "" }, { "id": 1, "name": "02/98-НМ" }, { "id": 2, "name": "1385 АР-3" }, { "id": 3, "name": "1605/12" }, { "id": 4, "name": "1605/9" }, { "id": 5, "name": "1605/Б" }, { "id": 6, "name": "17/2004-АС" }, { "id": 7, "name": "1МГ-600" }, { "id": 8, "name": "1МГ-601" }, { "id": 9, "name": "2-71/358" }, { "id": 10, "name": "2548-01-АР" }, { "id": 11, "name": "2548-02-АР" }, { "id": 12, "name": "32/2005-АС" }, { "id": 13, "name": "349/01" }, { "id": 14, "name": "355/24" }, { "id": 15, "name": "7040-01" }, { "id": 16, "name": "I-303" }, { "id": 17, "name": "I-335" }, { "id": 18, "name": "I-447" }, { "id": 19, "name": "I-510" }, { "id": 20, "name": "I-511" }, { "id": 21, "name": "I-513" }, { "id": 22, "name": "I-515" }, { "id": 23, "name": "I605-АМ" }, { "id": 24, "name": "II-04" }, { "id": 25, "name": "II-05" }, { "id": 26, "name": "II-08" }, { "id": 27, "name": "II-18" }, { "id": 28, "name": "II-18-01-МН" }, { "id": 29, "name": "II-18-31/12" }, { "id": 30, "name": "II-29" }, { "id": 31, "name": "II-32" }, { "id": 32, "name": "II-49" }, { "id": 33, "name": "II-57" }, { "id": 34, "name": "II-68-02" }, { "id": 35, "name": "II-68-03" }, { "id": 36, "name": "II-89-01-МН" }, { "id": 37, "name": "III/17" }, { "id": 38, "name": "VI-23" }, { "id": 39, "name": "VII-51" }, { "id": 40, "name": "VII-58" }, { "id": 41, "name": "А-41K" }, { "id": 42, "name": "башня Вулыха" }, { "id": 43, "name": "Бекерон" }, { "id": 44, "name": "БОД-1" }, { "id": 45, "name": "В-2000" }, { "id": 46, "name": "В-2002" }, { "id": 47, "name": "В-2005" }, { "id": 48, "name": "ГМС-1" }, { "id": 49, "name": "ГМС-3" }, { "id": 50, "name": "И-1168 А3" }, { "id": 51, "name": "И-1168 А4" }, { "id": 52, "name": "И-1233" }, { "id": 53, "name": "И-1254" }, { "id": 54, "name": "И-1262А" }, { "id": 55, "name": "И-1429" }, { "id": 56, "name": "И-1430" }, { "id": 57, "name": "И-1459-132" }, { "id": 58, "name": "И-1491-17" }, { "id": 59, "name": "И-1501" }, { "id": 60, "name": "И-155" }, { "id": 61, "name": "И-155МК" }, { "id": 62, "name": "И-155Н" }, { "id": 63, "name": "И-1602" }, { "id": 64, "name": "И-1677" }, { "id": 65, "name": "И-1723" }, { "id": 66, "name": "И-1724" }, { "id": 67, "name": "И-1731" }, { "id": 68, "name": "И-1782/1" }, { "id": 69, "name": "И-1812/1" }, { "id": 70, "name": "И-1834" }, { "id": 71, "name": "И-1836" }, { "id": 72, "name": "И-1838" }, { "id": 73, "name": "И-1839" }, { "id": 74, "name": "И-1849" }, { "id": 75, "name": "И-1932" }, { "id": 76, "name": "И-208" }, { "id": 77, "name": "И-209А" }, { "id": 78, "name": "И-2342" }, { "id": 79, "name": "И-241" }, { "id": 80, "name": "И-491А" }, { "id": 81, "name": "И-515-5М" }, { "id": 82, "name": "И-515/9ш" }, { "id": 83, "name": "И-522" }, { "id": 84, "name": "И-522А" }, { "id": 85, "name": "И-679" }, { "id": 86, "name": "И-700" }, { "id": 87, "name": "И-700А" }, { "id": 88, "name": "И-760А" }, { "id": 89, "name": "И-79-99" }, { "id": 90, "name": "И-99-47/405" }, { "id": 91, "name": "И-99-47/406" }, { "id": 92, "name": "индивидуальный проект" }, { "id": 93, "name": "ИП-46С" }, { "id": 94, "name": "ИШ3/12" }, { "id": 95, "name": "К-7" }, { "id": 96, "name": "КМС-101" }, { "id": 97, "name": "Колос" }, { "id": 98, "name": "КОПЭ" }, { "id": 99, "name": "КОПЭ-М-ПАРУС" }, { "id": 100, "name": "КТЖС" }, { "id": 101, "name": "КТЖС-11/22" }, { "id": 102, "name": "1МГ-300" }, { "id": 103, "name": "МОНОЛИТ" }, { "id": 105, "name": "МЭС-84" }, { "id": 107, "name": "НП-46с" }, { "id": 108, "name": "П-06" }, { "id": 109, "name": "П-111" }, { "id": 110, "name": "П-111М" }, { "id": 111, "name": "П-111МО" }, { "id": 112, "name": "П-12-31/12" }, { "id": 113, "name": "II-14" }, { "id": 114, "name": "П-14/35" }, { "id": 115, "name": "П-18/22" }, { "id": 116, "name": "П-20" }, { "id": 117, "name": "П-21" }, { "id": 118, "name": "П-22" }, { "id": 119, "name": "П-23" }, { "id": 120, "name": "П-28" }, { "id": 121, "name": "П-29" }, { "id": 122, "name": "П-3" }, { "id": 123, "name": "П-3/16" }, { "id": 124, "name": "П-3/17" }, { "id": 125, "name": "П-3/22" }, { "id": 126, "name": "П-30" }, { "id": 127, "name": "П-31" }, { "id": 128, "name": "П-32" }, { "id": 129, "name": "П-321-60" }, { "id": 130, "name": "II-34" }, { "id": 131, "name": "II-35" }, { "id": 132, "name": "П-37" }, { "id": 133, "name": "II-38" }, { "id": 134, "name": "П-39" }, { "id": 135, "name": "П-3М" }, { "id": 136, "name": "П-4" }, { "id": 137, "name": "П-40" }, { "id": 138, "name": "П-41" }, { "id": 139, "name": "П-42" }, { "id": 140, "name": "П-43" }, { "id": 141, "name": "П-44" }, { "id": 142, "name": "П-44К" }, { "id": 143, "name": "П-44М" }, { "id": 144, "name": "П-44Т" }, { "id": 145, "name": "П-44ТМ" }, { "id": 146, "name": "П-45" }, { "id": 147, "name": "П-46" }, { "id": 148, "name": "П-46М" }, { "id": 149, "name": "П-47" }, { "id": 150, "name": "П-49 Д" }, { "id": 151, "name": "П-50" }, { "id": 152, "name": "П-53" }, { "id": 153, "name": "П-55" }, { "id": 154, "name": "П-55М" }, { "id": 155, "name": "II-29-41/37" }, { "id": 156, "name": "II-66" }, { "id": 157, "name": "II-67" }, { "id": 158, "name": "II-68" }, { "id": 159, "name": "ПД-4" }, { "id": 160, "name": "ПД-4/12" }, { "id": 161, "name": "Пд4-1/12Н1" }, { "id": 162, "name": "ПД4-1/8Н1" }, { "id": 163, "name": "ПЗМ-1/14" }, { "id": 164, "name": "ПЗМ-1/16" }, { "id": 165, "name": "ПЗМ-2/16" }, { "id": 166, "name": "ПЗМ-3/16" }, { "id": 167, "name": "ПП-70" }, { "id": 168, "name": "Призма" }, { "id": 169, "name": "РД-90" }, { "id": 170, "name": "С-111М" }, { "id": 171, "name": "С-220" }, { "id": 172, "name": "С-222" }, { "id": 173, "name": "ТИП-441" }, { "id": 174, "name": "ЦВП-4570-II-63" }, { "id": 175, "name": "Юбилейный" }, { "id": 176, "name": "II-02" }, { "id": 177, "name": "II-01" }, { "id": 178, "name": "II-18-01/08" }, { "id": 179, "name": "II-18-01/09" }, { "id": 180, "name": "1605-АМ/9" }, { "id": 181, "name": "1605-АМ/12" }, { "id": 182, "name": "II-49П" }, { "id": 183, "name": "II-49Д" }, { "id": 184, "name": "II-03" }, { "id": 185, "name": "II-18-01/12" }, { "id": 186, "name": "II-18-02/12" }, { "id": 187, "name": "II-18/12" }, { "id": 188, "name": "II-20" }, { "id": 189, "name": "1605-АМ/5" }, { "id": 190, "name": "И-III-3" }, { "id": 191, "name": "II-28" }, { "id": 192, "name": "II-68-02/16М" }, { "id": 193, "name": "КПД-4570" }, { "id": 194, "name": "II-68-01" }, { "id": 195, "name": "1-515/9" }, { "id": 196, "name": "К4/16" }, { "id": 197, "name": "И-155Б" }, { "id": 198, "name": "1-515/5" }, { "id": 199, "name": "II-18-01/12А" }, { "id": 200, "name": "СМ-1 " }, { "id": 201, "name": "П-44ТМ/25" }, { "id": 202, "name": "И-701" }, { "id": 203, "name": "И-155-с" }, { "id": 204, "name": "Айсберг" }, { "id": 205, "name": "II-14/35" }, { "id": 206, "name": "И-99-47/407" }, { "id": 207, "name": "П-101" }, { "id": 208, "name": "1-300" }, { "id": 209, "name": "II-18-01/09К" }, { "id": 210, "name": "И-1900" }, { "id": 211, "name": "М-10" }, { "id": 212, "name": "МПСМ" }, { "id": 213, "name": "ИП-46М" }, { "id": 214, "name": "П-30М" }, { "id": 215, "name": "II-07" }, { "id": 216, "name": "ПБ-01" }, { "id": 217, "name": "И-1414" }, { "id": 218, "name": "И-2111" }, { "id": 219, "name": "1605-АМЛ/5" }, { "id": 220, "name": "1-447С-26" }, { "id": 221, "name": "1-447С-1" }, { "id": 222, "name": "1-447С-36" }, { "id": 223, "name": "1-447С-2" }, { "id": 224, "name": "1-447С-5" }, { "id": 225, "name": "1-446" }, { "id": 226, "name": "ПБ-02" }, { "id": 227, "name": "КПД-4572А" }, { "id": 228, "name": "II-68-04" }, { "id": 229, "name": "124-124-1" }, { "id": 231, "name": "1605-А" }, { "id": 232, "name": "1-439" }, { "id": 233, "name": "Мм1-3" }, { "id": 234, "name": "И-1168" }, { "id": 235, "name": "СМ-06" }, { "id": 236, "name": "СМ-03" }, { "id": 237, "name": "1-419" }, { "id": 238, "name": "1-203" }, { "id": 239, "name": "ЭС-24" }, { "id": 240, "name": "8966" }, { "id": 242, "name": "1-126" }, { "id": 243, "name": "1-225" }, { "id": 244, "name": "1-402" }, { "id": 245, "name": "16/2188" }, { "id": 246, "name": "Т-1" }, { "id": 247, "name": "Т-3" }, { "id": 248, "name": "1-233" }, { "id": 249, "name": "1-260" }, { "id": 250, "name": "К-8-49" }, { "id": 251, "name": "1-255" }, { "id": 252, "name": "КС-8-50" }, { "id": 253, "name": "Д-23" }, { "id": 254, "name": "Д-25Н1" }, { "id": 256, "name": "ПП-83" }, { "id": 258, "name": "К2/16" }, { "id": 259, "name": "К7/16" }, { "id": 260, "name": "К8/16" }, { "id": 262, "name": "1-464А" }, { "id": 263, "name": "КОПЭ-87" }, { "id": 264, "name": "П-121М" }, { "id": 265, "name": "121-041" }, { "id": 266, "name": "121-042" }, { "id": 267, "name": "121-043" }, { "id": 268, "name": "II-29-208" }, { "id": 269, "name": "II-29-3" }, { "id": 270, "name": "II-29-9" }, { "id": 271, "name": "II-29-160" }, { "id": 272, "name": "ПД-1" }, { "id": 273, "name": "И-02/98-НМ" }, { "id": 274, "name": "1-467" }, { "id": 275, "name": "ЭЖРЧС" }, { "id": 276, "name": "П-3МК" }, { "id": 277, "name": "II-18-02/09" }, { "id": 278, "name": "ПД-3" }, { "id": 279, "name": "И-580" }, { "id": 280, "name": "II-18-03/12" }, { "id": 281, "name": "К-14" }, { "id": 282, "name": "И-700Н" }, { "id": 283, "name": "Юникон" }, { "id": 284, "name": "111-121" }, { "id": 285, "name": "1-211" }, { "id": 286, "name": "II-68-01/22" }, { "id": 287, "name": "Лебедь" }, { "id": 288, "name": "И-99-47" }],
+            balcony_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "Б", "name": "балкон" }, { "id": 3, "code": "Л", "name": "лоджия" }, { "id": 4, "code": "БЛ", "name": "балкон + лоджия" }, { "id": 5, "code": "2Б", "name": "два балкона" }, { "id": 6, "code": "2Л", "name": "две лоджии" }, { "id": 7, "code": "3Л", "name": "три лоджии" }, { "id": 8, "code": "4Л", "name": "четыре лоджии" }, { "id": 9, "code": "3Б", "name": "три балкона" }, { "id": 10, "code": "Б2Л", "name": "балкон + две лоджии" }, { "id": 11, "code": "2Б2Л", "name": "два балкона + две лоджии" }, { "id": 12, "code": "Эрк", "name": "эркер" }, { "id": 13, "code": "ЭркЛ", "name": "эркер + лоджия" }, { "id": 14, "code": "*Б", "name": "несколько балконов" }, { "id": 15, "code": "*Л", "name": "несколько лоджий" }],
+            currency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "руб", "name": "RUB" }, { "id": 2, "code": "$", "name": "USD" }, { "id": 3, "code": "€", "name": "EUR" }, { "id": 4, "code": "TL", "name": "TL" }, { "id": 5, "code": "BYR", "name": "BYR" }],
+            deal_status: [{ "id": 1, "code": "продается/арендуется", "name": "продается/арендуется" }, { "id": 2, "code": "аванс/задаток", "name": "аванс/задаток" }, { "id": 3, "code": "продана/арендована", "name": "продана/арендована" }],
+            deal_type: [{ "id": 1, "code": "продажа", "name": "продажа" }, { "id": 2, "code": "аренда", "name": "аренда" }],
+            location_type: [{ "id": 13, "code": "ГСК", "name": "ГСК" }, { "id": 14, "code": "ГК", "name": "ГК" }, { "id": 15, "code": "ЖК", "name": "ЖК" }, { "id": 16, "code": "двор", "name": "двор" }, { "id": 17, "code": "паркинг", "name": "паркинг" }],
+            electricity_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "220В", "name": "220В" }, { "id": 4, "code": "380В", "name": "380В" }, { "id": 5, "code": "П", "name": "в перспективе" }, { "id": 6, "code": "ГУ", "name": "по границе" }, { "id": 7, "code": "10кВ", "name": "10кВ" }, { "id": 8, "code": "И", "name": "иное" }],
+            elevator_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "пасс.", "name": "лифт пассажирский" }, { "id": 2, "code": "груз.", "name": "лифт грузовой" }, { "id": 3, "code": "пасс.+ груз.", "name": "лифт пассажирский и лифт грузовой" }, { "id": 4, "code": "нет", "name": "нет лифта" }, { "id": 5, "code": "есть", "name": "есть лифт" }],
+            floor_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "полы не настелены", "master_realty_type_id": 1 }, { "id": 2, "code": "Д", "name": "дерево", "master_realty_type_id": 1 }, { "id": 3, "code": "п/д", "name": "паркетная доска", "master_realty_type_id": 1 }, { "id": 4, "code": "ЛМ", "name": "ламинат", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "ковролин", "master_realty_type_id": 1 }, { "id": 6, "code": "П", "name": "паркет", "master_realty_type_id": 1 }, { "id": 7, "code": "ЛН", "name": "линолеум", "master_realty_type_id": 1 }, { "id": 8, "code": "Стяж", "name": "стяжка", "master_realty_type_id": 1 }, { "id": 9, "code": "асфальт", "name": "асфальт", "master_realty_type_id": 4 }, { "id": 10, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 11, "code": "грунт", "name": "грунт", "master_realty_type_id": 4 }, { "id": 12, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 13, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 14, "code": "полимерное покрытие", "name": "полимерное покрытие", "master_realty_type_id": 4 }],
+            gas_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ГУ", "name": "по границе" }, { "id": 4, "code": "П", "name": "перспектива" }, { "id": 5, "code": "Р", "name": "рядом" }, { "id": 6, "code": "Б", "name": "баллоны" }, { "id": 7, "code": "М", "name": "магистральный" }, { "id": 8, "code": "И", "name": "иное" }, { "id": 9, "code": "Ц", "name": "центральный" }],
+            habit_class: [{ "id": 1, "name": "эконом" }, { "id": 2, "name": "комфорт" }, { "id": 3, "name": "бизнес" }, { "id": 4, "name": "элитный" }],
+            heating_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ЭК", "name": "электрокотел" }, { "id": 4, "code": "ГК", "name": "газовый котел" }, { "id": 5, "code": "ЖТК", "name": "жидкотопливный котел" }, { "id": 6, "code": "АГВ", "name": "автоматический газовый водонагреватель" }, { "id": 7, "code": "П", "name": "печь" }, { "id": 8, "code": "Ц", "name": "центральное" }, { "id": 9, "code": "И", "name": "иное" }],
+            media: [{ "id": 0, "name": "Прочие", "is_active": 1, "order_number": 1000 }, { "id": 1, "name": "Руки", "is_active": 1, "order_number": 50 }, { "id": 3, "name": "WinNER (зелёная зона)", "is_active": 1, "order_number": 10 }, { "id": 4, "name": "Крис", "is_active": 0, "order_number": 140 }, { "id": 5, "name": "Realty.dmir.ru", "is_active": 0, "order_number": 60 }, { "id": 6, "name": "БН", "is_active": 1, "order_number": 130 }, { "id": 7, "name": "Навигатор", "is_active": 0, "order_number": 1000 }, { "id": 8, "name": "БКН", "is_active": 1, "order_number": 120 }, { "id": 9, "name": "Собственники", "is_active": 0, "order_number": 900 }, { "id": 11, "name": "Приан", "is_active": 0, "order_number": 150 }, { "id": 12, "name": "eip.ru", "is_active": 0, "order_number": 110 }, { "id": 15, "name": "Sob.ru", "is_active": 1, "order_number": 20 }, { "id": 17, "name": "cian.ru", "is_active": 1, "order_number": 40 }, { "id": 20, "name": "A.baza-winner", "is_active": 0, "order_number": 15 }, { "id": 21, "name": "AVITO.ru", "is_active": 1, "order_number": 30 }, { "id": 22, "name": "WinNER Lite", "is_active": 1, "order_number": 16 }, { "id": 23, "name": "Яндекс", "is_active": 1, "order_number": 70 }, { "id": 24, "name": "WinNER (белая зона)", "is_active": 1, "order_number": 15 }],
+            office_class: [{ "id": 2, "name": "A+" }, { "id": 3, "name": "A" }, { "id": 4, "name": "B+" }, { "id": 5, "name": "B" }, { "id": 6, "name": "C+" }, { "id": 7, "name": "C" }, { "id": 8, "name": "D+" }, { "id": 9, "name": "D" }],
+            fire_alarm_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "name": "пожарная сигнализация", "code": "пожарная сигнализация" }, { "id": 2, "name": "система пожаротушения", "code": "система пожаротушения" }],
+            ownership_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "купля/продажа", "name": "купля/продажа" }, { "id": 2, "code": "ЖСК", "name": "ЖСК" }, { "id": 3, "code": "приватиз.", "name": "приватизация" }, { "id": 4, "code": "дар.", "name": "дарение" }, { "id": 5, "code": "наслед.", "name": "наследство" }, { "id": 6, "code": "мена", "name": "мена" }, { "id": 7, "code": "инвест.", "name": "инвестирование" }, { "id": 8, "code": "рента", "name": "рента" }, { "id": 9, "code": "реш.суда", "name": "решение суда" }, { "id": 10, "code": "залог(ипотека)", "name": "залог (ипотека)" }, { "id": 11, "code": "иное", "name": "иное" }, { "id": 12, "code": "кооператив", "name": "кооператив" }, { "id": 13, "code": "собственность", "name": "собственность" }, { "id": 14, "code": "по доверенности", "name": "по доверенности" }, { "id": 15, "code": "ДДУ", "name": "договор долевого участия" }, { "id": 16, "code": "ДУ", "name": "договор уступки прав требования" }, { "id": 17, "code": "ПДДК", "name": "предварительный договор купли-продажи" }],
+            parking_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "о", "name": "охраняемая" }, { "id": 4, "code": "п", "name": "подземная" }, { "id": 5, "code": "с", "name": "стихийная" }, { "id": 6, "code": "з", "name": "закрепленное место" }],
+            pay_period_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "в год", "name": "в год" }, { "id": 2, "code": "в мес.", "name": "в месяц" }, { "id": 3, "code": "в кв.", "name": "в квартал" }, { "id": 4, "code": "в сут.", "name": "в сутки" }],
+            plumbing_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "С", "name": "скважина" }, { "id": 4, "code": "К", "name": "колодец" }, { "id": 5, "code": "М", "name": "магистральный" }, { "id": 6, "code": "И", "name": "иное" }, { "id": 7, "code": "Ц", "name": "центральный" }, { "id": 8, "code": "Л", "name": "летний" }],
+            price_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "вся площадь", "name": "за всю площадь" }, { "id": 2, "code": "сотка", "name": "за сотку" }, { "id": 3, "code": "кв.м.", "name": "за кв.м." }],
+            realty_type: [{ "id": 1, "code": "кв.", "name": "квартира", "master_realty_type_id": 1 }, { "id": 2, "code": "комн.", "name": "комната", "master_realty_type_id": 1 }, { "id": 3, "code": "дом", "name": "дом", "master_realty_type_id": 2 }, { "id": 4, "code": "ЗУ", "name": "земельный участок", "master_realty_type_id": 2 }, { "id": 5, "code": "дача", "name": "дача", "master_realty_type_id": 2 }, { "id": 6, "code": "дуплекс", "name": "дуплекс", "master_realty_type_id": 2 }, { "id": 7, "code": "квадрохаус", "name": "квадрохаус", "master_realty_type_id": 2 }, { "id": 8, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 2 }, { "id": 9, "code": "коттедж в КП", "name": "коттедж в КП", "master_realty_type_id": 2 }, { "id": 10, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 2 }, { "id": 11, "code": "усадьба", "name": "усадьба", "master_realty_type_id": 2 }, { "id": 12, "code": "часть дома", "name": "часть дома", "master_realty_type_id": 2 }, { "id": 15, "code": "офис", "name": "офис", "master_realty_type_id": 3 }, { "id": 16, "code": "маг", "name": "магазин", "master_realty_type_id": 3 }, { "id": 17, "code": "склад", "name": "склад", "master_realty_type_id": 3 }, { "id": 18, "code": "другое", "name": "другое", "master_realty_type_id": 3 }, { "id": 19, "code": "БЦ", "name": "бизнес-центр", "master_realty_type_id": 3 }, { "id": 20, "code": "ТЦ", "name": "торговый центр", "master_realty_type_id": 3 }, { "id": 21, "code": "ППП", "name": "произв.-пром помещение", "master_realty_type_id": 3 }, { "id": 22, "code": "ПП", "name": "предприятие питания", "master_realty_type_id": 3 }, { "id": 23, "code": "ПСН", "name": "помещ.свободного назначения", "master_realty_type_id": 3 }, { "id": 24, "code": "ОСЗ", "name": "отдельно стоящее здание", "master_realty_type_id": 3 }, { "id": 25, "code": "гостиница/отель", "name": "гостиница/отель", "master_realty_type_id": 3 }, { "id": 26, "code": "КЗУ", "name": "ком.земельный участок", "master_realty_type_id": 3 }, { "id": 27, "code": "гар", "name": "гараж", "master_realty_type_id": 3 }, { "id": 28, "code": "автомойка", "name": "автомойка", "master_realty_type_id": 3 }, { "id": 29, "code": "автосервис", "name": "автосервис", "master_realty_type_id": 3 }, { "id": 30, "code": "ателье", "name": "ателье", "master_realty_type_id": 3 }, { "id": 31, "code": "гараж.комплекс", "name": "гараж.комплекс", "master_realty_type_id": 3 }, { "id": 32, "code": "медцентр", "name": "медцентр", "master_realty_type_id": 3 }, { "id": 33, "code": "парикмахерская", "name": "парикмахерская", "master_realty_type_id": 3 }, { "id": 34, "code": "стоматология", "name": "стоматология", "master_realty_type_id": 3 }, { "id": 35, "code": "турфирма", "name": "турфирма", "master_realty_type_id": 3 }, { "id": 36, "code": "учеб.цели", "name": "учеб.цели", "master_realty_type_id": 3 }, { "id": 37, "code": "фотоателье", "name": "фотоателье", "master_realty_type_id": 3 }, { "id": 38, "code": "химчистка", "name": "химчистка", "master_realty_type_id": 3 }, { "id": 39, "code": "офисное здание", "name": "офисное здание", "master_realty_type_id": 3 }, { "id": 40, "code": "торг.площадь", "name": "торговая площадь", "master_realty_type_id": 3 }, { "id": 41, "code": "пром.земли", "name": "промышленные земли", "master_realty_type_id": 3 }, { "id": 42, "code": "сельхоз.земли", "name": "сельхоз.земли", "master_realty_type_id": 3 }, { "id": 43, "code": "банк", "name": "банк", "master_realty_type_id": 3 }, { "id": 44, "code": "кафе/ресторан", "name": "кафе/ресторан", "master_realty_type_id": 3 }, { "id": 45, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 3 }, { "id": 46, "code": "инвест.проект", "name": "инвестиционный проект", "master_realty_type_id": 3 }, { "id": 47, "code": "готовый бизнес", "name": "готовый бизнес", "master_realty_type_id": 3 }, { "id": 48, "code": "база отдыха/лагерь", "name": "база отдыха/лагерь", "master_realty_type_id": 3 }, { "id": 49, "code": "ферма", "name": "ферма", "master_realty_type_id": 3 }, { "id": 50, "code": "бизнес-проект", "name": "бизнес-проект", "master_realty_type_id": 3 }, { "id": 51, "code": "доходный дом", "name": "доходный дом", "master_realty_type_id": 3 }, { "id": 52, "code": "фабрика/завод", "name": "фабрика/завод", "master_realty_type_id": 3 }, { "id": 53, "code": "курортный комплекс", "name": "курортный комплекс", "master_realty_type_id": 3 }, { "id": 54, "code": "апартаменты", "name": "апартаменты", "master_realty_type_id": 1 }, { "id": 55, "code": "пентхаус", "name": "пентхаус", "master_realty_type_id": 1 }, { "id": 56, "code": "дом", "name": "дом", "master_realty_type_id": 1 }, { "id": 57, "code": "элит.недвижимость(поместье, замок, особняк)", "name": "элитная недвижимость(поместье, замок, особняк)", "master_realty_type_id": 1 }, { "id": 59, "code": "гараж", "name": "гараж", "master_realty_type_id": 4 }, { "id": 60, "code": "бокс", "name": "бокс", "master_realty_type_id": 4 }, { "id": 61, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 4 }, { "id": 62, "code": "доля", "name": "доля", "master_realty_type_id": 1 }, { "id": 63, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 1 }, { "id": 64, "code": "вилла", "name": "вилла", "master_realty_type_id": 1 }, { "id": 65, "code": "бунгало", "name": "бунгало", "master_realty_type_id": 1 }, { "id": 66, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 1 }, { "id": 67, "code": "квартира", "name": "квартира", "master_realty_type_id": 5 }],
+            rent_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "любой срок", "name": "любой срок" }, { "id": 2, "code": "длительный срок", "name": "длительный срок" }, { "id": 3, "code": "посуточно", "name": "посуточно" }, { "id": 4, "code": "от месяца и более", "name": "от месяца и более" }, { "id": 5, "code": "сезонная сдача", "name": "сезонная сдача" }],
+            security_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }],
+            sewerage_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ВД", "name": "вне дома" }, { "id": 4, "code": "С", "name": "септик" }, { "id": 5, "code": "Ц", "name": "центральная" }, { "id": 6, "code": "И", "name": "иное" }],
+            territory_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "огорож.", "name": "огороженная" }, { "id": 2, "code": "огорож.+охран.", "name": "огороженная и охраняемая" }, { "id": 3, "code": "не огорож.", "name": "не огорожена" }],
+            walls_material_type: [{ "id": 0, "code": "", "name": "", "master_realty_type_id": null }, { "id": 1, "code": "П", "name": "панельный", "master_realty_type_id": 1 }, { "id": 2, "code": "Б", "name": "блочный", "master_realty_type_id": 1 }, { "id": 3, "code": "М", "name": "монолитный", "master_realty_type_id": 1 }, { "id": 4, "code": "М-К", "name": "монолитно-кирпичный", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "кирпичный", "master_realty_type_id": 1 }, { "id": 6, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 1 }, { "id": 9, "code": "Шлакоблок", "name": "шлакоблоки/шлакобетон", "master_realty_type_id": 1 }, { "id": 11, "code": "Ж-б", "name": "железобетон", "master_realty_type_id": 1 }, { "id": 18, "code": "Стал.", "name": "сталинский", "master_realty_type_id": 1 }, { "id": 19, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 20, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 21, "code": "кирпич", "name": "кирпич", "master_realty_type_id": 4 }, { "id": 22, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 23, "code": "пластик", "name": "пластик", "master_realty_type_id": 4 }, { "id": 24, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 2 }, { "id": 25, "code": "Газоблок.", "name": "газоблочный", "master_realty_type_id": 2 }, { "id": 26, "code": "Кам.", "name": "каменный", "master_realty_type_id": 2 }, { "id": 27, "code": "Каркас.", "name": "каркасный", "master_realty_type_id": 2 }, { "id": 28, "code": "Кирп.", "name": "кирпичный", "master_realty_type_id": 2 }, { "id": 29, "code": "Легкобетон.", "name": "легкобетонный", "master_realty_type_id": 2 }, { "id": 30, "code": "Многослой.", "name": "многослойный", "master_realty_type_id": 2 }, { "id": 31, "code": "Монолит.", "name": "монолитный", "master_realty_type_id": 2 }, { "id": 32, "code": "Щит.", "name": "щитовой", "master_realty_type_id": 2 }],
+            water_closet_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "отсутствует" }, { "id": 2, "code": "С", "name": "совмещенный" }, { "id": 3, "code": "Р", "name": "раздельный" }, { "id": 4, "code": "2", "name": "два санузла" }, { "id": 5, "code": "3", "name": "три санузла" }, { "id": 6, "code": "4", "name": "четыре санузла" }, { "id": 7, "code": "2С", "name": "два совмещенных санузла" }, { "id": 8, "code": "2Р", "name": "два раздельных санузла" }, { "id": 9, "code": "3С", "name": "три совмещенных санузла" }, { "id": 10, "code": "3Р", "name": "три раздельных санузла" }, { "id": 11, "code": "4С", "name": "четыре совмещенных санузла" }, { "id": 12, "code": "4Р", "name": "четыре раздельных санузла" }, { "id": 13, "code": "+", "name": "есть санузел" }],
+            window_overlook_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "на улицу", "name": "окна на улицу" }, { "id": 2, "code": "во двор", "name": "окна во двор" }, { "id": 3, "code": "во двор и на улицу", "name": "окна во двор и на улицу" }],
+            rooms_adjacency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "С", "name": "смежные" }, { "id": 2, "code": "Р", "name": "раздельные" }, { "id": 3, "code": "С+Р", "name": "смежные+раздельные" }],
+            sale_type: [{ "id": 0, "name": "" }, { "id": 9, "name": "прямая продажа" }, { "id": 10, "name": "альтернатива" }],
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//cols.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         let _dataWorker;
         $$.$nl_search_panel_result = {
             base: $$.$nl_search_panel,
@@ -10444,7 +11061,10 @@ var $;
                 on_order_changed: $$.$me_atom2_prop(['.order'], null, ({ val }) => {
                     $$.a('.provider_tag', val.id);
                 }),
-                isZoomed: () => false,
+                isZoomed: $$.$me_atom2_prop_store({
+                    default: () => false,
+                    valid: (val) => typeof val == 'boolean' ? val : false,
+                }),
                 count: $$.$me_atom2_prop(['.provider_tag'], ({ masters: [tag] }) => {
                     $$.a('.dataWorker').postMessage({ cmd: 'count', tag });
                     return -1;
@@ -10477,6 +11097,9 @@ var $;
                     }
                     return _dataWorker;
                 },
+            },
+            event: {
+                clickOrTap: () => true,
             },
             style: {
                 userSelect: () => 'none',
@@ -10575,346 +11198,106 @@ var $;
                         paddingHor: () => 16,
                     },
                 }),
-                grid: $$.$me_atom2_prop(['.mode'], ({ masters: [mode], prev }) => mode != 'ТАБЛИЦА' ? prev || null : {
-                    type: '$nl_search_grid',
-                    base: $$.$nl_search_grid,
+                spinner: $$.$me_atom2_prop(['.count'], ({ masters: [count] }) => count >= 0 ? null : {
+                    base: $$.$me_spinner,
+                    prop: {
+                        color: () => '#D9DCE2',
+                    },
+                }),
+                grid: () => ({
+                    base: grid,
                     prop: {
                         provider: () => $$.a.get('<').path,
-                        rec_count: '<.count',
-                        row_opens: $$.$me_atom2_prop(['<.order'], ({ masters: [order] }) => order.row_opens || (order.row_opens = new Set())),
-                        on_order_changed: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
-                            if (!val)
-                                return;
-                            const order = val;
-                            $$.a.dispatch('', 'set_view', order);
-                        }),
-                        on_order_changed_and_ready: $$.$me_atom2_prop(['<.order', '.rec_count'], ({ masters: [order, rec_count] }) => rec_count < 0 ? null : [order, rec_count], ({ val }) => {
-                            if (!val)
-                                return;
-                            const [order, rec_count] = val;
-                            $$.a.dispatch('@list', 'set_view', order);
-                        }),
-                        on_change_col_ids: $$.$me_atom2_prop(['.col_ids', '<.order'], null, ({ val: [col_ids, order] }) => {
-                            order.col_ids = col_ids;
-                        }),
-                        on_change_ofsHor: $$.$me_atom2_prop(['.ofsHor', '.col_fixed_width', '<.order'], null, ({ val: [ofsHor, col_fixed_width, order] }) => {
-                            order.ofsHor = ofsHor - col_fixed_width;
-                        }),
-                        on_change_col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.cols', '<.order'] }, null, ({ key: [id], val }) => {
-                            if (val == null)
-                                return;
-                            const [width, cols, order] = val;
-                            if (width != cols[id].width) {
-                                if (!order.col_width)
-                                    order.col_width = {};
-                                order.col_width[id] = width;
-                            }
-                        }),
-                        on_change_row_i_min: $$.$me_atom2_prop(['@list.row_i_min', '<.order', '.rec_count'], null, ({ val: [row_i_min, order, rec_count] }) => {
-                            if (rec_count < 0)
-                                return;
-                            order.row_i_min = row_i_min;
-                        }),
-                        on_change_visible_idx_min: $$.$me_atom2_prop(['@list.visible_idx_min', '<.order', '.rec_count'], null, ({ val: [visible_idx_min, order, rec_count] }) => {
-                            if (rec_count < 0)
-                                return;
-                            order.visible_idx_min = visible_idx_min;
-                        }),
-                        on_change_visible_top: $$.$me_atom2_prop(['@list.visible_top', '<.order', '.rec_count'], null, ({ val: [visible_top, order, rec_count] }) => {
-                            if (rec_count < 0)
-                                return;
-                            order.visible_top = visible_top;
+                        order: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
+                            $$.a('<.order', val, true);
                         }),
                         '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'ТАБЛИЦА'),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, em] }) => width - 2 * em),
                         '#ofsHor': '.em',
                         '#ofsVer': () => 56,
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
                         '#height': $$.$me_atom2_prop(['<.height_target', '<.height_anim_is', '.#ofsVer'], ({ masters: [height, height_anim_is, ofsVer], prev }) => {
                             const val = height - ofsVer;
                             const result = prev == null || val > prev || !height_anim_is ? val : prev;
                             return result;
                         }),
-                        cols: () => ({
-                            photo: {
-                                caption: 'Фото',
-                                width: 37,
-                            },
-                            'Комнат': {
-                                align: $$.$me_align.center,
-                                width: 42,
-                                fld: ['total_room_count', 'offer_room_count'],
-                                fn: (total_room_count, offer_room_count) => (!offer_room_count ? '' : offer_room_count + '/') +
-                                    (total_room_count == null ? '?' : total_room_count)
-                            },
-                            'Метро/ЖД': {
-                                width: 170,
-                                fld: ['geo_cache_subway_station_name_1'],
-                                fn: (geo_cache_subway_station_name_1) => geo_cache_subway_station_name_1,
-                            },
-                            'От станции': {
-                                align: $$.$me_align.center,
-                                width: 50,
-                                fld: ['walking_access_1', 'transport_access_1'],
-                                fn: (walking_access_1, transport_access_1) => walking_access_1 ? walking_access_1 + 'п' :
-                                    transport_access_1 ? transport_access_1 + 'т' :
-                                        '',
-                            },
-                            'Адрес': {
-                                width: 220,
-                                fld: ['geo_cache_street_name', 'geo_cache_building_name'],
-                                fn: (geo_cache_street_name, geo_cache_building_name) => geo_cache_street_name ? (!geo_cache_building_name ? geo_cache_street_name :
-                                    geo_cache_street_name + ', ' + geo_cache_building_name) : geo_cache_building_name ? geo_cache_building_name : ''
-                            },
-                            'Дом': {
-                                width: 64,
-                                align: $$.$me_align.center,
-                                fld: ['storey', 'storeys_count', 'walls_material_type_id'],
-                                fn: (storey, storeys_count, walls_material_type_id) => (!storey ? '?' : storey) + '/' +
-                                    (!storeys_count ? '?' : storeys_count) + ' ' +
-                                    dic_fld_value('walls_material_type', walls_material_type_id, 'code', '?')
-                            },
-                            'Балкон': {
-                                width: 38,
-                                align: $$.$me_align.center,
-                                fld: ['balcony_type_id'],
-                                fn: (type_id) => dic_fld_value('balcony_type', type_id, 'code', '?'),
-                            },
-                            'Санузел': {
-                                width: 38,
-                                fld: ['water_closet_type_id'],
-                                fn: (type_id) => dic_fld_value('water_closet_type', type_id, 'code', '?'),
-                            },
-                            'Парковка': {
-                                width: 38,
-                                fld: ['parking_type_id'],
-                                fn: (type_id) => dic_fld_value('parking_type', type_id, 'code', '?'),
-                            },
-                            'Территория': {
-                                width: 112,
-                                fld: ['territory_type_id'],
-                                fn: (type_id) => dic_fld_value('territory_type', type_id, 'code', '?'),
-                            },
-                            'Окна': {
-                                width: 41,
-                                fld: ['window_overlook_type_id'],
-                                fn: (type_id) => dic_fld_value('window_overlook_type', type_id, 'code', '?'),
-                            },
-                            'Ремонт': {
-                                width: 92,
-                                fld: ['apartment_condition_type_id'],
-                                fn: (type_id) => dic_fld_value('apartment_condition_type', type_id, 'code', '?'),
-                            },
-                            'Лифт': {
-                                width: 41,
-                                fld: ['elevator_type_id'],
-                                fn: (type_id) => dic_fld_value('elevator_type', type_id, 'code', '?'),
-                            },
-                            'Площадь': {
-                                align: $$.$me_align.center,
-                                width: 130,
-                                fld: ['total_square', 'life_square', 'kitchen_square'],
-                                fn: (total_square, life_square, kitchen_square) => (total_square || '?') + '/' + (life_square || '?') + '/' + (kitchen_square || '?'),
-                            },
-                            'Площадь комнат': {
-                                align: $$.$me_align.center,
-                                width: 138,
-                                fld: ['square_explication'],
-                                fn: (square_explication) => square_explication,
-                            },
-                            'Ипотека': {
-                                width: 41,
-                            },
-                            'Цена': {
-                                align: $$.$me_align.right,
-                                caption: 'Цена ₽',
-                                width: 96,
-                                fld: ['price_rub'],
-                                fn: (val) => {
-                                    var x = (val + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена, $': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: 'Цена $',
-                                width: 96,
-                                fld: ['price_usd'],
-                                fn: (val) => {
-                                    var x = (val + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена, €': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: 'Цена €',
-                                width: 96,
-                                fld: ['price_eur'],
-                                fn: (val) => {
-                                    var x = (val + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена за кв.м.': {
-                                align: $$.$me_align.right,
-                                caption: '₽/м²',
-                                width: 93,
-                                fld: ['meter_price_rub'],
-                                fn: (meter_price_rub) => {
-                                    var x = (Math.round(meter_price_rub) + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена $ за кв.м.': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: '$/м²',
-                                width: 93,
-                                fld: ['meter_price_usd'],
-                                fn: (val) => {
-                                    var x = (Math.round(val) + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Цена € за кв.м.': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                caption: '€/м²',
-                                width: 93,
-                                fld: ['meter_price_eur'],
-                                fn: (val) => {
-                                    var x = (Math.round(val) + '').split('.');
-                                    var x1 = x[0];
-                                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                                    var rgx = /(\d+)(\d{3})/;
-                                    while (rgx.test(x1))
-                                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                    return x1 + x2;
-                                },
-                            },
-                            'Дата': {
-                                align: $$.$me_align.right,
-                                width: 85,
-                                fld: ['pub_datetime'],
-                                fn: (val) => {
-                                    const dt = new Date(val);
-                                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                                },
-                            },
-                            'Дата создания': {
-                                hidden: true,
-                                align: $$.$me_align.right,
-                                width: 85,
-                                fld: ['creation_datetime'],
-                                fn: (val) => {
-                                    const dt = new Date(val);
-                                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                                },
-                            },
-                            'Год постройки': {
-                                hidden: true,
-                                align: $$.$me_align.center,
-                                width: 85,
-                                fld: ['built_year'],
-                                fn: (val) => {
-                                    return val;
-                                },
-                            },
-                            'Источник': {
-                                width: 140,
-                                fld: ['broker', 'media_name'],
-                                fn: (broker, media_name) => broker && broker.short_name ? broker.short_name : media_name,
-                            },
-                            'Телефон': {
-                                width: 260,
-                                fld: ['phone_list'],
-                                fn: (phone_list) => !phone_list ? '' : phone_list
-                                    .split(/\D+/)
-                                    .map(phone => '8-' + phone.slice(1, 4) + '-' + phone.slice(4, 7) + '-' + phone.slice(7, 9) + '-' + phone.slice(9, 11)).join(', ')
-                            },
+                        provider_tag: () => '',
+                        rec_count: '<.count',
+                    },
+                }),
+                plitka: () => ({
+                    base: plitka,
+                    prop: {
+                        provider: () => $$.a.get('<').path,
+                        provider_tag: () => 'some',
+                        rec_count: '<.count',
+                        order: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
+                            $$.a('<.order', val, true);
+                        }),
+                        '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'ПЛИТКА'),
+                        '#ofsHor': '.em',
+                        '#ofsVer': () => 56,
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                        '#height': $$.$me_atom2_prop(['<.height_target', '<.height_anim_is', '.#ofsVer'], ({ masters: [height, height_anim_is, ofsVer], prev }) => {
+                            const val = height - ofsVer;
+                            const result = prev == null || val > prev || !height_anim_is ? val : prev;
+                            return result;
                         }),
                     },
                 }),
             },
         };
-        const _dics = new Map();
-        function dic_fld_value(dic_name, id, fld, default_value) {
-            let result;
-            let dic = _dics.get(dic_name);
-            if (!dic) {
-                const dic_def = DICTIONARIES[dic_name];
-                if (dic_def) {
-                    dic = new Map(dic_def.map((item) => [item.id, item]));
-                    _dics.set(dic_name, dic);
-                }
-            }
-            if (dic && dic.has(id)) {
-                const value = dic.get(id);
-                if (value)
-                    result = value[fld];
-            }
-            if (result === void 0 && default_value !== void 0)
-                result = default_value;
-            return result;
-        }
-        const DICTIONARIES = {
-            apartment_condition_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "треб.кап/р", "name": "требуется капитальный ремонт" }, { "id": 3, "code": "без отд.", "name": "без отделки" }, { "id": 4, "code": "треб.рем.", "name": "требуется ремонт" }, { "id": 5, "code": "ср.сост.", "name": "среднее состояние" }, { "id": 6, "code": "хор.сост.", "name": "хорошее состояние" }, { "id": 8, "code": "отл.сост.", "name": "отличное состояние" }, { "id": 9, "code": "евр.рем.", "name": "евроремонт" }, { "id": 10, "code": "дизайн.рем.", "name": "дизайнерский ремонт" }, { "id": 11, "code": "перв.отд.", "name": "первичная отделка" }],
-            building_batch: [{ "id": 0, "name": "" }, { "id": 1, "name": "02/98-НМ" }, { "id": 2, "name": "1385 АР-3" }, { "id": 3, "name": "1605/12" }, { "id": 4, "name": "1605/9" }, { "id": 5, "name": "1605/Б" }, { "id": 6, "name": "17/2004-АС" }, { "id": 7, "name": "1МГ-600" }, { "id": 8, "name": "1МГ-601" }, { "id": 9, "name": "2-71/358" }, { "id": 10, "name": "2548-01-АР" }, { "id": 11, "name": "2548-02-АР" }, { "id": 12, "name": "32/2005-АС" }, { "id": 13, "name": "349/01" }, { "id": 14, "name": "355/24" }, { "id": 15, "name": "7040-01" }, { "id": 16, "name": "I-303" }, { "id": 17, "name": "I-335" }, { "id": 18, "name": "I-447" }, { "id": 19, "name": "I-510" }, { "id": 20, "name": "I-511" }, { "id": 21, "name": "I-513" }, { "id": 22, "name": "I-515" }, { "id": 23, "name": "I605-АМ" }, { "id": 24, "name": "II-04" }, { "id": 25, "name": "II-05" }, { "id": 26, "name": "II-08" }, { "id": 27, "name": "II-18" }, { "id": 28, "name": "II-18-01-МН" }, { "id": 29, "name": "II-18-31/12" }, { "id": 30, "name": "II-29" }, { "id": 31, "name": "II-32" }, { "id": 32, "name": "II-49" }, { "id": 33, "name": "II-57" }, { "id": 34, "name": "II-68-02" }, { "id": 35, "name": "II-68-03" }, { "id": 36, "name": "II-89-01-МН" }, { "id": 37, "name": "III/17" }, { "id": 38, "name": "VI-23" }, { "id": 39, "name": "VII-51" }, { "id": 40, "name": "VII-58" }, { "id": 41, "name": "А-41K" }, { "id": 42, "name": "башня Вулыха" }, { "id": 43, "name": "Бекерон" }, { "id": 44, "name": "БОД-1" }, { "id": 45, "name": "В-2000" }, { "id": 46, "name": "В-2002" }, { "id": 47, "name": "В-2005" }, { "id": 48, "name": "ГМС-1" }, { "id": 49, "name": "ГМС-3" }, { "id": 50, "name": "И-1168 А3" }, { "id": 51, "name": "И-1168 А4" }, { "id": 52, "name": "И-1233" }, { "id": 53, "name": "И-1254" }, { "id": 54, "name": "И-1262А" }, { "id": 55, "name": "И-1429" }, { "id": 56, "name": "И-1430" }, { "id": 57, "name": "И-1459-132" }, { "id": 58, "name": "И-1491-17" }, { "id": 59, "name": "И-1501" }, { "id": 60, "name": "И-155" }, { "id": 61, "name": "И-155МК" }, { "id": 62, "name": "И-155Н" }, { "id": 63, "name": "И-1602" }, { "id": 64, "name": "И-1677" }, { "id": 65, "name": "И-1723" }, { "id": 66, "name": "И-1724" }, { "id": 67, "name": "И-1731" }, { "id": 68, "name": "И-1782/1" }, { "id": 69, "name": "И-1812/1" }, { "id": 70, "name": "И-1834" }, { "id": 71, "name": "И-1836" }, { "id": 72, "name": "И-1838" }, { "id": 73, "name": "И-1839" }, { "id": 74, "name": "И-1849" }, { "id": 75, "name": "И-1932" }, { "id": 76, "name": "И-208" }, { "id": 77, "name": "И-209А" }, { "id": 78, "name": "И-2342" }, { "id": 79, "name": "И-241" }, { "id": 80, "name": "И-491А" }, { "id": 81, "name": "И-515-5М" }, { "id": 82, "name": "И-515/9ш" }, { "id": 83, "name": "И-522" }, { "id": 84, "name": "И-522А" }, { "id": 85, "name": "И-679" }, { "id": 86, "name": "И-700" }, { "id": 87, "name": "И-700А" }, { "id": 88, "name": "И-760А" }, { "id": 89, "name": "И-79-99" }, { "id": 90, "name": "И-99-47/405" }, { "id": 91, "name": "И-99-47/406" }, { "id": 92, "name": "индивидуальный проект" }, { "id": 93, "name": "ИП-46С" }, { "id": 94, "name": "ИШ3/12" }, { "id": 95, "name": "К-7" }, { "id": 96, "name": "КМС-101" }, { "id": 97, "name": "Колос" }, { "id": 98, "name": "КОПЭ" }, { "id": 99, "name": "КОПЭ-М-ПАРУС" }, { "id": 100, "name": "КТЖС" }, { "id": 101, "name": "КТЖС-11/22" }, { "id": 102, "name": "1МГ-300" }, { "id": 103, "name": "МОНОЛИТ" }, { "id": 105, "name": "МЭС-84" }, { "id": 107, "name": "НП-46с" }, { "id": 108, "name": "П-06" }, { "id": 109, "name": "П-111" }, { "id": 110, "name": "П-111М" }, { "id": 111, "name": "П-111МО" }, { "id": 112, "name": "П-12-31/12" }, { "id": 113, "name": "II-14" }, { "id": 114, "name": "П-14/35" }, { "id": 115, "name": "П-18/22" }, { "id": 116, "name": "П-20" }, { "id": 117, "name": "П-21" }, { "id": 118, "name": "П-22" }, { "id": 119, "name": "П-23" }, { "id": 120, "name": "П-28" }, { "id": 121, "name": "П-29" }, { "id": 122, "name": "П-3" }, { "id": 123, "name": "П-3/16" }, { "id": 124, "name": "П-3/17" }, { "id": 125, "name": "П-3/22" }, { "id": 126, "name": "П-30" }, { "id": 127, "name": "П-31" }, { "id": 128, "name": "П-32" }, { "id": 129, "name": "П-321-60" }, { "id": 130, "name": "II-34" }, { "id": 131, "name": "II-35" }, { "id": 132, "name": "П-37" }, { "id": 133, "name": "II-38" }, { "id": 134, "name": "П-39" }, { "id": 135, "name": "П-3М" }, { "id": 136, "name": "П-4" }, { "id": 137, "name": "П-40" }, { "id": 138, "name": "П-41" }, { "id": 139, "name": "П-42" }, { "id": 140, "name": "П-43" }, { "id": 141, "name": "П-44" }, { "id": 142, "name": "П-44К" }, { "id": 143, "name": "П-44М" }, { "id": 144, "name": "П-44Т" }, { "id": 145, "name": "П-44ТМ" }, { "id": 146, "name": "П-45" }, { "id": 147, "name": "П-46" }, { "id": 148, "name": "П-46М" }, { "id": 149, "name": "П-47" }, { "id": 150, "name": "П-49 Д" }, { "id": 151, "name": "П-50" }, { "id": 152, "name": "П-53" }, { "id": 153, "name": "П-55" }, { "id": 154, "name": "П-55М" }, { "id": 155, "name": "II-29-41/37" }, { "id": 156, "name": "II-66" }, { "id": 157, "name": "II-67" }, { "id": 158, "name": "II-68" }, { "id": 159, "name": "ПД-4" }, { "id": 160, "name": "ПД-4/12" }, { "id": 161, "name": "Пд4-1/12Н1" }, { "id": 162, "name": "ПД4-1/8Н1" }, { "id": 163, "name": "ПЗМ-1/14" }, { "id": 164, "name": "ПЗМ-1/16" }, { "id": 165, "name": "ПЗМ-2/16" }, { "id": 166, "name": "ПЗМ-3/16" }, { "id": 167, "name": "ПП-70" }, { "id": 168, "name": "Призма" }, { "id": 169, "name": "РД-90" }, { "id": 170, "name": "С-111М" }, { "id": 171, "name": "С-220" }, { "id": 172, "name": "С-222" }, { "id": 173, "name": "ТИП-441" }, { "id": 174, "name": "ЦВП-4570-II-63" }, { "id": 175, "name": "Юбилейный" }, { "id": 176, "name": "II-02" }, { "id": 177, "name": "II-01" }, { "id": 178, "name": "II-18-01/08" }, { "id": 179, "name": "II-18-01/09" }, { "id": 180, "name": "1605-АМ/9" }, { "id": 181, "name": "1605-АМ/12" }, { "id": 182, "name": "II-49П" }, { "id": 183, "name": "II-49Д" }, { "id": 184, "name": "II-03" }, { "id": 185, "name": "II-18-01/12" }, { "id": 186, "name": "II-18-02/12" }, { "id": 187, "name": "II-18/12" }, { "id": 188, "name": "II-20" }, { "id": 189, "name": "1605-АМ/5" }, { "id": 190, "name": "И-III-3" }, { "id": 191, "name": "II-28" }, { "id": 192, "name": "II-68-02/16М" }, { "id": 193, "name": "КПД-4570" }, { "id": 194, "name": "II-68-01" }, { "id": 195, "name": "1-515/9" }, { "id": 196, "name": "К4/16" }, { "id": 197, "name": "И-155Б" }, { "id": 198, "name": "1-515/5" }, { "id": 199, "name": "II-18-01/12А" }, { "id": 200, "name": "СМ-1 " }, { "id": 201, "name": "П-44ТМ/25" }, { "id": 202, "name": "И-701" }, { "id": 203, "name": "И-155-с" }, { "id": 204, "name": "Айсберг" }, { "id": 205, "name": "II-14/35" }, { "id": 206, "name": "И-99-47/407" }, { "id": 207, "name": "П-101" }, { "id": 208, "name": "1-300" }, { "id": 209, "name": "II-18-01/09К" }, { "id": 210, "name": "И-1900" }, { "id": 211, "name": "М-10" }, { "id": 212, "name": "МПСМ" }, { "id": 213, "name": "ИП-46М" }, { "id": 214, "name": "П-30М" }, { "id": 215, "name": "II-07" }, { "id": 216, "name": "ПБ-01" }, { "id": 217, "name": "И-1414" }, { "id": 218, "name": "И-2111" }, { "id": 219, "name": "1605-АМЛ/5" }, { "id": 220, "name": "1-447С-26" }, { "id": 221, "name": "1-447С-1" }, { "id": 222, "name": "1-447С-36" }, { "id": 223, "name": "1-447С-2" }, { "id": 224, "name": "1-447С-5" }, { "id": 225, "name": "1-446" }, { "id": 226, "name": "ПБ-02" }, { "id": 227, "name": "КПД-4572А" }, { "id": 228, "name": "II-68-04" }, { "id": 229, "name": "124-124-1" }, { "id": 231, "name": "1605-А" }, { "id": 232, "name": "1-439" }, { "id": 233, "name": "Мм1-3" }, { "id": 234, "name": "И-1168" }, { "id": 235, "name": "СМ-06" }, { "id": 236, "name": "СМ-03" }, { "id": 237, "name": "1-419" }, { "id": 238, "name": "1-203" }, { "id": 239, "name": "ЭС-24" }, { "id": 240, "name": "8966" }, { "id": 242, "name": "1-126" }, { "id": 243, "name": "1-225" }, { "id": 244, "name": "1-402" }, { "id": 245, "name": "16/2188" }, { "id": 246, "name": "Т-1" }, { "id": 247, "name": "Т-3" }, { "id": 248, "name": "1-233" }, { "id": 249, "name": "1-260" }, { "id": 250, "name": "К-8-49" }, { "id": 251, "name": "1-255" }, { "id": 252, "name": "КС-8-50" }, { "id": 253, "name": "Д-23" }, { "id": 254, "name": "Д-25Н1" }, { "id": 256, "name": "ПП-83" }, { "id": 258, "name": "К2/16" }, { "id": 259, "name": "К7/16" }, { "id": 260, "name": "К8/16" }, { "id": 262, "name": "1-464А" }, { "id": 263, "name": "КОПЭ-87" }, { "id": 264, "name": "П-121М" }, { "id": 265, "name": "121-041" }, { "id": 266, "name": "121-042" }, { "id": 267, "name": "121-043" }, { "id": 268, "name": "II-29-208" }, { "id": 269, "name": "II-29-3" }, { "id": 270, "name": "II-29-9" }, { "id": 271, "name": "II-29-160" }, { "id": 272, "name": "ПД-1" }, { "id": 273, "name": "И-02/98-НМ" }, { "id": 274, "name": "1-467" }, { "id": 275, "name": "ЭЖРЧС" }, { "id": 276, "name": "П-3МК" }, { "id": 277, "name": "II-18-02/09" }, { "id": 278, "name": "ПД-3" }, { "id": 279, "name": "И-580" }, { "id": 280, "name": "II-18-03/12" }, { "id": 281, "name": "К-14" }, { "id": 282, "name": "И-700Н" }, { "id": 283, "name": "Юникон" }, { "id": 284, "name": "111-121" }, { "id": 285, "name": "1-211" }, { "id": 286, "name": "II-68-01/22" }, { "id": 287, "name": "Лебедь" }, { "id": 288, "name": "И-99-47" }],
-            balcony_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "Б", "name": "балкон" }, { "id": 3, "code": "Л", "name": "лоджия" }, { "id": 4, "code": "БЛ", "name": "балкон + лоджия" }, { "id": 5, "code": "2Б", "name": "два балкона" }, { "id": 6, "code": "2Л", "name": "две лоджии" }, { "id": 7, "code": "3Л", "name": "три лоджии" }, { "id": 8, "code": "4Л", "name": "четыре лоджии" }, { "id": 9, "code": "3Б", "name": "три балкона" }, { "id": 10, "code": "Б2Л", "name": "балкон + две лоджии" }, { "id": 11, "code": "2Б2Л", "name": "два балкона + две лоджии" }, { "id": 12, "code": "Эрк", "name": "эркер" }, { "id": 13, "code": "ЭркЛ", "name": "эркер + лоджия" }, { "id": 14, "code": "*Б", "name": "несколько балконов" }, { "id": 15, "code": "*Л", "name": "несколько лоджий" }],
-            currency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "руб", "name": "RUB" }, { "id": 2, "code": "$", "name": "USD" }, { "id": 3, "code": "€", "name": "EUR" }, { "id": 4, "code": "TL", "name": "TL" }, { "id": 5, "code": "BYR", "name": "BYR" }],
-            deal_status: [{ "id": 1, "code": "продается/арендуется", "name": "продается/арендуется" }, { "id": 2, "code": "аванс/задаток", "name": "аванс/задаток" }, { "id": 3, "code": "продана/арендована", "name": "продана/арендована" }],
-            deal_type: [{ "id": 1, "code": "продажа", "name": "продажа" }, { "id": 2, "code": "аренда", "name": "аренда" }],
-            location_type: [{ "id": 13, "code": "ГСК", "name": "ГСК" }, { "id": 14, "code": "ГК", "name": "ГК" }, { "id": 15, "code": "ЖК", "name": "ЖК" }, { "id": 16, "code": "двор", "name": "двор" }, { "id": 17, "code": "паркинг", "name": "паркинг" }],
-            electricity_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "220В", "name": "220В" }, { "id": 4, "code": "380В", "name": "380В" }, { "id": 5, "code": "П", "name": "в перспективе" }, { "id": 6, "code": "ГУ", "name": "по границе" }, { "id": 7, "code": "10кВ", "name": "10кВ" }, { "id": 8, "code": "И", "name": "иное" }],
-            elevator_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "пасс.", "name": "лифт пассажирский" }, { "id": 2, "code": "груз.", "name": "лифт грузовой" }, { "id": 3, "code": "пасс.+ груз.", "name": "лифт пассажирский и лифт грузовой" }, { "id": 4, "code": "нет", "name": "нет лифта" }, { "id": 5, "code": "есть", "name": "есть лифт" }],
-            floor_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "полы не настелены", "master_realty_type_id": 1 }, { "id": 2, "code": "Д", "name": "дерево", "master_realty_type_id": 1 }, { "id": 3, "code": "п/д", "name": "паркетная доска", "master_realty_type_id": 1 }, { "id": 4, "code": "ЛМ", "name": "ламинат", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "ковролин", "master_realty_type_id": 1 }, { "id": 6, "code": "П", "name": "паркет", "master_realty_type_id": 1 }, { "id": 7, "code": "ЛН", "name": "линолеум", "master_realty_type_id": 1 }, { "id": 8, "code": "Стяж", "name": "стяжка", "master_realty_type_id": 1 }, { "id": 9, "code": "асфальт", "name": "асфальт", "master_realty_type_id": 4 }, { "id": 10, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 11, "code": "грунт", "name": "грунт", "master_realty_type_id": 4 }, { "id": 12, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 13, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 14, "code": "полимерное покрытие", "name": "полимерное покрытие", "master_realty_type_id": 4 }],
-            gas_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ГУ", "name": "по границе" }, { "id": 4, "code": "П", "name": "перспектива" }, { "id": 5, "code": "Р", "name": "рядом" }, { "id": 6, "code": "Б", "name": "баллоны" }, { "id": 7, "code": "М", "name": "магистральный" }, { "id": 8, "code": "И", "name": "иное" }, { "id": 9, "code": "Ц", "name": "центральный" }],
-            habit_class: [{ "id": 1, "name": "эконом" }, { "id": 2, "name": "комфорт" }, { "id": 3, "name": "бизнес" }, { "id": 4, "name": "элитный" }],
-            heating_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ЭК", "name": "электрокотел" }, { "id": 4, "code": "ГК", "name": "газовый котел" }, { "id": 5, "code": "ЖТК", "name": "жидкотопливный котел" }, { "id": 6, "code": "АГВ", "name": "автоматический газовый водонагреватель" }, { "id": 7, "code": "П", "name": "печь" }, { "id": 8, "code": "Ц", "name": "центральное" }, { "id": 9, "code": "И", "name": "иное" }],
-            media: [{ "id": 0, "name": "Прочие", "is_active": 1, "order_number": 1000 }, { "id": 1, "name": "Руки", "is_active": 1, "order_number": 50 }, { "id": 3, "name": "WinNER (зелёная зона)", "is_active": 1, "order_number": 10 }, { "id": 4, "name": "Крис", "is_active": 0, "order_number": 140 }, { "id": 5, "name": "Realty.dmir.ru", "is_active": 0, "order_number": 60 }, { "id": 6, "name": "БН", "is_active": 1, "order_number": 130 }, { "id": 7, "name": "Навигатор", "is_active": 0, "order_number": 1000 }, { "id": 8, "name": "БКН", "is_active": 1, "order_number": 120 }, { "id": 9, "name": "Собственники", "is_active": 0, "order_number": 900 }, { "id": 11, "name": "Приан", "is_active": 0, "order_number": 150 }, { "id": 12, "name": "eip.ru", "is_active": 0, "order_number": 110 }, { "id": 15, "name": "Sob.ru", "is_active": 1, "order_number": 20 }, { "id": 17, "name": "cian.ru", "is_active": 1, "order_number": 40 }, { "id": 20, "name": "A.baza-winner", "is_active": 0, "order_number": 15 }, { "id": 21, "name": "AVITO.ru", "is_active": 1, "order_number": 30 }, { "id": 22, "name": "WinNER Lite", "is_active": 1, "order_number": 16 }, { "id": 23, "name": "Яндекс", "is_active": 1, "order_number": 70 }, { "id": 24, "name": "WinNER (белая зона)", "is_active": 1, "order_number": 15 }],
-            office_class: [{ "id": 2, "name": "A+" }, { "id": 3, "name": "A" }, { "id": 4, "name": "B+" }, { "id": 5, "name": "B" }, { "id": 6, "name": "C+" }, { "id": 7, "name": "C" }, { "id": 8, "name": "D+" }, { "id": 9, "name": "D" }],
-            fire_alarm_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "name": "пожарная сигнализация", "code": "пожарная сигнализация" }, { "id": 2, "name": "система пожаротушения", "code": "система пожаротушения" }],
-            ownership_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "купля/продажа", "name": "купля/продажа" }, { "id": 2, "code": "ЖСК", "name": "ЖСК" }, { "id": 3, "code": "приватиз.", "name": "приватизация" }, { "id": 4, "code": "дар.", "name": "дарение" }, { "id": 5, "code": "наслед.", "name": "наследство" }, { "id": 6, "code": "мена", "name": "мена" }, { "id": 7, "code": "инвест.", "name": "инвестирование" }, { "id": 8, "code": "рента", "name": "рента" }, { "id": 9, "code": "реш.суда", "name": "решение суда" }, { "id": 10, "code": "залог(ипотека)", "name": "залог (ипотека)" }, { "id": 11, "code": "иное", "name": "иное" }, { "id": 12, "code": "кооператив", "name": "кооператив" }, { "id": 13, "code": "собственность", "name": "собственность" }, { "id": 14, "code": "по доверенности", "name": "по доверенности" }, { "id": 15, "code": "ДДУ", "name": "договор долевого участия" }, { "id": 16, "code": "ДУ", "name": "договор уступки прав требования" }, { "id": 17, "code": "ПДДК", "name": "предварительный договор купли-продажи" }],
-            parking_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "о", "name": "охраняемая" }, { "id": 4, "code": "п", "name": "подземная" }, { "id": 5, "code": "с", "name": "стихийная" }, { "id": 6, "code": "з", "name": "закрепленное место" }],
-            pay_period_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "в год", "name": "в год" }, { "id": 2, "code": "в мес.", "name": "в месяц" }, { "id": 3, "code": "в кв.", "name": "в квартал" }, { "id": 4, "code": "в сут.", "name": "в сутки" }],
-            plumbing_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "С", "name": "скважина" }, { "id": 4, "code": "К", "name": "колодец" }, { "id": 5, "code": "М", "name": "магистральный" }, { "id": 6, "code": "И", "name": "иное" }, { "id": 7, "code": "Ц", "name": "центральный" }, { "id": 8, "code": "Л", "name": "летний" }],
-            price_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "вся площадь", "name": "за всю площадь" }, { "id": 2, "code": "сотка", "name": "за сотку" }, { "id": 3, "code": "кв.м.", "name": "за кв.м." }],
-            realty_type: [{ "id": 1, "code": "кв.", "name": "квартира", "master_realty_type_id": 1 }, { "id": 2, "code": "комн.", "name": "комната", "master_realty_type_id": 1 }, { "id": 3, "code": "дом", "name": "дом", "master_realty_type_id": 2 }, { "id": 4, "code": "ЗУ", "name": "земельный участок", "master_realty_type_id": 2 }, { "id": 5, "code": "дача", "name": "дача", "master_realty_type_id": 2 }, { "id": 6, "code": "дуплекс", "name": "дуплекс", "master_realty_type_id": 2 }, { "id": 7, "code": "квадрохаус", "name": "квадрохаус", "master_realty_type_id": 2 }, { "id": 8, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 2 }, { "id": 9, "code": "коттедж в КП", "name": "коттедж в КП", "master_realty_type_id": 2 }, { "id": 10, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 2 }, { "id": 11, "code": "усадьба", "name": "усадьба", "master_realty_type_id": 2 }, { "id": 12, "code": "часть дома", "name": "часть дома", "master_realty_type_id": 2 }, { "id": 15, "code": "офис", "name": "офис", "master_realty_type_id": 3 }, { "id": 16, "code": "маг", "name": "магазин", "master_realty_type_id": 3 }, { "id": 17, "code": "склад", "name": "склад", "master_realty_type_id": 3 }, { "id": 18, "code": "другое", "name": "другое", "master_realty_type_id": 3 }, { "id": 19, "code": "БЦ", "name": "бизнес-центр", "master_realty_type_id": 3 }, { "id": 20, "code": "ТЦ", "name": "торговый центр", "master_realty_type_id": 3 }, { "id": 21, "code": "ППП", "name": "произв.-пром помещение", "master_realty_type_id": 3 }, { "id": 22, "code": "ПП", "name": "предприятие питания", "master_realty_type_id": 3 }, { "id": 23, "code": "ПСН", "name": "помещ.свободного назначения", "master_realty_type_id": 3 }, { "id": 24, "code": "ОСЗ", "name": "отдельно стоящее здание", "master_realty_type_id": 3 }, { "id": 25, "code": "гостиница/отель", "name": "гостиница/отель", "master_realty_type_id": 3 }, { "id": 26, "code": "КЗУ", "name": "ком.земельный участок", "master_realty_type_id": 3 }, { "id": 27, "code": "гар", "name": "гараж", "master_realty_type_id": 3 }, { "id": 28, "code": "автомойка", "name": "автомойка", "master_realty_type_id": 3 }, { "id": 29, "code": "автосервис", "name": "автосервис", "master_realty_type_id": 3 }, { "id": 30, "code": "ателье", "name": "ателье", "master_realty_type_id": 3 }, { "id": 31, "code": "гараж.комплекс", "name": "гараж.комплекс", "master_realty_type_id": 3 }, { "id": 32, "code": "медцентр", "name": "медцентр", "master_realty_type_id": 3 }, { "id": 33, "code": "парикмахерская", "name": "парикмахерская", "master_realty_type_id": 3 }, { "id": 34, "code": "стоматология", "name": "стоматология", "master_realty_type_id": 3 }, { "id": 35, "code": "турфирма", "name": "турфирма", "master_realty_type_id": 3 }, { "id": 36, "code": "учеб.цели", "name": "учеб.цели", "master_realty_type_id": 3 }, { "id": 37, "code": "фотоателье", "name": "фотоателье", "master_realty_type_id": 3 }, { "id": 38, "code": "химчистка", "name": "химчистка", "master_realty_type_id": 3 }, { "id": 39, "code": "офисное здание", "name": "офисное здание", "master_realty_type_id": 3 }, { "id": 40, "code": "торг.площадь", "name": "торговая площадь", "master_realty_type_id": 3 }, { "id": 41, "code": "пром.земли", "name": "промышленные земли", "master_realty_type_id": 3 }, { "id": 42, "code": "сельхоз.земли", "name": "сельхоз.земли", "master_realty_type_id": 3 }, { "id": 43, "code": "банк", "name": "банк", "master_realty_type_id": 3 }, { "id": 44, "code": "кафе/ресторан", "name": "кафе/ресторан", "master_realty_type_id": 3 }, { "id": 45, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 3 }, { "id": 46, "code": "инвест.проект", "name": "инвестиционный проект", "master_realty_type_id": 3 }, { "id": 47, "code": "готовый бизнес", "name": "готовый бизнес", "master_realty_type_id": 3 }, { "id": 48, "code": "база отдыха/лагерь", "name": "база отдыха/лагерь", "master_realty_type_id": 3 }, { "id": 49, "code": "ферма", "name": "ферма", "master_realty_type_id": 3 }, { "id": 50, "code": "бизнес-проект", "name": "бизнес-проект", "master_realty_type_id": 3 }, { "id": 51, "code": "доходный дом", "name": "доходный дом", "master_realty_type_id": 3 }, { "id": 52, "code": "фабрика/завод", "name": "фабрика/завод", "master_realty_type_id": 3 }, { "id": 53, "code": "курортный комплекс", "name": "курортный комплекс", "master_realty_type_id": 3 }, { "id": 54, "code": "апартаменты", "name": "апартаменты", "master_realty_type_id": 1 }, { "id": 55, "code": "пентхаус", "name": "пентхаус", "master_realty_type_id": 1 }, { "id": 56, "code": "дом", "name": "дом", "master_realty_type_id": 1 }, { "id": 57, "code": "элит.недвижимость(поместье, замок, особняк)", "name": "элитная недвижимость(поместье, замок, особняк)", "master_realty_type_id": 1 }, { "id": 59, "code": "гараж", "name": "гараж", "master_realty_type_id": 4 }, { "id": 60, "code": "бокс", "name": "бокс", "master_realty_type_id": 4 }, { "id": 61, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 4 }, { "id": 62, "code": "доля", "name": "доля", "master_realty_type_id": 1 }, { "id": 63, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 1 }, { "id": 64, "code": "вилла", "name": "вилла", "master_realty_type_id": 1 }, { "id": 65, "code": "бунгало", "name": "бунгало", "master_realty_type_id": 1 }, { "id": 66, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 1 }, { "id": 67, "code": "квартира", "name": "квартира", "master_realty_type_id": 5 }],
-            rent_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "любой срок", "name": "любой срок" }, { "id": 2, "code": "длительный срок", "name": "длительный срок" }, { "id": 3, "code": "посуточно", "name": "посуточно" }, { "id": 4, "code": "от месяца и более", "name": "от месяца и более" }, { "id": 5, "code": "сезонная сдача", "name": "сезонная сдача" }],
-            security_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }],
-            sewerage_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ВД", "name": "вне дома" }, { "id": 4, "code": "С", "name": "септик" }, { "id": 5, "code": "Ц", "name": "центральная" }, { "id": 6, "code": "И", "name": "иное" }],
-            territory_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "огорож.", "name": "огороженная" }, { "id": 2, "code": "огорож.+охран.", "name": "огороженная и охраняемая" }, { "id": 3, "code": "не огорож.", "name": "не огорожена" }],
-            walls_material_type: [{ "id": 0, "code": "", "name": "", "master_realty_type_id": null }, { "id": 1, "code": "П", "name": "панельный", "master_realty_type_id": 1 }, { "id": 2, "code": "Б", "name": "блочный", "master_realty_type_id": 1 }, { "id": 3, "code": "М", "name": "монолитный", "master_realty_type_id": 1 }, { "id": 4, "code": "М-К", "name": "монолитно-кирпичный", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "кирпичный", "master_realty_type_id": 1 }, { "id": 6, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 1 }, { "id": 9, "code": "Шлакоблок", "name": "шлакоблоки/шлакобетон", "master_realty_type_id": 1 }, { "id": 11, "code": "Ж-б", "name": "железобетон", "master_realty_type_id": 1 }, { "id": 18, "code": "Стал.", "name": "сталинский", "master_realty_type_id": 1 }, { "id": 19, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 20, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 21, "code": "кирпич", "name": "кирпич", "master_realty_type_id": 4 }, { "id": 22, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 23, "code": "пластик", "name": "пластик", "master_realty_type_id": 4 }, { "id": 24, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 2 }, { "id": 25, "code": "Газоблок.", "name": "газоблочный", "master_realty_type_id": 2 }, { "id": 26, "code": "Кам.", "name": "каменный", "master_realty_type_id": 2 }, { "id": 27, "code": "Каркас.", "name": "каркасный", "master_realty_type_id": 2 }, { "id": 28, "code": "Кирп.", "name": "кирпичный", "master_realty_type_id": 2 }, { "id": 29, "code": "Легкобетон.", "name": "легкобетонный", "master_realty_type_id": 2 }, { "id": 30, "code": "Многослой.", "name": "многослойный", "master_realty_type_id": 2 }, { "id": 31, "code": "Монолит.", "name": "монолитный", "master_realty_type_id": 2 }, { "id": 32, "code": "Щит.", "name": "щитовой", "master_realty_type_id": 2 }],
-            water_closet_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "отсутствует" }, { "id": 2, "code": "С", "name": "совмещенный" }, { "id": 3, "code": "Р", "name": "раздельный" }, { "id": 4, "code": "2", "name": "два санузла" }, { "id": 5, "code": "3", "name": "три санузла" }, { "id": 6, "code": "4", "name": "четыре санузла" }, { "id": 7, "code": "2С", "name": "два совмещенных санузла" }, { "id": 8, "code": "2Р", "name": "два раздельных санузла" }, { "id": 9, "code": "3С", "name": "три совмещенных санузла" }, { "id": 10, "code": "3Р", "name": "три раздельных санузла" }, { "id": 11, "code": "4С", "name": "четыре совмещенных санузла" }, { "id": 12, "code": "4Р", "name": "четыре раздельных санузла" }, { "id": 13, "code": "+", "name": "есть санузел" }],
-            window_overlook_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "на улицу", "name": "окна на улицу" }, { "id": 2, "code": "во двор", "name": "окна во двор" }, { "id": 3, "code": "во двор и на улицу", "name": "окна во двор и на улицу" }],
-            rooms_adjacency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "С", "name": "смежные" }, { "id": 2, "code": "Р", "name": "раздельные" }, { "id": 3, "code": "С+Р", "name": "смежные+раздельные" }],
-            sale_type: [{ "id": 0, "name": "" }, { "id": 9, "name": "прямая продажа" }, { "id": 10, "name": "альтернатива" }],
+        const plitka = {
+            base: $$.$nl_plitka,
+        };
+        const grid = {
+            base: $$.$nl_search_grid,
+            prop: {
+                row_opens: $$.$me_atom2_prop(['.order'], ({ masters: [order] }) => order.row_opens || (order.row_opens = new Set())),
+                on_order_changed: $$.$me_atom2_prop(['.order'], null, ({ val }) => {
+                    if (!val)
+                        return;
+                    const order = val;
+                    $$.a.dispatch('', 'set_view', order);
+                }),
+                on_order_changed_and_ready: $$.$me_atom2_prop(['.order', '.rec_count'], ({ masters: [order, rec_count] }) => rec_count < 0 ? null : [order, rec_count], ({ val }) => {
+                    if (!val)
+                        return;
+                    const [order, rec_count] = val;
+                    $$.a.dispatch('@list', 'set_view', order);
+                }),
+                on_change_col_ids: $$.$me_atom2_prop(['.col_ids', '.order'], null, ({ val: [col_ids, order] }) => {
+                    order.col_ids = col_ids;
+                }),
+                on_change_ofsHor: $$.$me_atom2_prop(['.ofsHor', '.col_fixed_width', '.order'], null, ({ val: [ofsHor, col_fixed_width, order] }) => {
+                    order.ofsHor = ofsHor - col_fixed_width;
+                }),
+                on_change_col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.cols', '.order'] }, null, ({ key: [id], val }) => {
+                    if (val == null)
+                        return;
+                    const [width, cols, order] = val;
+                    if (width != cols[id].width) {
+                        if (!order.col_width)
+                            order.col_width = {};
+                        order.col_width[id] = width;
+                    }
+                }),
+                on_change_row_i_min: $$.$me_atom2_prop(['@list.row_i_min', '.order', '.rec_count'], null, ({ val: [row_i_min, order, rec_count] }) => {
+                    if (rec_count < 0)
+                        return;
+                    order.row_i_min = row_i_min;
+                }),
+                on_change_visible_idx_min: $$.$me_atom2_prop(['@list.visible_idx_min', '.order', '.rec_count'], null, ({ val: [visible_idx_min, order, rec_count] }) => {
+                    if (rec_count < 0)
+                        return;
+                    order.visible_idx_min = visible_idx_min;
+                }),
+                on_change_visible_top: $$.$me_atom2_prop(['@list.visible_top', '.order', '.rec_count'], null, ({ val: [visible_top, order, rec_count] }) => {
+                    if (rec_count < 0)
+                        return;
+                    order.visible_top = visible_top;
+                }),
+                cols: () => $$.$nl_search_panel_result_cols,
+            },
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -11142,7 +11525,7 @@ var $;
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
                 '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                    to: isShrinked ? 64 : 290,
+                    to: isShrinked ? 64 : 222,
                     path_active: $$.a.get('.isShrinked_animActive').path,
                 })),
                 isShrinked_animActive: $$.$me_atom2_prop([], () => false),
