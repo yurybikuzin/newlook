@@ -5098,7 +5098,7 @@ var $;
                             }
                         }),
                         pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
-                            base: $$.$nl_input,
+                            base: input_for_password,
                             dispatch(dispatch_name, dispatch_arg) {
                                 if (dispatch_name == 'change') {
                                     $$.a(`.value`, dispatch_arg);
@@ -5412,6 +5412,57 @@ var $;
                     event: {
                         clickOrTap: () => {
                             console.log($$.a.curr.name());
+                            return true;
+                        },
+                    },
+                }),
+            },
+        };
+        const input_for_password = {
+            elem: {
+                input: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        placeholder: '<.placeholder',
+                        showPassword: () => false,
+                    },
+                    attr: {
+                        type: $$.$me_atom2_prop(['.showPassword'], ({ masters: [showPassword] }) => showPassword ? 'text' : 'password'),
+                    },
+                }),
+                icon: () => ({
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#width': () => 25,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                        showPassword: () => false,
+                    },
+                    elem: {
+                        square: () => ({
+                            node: 'img',
+                            prop: {
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': () => 8,
+                                '#alignVer': () => $$.$me_align.center,
+                                '#width': () => 25,
+                                '#height': () => 18,
+                            },
+                            style: {
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                                    'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' : 'none'),
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['<<@input.showPassword'], ({ masters: [showPassword] }) => showPassword ? 'assets/eye-open.svg' : 'assets/eye-closed.svg'),
+                                draggable: () => false,
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            let sp = $$.a('<@input.showPassword');
+                            sp = !sp;
+                            $$.a('<@input.showPassword', sp);
                             return true;
                         },
                     },
@@ -11730,8 +11781,8 @@ var $;
                         img: () => ({
                             node: 'img',
                             prop: {
-                                '#height': () => 34,
-                                '#width': () => 34,
+                                '#height': $$.$me_atom2_prop(['<<.isZoomed'], ({ masters: [isZoomed] }) => isZoomed ? 68 : 34),
+                                '#width': $$.$me_atom2_prop(['<<.isZoomed'], ({ masters: [isZoomed] }) => isZoomed ? 68 : 34),
                                 '#ofsVer': () => -2,
                                 '#ofsHor': () => -4,
                             },
@@ -12262,18 +12313,13 @@ var $;
                 items: () => ({
                     'main': { title: 'Главная', icon: 'icons-8-home', icon_width: 26, icon_height: 23 },
                     'search': { title: 'Поиск', icon: 'icons-8-search' },
+                    'favorites': { title: 'Избранное', icon: 'icons-8-star', icon_width: 26, icon_height: 25 },
                     'orders': { title: 'Заказы', icon: 'icons-8-buy' },
                     'clients': { title: 'Клиенты', icon: 'icons-8-meeting', icon_width: 22 },
                     'advs': { title: 'Мои объявления', icon: 'icons-8-resume-website', icon_width: 22, icon_height: 22 },
-                    'docs': { title: 'Документы', icon: 'icons-8-wipes' },
-                    'users': { title: 'Пользователи', icon: 'icons-8-add-user-group', icon_width: 27 },
                     'feedback': { title: 'Обратная связь', icon: 'icons-8-info-popup', icon_width: 22 },
                     'subscription': { title: 'Подписка', icon: 'icons-8-wallet-copy-2', icon_width: 22, icon_height: 22 },
                     'settings': { title: 'Настройки', icon: 'icons-8-settings' },
-                    'sma': { title: 'СМА', icon: 'icons-8-sell-property', icon_width: 26, icon_height: 23 },
-                    'history': { title: 'История поиска', icon: 'icons-8-last-hour' },
-                    'favorites': { title: 'Избранное', icon: 'icons-8-star', icon_width: 26, icon_height: 25 },
-                    'archive': { title: 'Архивные данные', icon: 'icons-8-winrar', icon_height: 22, },
                 }),
                 item_id: $$.$me_atom2_prop_keys(['.items']),
                 item: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
