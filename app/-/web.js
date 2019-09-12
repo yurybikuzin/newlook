@@ -4976,6 +4976,7 @@ var $;
                 '#height': '/.#viewportHeight',
                 selected: () => 'enter',
                 linkColor: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#2b87db' : '#53adff'),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 10),
             },
             dispatch: (dispatch_name, dispatch_arg) => {
                 dispatch_arg.result = 'ok';
@@ -5014,7 +5015,7 @@ var $;
                             prop: {
                                 '#width': '<.#width',
                                 '#height': () => 40,
-                                '#ofsVer': () => 406,
+                                '#ofsVer': $$.$me_atom2_prop(['<@logo.#ofsVer', '<@logo.#height'], $$.$me_atom2_prop_compute_fn_sum(60)),
                             },
                             elem: {
                                 tab1: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
@@ -5049,16 +5050,21 @@ var $;
                             prop: {
                                 size: () => 24,
                                 thick: () => 3,
-                                '#ofsVer': () => 408,
-                                '#ofsHor': () => 476,
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer'], $$.$me_atom2_prop_compute_fn_sum(2)),
+                                '#alignHor': () => $$.$me_align.right,
                                 color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
+                                '#cursor': () => 'pointer',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<<<.isLogin', false);
+                                    return true;
+                                },
                             },
                         }),
                         phone: () => ({
                             base: input_with_icon,
-                            attr: {
-                                placeholder: () => 'Введите телефон или E-mail',
-                            },
                             dispatch(dispatch_name, dispatch_arg) {
                                 if (dispatch_name == 'change') {
                                     $$.a(`.value`, dispatch_arg);
@@ -5069,7 +5075,16 @@ var $;
                             prop: {
                                 '#width': '<.#width',
                                 '#height': () => 45,
-                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? 596 : 509),
+                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => {
+                                    const result = ['<<.selected'];
+                                    if (selected == 'restore') {
+                                        result.push('<@restore_text.#ofsVer', '<@restore_text.#height');
+                                    }
+                                    else {
+                                        result.push('<@tabs.#ofsVer', '<@tabs.#height');
+                                    }
+                                    return result;
+                                }), ({ masters: [selected, ofsVer, height] }) => ofsVer + height + (selected == 'enter' || selected == 'register' ? 40 : 32)),
                                 value: () => '',
                                 isError: () => false,
                             },
@@ -5078,6 +5093,9 @@ var $;
                             },
                             dom: {
                                 value: '.value',
+                            },
+                            attr: {
+                                placeholder: () => 'Введите телефон или E-mail',
                             },
                         }),
                         phone_error: () => ({
@@ -5089,9 +5107,9 @@ var $;
                                 color: () => 'white',
                                 caption: () => 'Несуществующий Email',
                                 '#hidden': $$.$me_atom2_prop(['<@phone.isError'], ({ masters: [isError] }) => !isError),
-                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? 596 : 509),
+                                '#ofsVer': '<@phone.#ofsVer',
                                 '#ofsHor': () => 502,
-                                '#zIndex': $$.$me_atom2_prop(['<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             style: {
                                 fontSize: () => 16,
@@ -5112,7 +5130,7 @@ var $;
                             prop: {
                                 '#width': '<.#width',
                                 '#height': () => 45,
-                                '#ofsVer': () => 596,
+                                '#ofsVer': $$.$me_atom2_prop(['<@phone.#ofsVer', '<@phone.#height'], $$.$me_atom2_prop_compute_fn_sum(32)),
                                 value: () => '',
                                 isError: () => false,
                             },
@@ -5132,9 +5150,9 @@ var $;
                                 color: () => 'white',
                                 caption: () => 'Неверный пароль',
                                 '#hidden': $$.$me_atom2_prop(['<@pass.isError'], ({ masters: [isError] }) => !isError),
-                                '#ofsVer': () => 596,
+                                '#ofsVer': '<@pass.#ofsVer',
                                 '#ofsHor': () => 502,
-                                '#zIndex': $$.$me_atom2_prop(['<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             style: {
                                 fontSize: () => 16,
@@ -5148,7 +5166,7 @@ var $;
                             prop: {
                                 '#width': '<.#width',
                                 '#height': () => 45,
-                                '#ofsVer': () => 683,
+                                '#ofsVer': $$.$me_atom2_prop(['<@pass.#ofsVer', '<@pass.#height'], $$.$me_atom2_prop_compute_fn_sum(32)),
                             },
                             style: {
                                 fontSize: () => 18,
@@ -5159,32 +5177,32 @@ var $;
                             prop: {
                                 '#width': () => 200,
                                 '#height': () => 25,
-                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 675 : 770),
+                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => selected == 'enter' ?
+                                    ['<@pass.#ofsVer', '<@pass.#height'] :
+                                    ['<@pass_confirm.#ofsVer', '<@pass_confirm.#height']), $$.$me_atom2_prop_compute_fn_sum(32)),
                                 caption: () => 'Оставаться в системе',
                                 checked: () => true,
+                                fontSize: '.em',
                             },
-                            style: {
-                                fontSize: () => 16,
-                            }
                         }),
                         forget_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
                             prop: {
                                 '#width': '<.#width',
-                                '#height': () => 25,
-                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 675 : 770),
+                                '#height': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['<@check.#ofsVer', '<@check.#height', '.#height'], ({ masters: [ofsVer_target, height_target, height] }) => ofsVer_target + height_target / 2 - height / 2),
                                 '#ofsHor': () => 370,
                                 '#cursor': () => 'pointer',
                                 fontSize: () => 16,
                                 fontWeight: () => 500,
                                 fontFamily: () => 'system-ui',
                                 colorText: '<<.linkColor',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             dom: {
                                 innerText: () => 'Забыли пароль?'
                             },
                             event: {
                                 clickOrTap: () => {
-                                    console.log('click on link!');
                                     $$.a('<<.selected', 'restore');
                                     return true;
                                 },
@@ -5195,7 +5213,9 @@ var $;
                             prop: {
                                 '#width': '<.#width',
                                 '#height': () => 45,
-                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 749 : page == 'register' ? 844 : 749),
+                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => selected == 'enter' || selected == 'register' ?
+                                    ['<@check.#ofsVer', '<@check.#height'] :
+                                    ['<@phone.#ofsVer', '<@phone.#height']), $$.$me_atom2_prop_compute_fn_sum(32)),
                                 caption: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 'Войти' : page == 'register' ? 'Зарегистрироваться' : 'Отправить'),
                                 target: () => '<<',
                                 fontSize: () => 18,
@@ -5220,16 +5240,24 @@ var $;
                             prop: {
                                 '#width': () => 200,
                                 '#height': () => 25,
-                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 836 : 931),
+                                '#ofsVer': $$.$me_atom2_prop(['<@button.#ofsVer', '<@button.#height'], $$.$me_atom2_prop_compute_fn_sum(32)),
                                 '#alignHor': () => $$.$me_align.center,
                                 '#cursor': () => 'pointer',
                                 fontSize: () => 16,
                                 fontWeight: () => 500,
                                 fontFamily: () => 'system-ui',
                                 colorText: '<<.linkColor',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             dom: {
                                 innerText: () => 'Войти без регистрации'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<<<.isLogin', false);
+                                    console.log($$.a.curr.name());
+                                    return true;
+                                },
                             },
                         }),
                         back_button: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
@@ -5237,9 +5265,9 @@ var $;
                             prop: {
                                 '#width': () => 11,
                                 '#height': () => 17,
-                                '#ofsVer': () => 412,
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer'], ({ masters: [ofsVer] }) => ofsVer + 7),
                                 '#cursor': () => 'pointer',
-                                '#zIndex': $$.$me_atom2_prop(['<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             attr: {
                                 src: () => '/nl/assets/back-btn.svg',
@@ -5247,7 +5275,6 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    console.log('back button click');
                                     $$.a('<<.selected', 'enter');
                                     return false;
                                 },
@@ -5255,9 +5282,8 @@ var $;
                         }),
                         restore_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
                             prop: {
-                                '#width': '<.#width',
-                                '#height': () => 25,
-                                '#ofsVer': () => 505,
+                                '#height': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(40)),
                                 '#alignHor': () => $$.$me_align.center,
                                 fontSize: () => 18,
                                 fontWeight: () => 500,
@@ -5389,7 +5415,7 @@ var $;
                     prop: {
                         '#alignHor': () => $$.$me_align.right,
                         '#width': () => 55,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                         '#cursor': () => 'pointer',
                     },
                     elem: {
@@ -5434,7 +5460,7 @@ var $;
                     prop: {
                         '#alignHor': () => $$.$me_align.right,
                         '#width': () => 25,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                         '#cursor': () => 'pointer',
                         showPassword: () => false,
                     },
