@@ -915,6 +915,7 @@ var $;
             (p) => compute_fn_diff(p, initial);
         const compute_fn_diff = (p, initial) => p.masters.reduce((result, val, idx) => result + (!idx ? val : -val), initial === void 0 ? 0 : initial);
         $$.$me_atom2_prop_keys = (masters, strip_null = false) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]).filter((key) => !strip_null || masters[0][key] != null));
+        $$.$me_atom2_prop_bind = (master) => $me_atom2_prop([master], null, ({ val }) => { $$.a(master, val, true); });
         function $me_atom2_prop_same_def(prop_def, props) {
             const result = {};
             for (const prop of props)
@@ -4465,6 +4466,967 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_stylesheet = {
+            prop: {
+                styleSheetName: $$.$me_atom2_prop_abstract(),
+                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
+                styleSheetCommon: () => '',
+                instanceId: () => null,
+                styleSheet_apply: $$.$me_atom2_prop(['.styleSheet', '.styleSheetName', '.instanceId'], null, styleSheet_apply_fn),
+                styleSheetCommon_apply: $$.$me_atom2_prop(['.styleSheetCommon', '.styleSheetName'], null, styleSheet_apply_fn),
+                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
+            },
+            dom: {
+                className: $$.$me_atom2_prop(['.styleSheetName', '.className'], ({ masters: [styleSheetName, className] }) => styleSheetName + ' ' + className),
+            },
+            init: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                if (!instances[styleSheetName])
+                    instances[styleSheetName] = new Map();
+                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
+                let id;
+                for (let i = 0; i < ids.length; i++)
+                    if (i != ids[i]) {
+                        id = i;
+                        break;
+                    }
+                if (id === void 0)
+                    id = ids.length;
+                $$.a('.instanceId', id);
+                instances[styleSheetName].set(self, id);
+                const styleSheetCommon = $$.a('.styleSheetCommon');
+                if (!styleSheetCommon)
+                    return;
+                const styleSheetCommonId = styleSheetId(styleSheetName);
+                if (document.getElementById(styleSheetCommonId))
+                    return;
+                let sheet = document.createElement('style');
+                sheet.id = styleSheetCommonId;
+                sheet.innerHTML = styleSheetCommon;
+                let head = document.head || document.getElementsByTagName('head')[0];
+                head.appendChild(sheet);
+            },
+            fini: (self) => {
+                const styleSheetName = $$.a('.styleSheetName');
+                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
+                instances[styleSheetName].delete(self);
+                if (instances[styleSheetName].size)
+                    return;
+                instances[styleSheetName] = null;
+                removeStyleSheet(styleSheetId(styleSheetName));
+            },
+        };
+        function styleSheet_apply_fn(p) {
+            const [innerHTML, styleSheetName, instanceId] = p.val;
+            let sheet;
+            const id = styleSheetId(styleSheetName, instanceId);
+            if (!innerHTML) {
+                removeStyleSheet(id);
+            }
+            else if (sheet = document.getElementById(id)) {
+                if (sheet.innerHTML != innerHTML)
+                    sheet.innerHTML = innerHTML;
+            }
+            else {
+                sheet = document.createElement('style');
+                sheet.id = id;
+                sheet.innerHTML = innerHTML;
+                let head = document.head || document.getElementsByTagName('head')[0];
+                head.appendChild(sheet);
+            }
+        }
+        function removeStyleSheet(styleSheetId) {
+            let sheet = document.getElementById(styleSheetId);
+            if (sheet && sheet.parentElement)
+                sheet.parentElement.removeChild(sheet);
+        }
+        let instances = {};
+        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//stylesheet.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_cross = {
+            base: $$.$me_stylesheet,
+            prop: {
+                size: $$.$me_atom2_prop_abstract(),
+                thick: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                opacity: () => 1,
+                opacityHover: () => 1,
+                '#width': '.size',
+                '#height': '.size',
+                styleSheetName: () => 'cross',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
+        .${className}:before {
+          transform: rotate(45deg);
+        }
+        .${className}:after {
+          transform: rotate(-45deg);
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
+        .${className} {
+          opacity: ${opacity};
+        }
+        .${className}:hover {
+          opacity: ${opacityHover};
+        }
+        .${className}:before, .${className}:after {
+          position: absolute;
+          left: ${(size - thick) / 2}px;
+          content: ' ';
+          height: ${size}px;
+          width: ${thick}px;
+          background-color: ${color};
+        }
+      `),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//cross.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_input = {
+            base: $$.$me_stylesheet,
+            node: 'input',
+            dispatch: (dispatch_name, dispatch_arg) => {
+                if (dispatch_name == 'focus' || dispatch_name == 'blur' || dispatch_name == 'change')
+                    return true;
+                return false;
+            },
+            prop: {
+                styleSheetName: () => 'nl_input',
+                className: '.styleSheetName',
+                styleSheet: () => '',
+                styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
+                    return (`
+          .${className}::placeholder {
+            color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+          }
+          .${className} {
+            border: solid 1px ${theme == $$.$me_theme.light ? '#bdc3d1' : '#d8dce3'};
+            background: ${theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'}
+          }
+          .${className}:focus {
+            outline: none;
+            border: 1px solid ${theme == $$.$me_theme.light ? '#313745' : 'white'};
+          }
+        `);
+                }),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                isFocused: $$.$me_atom2_prop([], () => false, ({ val }) => {
+                    const node = $$.a.curr.parent().node;
+                    node[val ? 'focus' : 'blur']();
+                }),
+            },
+            style: {
+                borderRadius: () => 3,
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                paddingLeft: () => 8,
+                boxSizing: () => 'border-box',
+                '-webkit-appearance': () => 'none',
+            },
+            attr: {
+                placeholder: '.placeholder',
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.isFocused', $$.a.dispatch('', 'focus', { result: true }).result);
+                    return true;
+                },
+                clickOrTapOutside: () => {
+                    $$.a('.isFocused', !$$.a.dispatch('', 'blur', { result: true }).result);
+                    return false;
+                },
+            },
+            init: (self) => {
+                const elem = self;
+                self.onChange = onChange.bind(self);
+                elem.node.addEventListener('change', self.onChange);
+            },
+            fini: (self) => {
+                self.node.removeEventListener('change', self.onChange);
+            },
+        };
+        function onChange(event) {
+            const prev = $$.a.curr;
+            $$.a.curr = this;
+            $$.a.dispatch('', 'change', event.target.value);
+            $$.a.curr = prev;
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//input.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_checkbox = {
+            base: $$.$me_stylesheet,
+            prop: {
+                caption: $$.$me_atom2_prop_abstract(),
+                checked: () => false,
+                space: () => 8,
+                fontSize: () => 14,
+                boxSize: () => 14,
+                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : '#ffffff'),
+                styleSheetName: () => 'checkbox',
+                className: '.styleSheetName',
+                styleSheet: () => '',
+                styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
+                    const bc = (theme == 0) ? '#0070a4' : '#ffffff';
+                    return (`
+          .${className} .box {
+            box-sizing: border-box;
+          }
+          .${className}[checked=false] .box {
+            border: solid 1px #313745;
+            background-color: white;
+          }
+          .${className}[checked=true] .box {
+            background: ${bc};
+          }
+        `);
+                }),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                '#cursor': () => 'pointer',
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.checked', !$$.a('.checked'));
+                    return true;
+                },
+            },
+            attr: {
+                checked: '.checked',
+            },
+            style: {
+                userSelect: () => 'none',
+            },
+            elem: {
+                box: () => ({
+                    prop: {
+                        '#width': '<.boxSize',
+                        '#height': '<.boxSize',
+                        '#alignVer': () => $$.$me_align.center,
+                    },
+                    style: {
+                        borderRadius: $$.$me_atom2_prop(['<.boxSize'], ({ masters: [boxSize] }) => boxSize * 2 / 14),
+                    },
+                    dom: {
+                        className: () => 'box',
+                    },
+                    elem: {
+                        check: () => ({
+                            node: 'img',
+                            prop: {
+                                '#hidden': $$.$me_atom2_prop(['<<.checked'], ({ masters: [checked] }) => !checked),
+                                '#width': () => 10,
+                                '#height': () => 9,
+                                '#align': () => $$.$me_align.center,
+                                '#ofsVer': () => 1,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/path-4-copy-2@2x.png' : 'assets/path-4-copy-2-dark@2x.png'),
+                                draggable: () => false,
+                            },
+                        }),
+                    },
+                }),
+                caption: () => ({
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<@box.#width', '<.space'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                    },
+                    style: {
+                        color: '<.colorText',
+                        fontSize: '<.fontSize',
+                        whiteSpace: () => 'nowrap',
+                    },
+                    dom: {
+                        innerHTML: '<.caption',
+                        className: () => 'caption',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//checkbox.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_panel = {
+            type: '$me_panel',
+            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
+                'borderRadiusLeftTop', 'borderRadiusRightTop',
+                'borderRadiusLeftBottom', 'borderRadiusRightBottom',
+            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+                ['paddingHor', ['paddingLeft', 'paddingRight']],
+                ['paddingVer', ['paddingTop', 'paddingBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
+                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
+                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
+            ])),
+            render: p => {
+                let borderHasWidth = false;
+                let borderHasWidthSame = true;
+                let borderHasColor = false;
+                let borderHasColorSame = true;
+                let prevWidth, prevColor;
+                const colorBorder = {};
+                const borderWidth = {};
+                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
+                    const side = s.toLowerCase();
+                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
+                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
+                    borderHasWidth = borderHasWidth || (currWidth > 0);
+                    borderHasColor = borderHasColor || !!currColor;
+                    if (null != prevWidth) {
+                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
+                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
+                    }
+                    prevWidth = currWidth;
+                    prevColor = currColor;
+                }
+                let prevRadius;
+                let borderHasRadius = false;
+                let borderHasRadiusSame = true;
+                for (const s of ['LeftTop', 'RightTop', 'LeftBottom', 'RightBottom']) {
+                    const corner = s.toLowerCase();
+                    const currRadius = borderWidth[corner] = $$.a('.borderRadius' + s) * p.pixelRatio;
+                    borderHasRadius = borderHasRadius || currRadius > 0;
+                    if (null != prevRadius)
+                        borderHasRadiusSame = borderHasRadiusSame && (currRadius == prevRadius);
+                    prevRadius = currRadius;
+                }
+                const colorBackground = $$.a('.colorBackground');
+                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
+                    $$.$me_atom2_ctx_rect({
+                        ctx: p.ctx,
+                        ctxTop: p.ctxRect.top,
+                        ctxLeft: p.ctxRect.left,
+                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
+                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
+                        ctxBorderRadius: !borderHasRadius ? null : borderHasRadiusSame ? prevRadius : {
+                            leftTop: p.pixelRatio * $$.a('.borderRadiusLeftTop'),
+                            rightTop: p.pixelRatio * $$.a('.borderRadiusRightTop'),
+                            rightBottom: p.pixelRatio * $$.a('.borderRadiusRightBottom'),
+                            leftBottom: p.pixelRatio * $$.a('.borderRadiusLeftBottom'),
+                        },
+                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
+                        stroke: !borderHasWidth || !borderHasColor ? null : {
+                            style: borderHasColorSame ? prevColor : colorBorder,
+                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
+                        }
+                    });
+                }
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight) {
+            const ctxContentWidth = Math.max(0, width - paddingLeft - paddingRight) * pixelRatio;
+            $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+            let ctxTextWidth = ctx.measureText(text).width;
+            let ctxLeft = pixelRatio * (left + paddingLeft);
+            if (ctxTextWidth > ctxContentWidth) {
+                const ctxPeriodWidth = ctx.measureText(period).width;
+                if (ctxContentWidth < ctxPeriodWidth) {
+                    console.error($$.a.curr.name(), { ctxContentWidth, ctxPeriodWidth });
+                    return { text, ctxLeft };
+                }
+                let len = text.length, wi = ctxTextWidth, s;
+                while (len && wi > ctxContentWidth - ctxPeriodWidth)
+                    wi = ctx.measureText(s = text.slice(0, --len)).width;
+                ctxTextWidth = wi + ctxPeriodWidth;
+                text = s + period;
+            }
+            ctxLeft += $$.$me_align_correction($$.a('.alignHor'), () => Math.max(0, ctxContentWidth - ctxTextWidth));
+            return { text, ctxLeft };
+        }
+        $$.$me_label_text_n_ctxLeft = $me_label_text_n_ctxLeft;
+        $$.$me_label = {
+            type: '$me_label',
+            base: $$.$me_panel,
+            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+                    '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
+                ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
+                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                    const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
+                    return result;
+                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
+                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
+            })),
+            render: p => {
+                let { ctxWidth, ctxHeight } = p;
+                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
+                const paddingLeft = $$.a('.paddingLeft');
+                const paddingRight = $$.a('.paddingRight');
+                const ctxPaddingLeft = Math.round(p.pixelRatio * paddingLeft);
+                const ctxPaddingRight = Math.round(p.pixelRatio * paddingRight);
+                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
+                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
+                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
+                if (ctxHeight < ctxFontSize - 1) {
+                    console.error({ ctxHeight, ctxFontSize });
+                    return;
+                }
+                const align = $$.a('.alignVer');
+                const ctxOfs = $$.a('.ofsVer') * p.pixelRatio;
+                const ctxCorrection = align == $$.$me_align.bottom ? ctxOfs :
+                    align == $$.$me_align.top ? ctxHeight - ctxFontSize - ctxOfs :
+                        (ctxHeight - ctxFontSize) / 2 - ctxOfs;
+                const bottom = p.ctxRect.bottom - ctxPaddingBottom - ctxCorrection;
+                p.ctx.fillStyle = $$.a('.colorText');
+                let text = $$.a('._text') + '';
+                const ctxLeft = $$.a('._ctxLeft');
+                ctxWidth -= ctxLeft - $$.a('.#left') * p.pixelRatio;
+                while (p.ctx.measureText(text).width > ctxWidth)
+                    text = text.slice(0, -1);
+                p.ctx.fillText(text, ctxLeft, bottom);
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//label.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_button = {
+            prop: {
+                caption: $$.$me_atom2_prop_abstract(),
+                target: $$.$me_atom2_prop_abstract(),
+                cmd: () => null,
+                '#width': () => 200,
+                '#height': () => 40,
+                '#cursor': () => 'pointer',
+                source: () => null,
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+            },
+            control: {
+                label: () => ({
+                    base: $$.$me_label,
+                    prop: {
+                        text: '<.caption',
+                        colorText: () => 'white',
+                        padding: () => 0,
+                        align: () => $$.$me_align.center,
+                        '#height': '<.#height',
+                        '#width': '<.#width',
+                    },
+                }),
+            },
+            style: {
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
+                borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
+            },
+            event: {
+                clickOrTap: () => {
+                    const result = $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
+                    console.log(result);
+                    return true;
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//button.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_login = {
+            prop: {
+                '#width': '/.#viewportWidth',
+                '#height': '/.#viewportHeight',
+                selected: () => 'enter',
+                linkColor: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#2b87db' : '#53adff'),
+            },
+            dispatch: (dispatch_name, dispatch_arg) => {
+                dispatch_arg.result = 'ok';
+                return true;
+            },
+            style: {
+                boxSizing: () => 'border-box',
+                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
+            },
+            elem: {
+                container: () => ({
+                    prop: {
+                        '#width': () => 500,
+                        '#alignHor': () => $$.$me_align.center,
+                        '#alignVer': () => $$.$me_align.top,
+                    },
+                    style: {
+                        boxSizing: () => 'border-box',
+                    },
+                    elem: {
+                        logo: () => ({
+                            node: 'img',
+                            prop: {
+                                '#width': () => 220,
+                                '#height': () => 254,
+                                '#ofsVer': () => 56,
+                                '#alignHor': () => $$.$me_align.center,
+                                '#alignVer': () => $$.$me_align.top,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '/nl/assets/logo.png' : '/nl/assets/logo_dark.png'),
+                                draggable: () => false,
+                            },
+                        }),
+                        tabs: () => ({
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': () => 40,
+                                '#ofsVer': () => 406,
+                            },
+                            elem: {
+                                tab1: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
+                                    base: tab,
+                                    prop: {
+                                        id: () => 'enter',
+                                        '#width': () => 180,
+                                        caption: () => 'ВХОД',
+                                    },
+                                }),
+                                tab2: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
+                                    base: tab,
+                                    prop: {
+                                        id: () => 'register',
+                                        '#width': $$.$me_atom2_prop(['<.#width', '<@tab1.#width'], ({ masters: [width, tab1_width] }) => width - tab1_width),
+                                        '#ofsHor': '<@tab1.#width',
+                                        caption: () => 'РЕГИСТРАЦИЯ',
+                                    },
+                                }),
+                                tab3: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
+                                    base: tab,
+                                    prop: {
+                                        id: () => 'restore',
+                                        '#width': '<.#width',
+                                        caption: () => 'ВОССТАНОВЛЕНИЕ ПАРОЛЯ',
+                                    },
+                                }),
+                            }
+                        }),
+                        cross: () => ({
+                            base: $$.$me_cross,
+                            prop: {
+                                size: () => 24,
+                                thick: () => 3,
+                                '#ofsVer': () => 408,
+                                '#ofsHor': () => 476,
+                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                            },
+                        }),
+                        phone: () => ({
+                            base: input_with_icon,
+                            attr: {
+                                placeholder: () => 'Введите телефон или E-mail',
+                            },
+                            dispatch(dispatch_name, dispatch_arg) {
+                                if (dispatch_name == 'change') {
+                                    $$.a(`.value`, dispatch_arg);
+                                    return true;
+                                }
+                                return false;
+                            },
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': () => 45,
+                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? 596 : 509),
+                                value: () => '',
+                                isError: () => false,
+                            },
+                            style: {
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                value: '.value',
+                            },
+                        }),
+                        phone_error: () => ({
+                            base: error_panel,
+                            prop: {
+                                size_w: () => 233,
+                                size_h: () => 45,
+                                background_color: () => 'red',
+                                color: () => 'white',
+                                caption: () => 'Несуществующий Email',
+                                '#hidden': $$.$me_atom2_prop(['<@phone.isError'], ({ masters: [isError] }) => !isError),
+                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? 596 : 509),
+                                '#ofsHor': () => 502,
+                                '#zIndex': $$.$me_atom2_prop(['<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            }
+                        }),
+                        pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
+                            base: $$.$nl_input,
+                            dispatch(dispatch_name, dispatch_arg) {
+                                if (dispatch_name == 'change') {
+                                    $$.a(`.value`, dispatch_arg);
+                                    return true;
+                                }
+                                return false;
+                            },
+                            attr: {
+                                placeholder: () => 'Введите пароль',
+                            },
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': () => 45,
+                                '#ofsVer': () => 596,
+                                value: () => '',
+                                isError: () => false,
+                            },
+                            style: {
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                value: '.value',
+                            },
+                        }),
+                        pass_error: () => ({
+                            base: error_panel,
+                            prop: {
+                                size_w: () => 233,
+                                size_h: () => 45,
+                                background_color: () => 'red',
+                                color: () => 'white',
+                                caption: () => 'Неверный пароль',
+                                '#hidden': $$.$me_atom2_prop(['<@pass.isError'], ({ masters: [isError] }) => !isError),
+                                '#ofsVer': () => 596,
+                                '#ofsHor': () => 502,
+                                '#zIndex': $$.$me_atom2_prop(['<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                        }),
+                        pass_confirm: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'register' ? null : {
+                            base: $$.$nl_input,
+                            attr: {
+                                placeholder: () => 'Подтвердите пароль',
+                            },
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': () => 45,
+                                '#ofsVer': () => 683,
+                            },
+                            style: {
+                                fontSize: () => 18,
+                            }
+                        }),
+                        check: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
+                            base: $$.$nl_checkbox,
+                            prop: {
+                                '#width': () => 200,
+                                '#height': () => 25,
+                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 675 : 770),
+                                caption: () => 'Оставаться в системе',
+                                checked: () => true,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            }
+                        }),
+                        forget_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': () => 25,
+                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 675 : 770),
+                                '#ofsHor': () => 370,
+                                '#cursor': () => 'pointer',
+                                fontSize: () => 16,
+                                fontWeight: () => 500,
+                                fontFamily: () => 'system-ui',
+                                colorText: '<<.linkColor',
+                            },
+                            dom: {
+                                innerText: () => 'Забыли пароль?'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    console.log('click on link!');
+                                    $$.a('<<.selected', 'restore');
+                                    return true;
+                                },
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': () => 45,
+                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 749 : page == 'register' ? 844 : 749),
+                                caption: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 'Войти' : page == 'register' ? 'Зарегистрироваться' : 'Отправить'),
+                                target: () => '<<',
+                                fontSize: () => 18,
+                                cmd: () => ({ some: 'thing' })
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    let mode = $$.a('<<.selected');
+                                    console.log('button click ', mode);
+                                    if (mode == 'enter') {
+                                        let login = $$.a('<@phone.value');
+                                        let pass = $$.a('<@pass.value');
+                                        $$.a('<@phone.isError', login != '98@baza-winner.ru');
+                                        $$.a('<@pass.isError', pass != '12345');
+                                        console.log('login', login, pass);
+                                    }
+                                    return true;
+                                },
+                            }
+                        }),
+                        no_reg_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
+                            prop: {
+                                '#width': () => 200,
+                                '#height': () => 25,
+                                '#ofsVer': $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 836 : 931),
+                                '#alignHor': () => $$.$me_align.center,
+                                '#cursor': () => 'pointer',
+                                fontSize: () => 16,
+                                fontWeight: () => 500,
+                                fontFamily: () => 'system-ui',
+                                colorText: '<<.linkColor',
+                            },
+                            dom: {
+                                innerText: () => 'Войти без регистрации'
+                            },
+                        }),
+                        back_button: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
+                            node: 'img',
+                            prop: {
+                                '#width': () => 11,
+                                '#height': () => 17,
+                                '#ofsVer': () => 412,
+                                '#cursor': () => 'pointer',
+                                '#zIndex': $$.$me_atom2_prop(['<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                            },
+                            attr: {
+                                src: () => '/nl/assets/back-btn.svg',
+                                draggable: () => false,
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    console.log('back button click');
+                                    $$.a('<<.selected', 'enter');
+                                    return false;
+                                },
+                            }
+                        }),
+                        restore_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': () => 25,
+                                '#ofsVer': () => 505,
+                                '#alignHor': () => $$.$me_align.center,
+                                fontSize: () => 18,
+                                fontWeight: () => 500,
+                                fontFamily: () => 'system-ui',
+                                colorText: () => '#6a6c74',
+                            },
+                            style: {
+                                textAlign: () => 'center',
+                            },
+                            dom: {
+                                innerText: () => 'На вашу электронную почту будет отправлена инструкция по восстановлению пароля'
+                            },
+                        }),
+                    }
+                })
+            },
+        };
+        const tab = {
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<<<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    console.log('click on tab!');
+                    $$.a('<<<.selected', $$.a('.id'));
+                    return true;
+                },
+            },
+            elem: {
+                caption: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#alignHor': () => $$.$me_align.center,
+                    },
+                    style: {
+                        fontSize: () => 24,
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    }
+                })
+            },
+            style: {
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+        const error_panel = {
+            prop: {
+                size_w: $$.$me_atom2_prop_abstract(),
+                size_h: $$.$me_atom2_prop_abstract(),
+                caption: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                background_color: $$.$me_atom2_prop_abstract(),
+                '#width': '.size_w',
+                '#height': '.size_h',
+            },
+            elem: {
+                block: () => ({
+                    base: $$.$me_stylesheet,
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.size_w'], ({ masters: [size_w] }) => size_w - 20),
+                        '#height': '<.#height',
+                        '#ofsHor': $$.$me_atom2_prop(['<.size_h'], ({ masters: [size] }) => size / 4),
+                        styleSheetName: () => 'error-block',
+                        styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName', '<.background_color'], ({ masters: [className, color] }) => `
+              .${className} {
+                  position: relative;
+                  background-color:${color};
+              }
+              .${className}:before {
+                  content:'';
+                  width: 0;
+                  height: 0;
+                  position: absolute;
+              }
+          `),
+                        styleSheet: $$.$me_atom2_prop(['.className', '<.size_w', '<.size_h', '<.background_color'], ({ masters: [className, width, height, color], atom }) => {
+                            const base = height / 4;
+                            return `
+              .${className} {
+                  width: ${Math.round(width)}px;
+                  height: ${Math.round(height)}px;
+                  position: relative;
+              }
+
+              .${className}:before {
+                content:"";
+                position: absolute;
+                right: 100%;
+                top: 0;
+                width: 0;
+                height: 0;
+                border-top: ${Math.round(base * 2)}px solid transparent;
+                border-right: ${Math.round(base * 1)}px solid ${color};
+                border-bottom: ${Math.round(base * 2)}px solid transparent;
+              }
+            `;
+                        }),
+                    },
+                }),
+                caption: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': '<.#height',
+                        '#align': () => $$.$me_align.center,
+                    },
+                    style: {
+                        fontSize: () => 16,
+                        lineHeight: '<.#height',
+                        color: '<.color',
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    }
+                }),
+            },
+        };
+        const input_with_icon = {
+            elem: {
+                input: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        placeholder: '<.placeholder',
+                    },
+                }),
+                icon: () => ({
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#width': () => 55,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                    },
+                    elem: {
+                        square: () => ({
+                            node: 'img',
+                            prop: {
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': () => 8,
+                                '#alignVer': () => $$.$me_align.center,
+                                '#width': () => 55,
+                                '#height': () => 31,
+                            },
+                            style: {},
+                            attr: {
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/icon-pe.svg' : 'assets/icon-pe-dark.svg'),
+                                draggable: () => false,
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log($$.a.curr.name());
+                            return true;
+                        },
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//login.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_search_tabs = {
             elem: {
                 tab: $$.$me_atom2_prop({ keys: ['<.order_ids'] }, ({ key: [id] }) => ({
@@ -4843,157 +5805,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_panel = {
-            type: '$me_panel',
-            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
-                'borderRadiusLeftTop', 'borderRadiusRightTop',
-                'borderRadiusLeftBottom', 'borderRadiusRightBottom',
-            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
-                ['paddingHor', ['paddingLeft', 'paddingRight']],
-                ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
-                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
-                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
-                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
-                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
-            ])),
-            render: p => {
-                let borderHasWidth = false;
-                let borderHasWidthSame = true;
-                let borderHasColor = false;
-                let borderHasColorSame = true;
-                let prevWidth, prevColor;
-                const colorBorder = {};
-                const borderWidth = {};
-                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
-                    const side = s.toLowerCase();
-                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
-                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
-                    borderHasWidth = borderHasWidth || (currWidth > 0);
-                    borderHasColor = borderHasColor || !!currColor;
-                    if (null != prevWidth) {
-                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
-                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
-                    }
-                    prevWidth = currWidth;
-                    prevColor = currColor;
-                }
-                let prevRadius;
-                let borderHasRadius = false;
-                let borderHasRadiusSame = true;
-                for (const s of ['LeftTop', 'RightTop', 'LeftBottom', 'RightBottom']) {
-                    const corner = s.toLowerCase();
-                    const currRadius = borderWidth[corner] = $$.a('.borderRadius' + s) * p.pixelRatio;
-                    borderHasRadius = borderHasRadius || currRadius > 0;
-                    if (null != prevRadius)
-                        borderHasRadiusSame = borderHasRadiusSame && (currRadius == prevRadius);
-                    prevRadius = currRadius;
-                }
-                const colorBackground = $$.a('.colorBackground');
-                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
-                    $$.$me_atom2_ctx_rect({
-                        ctx: p.ctx,
-                        ctxTop: p.ctxRect.top,
-                        ctxLeft: p.ctxRect.left,
-                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
-                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
-                        ctxBorderRadius: !borderHasRadius ? null : borderHasRadiusSame ? prevRadius : {
-                            leftTop: p.pixelRatio * $$.a('.borderRadiusLeftTop'),
-                            rightTop: p.pixelRatio * $$.a('.borderRadiusRightTop'),
-                            rightBottom: p.pixelRatio * $$.a('.borderRadiusRightBottom'),
-                            leftBottom: p.pixelRatio * $$.a('.borderRadiusLeftBottom'),
-                        },
-                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
-                        stroke: !borderHasWidth || !borderHasColor ? null : {
-                            style: borderHasColorSame ? prevColor : colorBorder,
-                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
-                        }
-                    });
-                }
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        function $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight) {
-            const ctxContentWidth = Math.max(0, width - paddingLeft - paddingRight) * pixelRatio;
-            $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-            let ctxTextWidth = ctx.measureText(text).width;
-            let ctxLeft = pixelRatio * (left + paddingLeft);
-            if (ctxTextWidth > ctxContentWidth) {
-                const ctxPeriodWidth = ctx.measureText(period).width;
-                if (ctxContentWidth < ctxPeriodWidth) {
-                    console.error($$.a.curr.name(), { ctxContentWidth, ctxPeriodWidth });
-                    return { text, ctxLeft };
-                }
-                let len = text.length, wi = ctxTextWidth, s;
-                while (len && wi > ctxContentWidth - ctxPeriodWidth)
-                    wi = ctx.measureText(s = text.slice(0, --len)).width;
-                ctxTextWidth = wi + ctxPeriodWidth;
-                text = s + period;
-            }
-            ctxLeft += $$.$me_align_correction($$.a('.alignHor'), () => Math.max(0, ctxContentWidth - ctxTextWidth));
-            return { text, ctxLeft };
-        }
-        $$.$me_label_text_n_ctxLeft = $me_label_text_n_ctxLeft;
-        $$.$me_label = {
-            type: '$me_label',
-            base: $$.$me_panel,
-            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
-                    '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
-                ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
-                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-                    const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
-                    return result;
-                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
-                '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
-                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
-            })),
-            render: p => {
-                let { ctxWidth, ctxHeight } = p;
-                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
-                const paddingLeft = $$.a('.paddingLeft');
-                const paddingRight = $$.a('.paddingRight');
-                const ctxPaddingLeft = Math.round(p.pixelRatio * paddingLeft);
-                const ctxPaddingRight = Math.round(p.pixelRatio * paddingRight);
-                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
-                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
-                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
-                if (ctxHeight < ctxFontSize - 1) {
-                    console.error({ ctxHeight, ctxFontSize });
-                    return;
-                }
-                const align = $$.a('.alignVer');
-                const ctxOfs = $$.a('.ofsVer') * p.pixelRatio;
-                const ctxCorrection = align == $$.$me_align.bottom ? ctxOfs :
-                    align == $$.$me_align.top ? ctxHeight - ctxFontSize - ctxOfs :
-                        (ctxHeight - ctxFontSize) / 2 - ctxOfs;
-                const bottom = p.ctxRect.bottom - ctxPaddingBottom - ctxCorrection;
-                p.ctx.fillStyle = $$.a('.colorText');
-                let text = $$.a('._text') + '';
-                const ctxLeft = $$.a('._ctxLeft');
-                ctxWidth -= ctxLeft - $$.a('.#left') * p.pixelRatio;
-                while (p.ctx.measureText(text).width > ctxWidth)
-                    text = text.slice(0, -1);
-                p.ctx.fillText(text, ctxLeft, bottom);
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//label.js.map
 ;
 "use strict";
 var $;
@@ -6253,168 +7064,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$me_stylesheet = {
-            prop: {
-                styleSheetName: $$.$me_atom2_prop_abstract(),
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
-                styleSheetCommon: () => '',
-                instanceId: () => null,
-                styleSheet_apply: $$.$me_atom2_prop(['.styleSheet', '.styleSheetName', '.instanceId'], null, styleSheet_apply_fn),
-                styleSheetCommon_apply: $$.$me_atom2_prop(['.styleSheetCommon', '.styleSheetName'], null, styleSheet_apply_fn),
-                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
-            },
-            dom: {
-                className: $$.$me_atom2_prop(['.styleSheetName', '.className'], ({ masters: [styleSheetName, className] }) => styleSheetName + ' ' + className),
-            },
-            init: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                if (!instances[styleSheetName])
-                    instances[styleSheetName] = new Map();
-                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
-                let id;
-                for (let i = 0; i < ids.length; i++)
-                    if (i != ids[i]) {
-                        id = i;
-                        break;
-                    }
-                if (id === void 0)
-                    id = ids.length;
-                $$.a('.instanceId', id);
-                instances[styleSheetName].set(self, id);
-                const styleSheetCommon = $$.a('.styleSheetCommon');
-                if (!styleSheetCommon)
-                    return;
-                const styleSheetCommonId = styleSheetId(styleSheetName);
-                if (document.getElementById(styleSheetCommonId))
-                    return;
-                let sheet = document.createElement('style');
-                sheet.id = styleSheetCommonId;
-                sheet.innerHTML = styleSheetCommon;
-                let head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(sheet);
-            },
-            fini: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
-                instances[styleSheetName].delete(self);
-                if (instances[styleSheetName].size)
-                    return;
-                instances[styleSheetName] = null;
-                removeStyleSheet(styleSheetId(styleSheetName));
-            },
-        };
-        function styleSheet_apply_fn(p) {
-            const [innerHTML, styleSheetName, instanceId] = p.val;
-            let sheet;
-            const id = styleSheetId(styleSheetName, instanceId);
-            if (!innerHTML) {
-                removeStyleSheet(id);
-            }
-            else if (sheet = document.getElementById(id)) {
-                if (sheet.innerHTML != innerHTML)
-                    sheet.innerHTML = innerHTML;
-            }
-            else {
-                sheet = document.createElement('style');
-                sheet.id = id;
-                sheet.innerHTML = innerHTML;
-                let head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(sheet);
-            }
-        }
-        function removeStyleSheet(styleSheetId) {
-            let sheet = document.getElementById(styleSheetId);
-            if (sheet && sheet.parentElement)
-                sheet.parentElement.removeChild(sheet);
-        }
-        let instances = {};
-        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//stylesheet.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_input = {
-            base: $$.$me_stylesheet,
-            node: 'input',
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'focus' || dispatch_name == 'blur' || dispatch_name == 'change')
-                    return true;
-                return false;
-            },
-            prop: {
-                styleSheetName: () => 'nl_input',
-                className: '.styleSheetName',
-                styleSheet: () => '',
-                styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
-                    return (`
-          .${className}::placeholder {
-            color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
-          }
-          .${className} {
-            border: solid 1px ${theme == $$.$me_theme.light ? '#bdc3d1' : '#d8dce3'};
-            background: ${theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'}
-          }
-          .${className}:focus {
-            outline: none;
-            border: 1px solid ${theme == $$.$me_theme.light ? '#313745' : 'white'};
-          }
-        `);
-                }),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                isFocused: $$.$me_atom2_prop([], () => false, ({ val }) => {
-                    const node = $$.a.curr.parent().node;
-                    node[val ? 'focus' : 'blur']();
-                }),
-            },
-            style: {
-                borderRadius: () => 3,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                paddingLeft: () => 8,
-                boxSizing: () => 'border-box',
-                '-webkit-appearance': () => 'none',
-            },
-            attr: {
-                placeholder: '.placeholder',
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('.isFocused', $$.a.dispatch('', 'focus', { result: true }).result);
-                    return true;
-                },
-                clickOrTapOutside: () => {
-                    $$.a('.isFocused', !$$.a.dispatch('', 'blur', { result: true }).result);
-                    return false;
-                },
-            },
-            init: (self) => {
-                const elem = self;
-                self.onChange = onChange.bind(self);
-                elem.node.addEventListener('change', self.onChange);
-            },
-            fini: (self) => {
-                self.node.removeEventListener('change', self.onChange);
-            },
-        };
-        function onChange(event) {
-            const prev = $$.a.curr;
-            $$.a.curr = this;
-            $$.a.dispatch('', 'change', event.target.value);
-            $$.a.curr = prev;
-        }
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//input.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         let $nl_calendar_mode;
         (function ($nl_calendar_mode) {
             $nl_calendar_mode[$nl_calendar_mode["day"] = 0] = "day";
@@ -7651,6 +8300,559 @@ var $;
                     keys: ['.crumb_ids'],
                     masters: ['.crumb_pos[]'],
                 }, ({ masters: [crumb_pos] }) => crumb_pos.width),
+                tab_selected: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.tab_ids')[0],
+                    valid: (val) => typeof val == 'string' && ~$$.a('.tab_ids').indexOf(val) ? val : null,
+                }),
+                tab_ids: $$.$me_atom2_prop_keys(['.tabs'], true),
+                tabs: () => ({
+                    Местоположение: {
+                        icon: 'icons-8-place-marker',
+                        params: {
+                            Область: {
+                                row: () => 0,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая Московскую область' : {
+                                            text: 'Включая',
+                                            width: 90,
+                                        } },
+                                    only: { caption: ({ isSelected }) => isSelected ? 'Только Московская область' : {
+                                            text: 'Только',
+                                            width: 90,
+                                        } },
+                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме Московской области' : {
+                                            text: 'Кроме',
+                                            width: 90,
+                                        } },
+                                })
+                            },
+                            НоваяМосква: {
+                                hidden: $$.$me_atom2_prop(['<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only'),
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая Новую Москву' : {
+                                            text: 'Включая',
+                                            width: 90,
+                                        } },
+                                    only: { caption: ({ isSelected }) => isSelected ? 'Только Новая Москва' : {
+                                            text: 'Только',
+                                            width: 90,
+                                        } },
+                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме Новой Москвы' : {
+                                            text: 'Кроме',
+                                            width: 90,
+                                        } },
+                                }),
+                            },
+                            Адрес: {
+                                type: 'address',
+                                row: () => 2,
+                            },
+                            ОтСтанции: {
+                                row: () => 3,
+                                label: () => 'От станции',
+                                label_width: () => 90,
+                                type: 'picker',
+                                options: () => $$.$nl_search_panel_param_options['ОтСтанции'],
+                            },
+                        },
+                    },
+                    'Квартира: основные': {
+                        icon: 'icons-8-key',
+                        params: {
+                            apart: {
+                                row: () => 0,
+                                type: 'select',
+                                options: () => ({
+                                    no_matter: {
+                                        caption: ({ isSelected }) => isSelected ? {
+                                            width: 250,
+                                            text: 'Можно апартаменты',
+                                        } : {
+                                            width: 90,
+                                            text: 'Не важно',
+                                        },
+                                    },
+                                    except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 210,
+                                            text: 'Только апартаменты',
+                                        } : {
+                                            width: 60,
+                                            text: '...',
+                                        } }
+                                }),
+                            },
+                            rmqt: {
+                                row: () => 1,
+                                type: 'pickermulti',
+                                label: () => 'Квартира',
+                                label_width: () => 90,
+                                none: () => 'с любым количеством комнат',
+                                options: () => $$.$nl_search_panel_param_options['rmqt'],
+                            },
+                            plan: {
+                                row: () => 2,
+                                type: 'select',
+                                options: () => ({
+                                    no_matter: {
+                                        caption: ({ isSelected }) => isSelected ? {
+                                            width: 250,
+                                            text: 'Можно со смежными комнатами',
+                                        } : {
+                                            width: 90,
+                                            text: 'Не важно',
+                                        },
+                                    },
+                                    only: { caption: ({ isSelected }) => isSelected ? 'Только изолированные комнаты' : 'Изолированные' },
+                                    except: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 210,
+                                            text: 'Только смежные комнаты',
+                                        } : {
+                                            width: 60,
+                                            text: '...',
+                                        } }
+                                }),
+                            },
+                            total_sq: {
+                                row: () => 3,
+                                type: 'diap',
+                                label: () => 'Площадь',
+                                label_width: () => 90,
+                                diap_space: () => 16,
+                            },
+                            life_sq: {
+                                row: () => 4,
+                                type: 'diap',
+                                label: () => 'Жилая',
+                                label_width: () => 90,
+                                diap_space: () => 16,
+                            },
+                            kitchen_sq: {
+                                row: () => 5,
+                                type: 'diap',
+                                label: () => 'Кухня',
+                                label_width: () => 90,
+                                diap_space: () => 16,
+                            },
+                        },
+                    },
+                    'Квартира: ещё': {
+                        icon: 'icons-8-key',
+                        params: {
+                            remont: {
+                                row: () => 0,
+                                type: 'pickermulti',
+                                label: () => 'Ремонт',
+                                label_width: () => 90,
+                                none: () => 'не важен',
+                                options: () => $$.$nl_search_panel_param_options['remont'],
+                            },
+                            lavatory: {
+                                row: () => 1,
+                                type: 'picker',
+                                label: () => 'Санузел',
+                                label_width: () => 90,
+                                options: () => $$.$nl_search_panel_param_options['lavatory'],
+                            },
+                            balcony: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Балкон',
+                                label_width: () => 90,
+                                options: () => $$.$nl_search_panel_param_options['balcony'],
+                            },
+                            okna: {
+                                row: () => 3,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: ({ isSelected }) => isSelected ? {
+                                            width: 250,
+                                            text: 'Не важно, куда выходят окна'
+                                        } : {
+                                            width: 90,
+                                            text: 'Не важно',
+                                        } },
+                                    '1': { caption: ({ isSelected }) => isSelected ? 'Окна только во двор' : 'Во двор' },
+                                    '2': { caption: ({ isSelected }) => isSelected ? {
+                                            width: 210,
+                                            text: 'Окна только на улицу',
+                                        } : 'На улицу' },
+                                }),
+                            },
+                        },
+                    },
+                    'Цена и условия': {
+                        icon: 'icons-8-money',
+                        params: {
+                            'Ипотека': {
+                                row: () => 0,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: {
+                                            width: 85,
+                                            text: 'Не важно'
+                                        } },
+                                    only: { caption: ({ val }) => val != 'except' ?
+                                            'Возможна продажа по ипотеке' : {
+                                            text: 'Возможна',
+                                            width: 90,
+                                        }
+                                    },
+                                    except: { caption: ({ isSelected }) => isSelected ? 'Продажа по ипотеке невозможна' : {
+                                            text: '...',
+                                            width: 60,
+                                        }
+                                    },
+                                }),
+                            },
+                            'ТипСделки': {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: ({ isSelected }) => isSelected ? {
+                                            width: 250,
+                                            text: 'Можно с альтернативой',
+                                        } : {
+                                            text: 'Не важно',
+                                            width: 85,
+                                        } },
+                                    '1': { caption: ({ isSelected, val }) => isSelected ? 'Только прямая продажа' : {
+                                            text: 'Кроме',
+                                            width: val == '0' ? null : 90,
+                                        } },
+                                    '2': { caption: ({ isSelected }) => isSelected ? 'Только с альтернативой' : {
+                                            text: '...',
+                                            width: 60,
+                                        } },
+                                }),
+                            },
+                            price: {
+                                row: () => 2,
+                                type: 'diap',
+                                label: () => 'Цена',
+                                label_width: () => 85,
+                                diap_space: () => 16,
+                            },
+                            price_per_sq: {
+                                row: () => 3,
+                                type: 'diap',
+                                label: () => 'Цена за м²',
+                                label_width: () => 85,
+                                diap_space: () => 16,
+                            },
+                            'ДинамикаЦены': {
+                                row: () => 4,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 85 }) },
+                                    '1': { caption: ({ isSelected, val }) => val != '2' ? 'Понижение цены' : 'Понижение' },
+                                    '2': { caption: ({ isSelected }) => isSelected ? {
+                                            width: 176,
+                                            text: 'Повышение цены',
+                                        } : {
+                                            width: 162,
+                                            text: 'Повышение'
+                                        } },
+                                }),
+                            },
+                            'БонусАгенту': {
+                                row: () => 5,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 85 }) },
+                                    '1': { caption: ({ isSelected, val }) => val != '2' ? 'Только с бонусом агенту' : 'С бонусом' },
+                                    '2': { caption: ({ isSelected }) => isSelected ? {
+                                            width: 176,
+                                            text: 'Без бонуса агенту',
+                                        } : {
+                                            width: 162,
+                                            text: 'Без бонуса',
+                                        } },
+                                }),
+                            },
+                        },
+                    },
+                    'Этаж/Этажность': {
+                        icon: 'level',
+                        params: {
+                            Этаж: {
+                                row: () => 0,
+                                type: 'diap',
+                                label: () => 'Этаж',
+                                label_width: () => 85,
+                                diap_space: () => 16,
+                            },
+                            ПервыйЭтаж: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 210,
+                                            text: 'Можно первый этаж',
+                                        } : {
+                                            text: 'Можно',
+                                            width: 85,
+                                        } },
+                                    exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме первого этажа' : 'Кроме' },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 181,
+                                            text: 'Только первый этаж',
+                                        } : {
+                                            text: 'Только',
+                                            width: 110,
+                                        } },
+                                }),
+                            },
+                            ПоследнийЭтаж: {
+                                row: () => 2,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Можно последний этаж',
+                                            width: 210,
+                                        } : {
+                                            text: 'Можно',
+                                            width: 85,
+                                        } },
+                                    exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме последнего этажа' : 'Кроме' },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 181,
+                                            text: 'Только последний этаж',
+                                        } : {
+                                            text: 'Только',
+                                            width: 110,
+                                        } },
+                                }),
+                            },
+                            Этажность: {
+                                row: () => 3,
+                                type: 'diap',
+                                label: () => 'Этажность',
+                                label_width: () => 85,
+                                diap_space: () => 16,
+                            },
+                            Лифт: {
+                                row: () => 4,
+                                type: 'select',
+                                options: () => ({
+                                    no_matter: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 210,
+                                            text: 'Можно без лифта'
+                                        } : {
+                                            text: 'Не важно',
+                                            width: 85,
+                                        } },
+                                    exists: { caption: ({ isSelected, val }) => val != 'only' ? {
+                                            text: 'С лифтом',
+                                        } : {
+                                            text: 'Есть',
+                                            width: 85,
+                                        }
+                                    },
+                                    only: { caption: ({ isSelected }) => isSelected ? 'С пассажирским и грузовым лифтом' : {
+                                            text: 'Пасс. + груз.',
+                                            width: 110,
+                                        } },
+                                }),
+                            },
+                        },
+                    },
+                    Дом: {
+                        icon: 'icons-8-building',
+                        params: {
+                            КлассЖилья: {
+                                row: () => 0,
+                                type: 'pickermulti',
+                                label: () => 'Класс жилья',
+                                label_width: () => 110,
+                                none: () => 'не важен',
+                                options: () => $$.$nl_search_panel_param_options['КлассЖилья'],
+                            },
+                            ТипДома: {
+                                row: () => 1,
+                                type: 'pickermulti',
+                                label: () => 'Тип дома',
+                                label_width: () => 110,
+                                none: () => 'не важен',
+                                options: () => $$.$nl_search_panel_param_options['ТипДома'],
+                            },
+                            СерияДома: {
+                                row: () => 2,
+                                type: 'pickermulti',
+                                label: () => 'Серия дома',
+                                label_width: () => 110,
+                                none: () => 'не важна',
+                                options: () => $$.$nl_search_panel_param_options['СерияДома'],
+                            },
+                            ГодПостройки: {
+                                row: () => 3,
+                                type: 'diap',
+                                label: () => 'Год постройки',
+                                label_width: () => 110,
+                                diap_space: () => 16,
+                            },
+                            ПодСнос: {
+                                row: () => 4,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Можно в доме под снос' : {
+                                            text: 'Можно',
+                                            width: 100,
+                                        } },
+                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме домов под снос' : {
+                                            text: 'Кроме',
+                                            width: 100,
+                                        } },
+                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в доме под снос' : {
+                                            text: 'Только',
+                                            width: 100,
+                                        } },
+                                }),
+                            },
+                            Новостройки: {
+                                row: () => 5,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
+                                            text: 'Можно',
+                                            width: 100,
+                                        } },
+                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
+                                            text: 'Кроме',
+                                            width: 100,
+                                        } },
+                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
+                                            text: 'Только',
+                                            width: 100,
+                                        } },
+                                }),
+                            },
+                        },
+                    },
+                    Инфраструктура: {
+                        icon: 'icons-8-city-square',
+                        params: {
+                            Территория: {
+                                row: () => 0,
+                                type: 'select',
+                                options: () => ({
+                                    no_matter: { caption: { text: 'Не важно', width: 75 } },
+                                    fenced: { caption: ({ val }) => val != 'guarded' ? 'Только огороженная территория' : 'Огороженная' },
+                                    guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая территория' : 'Охраняемая' },
+                                })
+                            },
+                            Парковка: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    no_matter: { caption: { text: 'Не важно', width: 75 } },
+                                    exists: { caption: ({ val }) => val == 'no_matter' || val == 'exists' ? 'Только с парковкой' : {
+                                            text: 'Есть',
+                                            width: 40,
+                                        } },
+                                    guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая парковка' : 'Охраняемая' },
+                                    underground: { caption: ({ isSelected }) => isSelected ? 'Только подземная парковка' : 'Подземная' },
+                                })
+                            },
+                        },
+                    },
+                    Объявление: {
+                        icon: 'icons-8-create-new-3',
+                        params: {
+                            deep: {
+                                row: () => 0,
+                                label_width: () => 135,
+                                label: () => 'Глубина поиска',
+                                type: 'pickerdate',
+                            },
+                            ТолькоНовые: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: { text: 'Все', width: 60 } },
+                                    only: { caption: ({ isSelected, val }) => val != 'except' ? 'Только новые (впервые опубликованные)' : {
+                                            width: 80,
+                                            text: 'Только',
+                                        } },
+                                    except: { caption: ({ isSelected }) => isSelected ? 'Кроме новых (впервые опубликованных)' : {
+                                            width: 75,
+                                            text: 'Кроме',
+                                        } },
+                                })
+                            },
+                            Источник: {
+                                type: 'pickermulti',
+                                row: () => 2,
+                                label: () => 'Источники',
+                                label_width: () => 100,
+                                none: () => 'все',
+                                options: () => $$.$nl_search_panel_param_options['Источник'],
+                            },
+                            sold: {
+                                row: () => 3,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
+                                            width: 60,
+                                            text: 'Все',
+                                        } },
+                                    except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
+                                            text: 'Кроме',
+                                        } },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 250,
+                                            text: 'Только снятые с продажи',
+                                        } : {
+                                            width: 75,
+                                            text: 'Только',
+                                        } },
+                                })
+                            },
+                            photo: {
+                                row: () => 4,
+                                type: 'select',
+                                col_count: () => 2,
+                                col: () => 0,
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => ({
+                                            width: 60,
+                                            text: 'Все',
+                                        }) },
+                                    except: { caption: ({ isSelected, val }) => 'С фото',
+                                    },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Без фото',
+                                        } : {
+                                            width: 44,
+                                            text: '...',
+                                        } },
+                                })
+                            },
+                            video: {
+                                row: () => 4,
+                                col_count: () => 2,
+                                col: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => ({
+                                            width: 60,
+                                            text: 'Все',
+                                        }) },
+                                    except: { caption: ({ isSelected, val }) => 'С видео' },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Без видео',
+                                        } : {
+                                            width: 44,
+                                            text: '...',
+                                        } },
+                                })
+                            },
+                        },
+                    },
+                }),
             },
             elem: {
                 mode_switcher: () => ({
@@ -7672,6 +8874,8 @@ var $;
                         '#ofsVer': `<.crumb_top[${id}]`,
                         '#width': `<.crumb_width[${id}]`,
                         '#height': '<.crumb_height',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': id == 'раздел' ? null : () => 'pointer',
                     },
                     style: {
                         border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
@@ -7693,570 +8897,45 @@ var $;
                             },
                         }),
                     },
+                    event: {
+                        clickOrTap: () => {
+                            console.log(id, crumbs[id], $$.a.curr.name(), $$.a('<.tabs'));
+                            let found;
+                            if (id == 'Область') {
+                                found = 'Местоположение';
+                            }
+                            else {
+                                const tabs = $$.a('<.tabs');
+                                const tab_ids = Object.keys(tabs);
+                                for (let i = 0; i < tab_ids.length; i++) {
+                                    const tab_id = tab_ids[i];
+                                    if (tabs[tab_id].params[id]) {
+                                        found = tab_id;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (found) {
+                                $$.a('<.tab_selected', found);
+                                $$.a('<<.param_mode', 'ПОЛНЫЙ');
+                            }
+                            return true;
+                        },
+                    },
                 })),
                 tabs: $$.$me_atom2_prop(['<.param_mode'], ({ masters: [param_mode] }) => param_mode == 'СЖАТЫЙ' ? null : {
                     prop: {
                         '#ofsVer': '<.header_height',
                         '#height': $$.$me_atom2_prop(['<.#height', '<@found.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
-                        options: () => ({
-                            Местоположение: {
-                                icon: 'icons-8-place-marker',
-                                params: {
-                                    Область: {
-                                        row: () => 0,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая Московскую область' : {
-                                                    text: 'Включая',
-                                                    width: 90,
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Только Московская область' : {
-                                                    text: 'Только',
-                                                    width: 90,
-                                                } },
-                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме Московской области' : {
-                                                    text: 'Кроме',
-                                                    width: 90,
-                                                } },
-                                        })
-                                    },
-                                    НоваяМосква: {
-                                        hidden: $$.$me_atom2_prop(['<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only'),
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая Новую Москву' : {
-                                                    text: 'Включая',
-                                                    width: 90,
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Только Новая Москва' : {
-                                                    text: 'Только',
-                                                    width: 90,
-                                                } },
-                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме Новой Москвы' : {
-                                                    text: 'Кроме',
-                                                    width: 90,
-                                                } },
-                                        }),
-                                    },
-                                    Адрес: {
-                                        type: 'address',
-                                        row: () => 2,
-                                    },
-                                    ОтСтанции: {
-                                        row: () => 3,
-                                        label: () => 'От станции',
-                                        label_width: () => 90,
-                                        type: 'picker',
-                                        options: () => $$.$nl_search_panel_param_options['ОтСтанции'],
-                                    },
-                                },
-                            },
-                            'Квартира: основные': {
-                                icon: 'icons-8-key',
-                                params: {
-                                    apart: {
-                                        row: () => 0,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: {
-                                                caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Можно апартаменты',
-                                                } : {
-                                                    width: 90,
-                                                    text: 'Не важно',
-                                                },
-                                            },
-                                            except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Только апартаменты',
-                                                } : {
-                                                    width: 60,
-                                                    text: '...',
-                                                } }
-                                        }),
-                                    },
-                                    rmqt: {
-                                        row: () => 1,
-                                        type: 'pickermulti',
-                                        label: () => 'Квартира',
-                                        label_width: () => 90,
-                                        none: () => 'с любым количеством комнат',
-                                        options: () => $$.$nl_search_panel_param_options['rmqt'],
-                                    },
-                                    plan: {
-                                        row: () => 2,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: {
-                                                caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Можно со смежными комнатами',
-                                                } : {
-                                                    width: 90,
-                                                    text: 'Не важно',
-                                                },
-                                            },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Только изолированные комнаты' : 'Изолированные' },
-                                            except: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Только смежные комнаты',
-                                                } : {
-                                                    width: 60,
-                                                    text: '...',
-                                                } }
-                                        }),
-                                    },
-                                    total_sq: {
-                                        row: () => 3,
-                                        type: 'diap',
-                                        label: () => 'Площадь',
-                                        label_width: () => 90,
-                                        diap_space: () => 16,
-                                    },
-                                    life_sq: {
-                                        row: () => 4,
-                                        type: 'diap',
-                                        label: () => 'Жилая',
-                                        label_width: () => 90,
-                                        diap_space: () => 16,
-                                    },
-                                    kitchen_sq: {
-                                        row: () => 5,
-                                        type: 'diap',
-                                        label: () => 'Кухня',
-                                        label_width: () => 90,
-                                        diap_space: () => 16,
-                                    },
-                                },
-                            },
-                            'Квартира: ещё': {
-                                icon: 'icons-8-key',
-                                params: {
-                                    remont: {
-                                        row: () => 0,
-                                        type: 'pickermulti',
-                                        label: () => 'Ремонт',
-                                        label_width: () => 90,
-                                        none: () => 'не важен',
-                                        options: () => $$.$nl_search_panel_param_options['remont'],
-                                    },
-                                    lavatory: {
-                                        row: () => 1,
-                                        type: 'picker',
-                                        label: () => 'Санузел',
-                                        label_width: () => 90,
-                                        options: () => $$.$nl_search_panel_param_options['lavatory'],
-                                    },
-                                    balcony: {
-                                        row: () => 2,
-                                        type: 'picker',
-                                        label: () => 'Балкон',
-                                        label_width: () => 90,
-                                        options: () => $$.$nl_search_panel_param_options['balcony'],
-                                    },
-                                    okna: {
-                                        row: () => 3,
-                                        type: 'select',
-                                        options: () => ({
-                                            '0': { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Не важно, куда выходят окна'
-                                                } : {
-                                                    width: 90,
-                                                    text: 'Не важно',
-                                                } },
-                                            '1': { caption: ({ isSelected }) => isSelected ? 'Окна только во двор' : 'Во двор' },
-                                            '2': { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Окна только на улицу',
-                                                } : 'На улицу' },
-                                        }),
-                                    },
-                                },
-                            },
-                            'Цена и условия': {
-                                icon: 'icons-8-money',
-                                params: {
-                                    'Ипотека': {
-                                        row: () => 0,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: {
-                                                    width: 85,
-                                                    text: 'Не важно'
-                                                } },
-                                            only: { caption: ({ val }) => val != 'except' ?
-                                                    'Возможна продажа по ипотеке' : {
-                                                    text: 'Возможна',
-                                                    width: 90,
-                                                }
-                                            },
-                                            except: { caption: ({ isSelected }) => isSelected ? 'Продажа по ипотеке невозможна' : {
-                                                    text: '...',
-                                                    width: 60,
-                                                }
-                                            },
-                                        }),
-                                    },
-                                    'ТипСделки': {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            '0': { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Можно с альтернативой',
-                                                } : {
-                                                    text: 'Не важно',
-                                                    width: 85,
-                                                } },
-                                            '1': { caption: ({ isSelected, val }) => isSelected ? 'Только прямая продажа' : {
-                                                    text: 'Кроме',
-                                                    width: val == '0' ? null : 90,
-                                                } },
-                                            '2': { caption: ({ isSelected }) => isSelected ? 'Только с альтернативой' : {
-                                                    text: '...',
-                                                    width: 60,
-                                                } },
-                                        }),
-                                    },
-                                    price: {
-                                        row: () => 2,
-                                        type: 'diap',
-                                        label: () => 'Цена',
-                                        label_width: () => 85,
-                                        diap_space: () => 16,
-                                    },
-                                    price_per_sq: {
-                                        row: () => 3,
-                                        type: 'diap',
-                                        label: () => 'Цена за м²',
-                                        label_width: () => 85,
-                                        diap_space: () => 16,
-                                    },
-                                    'ДинамикаЦены': {
-                                        row: () => 4,
-                                        type: 'select',
-                                        options: () => ({
-                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 85 }) },
-                                            '1': { caption: ({ isSelected, val }) => val != '2' ? 'Понижение цены' : 'Понижение' },
-                                            '2': { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 176,
-                                                    text: 'Повышение цены',
-                                                } : {
-                                                    width: 162,
-                                                    text: 'Повышение'
-                                                } },
-                                        }),
-                                    },
-                                    'БонусАгенту': {
-                                        row: () => 5,
-                                        type: 'select',
-                                        options: () => ({
-                                            '0': { caption: ({ isSelected }) => ({ text: 'Все', width: 85 }) },
-                                            '1': { caption: ({ isSelected, val }) => val != '2' ? 'Только с бонусом агенту' : 'С бонусом' },
-                                            '2': { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 176,
-                                                    text: 'Без бонуса агенту',
-                                                } : {
-                                                    width: 162,
-                                                    text: 'Без бонуса',
-                                                } },
-                                        }),
-                                    },
-                                },
-                            },
-                            'Этаж/Этажность': {
-                                icon: 'level',
-                                params: {
-                                    Этаж: {
-                                        row: () => 0,
-                                        type: 'diap',
-                                        label: () => 'Этаж',
-                                        label_width: () => 85,
-                                        diap_space: () => 16,
-                                    },
-                                    ПервыйЭтаж: {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Можно первый этаж',
-                                                } : {
-                                                    text: 'Можно',
-                                                    width: 85,
-                                                } },
-                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме первого этажа' : 'Кроме' },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 181,
-                                                    text: 'Только первый этаж',
-                                                } : {
-                                                    text: 'Только',
-                                                    width: 110,
-                                                } },
-                                        }),
-                                    },
-                                    ПоследнийЭтаж: {
-                                        row: () => 2,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? {
-                                                    text: 'Можно последний этаж',
-                                                    width: 210,
-                                                } : {
-                                                    text: 'Можно',
-                                                    width: 85,
-                                                } },
-                                            exclude: { caption: ({ isSelected, val }) => isSelected ? 'Кроме последнего этажа' : 'Кроме' },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 181,
-                                                    text: 'Только последний этаж',
-                                                } : {
-                                                    text: 'Только',
-                                                    width: 110,
-                                                } },
-                                        }),
-                                    },
-                                    Этажность: {
-                                        row: () => 3,
-                                        type: 'diap',
-                                        label: () => 'Этажность',
-                                        label_width: () => 85,
-                                        diap_space: () => 16,
-                                    },
-                                    Лифт: {
-                                        row: () => 4,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 210,
-                                                    text: 'Можно без лифта'
-                                                } : {
-                                                    text: 'Не важно',
-                                                    width: 85,
-                                                } },
-                                            exists: { caption: ({ isSelected, val }) => val != 'only' ? {
-                                                    text: 'С лифтом',
-                                                } : {
-                                                    text: 'Есть',
-                                                    width: 85,
-                                                }
-                                            },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'С пассажирским и грузовым лифтом' : {
-                                                    text: 'Пасс. + груз.',
-                                                    width: 110,
-                                                } },
-                                        }),
-                                    },
-                                },
-                            },
-                            Дом: {
-                                icon: 'icons-8-building',
-                                params: {
-                                    КлассЖилья: {
-                                        row: () => 0,
-                                        type: 'pickermulti',
-                                        label: () => 'Класс жилья',
-                                        label_width: () => 110,
-                                        none: () => 'не важен',
-                                        options: () => $$.$nl_search_panel_param_options['КлассЖилья'],
-                                    },
-                                    ТипДома: {
-                                        row: () => 1,
-                                        type: 'pickermulti',
-                                        label: () => 'Тип дома',
-                                        label_width: () => 110,
-                                        none: () => 'не важен',
-                                        options: () => $$.$nl_search_panel_param_options['ТипДома'],
-                                    },
-                                    СерияДома: {
-                                        row: () => 2,
-                                        type: 'pickermulti',
-                                        label: () => 'Серия дома',
-                                        label_width: () => 110,
-                                        none: () => 'не важна',
-                                        options: () => $$.$nl_search_panel_param_options['СерияДома'],
-                                    },
-                                    ГодПостройки: {
-                                        row: () => 3,
-                                        type: 'diap',
-                                        label: () => 'Год постройки',
-                                        label_width: () => 110,
-                                        diap_space: () => 16,
-                                    },
-                                    ПодСнос: {
-                                        row: () => 4,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? 'Можно в доме под снос' : {
-                                                    text: 'Можно',
-                                                    width: 100,
-                                                } },
-                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме домов под снос' : {
-                                                    text: 'Кроме',
-                                                    width: 100,
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Только в доме под снос' : {
-                                                    text: 'Только',
-                                                    width: 100,
-                                                } },
-                                        }),
-                                    },
-                                    Новостройки: {
-                                        row: () => 5,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
-                                                    text: 'Можно',
-                                                    width: 100,
-                                                } },
-                                            exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
-                                                    text: 'Кроме',
-                                                    width: 100,
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
-                                                    text: 'Только',
-                                                    width: 100,
-                                                } },
-                                        }),
-                                    },
-                                },
-                            },
-                            Инфраструктура: {
-                                icon: 'icons-8-city-square',
-                                params: {
-                                    Территория: {
-                                        row: () => 0,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: { caption: { text: 'Не важно', width: 75 } },
-                                            fenced: { caption: ({ val }) => val != 'guarded' ? 'Только огороженная территория' : 'Огороженная' },
-                                            guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая территория' : 'Охраняемая' },
-                                        })
-                                    },
-                                    Парковка: {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            no_matter: { caption: { text: 'Не важно', width: 75 } },
-                                            exists: { caption: ({ val }) => val == 'no_matter' || val == 'exists' ? 'Только с парковкой' : {
-                                                    text: 'Есть',
-                                                    width: 40,
-                                                } },
-                                            guarded: { caption: ({ isSelected }) => isSelected ? 'Только охраняемая парковка' : 'Охраняемая' },
-                                            underground: { caption: ({ isSelected }) => isSelected ? 'Только подземная парковка' : 'Подземная' },
-                                        })
-                                    },
-                                },
-                            },
-                            Объявление: {
-                                icon: 'icons-8-create-new-3',
-                                params: {
-                                    deep: {
-                                        row: () => 0,
-                                        label_width: () => 135,
-                                        label: () => 'Глубина поиска',
-                                        type: 'pickerdate',
-                                    },
-                                    ТолькоНовые: {
-                                        row: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: { text: 'Все', width: 60 } },
-                                            only: { caption: ({ isSelected, val }) => val != 'except' ? 'Только новые (впервые опубликованные)' : {
-                                                    width: 80,
-                                                    text: 'Только',
-                                                } },
-                                            except: { caption: ({ isSelected }) => isSelected ? 'Кроме новых (впервые опубликованных)' : {
-                                                    width: 75,
-                                                    text: 'Кроме',
-                                                } },
-                                        })
-                                    },
-                                    Источник: {
-                                        type: 'pickermulti',
-                                        row: () => 2,
-                                        label: () => 'Источники',
-                                        label_width: () => 100,
-                                        none: () => 'все',
-                                        options: () => $$.$nl_search_panel_param_options['Источник'],
-                                    },
-                                    sold: {
-                                        row: () => 3,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
-                                                    width: 60,
-                                                    text: 'Все',
-                                                } },
-                                            except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
-                                                    text: 'Кроме',
-                                                } },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    width: 250,
-                                                    text: 'Только снятые с продажи',
-                                                } : {
-                                                    width: 75,
-                                                    text: 'Только',
-                                                } },
-                                        })
-                                    },
-                                    photo: {
-                                        row: () => 4,
-                                        type: 'select',
-                                        col_count: () => 2,
-                                        col: () => 0,
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => ({
-                                                    width: 60,
-                                                    text: 'Все',
-                                                }) },
-                                            except: { caption: ({ isSelected, val }) => 'С фото',
-                                            },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    text: 'Без фото',
-                                                } : {
-                                                    width: 44,
-                                                    text: '...',
-                                                } },
-                                        })
-                                    },
-                                    video: {
-                                        row: () => 4,
-                                        col_count: () => 2,
-                                        col: () => 1,
-                                        type: 'select',
-                                        options: () => ({
-                                            include: { caption: ({ isSelected }) => ({
-                                                    width: 60,
-                                                    text: 'Все',
-                                                }) },
-                                            except: { caption: ({ isSelected, val }) => 'С видео' },
-                                            only: { caption: ({ isSelected }) => isSelected ? {
-                                                    text: 'Без видео',
-                                                } : {
-                                                    width: 44,
-                                                    text: '...',
-                                                } },
-                                        })
-                                    },
-                                },
-                            },
-                        }),
-                        option_ids: $$.$me_atom2_prop_keys(['.options'], true),
+                        options: '<.tabs',
+                        option_ids: '<.tab_ids',
                         option_height: () => 44,
                         option_fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em / 16 * 14),
                         option_iconSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 22),
                         option_label_ofsHor: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 16 + 16 + 22),
                         option_width: () => 210,
                         option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
-                        value: $$.$me_atom2_prop_store({
-                            default: () => $$.a('.option_ids')[0],
-                            valid: (val) => typeof val == 'string' && ~$$.a('.option_ids').indexOf(val) ? val : null,
-                        }),
+                        value: $$.$me_atom2_prop_bind('<.tab_selected'),
                         params: $$.$me_atom2_prop(['.value', '.options'], ({ masters: [value, options] }) => options[value].params || {}),
                         param_ids: $$.$me_atom2_prop_keys(['.params'], true),
                         row_height: () => row_height,
@@ -9022,7 +9701,32 @@ var $;
                 overflow: () => 'hidden',
             },
         };
-        const leftPanel = {};
+        const leftPanel = {
+            prop: {
+                def: () => ({
+                    mark: {
+                        caption: $$.$me_atom2_prop([], () => 'Пометить'),
+                        editable: () => true,
+                        icon: $$.$me_atom2_prop([], () => ({
+                            style: {
+                                borderRadius: () => '50%',
+                                border: () => '1px solid red',
+                            },
+                        })),
+                    },
+                    fav: {
+                        caption: $$.$me_atom2_prop([], () => 'Поместить в избранное'),
+                        editable: () => true,
+                        icon: $$.$me_atom2_prop([], () => ({
+                            style: {
+                                borderRadius: () => '50%',
+                                border: () => '1px solid red',
+                            },
+                        })),
+                    },
+                }),
+            },
+        };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //plitka.js.map
@@ -10190,96 +10894,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //dialog.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_cross = {
-            base: $$.$me_stylesheet,
-            prop: {
-                size: $$.$me_atom2_prop_abstract(),
-                thick: $$.$me_atom2_prop_abstract(),
-                color: $$.$me_atom2_prop_abstract(),
-                opacity: () => 1,
-                opacityHover: () => 1,
-                '#width': '.size',
-                '#height': '.size',
-                styleSheetName: () => 'cross',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
-        .${className}:before {
-          transform: rotate(45deg);
-        }
-        .${className}:after {
-          transform: rotate(-45deg);
-        }
-      `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
-        .${className} {
-          opacity: ${opacity};
-        }
-        .${className}:hover {
-          opacity: ${opacityHover};
-        }
-        .${className}:before, .${className}:after {
-          position: absolute;
-          left: ${(size - thick) / 2}px;
-          content: ' ';
-          height: ${size}px;
-          width: ${thick}px;
-          background-color: ${color};
-        }
-      `),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//cross.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_button = {
-            prop: {
-                caption: $$.$me_atom2_prop_abstract(),
-                target: $$.$me_atom2_prop_abstract(),
-                cmd: () => null,
-                '#width': () => 200,
-                '#height': () => 40,
-                '#cursor': () => 'pointer',
-                source: () => null,
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        text: '<.caption',
-                        colorText: () => 'white',
-                        padding: () => 0,
-                        align: () => $$.$me_align.center,
-                        '#height': '<.#height',
-                        '#width': '<.#width',
-                    },
-                }),
-            },
-            style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
-                borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
-                    return true;
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//button.js.map
 ;
 "use strict";
 var $;
@@ -11460,11 +12074,13 @@ var $;
                     },
                     prop: {
                         tapTarget: () => 0,
-                        '#order': () => ['menu', 'workspace', 'tapEffect'],
+                        isLogin: () => false,
+                        '#order': () => ['menu', 'workspace', 'login', 'tapEffect'],
                     },
                     elem: {
                         menu: () => menu,
                         workspace: () => workspace,
+                        login: $$.$me_atom2_prop(['.isLogin'], ({ masters: [isLogin] }) => !isLogin ? null : $$.$nl_login),
                         tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
                             if (!tapTarget)
                                 return null;
@@ -11542,11 +12158,19 @@ var $;
                 '#height': () => 54,
                 '#cursor': () => 'pointer',
                 'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#474F61' : '#d8dce3'),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
             },
             style: {
                 background: '.colorBackground',
                 overflow: () => 'hidden',
                 userSelect: () => 'none',
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('<<.isLogin', true);
+                    console.log($$.a('<<.isLogin'));
+                    return true;
+                },
             },
             elem: {
                 iconSquare: () => ({
