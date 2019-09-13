@@ -3382,6 +3382,20 @@ var $;
                     $$.$me_throw(`failed dispatch("${dispatch_name}", ${dispatch_arg}) on ${ec.name()}`);
                 return dispatch_arg;
             },
+            update(path_s, fn, force) {
+                const relative_to = $$.a.curr || $$.$me_atom2_entity.root();
+                const atom = relative_to.by_path_s(path_s);
+                if (typeof atom === 'string')
+                    $$.$me_throw(`atom '${atom}' does not exist`);
+                if (!(atom instanceof $me_atom2))
+                    $$.$me_throw(`entity '${atom}' is not $me_atom2`, atom);
+                const val = atom.value();
+                const ret = fn(val);
+                if (ret === void 0)
+                    $$.$me_throw('update returned undefined for val', val);
+                atom.value(ret, force);
+                return ret;
+            },
         });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -4466,6 +4480,128 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_logo_color_blue = 'rgb(16,16,119)';
+        $$.$nl_logo_color_cyan = 'rgb(0,214,202)';
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//colors.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_svg_paths = {
+            node: {
+                ns: 'http://www.w3.org/2000/svg',
+                tag: 'svg',
+            },
+            prop: {
+                paths: $$.$me_atom2_prop_abstract(),
+                viewBox: $$.$me_atom2_prop_abstract(),
+                path_keys: $$.$me_atom2_prop_keys(['.paths']),
+            },
+            attr: {
+                viewBox: '.viewBox',
+                preserveAspectRatio: () => "xMidYMid",
+            },
+            elem: {
+                path: $$.$me_atom2_prop({ keys: ['.path_keys'], masters: ['.paths'] }, ({ key: [path_key], masters: [def] }) => ({
+                    node: {
+                        ns: 'http://www.w3.org/2000/svg',
+                        tag: 'path',
+                    },
+                    attr: def[path_key],
+                })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//paths.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_logo_icon = {
+            base: $$.$me_svg_paths,
+            prop: {
+                colorWinnerBlue: () => $$.$nl_logo_color_blue,
+                colorWinnerCyan: () => $$.$nl_logo_color_cyan,
+                viewBox: () => "0 0 487 442",
+                paths: () => [
+                    {
+                        d: () => "M222.3 105.4c-3.3.9-7.5 2.5-9.4 3.5a48.6 48.6 0 0 0-15.2 14.7c-1.9 3.9-6.8 20-11.8 39.4a36240.2 36240.2 0 0 1-40.2 155c-7.4 29.5-14.4 49.5-17.3 49.5-1.9 0-4-2.8-6.3-8.5-2.5-5.8-6.7-22.8-34.8-140l-7.9-32.5-6-25-6-25.5c-2-8.3-4.6-17-5.7-19.2-4-8.3-11.9-10.4-38.7-10-16.9.2-17.4.3-19.3 2.6-1.3 1.6-1.9 3.9-1.9 7.5.1 5.9-.6 3 10.3 43.6A22792.6 22792.6 0 0 1 41 269l18 68c14.6 57.3 23 80.5 32.5 89.9 13.6 13.6 37.4 16.3 58 6.7a50.6 50.6 0 0 0 21.3-21.4c2.7-5.8 13.8-45.6 25.2-90.4C207 278 211.3 262 227.2 204c7.4-27 8-28.2 11.1-25.5 2 1.6 7 17.7 13.5 43l9 35 9 34.5 11 42 10.5 40c6.3 24.2 7.8 27.5 10.4 22.7 1.4-2.5 11-31.8 18.8-56.7 7.6-24.7 7.6-24.3 1.3-47-2.3-8.3-6.4-23.3-9-33.5l-21-80-3.6-14a305 305 0 0 0-11.5-39.2 44.5 44.5 0 0 0-14.7-15.5 55.8 55.8 0 0 0-39.7-4.4z",
+                        fill: '<.colorWinnerBlue',
+                    },
+                    {
+                        d: () => "M302 108.5c-1.2.5-2.5 1.6-2.8 2.4-.5 1.4 3 15.3 10.3 40l3.8 13 38.3.4c36 .2 38.3.3 37.8 2l-8.5 29.2c-4.4 15-10.3 35.8-13 46a7149.1 7149.1 0 0 1-37 132c-12.6 42.2-15.6 56.3-13.2 60.8.6 1 3.1 2.8 5.5 3.7 3.8 1.5 7.6 1.6 28.7 1.2 26.8-.5 31.3-1.2 36-6 4.5-4.5 6.8-9.7 10.6-24.6 1.8-7.5 7-26.4 11.3-42.1 12-43.5 14.8-53.8 16.8-62.5a25909 25909 0 0 0 46-171.5 38.2 38.2 0 0 0 1.7-12.6c-.7-4.1-7-10-12.2-11.3-4.8-1.4-156.7-1.4-160-.1z",
+                        fill: '<.colorWinnerCyan',
+                    },
+                    {
+                        d: () => "M434.3 2.9a41.9 41.9 0 0 0-32 33 30.2 30.2 0 0 0-.6 13.9 44.1 44.1 0 0 0 23.8 31.9c6.4 3 7.4 3.3 17.3 3.3 13.6 0 19.5-2.2 28.6-10.7A41.7 41.7 0 0 0 451 2.6a31.6 31.6 0 0 0-16.7.3z",
+                        fill: '<.colorWinnerCyan',
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//icon.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_logo_word = {
+            base: $$.$me_svg_paths,
+            prop: {
+                colorWinnerBlue: () => $$.$nl_logo_color_blue,
+                colorWinnerCyan: () => $$.$nl_logo_color_cyan,
+                viewBox: () => "0 0 495 90",
+                paths: () => [
+                    {
+                        d: () => "M35.5 69.3c-.2.8-1.9 1-2.1 0-5.2-19.6-10.7-41.2-15.7-61.2-2-7.2-.3-6.3-14.3-6.3-5.5 0-1.3 9.7 0 14.3l9.2 33.4c2.1 7.8 3.8 14.7 6.1 22.4 3.4 11.4 5.4 15.5 12.2 16.4 1.5.2 3.3.1 5.4.2 2 0 3.7-1 5.1-1.8 6.3-3.5 7-13.7 8.6-19.2L55 49l2.7-9.5L62.6 21c1-1.7 2.5-2.9 4.8 7.5l12 47.6c1.6 5.4 3.5 9 6.2 10.7 2.3 1.4 4.9 1.8 9 1.8 2.7 0 4.6-.8 6.3-2 3.9-2.7 6-8.6 7.2-13.6 2-7.6 4.2-14.5 6.1-22.4l9.3-33.4c4.5-16.7 5.6-15.4-7.8-15.4-4 0-4.4.8-6 5.8l-7 26.5c-1 3.8-7 32.8-8.8 35.3-.6.8-1.5.8-2 0-.8-1.2-1.6-3.6-2.6-7.5l-7.7-28.6-5.2-19C73.6 4.5 72.6 1.7 62.6 1.7c-10.7 0-11.7 10.6-14.3 20.6l-7.5 28c-1.6 6.7-3.3 13-5.3 19",
+                        fill: '<.colorWinnerBlue',
+                    },
+                    {
+                        d: () => "M138.7 82.8c0 3.4.7 5.2 2.7 5.5 2 .2 6.2.2 9.4.1 2.2 0 2.8-2.8 2.9-4.1V26.8c.4-1.8-4-2-7.4-2-3.2 0-7.9.2-7.7 2-.1 3 .1 49.9.1 56",
+                        fill: '<.colorWinnerBlue',
+                    },
+                    {
+                        d: () => "M146.1 1.8a7.4 7.4 0 1 1 0 14.8 7.4 7.4 0 0 1 0-14.8",
+                        fill: '<.colorWinnerCyan',
+                    },
+                    {
+                        d: () => "M167.9 31.6v50.5c0 4.1.7 6.1 3 6.3h8.2c4 0 3.7-3 3.7-7V38.1c0-2 .8-2.7 2.5-2.9h13.2c9.4.4 13.5 3.2 13.5 19.9v29.5c0 2.4.7 3.6 3.3 3.8h7.7c3.4 0 4.2-1.2 4.1-3.9V54.8c-.2-9.7-1.3-18.8-4.4-23.2a13.4 13.4 0 0 0-6.7-5.4c-10.1-3.2-26.6-2.6-39.6-2.6-5 0-8.5 3-8.5 8",
+                        fill: '<.colorWinnerBlue',
+                    },
+                    {
+                        d: () => "M239.8 20.2v65.3c.1 1.5 1.3 3 2.6 3h11.8c1 0 2.4-2 2.4-3V30.8c0-3-.2-8.4.6-7.7l33.4 51.6c6 9 7.4 13.3 15.7 13.8h4c6 0 10.6-5.3 10.6-11.4V4.2c0-2.1-4.3-2.5-8.4-2.4-4 0-8 .4-8 2.4v29.5c0 12.3.4 24.6.4 30 0 2.7 0 3-.6 2.8l-33.7-52.2c-.7-1.1-6-12.6-17.3-12.6-9.1 0-13.5 9.1-13.5 18.5",
+                        fill: '<.colorWinnerBlue',
+                    },
+                    {
+                        d: () => "M337.3 18.9v56.6c0 8.5 3.7 13 12.2 13H401c4.2 0 4-1.3 4-7 0-5.8.2-8.1-4-8.1h-41.4c-6.8 0-6 .6-6-7.2v-9c0-6 1.9-5.2 5-5.3H394c9.3 0 10.3 0 10.3-7s-1.2-6.6-10.4-6.7h-34.5c-3.9 0-5.6.3-5.6-2.6V21.7c0-4.4.3-5 2.1-5h45c4.4 0 4.2-1.9 4.2-7.2 0-5.3.1-7.8-4-7.8h-51c-10 0-12.8 7.4-12.8 17.2",
+                        fill: '<.colorWinnerBlue',
+                    },
+                    {
+                        d: () => "M418 16.2v68.5c0 2.2.6 3.4 2.7 3.7h5.1c2.4 0 4.1.1 5.4-.1 2-.4 2.7-1.8 2.7-3.6l.1-65.9c0-2.5 2-2.1 3.6-2.1h27.3c9 0 12.7 7.2 12.7 14.5.1 7.2-3.1 13.9-12.9 14H451c-4.6 0-7.8 2.7-7.6 7.8 0 1.8 1.4 4.5 3.8 7l12.4 12.3 15.5 15a5 5 0 0 0 3 1.2H492c1.2 0 2.8-.9.7-3l-5.1-5.3-23.2-21.8c-.8-1 1.3-.8 3.7-.8 3.5-.1 25.6-2.9 25.6-26.4 0-23.6-13-29.4-21.5-29.4h-41.2c-7.9 0-13 6.6-13 14.4",
+                        fill: '<.colorWinnerBlue',
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//word.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_stylesheet = {
             prop: {
                 styleSheetName: $$.$me_atom2_prop_abstract(),
@@ -4629,10 +4765,11 @@ var $;
                     const node = $$.a.curr.parent().node;
                     node[val ? 'focus' : 'blur']();
                 }),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
             },
             style: {
                 borderRadius: () => 3,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                fontSize: '.fontSize',
                 paddingLeft: () => 8,
                 boxSizing: () => 'border-box',
                 '-webkit-appearance': () => 'none',
@@ -4955,8 +5092,7 @@ var $;
             },
             event: {
                 clickOrTap: () => {
-                    const result = $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
-                    console.log(result);
+                    $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
                     return true;
                 },
             },
@@ -4970,79 +5106,119 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_triangle = {
+            prop: {
+                direction: () => $$.$me_rect_sides_enum.bottom,
+                size: '.em',
+                color: '.colorText',
+                k: () => 2 / Math.sqrt(3),
+                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                    size :
+                    Math.round(size * k)),
+                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                    size :
+                    Math.round(size * k)),
+            },
+            elem: {
+                content: () => ({
+                    prop: {
+                        '#width': () => 0,
+                        '#height': () => 0,
+                    },
+                    style: {
+                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
+                            direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                                `${height / 2}px solid transparent`),
+                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
+                            direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                                `${width / 2}px solid transparent`),
+                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
+                            direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                                `${width / 2}px solid transparent`),
+                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
+                            direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                                `${height / 2}px solid transparent`),
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_login = {
             prop: {
                 '#width': '/.#viewportWidth',
                 '#height': '/.#viewportHeight',
-                selected: () => 'enter',
+                selected: $$.$me_atom2_prop_store({
+                    default: () => 'enter',
+                    valid: (val) => typeof val == 'string' && ~['enter', 'register', 'restore'].indexOf(val) ? val : null,
+                }),
                 linkColor: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#2b87db' : '#53adff'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 10),
+                colorWinnerBlue: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? $$.$nl_logo_color_blue : 'white'),
+                colorWinnerCyan: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? $$.$nl_logo_color_cyan : 'white'),
+                isLogin: () => true,
             },
             dispatch: (dispatch_name, dispatch_arg) => {
                 dispatch_arg.result = 'ok';
                 return true;
             },
             style: {
-                boxSizing: () => 'border-box',
                 background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
             },
             elem: {
                 container: () => ({
                     prop: {
                         '#width': () => 500,
+                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.selected'], ({ masters: [selected] }) => ['.#ofsVer', '.#height'].map(s => (selected == 'enter' || selected == 'register' ?
+                            '@no_reg_text' : '@button')
+                            + s)), $$.$me_atom2_prop_compute_fn_sum(32)),
                         '#alignHor': () => $$.$me_align.center,
-                        '#alignVer': () => $$.$me_align.top,
-                    },
-                    style: {
-                        boxSizing: () => 'border-box',
+                        '#ofsVer': $$.$me_atom2_prop(['<.#height', '.#height'], ({ masters: [height_upper, height], prev }) => prev != null ? prev : (height_upper - height) / 2),
                     },
                     elem: {
-                        logo: () => ({
-                            node: 'img',
-                            prop: {
-                                '#width': () => 220,
-                                '#height': () => 254,
-                                '#ofsVer': () => 56,
-                                '#alignHor': () => $$.$me_align.center,
-                                '#alignVer': () => $$.$me_align.top,
-                            },
-                            attr: {
-                                src: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '/nl/assets/logo.png' : '/nl/assets/logo_dark.png'),
-                                draggable: () => false,
-                            },
+                        logo_icon: $$.$me_atom2_prop(['/.#viewportHeight'], ({ masters: [viewportHeight] }) => viewportHeight < 780 ? null :
+                            {
+                                base: $$.$nl_logo_icon,
+                                prop: Object.assign({}, logo_props, { '#ofsVer': () => 56 }),
+                            }),
+                        logo_word: () => ({
+                            base: $$.$nl_logo_word,
+                            prop: Object.assign({}, logo_props, { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight'], ({ masters: [viewportHeight] }) => viewportHeight < 780 ? [] :
+                                    ['.#ofsVer', '.#height'].map(s => '<@logo_icon' + s)), ({ len, masters: [ofsVer, height] }) => !len ? 56 : ofsVer + height + 15) }),
                         }),
                         tabs: () => ({
+                            base: tabs,
                             prop: {
-                                '#width': '<.#width',
                                 '#height': () => 40,
-                                '#ofsVer': $$.$me_atom2_prop(['<@logo.#ofsVer', '<@logo.#height'], $$.$me_atom2_prop_compute_fn_sum(60)),
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@logo_word' + s), $$.$me_atom2_prop_compute_fn_sum(60)),
+                                selected: $$.$me_atom2_prop_bind('<<.selected'),
                             },
-                            elem: {
-                                tab1: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
-                                    base: tab,
-                                    prop: {
-                                        id: () => 'enter',
-                                        '#width': () => 180,
-                                        caption: () => 'ВХОД',
-                                    },
-                                }),
-                                tab2: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
-                                    base: tab,
-                                    prop: {
-                                        id: () => 'register',
-                                        '#width': $$.$me_atom2_prop(['<.#width', '<@tab1.#width'], ({ masters: [width, tab1_width] }) => width - tab1_width),
-                                        '#ofsHor': '<@tab1.#width',
-                                        caption: () => 'РЕГИСТРАЦИЯ',
-                                    },
-                                }),
-                                tab3: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
-                                    base: tab,
-                                    prop: {
-                                        id: () => 'restore',
-                                        '#width': '<.#width',
-                                        caption: () => 'ВОССТАНОВЛЕНИЕ ПАРОЛЯ',
-                                    },
-                                }),
+                        }),
+                        back_button: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
+                            node: 'img',
+                            prop: {
+                                '#width': () => 11,
+                                '#height': () => 17,
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer'], ({ masters: [ofsVer] }) => ofsVer + 7),
+                                '#cursor': () => 'pointer',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            attr: {
+                                src: () => '/nl/assets/back-btn.svg',
+                                draggable: () => false,
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<<.selected', 'enter');
+                                    return false;
+                                },
                             }
                         }),
                         cross: () => ({
@@ -5058,23 +5234,15 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    $$.a('<<<.isLogin', false);
+                                    $$.a('<<.isLogin', false);
                                     return true;
                                 },
                             },
                         }),
                         phone: () => ({
-                            base: input_with_icon,
-                            dispatch(dispatch_name, dispatch_arg) {
-                                if (dispatch_name == 'change') {
-                                    $$.a(`.value`, dispatch_arg);
-                                    return true;
-                                }
-                                return false;
-                            },
+                            base: input,
                             prop: {
-                                '#width': '<.#width',
-                                '#height': () => 45,
+                                placeholder: () => 'Введите телефон или E-mail',
                                 '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => {
                                     const result = ['<<.selected'];
                                     if (selected == 'restore') {
@@ -5085,92 +5253,47 @@ var $;
                                     }
                                     return result;
                                 }), ({ masters: [selected, ofsVer, height] }) => ofsVer + height + (selected == 'enter' || selected == 'register' ? 40 : 32)),
-                                value: () => '',
-                                isError: () => false,
+                                icon_width: () => 52,
+                                icon_height: () => 31,
+                                icon_margin_right: () => 17,
+                                icon_isClickable: () => false,
+                                icon_src: () => 'assets/icon-pe.svg',
+                                error: () => 'Неверный логин',
                             },
-                            style: {
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                value: '.value',
-                            },
-                            attr: {
-                                placeholder: () => 'Введите телефон или E-mail',
-                            },
-                        }),
-                        phone_error: () => ({
-                            base: error_panel,
-                            prop: {
-                                size_w: () => 233,
-                                size_h: () => 45,
-                                background_color: () => 'red',
-                                color: () => 'white',
-                                caption: () => 'Несуществующий Email',
-                                '#hidden': $$.$me_atom2_prop(['<@phone.isError'], ({ masters: [isError] }) => !isError),
-                                '#ofsVer': '<@phone.#ofsVer',
-                                '#ofsHor': () => 502,
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            }
                         }),
                         pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
-                            base: input_for_password,
+                            base: input,
                             dispatch(dispatch_name, dispatch_arg) {
-                                if (dispatch_name == 'change') {
-                                    $$.a(`.value`, dispatch_arg);
+                                if (dispatch_name == 'icon_click') {
+                                    $$.a.update('.isPassword', val => !val);
                                     return true;
                                 }
                                 return false;
                             },
-                            attr: {
+                            prop: {
                                 placeholder: () => 'Введите пароль',
-                            },
-                            prop: {
-                                '#width': '<.#width',
-                                '#height': () => 45,
-                                '#ofsVer': $$.$me_atom2_prop(['<@phone.#ofsVer', '<@phone.#height'], $$.$me_atom2_prop_compute_fn_sum(32)),
-                                value: () => '',
-                                isError: () => false,
-                            },
-                            style: {
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                value: '.value',
-                            },
-                        }),
-                        pass_error: () => ({
-                            base: error_panel,
-                            prop: {
-                                size_w: () => 233,
-                                size_h: () => 45,
-                                background_color: () => 'red',
-                                color: () => 'white',
-                                caption: () => 'Неверный пароль',
-                                '#hidden': $$.$me_atom2_prop(['<@pass.isError'], ({ masters: [isError] }) => !isError),
-                                '#ofsVer': '<@pass.#ofsVer',
-                                '#ofsHor': () => 502,
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                            },
-                            style: {
-                                fontSize: () => 16,
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@phone' + s), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                type: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => !isPassword ? 'text' : 'password'),
+                                icon_width: () => 25,
+                                icon_height: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => isPassword ? 11 : 18),
+                                icon_margin_right: () => 30,
+                                icon_isClickable: () => true,
+                                icon_src: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => isPassword ?
+                                    'assets/eye-closed.svg' :
+                                    'assets/eye-open.svg'),
+                                isPassword: () => true,
+                                error: () => 'Неверный пароль',
                             },
                         }),
                         pass_confirm: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'register' ? null : {
                             base: $$.$nl_input,
-                            attr: {
-                                placeholder: () => 'Подтвердите пароль',
-                            },
                             prop: {
                                 '#width': '<.#width',
                                 '#height': () => 45,
                                 '#ofsVer': $$.$me_atom2_prop(['<@pass.#ofsVer', '<@pass.#height'], $$.$me_atom2_prop_compute_fn_sum(32)),
-                            },
-                            style: {
                                 fontSize: () => 18,
-                            }
+                                placeholder: () => 'Подтвердите пароль',
+                            },
                         }),
                         check: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
                             base: $$.$nl_checkbox,
@@ -5254,31 +5377,11 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    $$.a('<<<.isLogin', false);
+                                    $$.a('<<.isLogin', false);
                                     console.log($$.a.curr.name());
                                     return true;
                                 },
                             },
-                        }),
-                        back_button: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
-                            node: 'img',
-                            prop: {
-                                '#width': () => 11,
-                                '#height': () => 17,
-                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer'], ({ masters: [ofsVer] }) => ofsVer + 7),
-                                '#cursor': () => 'pointer',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                            },
-                            attr: {
-                                src: () => '/nl/assets/back-btn.svg',
-                                draggable: () => false,
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a('<<.selected', 'enter');
-                                    return false;
-                                },
-                            }
                         }),
                         restore_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'restore' ? null : {
                             prop: {
@@ -5301,198 +5404,182 @@ var $;
                 })
             },
         };
-        const tab = {
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<<<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    console.log('click on tab!');
-                    $$.a('<<<.selected', $$.a('.id'));
-                    return true;
-                },
-            },
-            elem: {
-                caption: () => ({
-                    prop: {
-                        '#width': () => null,
-                        '#alignHor': () => $$.$me_align.center,
-                    },
-                    style: {
-                        fontSize: () => 24,
-                    },
-                    dom: {
-                        innerText: '<.caption',
-                    }
-                })
-            },
-            style: {
-                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
+        const logo_props = {
+            colorWinnerBlue: '<<.colorWinnerBlue',
+            colorWinnerCyan: '<<.colorWinnerCyan',
+            '#width': () => 220,
+            '#height': () => null,
+            '#alignHor': () => $$.$me_align.center,
         };
-        const error_panel = {
+        const tabs = {
             prop: {
-                size_w: $$.$me_atom2_prop_abstract(),
-                size_h: $$.$me_atom2_prop_abstract(),
-                caption: $$.$me_atom2_prop_abstract(),
-                color: $$.$me_atom2_prop_abstract(),
-                background_color: $$.$me_atom2_prop_abstract(),
-                '#width': '.size_w',
-                '#height': '.size_h',
-            },
-            elem: {
-                block: () => ({
-                    base: $$.$me_stylesheet,
-                    prop: {
-                        '#width': $$.$me_atom2_prop(['<.size_w'], ({ masters: [size_w] }) => size_w - 20),
-                        '#height': '<.#height',
-                        '#ofsHor': $$.$me_atom2_prop(['<.size_h'], ({ masters: [size] }) => size / 4),
-                        styleSheetName: () => 'error-block',
-                        styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName', '<.background_color'], ({ masters: [className, color] }) => `
-              .${className} {
-                  position: relative;
-                  background-color:${color};
-              }
-              .${className}:before {
-                  content:'';
-                  width: 0;
-                  height: 0;
-                  position: absolute;
-              }
-          `),
-                        styleSheet: $$.$me_atom2_prop(['.className', '<.size_w', '<.size_h', '<.background_color'], ({ masters: [className, width, height, color], atom }) => {
-                            const base = height / 4;
-                            return `
-              .${className} {
-                  width: ${Math.round(width)}px;
-                  height: ${Math.round(height)}px;
-                  position: relative;
-              }
-
-              .${className}:before {
-                content:"";
-                position: absolute;
-                right: 100%;
-                top: 0;
-                width: 0;
-                height: 0;
-                border-top: ${Math.round(base * 2)}px solid transparent;
-                border-right: ${Math.round(base * 1)}px solid ${color};
-                border-bottom: ${Math.round(base * 2)}px solid transparent;
-              }
-            `;
-                        }),
+                selected: $$.$me_atom2_prop_abstract(),
+                def: () => ({
+                    enter: {
+                        condition: (selected) => selected != 'restore',
+                        prop: {
+                            '#width': () => 180,
+                            caption: () => 'ВХОД',
+                        },
                     },
-                }),
-                caption: () => ({
-                    prop: {
-                        '#width': () => null,
-                        '#height': '<.#height',
-                        '#align': () => $$.$me_align.center,
+                    register: {
+                        condition: (selected) => selected != 'restore',
+                        prop: {
+                            '#width': $$.$me_atom2_prop(['<.#width', '<@tab[enter].#width'], ({ masters: [width, tab1_width] }) => width - tab1_width),
+                            '#ofsHor': '<@tab[enter].#width',
+                            caption: () => 'РЕГИСТРАЦИЯ',
+                        },
                     },
-                    style: {
-                        fontSize: () => 16,
-                        lineHeight: '<.#height',
-                        color: '<.color',
-                    },
-                    dom: {
-                        innerText: '<.caption',
-                    }
-                }),
-            },
-        };
-        const input_with_icon = {
-            elem: {
-                input: () => ({
-                    base: $$.$nl_input,
-                    prop: {
-                        placeholder: '<.placeholder',
-                    },
-                }),
-                icon: () => ({
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#width': () => 55,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        '#cursor': () => 'pointer',
-                    },
-                    elem: {
-                        square: () => ({
-                            node: 'img',
-                            prop: {
-                                '#alignHor': () => $$.$me_align.right,
-                                '#ofsHor': () => 8,
-                                '#alignVer': () => $$.$me_align.center,
-                                '#width': () => 55,
-                                '#height': () => 31,
-                            },
-                            style: {},
-                            attr: {
-                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/icon-pe.svg' : 'assets/icon-pe-dark.svg'),
-                                draggable: () => false,
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            console.log($$.a.curr.name());
-                            return true;
+                    restore: {
+                        condition: (selected) => selected == 'restore',
+                        prop: {
+                            caption: () => 'ВОССТАНОВЛЕНИЕ ПАРОЛЯ',
                         },
                     },
                 }),
+                tab_ids: $$.$me_atom2_prop_keys(['.def']),
             },
+            elem: {
+                tab: $$.$me_atom2_prop({ keys: ['.tab_ids'], masters: ['.selected', '.def'] }, ({ key: [id], masters: [selected, def] }) => !def[id].condition(selected) ? null :
+                    {
+                        prop: Object.assign({}, def[id].prop, { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
+                        event: {
+                            clickOrTap: () => {
+                                $$.a('<.selected', id);
+                                return true;
+                            },
+                        },
+                        elem: {
+                            caption: () => ({
+                                prop: {
+                                    '#width': () => null,
+                                    '#alignHor': () => $$.$me_align.center,
+                                },
+                                style: {
+                                    fontSize: () => 24,
+                                },
+                                dom: {
+                                    innerText: '<.caption',
+                                }
+                            })
+                        },
+                        style: {
+                            borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                            fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+                        },
+                    }),
+            }
         };
-        const input_for_password = {
+        const input = {
+            prop: {
+                placeholder: $$.$me_atom2_prop_abstract(),
+                icon_width: () => 0,
+                icon_src: () => '',
+                type: () => 'text',
+                icon_wrapper_width: $$.$me_atom2_prop(['.icon_width', '.icon_margin_right'], ({ masters: [icon_width, icon_margin_right] }) => icon_width + 2 * icon_margin_right),
+                icon_filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    'invert(18%) sepia(21%) saturate(667%) hue-rotate(183deg) brightness(91%) contrast(86%)' :
+                    'invert(99%) sepia(0%) saturate(7498%) hue-rotate(60deg) brightness(104%) contrast(103%)'),
+                fontSize: () => 18,
+                icon_height: () => 18,
+                icon_margin_right: () => 8,
+                icon_isClickable: () => false,
+                '#height': () => 45,
+                showError: () => true,
+                error: () => '',
+            },
             elem: {
                 input: () => ({
                     base: $$.$nl_input,
                     prop: {
                         placeholder: '<.placeholder',
-                        showPassword: () => false,
                     },
                     attr: {
-                        type: $$.$me_atom2_prop(['.showPassword'], ({ masters: [showPassword] }) => showPassword ? 'text' : 'password'),
+                        type: '<.type',
+                    },
+                    style: {
+                        fontSize: '<.fontSize',
+                        border: $$.$me_atom2_prop(['<.showError', '<.error'], ({ masters: [showError, error] }) => showError && error ? 'solid 1px #ff3939' : ''),
                     },
                 }),
-                icon: () => ({
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#width': () => 25,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        '#cursor': () => 'pointer',
-                        showPassword: () => false,
-                    },
-                    elem: {
-                        square: () => ({
-                            node: 'img',
-                            prop: {
-                                '#alignHor': () => $$.$me_align.right,
-                                '#ofsHor': () => 8,
-                                '#alignVer': () => $$.$me_align.center,
-                                '#width': () => 25,
-                                '#height': () => 18,
-                            },
-                            style: {
-                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
-                                    'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' : 'none'),
-                            },
-                            attr: {
-                                src: $$.$me_atom2_prop(['<<@input.showPassword'], ({ masters: [showPassword] }) => showPassword ? 'assets/eye-open.svg' : 'assets/eye-closed.svg'),
-                                draggable: () => false,
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            let sp = $$.a('<@input.showPassword');
-                            sp = !sp;
-                            $$.a('<@input.showPassword', sp);
-                            return true;
+                icon_wrapper: $$.$me_atom2_prop(['.icon_width'], ({ masters: [icon_width] }) => !icon_width ? null :
+                    {
+                        prop: {
+                            '#alignHor': () => $$.$me_align.right,
+                            '#width': '<.icon_wrapper_width',
+                            '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                            '#cursor': $$.$me_atom2_prop(['<.icon_isClickable'], ({ masters: [icon_isClickable] }) => !icon_isClickable ? null : 'pointer'),
                         },
-                    },
-                }),
+                        elem: {
+                            icon: () => ({
+                                node: 'img',
+                                prop: {
+                                    '#alignHor': () => $$.$me_align.right,
+                                    '#ofsHor': '<<.icon_margin_right',
+                                    '#alignVer': () => $$.$me_align.center,
+                                    '#width': '<<.icon_width',
+                                    '#height': '<<.icon_height',
+                                },
+                                style: {
+                                    filter: '<<.icon_filter',
+                                },
+                                attr: {
+                                    src: '<<.icon_src',
+                                    draggable: () => false,
+                                },
+                            }),
+                        },
+                        event: {
+                            clickOrTap: () => {
+                                if ($$.a('<.icon_isClickable')) {
+                                    $$.a.dispatch('<', 'icon_click');
+                                    return true;
+                                }
+                                return false;
+                            },
+                        },
+                    }),
+                error: $$.$me_atom2_prop(['.showError', '.error'], ({ masters: [showError, error] }) => !showError || !error ? null :
+                    {
+                        prop: {
+                            caption: '<.error',
+                            width: () => 233,
+                            triangle_width: () => 16,
+                            '#width': $$.$me_atom2_prop(['.width', '.triangle_width'], $$.$me_atom2_prop_compute_fn_diff()),
+                            colorBackground: () => '#ff3637',
+                            colorText: () => 'white',
+                            '#alignHor': () => $$.$me_align.right,
+                            '#ofsHor': $$.$me_atom2_prop(['.width'], ({ masters: [width] }) => -width - 4),
+                        },
+                        style: {
+                            background: '.colorBackground',
+                        },
+                        elem: {
+                            triangle: () => ({
+                                base: $$.$me_triangle,
+                                prop: {
+                                    '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width),
+                                    direction: () => $$.$me_rect_sides_enum.left,
+                                    size: '.em',
+                                    '#height': '<.#height',
+                                    color: '<.colorBackground',
+                                },
+                            }),
+                            caption: () => ({
+                                prop: {
+                                    '#width': () => null,
+                                    '#height': () => null,
+                                    '#align': () => $$.$me_align.center,
+                                },
+                                dom: {
+                                    innerText: '<.caption',
+                                },
+                                style: {
+                                    color: '<.colorText',
+                                },
+                            }),
+                        },
+                    }),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -6732,51 +6819,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //list.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_triangle = {
-            prop: {
-                direction: () => $$.$me_rect_sides_enum.bottom,
-                size: '.em',
-                color: '.colorText',
-                k: () => 2 / Math.sqrt(3),
-                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
-                    size :
-                    Math.round(size * k)),
-                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
-                    size :
-                    Math.round(size * k)),
-            },
-            elem: {
-                content: () => ({
-                    prop: {
-                        '#width': () => 0,
-                        '#height': () => 0,
-                    },
-                    style: {
-                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
-                            direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
-                                `${height / 2}px solid transparent`),
-                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
-                            direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
-                                `${width / 2}px solid transparent`),
-                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
-                            direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
-                                `${width / 2}px solid transparent`),
-                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
-                            direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
-                                `${height / 2}px solid transparent`),
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//triangle.js.map
 ;
 "use strict";
 var $;
@@ -12132,6 +12174,100 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_settings_tabs = {
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                selected: $$.$me_atom2_prop_abstract(),
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+            },
+            elem: {
+                tab: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                    base: tab,
+                    prop: {
+                        id: () => id,
+                    },
+                    dom: {
+                        innerText: $$.$me_atom2_prop(['<.options'], ({ masters: [options] }) => $$.$me_option_caption_text(id, options).toUpperCase()),
+                    },
+                })),
+            },
+        };
+        const tab = {
+            node: 'span',
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    console.log($$.a('.id'), $$.a('<.selected'), $$.a.get('<.selected').name());
+                    $$.a('<.selected', $$.a('.id'));
+                    return true;
+                },
+            },
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 10,
+                paddingRight: () => 10,
+                paddingBottom: () => 5,
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//tabs.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_settings_workspace = {
+            prop: {
+                sections: () => ({
+                    search: {
+                        caption: 'Настройка поиска',
+                    },
+                    personal: {
+                        caption: 'Личные данные',
+                    },
+                    profile: {
+                        caption: 'Настройка профиля',
+                    },
+                    blacklist: {
+                        caption: 'Черный список',
+                    },
+                }),
+                section_ids: $$.$me_atom2_prop_keys(['.sections']),
+                selected: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.section_ids')[0],
+                    valid: (val) => val == $$.a('.sections')[val] ? val : null,
+                }),
+            },
+            elem: {
+                tabs: () => ({
+                    base: $$.$nl_settings_tabs,
+                    prop: {
+                        options: '<.sections',
+                        selected: $$.$me_atom2_prop_bind('<.selected'),
+                        '#height': '/@app@menu@login.#height',
+                        '#ofsHor': () => 36,
+                        '#ofsVer': () => 16,
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_app = (rootElem) => {
             $$.$nl_defaults_init();
             return new $$.$me_atom2_elem({ tail: 'app', cnf: {
@@ -12157,7 +12293,12 @@ var $;
                     elem: {
                         menu: () => menu,
                         workspace: () => workspace,
-                        login: $$.$me_atom2_prop(['.isLogin'], ({ masters: [isLogin] }) => !isLogin ? null : $$.$nl_login),
+                        login: $$.$me_atom2_prop(['.isLogin'], ({ masters: [isLogin] }) => !isLogin ? null : {
+                            base: $$.$nl_login,
+                            prop: {
+                                isLogin: $$.$me_atom2_prop_bind('<.isLogin'),
+                            },
+                        }),
                         tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
                             if (!tapTarget)
                                 return null;
@@ -12206,6 +12347,13 @@ var $;
                     base: $$.$nl_search_workspace,
                     prop: {
                         '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'search'),
+                    },
+                }),
+                settings: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'settings' ? prev || null : {
+                    type: '$nl_settings_workspace',
+                    base: $$.$nl_settings_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'settings'),
                     },
                 }),
             },
