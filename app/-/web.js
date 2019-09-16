@@ -174,7 +174,7 @@ var $;
                 val instanceof Set ? val.has(id) :
                     val instanceof Map ? val.has(id) :
                         false;
-            const caption = typeof options[id].caption != 'function' ?
+            const caption = typeof options[id].caption == 'function' ?
                 options[id].caption :
                 options[id].caption({ val, isSelected });
             return caption;
@@ -970,38 +970,49 @@ var $;
             else
                 $$.$me_throw('cascade_def is nor string, neither Array', cascade_def);
         }
-        $$.$me_atom2_prop_store = (p) => $me_atom2_prop([], ({ atom }) => {
-            let val = null;
-            const name = atom.name();
-            const s = sessionStorage.getItem(name);
-            if (s)
-                try {
-                    val = !p.fromJSON ? JSON.parse(s) : p.fromJSON(JSON.parse(s));
+        $$.$me_atom2_prop_store = (p) => {
+            const atom = $me_atom2_prop(!p.condition ? [] : p.condition, ({ atom, masters, prev, len }) => {
+                let val = null;
+                const name = atom.name();
+                if (len && !masters[0]) {
+                    val = masters[1] || prev || null;
+                    sessionStorage.removeItem(name);
                 }
-                catch (e) {
-                    console.error({ name }, e);
+                else {
+                    const s = sessionStorage.getItem(name);
+                    if (s)
+                        try {
+                            val = !p.fromJSON ? JSON.parse(s) : p.fromJSON(JSON.parse(s));
+                        }
+                        catch (e) {
+                            console.error({ name }, e);
+                        }
                 }
-            return val;
-        }, ({ val, atom }) => {
-            val = p.valid(val);
-            let need_remove = false;
-            const dflt = p.default();
-            if (val == null) {
-                val = dflt;
-                need_remove = true;
-            }
-            else if (p.is_equal ? p.is_equal(val, dflt) : $$.$me_equal(val, dflt)) {
-                need_remove = true;
-            }
-            const name = atom.name();
-            if (need_remove) {
-                sessionStorage.removeItem(name);
-            }
-            else {
-                sessionStorage.setItem(name, JSON.stringify(!p.toJSON ? val : p.toJSON(val)));
-            }
-            return val;
-        });
+                if (len)
+                    console.log(masters, prev, val);
+                return val;
+            }, ({ val, atom }) => {
+                val = p.valid(val);
+                let need_remove = false;
+                const dflt = p.default();
+                if (val == null) {
+                    val = dflt;
+                    need_remove = true;
+                }
+                else if (p.is_equal ? p.is_equal(val, dflt) : $$.$me_equal(val, dflt)) {
+                    need_remove = true;
+                }
+                const name = atom.name();
+                if (need_remove) {
+                    sessionStorage.removeItem(name);
+                }
+                else {
+                    sessionStorage.setItem(name, JSON.stringify(!p.toJSON ? val : p.toJSON(val)));
+                }
+                return val;
+            });
+            return atom;
+        };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //prop.js.map
@@ -1246,26 +1257,40 @@ var $;
                             result[k] = cnf[name][k];
                 this._cnf_items(name, cnf.base, result);
             }
-            _prepare(name, ent, dflt, cnf, level) {
+            _prepare(name, ent, dflt, cnf, level, skip_root_defaults) {
                 if (level === void 0) {
                     cnf = this.cnf;
                     level = 0;
                 }
-                if (cnf)
+                if (cnf) {
                     if (level) {
                     }
                     else {
                         if (cnf[name])
                             $$.$me_throw(`terminal control can not have .${name}`);
                     }
-                return level ? this._prepare_helper(name, ent, dflt, cnf, level) :
-                    this._prepare(name, ent, dflt, cnf.base, level + 1);
+                    skip_root_defaults = skip_root_defaults || cnf.skip_root_defaults;
+                }
+                const result = level ?
+                    this._prepare_helper(name, ent, dflt, cnf, level, skip_root_defaults) :
+                    this._prepare(name, ent, dflt, cnf.base, level + 1, skip_root_defaults || cnf && cnf.base && cnf.base.skip_root_defaults);
+                if (cnf && cnf.skip_root_defaults === false &&
+                    cnf.base && cnf.base.skip_root_defaults === true) {
+                    const { defaults, defaults_relative } = this._prepare_helper(name, ent, {}, null, 0, false);
+                    for (const prop in defaults)
+                        if (!result.defaults[prop])
+                            result.defaults[prop] = defaults[prop];
+                    for (const prop in defaults_relative)
+                        if (!result.defaults_relative[prop])
+                            result.defaults_relative[prop] = defaults_relative[prop];
+                }
+                return result;
             }
-            _prepare_helper(name, ent, dflt, cnf, level) {
+            _prepare_helper(name, ent, dflt, cnf, level, skip_root_defaults) {
                 let type;
                 if (!cnf) {
                     type = '$me';
-                    if (this.cnf.node && this.cnf.node.ns) {
+                    if (skip_root_defaults) {
                         return {
                             defaults: {},
                             defaults_relative: {},
@@ -1274,19 +1299,19 @@ var $;
                 }
                 else {
                     if (!$me_atom2_ec._cnf_cache.has(cnf)) {
-                        if ($me_atom2_ec._cnf_cache.size == 3) {
-                            console.error(this.cnf.node, type);
-                        }
-                        $me_atom2_ec._cnf_cache.set(cnf, $me_atom2_ec._cnf_cache.size + '');
+                        const name = cnf.type || ($me_atom2_ec._cnf_cache.size + '');
+                        $me_atom2_ec._cnf_cache.set(cnf, name);
                     }
                     type = $me_atom2_ec._cnf_cache.get(cnf);
                 }
                 const cacheKey = $$.$me_atom2_path_ent2prefix[ent] + type + ':' + name;
                 if (!$me_atom2_ec._prepare_cache[cacheKey]) {
-                    const result = !cnf ? {
-                        defaults: {},
-                        defaults_relative: {},
-                    } : this._prepare(name, ent, dflt, cnf.base, level + 1);
+                    const result = cnf ?
+                        this._prepare(name, ent, dflt, cnf.base, level + 1, skip_root_defaults || cnf && cnf.base && cnf.base.skip_root_defaults) :
+                        {
+                            defaults: {},
+                            defaults_relative: {},
+                        };
                     const props = !cnf ? dflt : cnf[name] ? cnf[name] : {};
                     const prop_default = {};
                     const prop_default_relative = {};
@@ -1382,7 +1407,7 @@ var $;
                 super.destroy();
             }
             _mk_props(s_level) {
-                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.control, this.cnf.node && this.cnf.node.ns ? {} : ($me_atom2_control.prop_default || {}));
+                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.control, $me_atom2_control.prop_default || {});
                 const prop_render = this.props([
                     this.cnf_items('prop'),
                     defaults,
@@ -1739,8 +1764,10 @@ var $;
                 const prev = $$.a.curr;
                 $$.a.curr = this;
                 const cnf_node = this.cnf_item('node') || (has_control ? 'canvas' : 'div');
-                const result = cnf_node instanceof HTMLElement ? cnf_node :
-                    typeof cnf_node == 'string' ? document.createElement(cnf_node) :
+                const result = cnf_node instanceof HTMLElement ?
+                    cnf_node :
+                    typeof cnf_node == 'string' ?
+                        document.createElement(cnf_node) :
                         document.createElementNS(cnf_node.ns, cnf_node.tag);
                 if (has_control && result.tagName != 'CANVAS')
                     $$.$me_throw(`${this.name()}: cnf.node (${cnf_node}) must be 'canvas' whilst using cnf.control`);
@@ -1924,9 +1951,7 @@ var $;
             _mk_props(has_control, has_elem, has_parent) {
                 const prev = $$.a.curr;
                 $$.a.curr = this;
-                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.elem, this.cnf.node && this.cnf.node.ns ? {} : ($me_atom2_elem.prop_default || {}));
-                if (this.cnf.node && this.cnf.node.ns)
-                    console.log(this.cnf.node, defaults, defaults_relative);
+                const { defaults, defaults_relative } = this._prepare('prop_default', $$.$me_atom2_entity_enum.elem, $me_atom2_elem.prop_default || {});
                 const prop_defined = this.props([
                     this.cnf_items('prop'),
                     defaults,
@@ -1946,7 +1971,7 @@ var $;
                             '<.#height', '.#height', '.#ofsVer'], this.fn_compute_left, this.fn_apply_top) }),
                 ], {
                     def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
-                        if (this.cnf.node && this.cnf.node.ns && (tail.startsWith('#') && !(tail == '#_isReady' ||
+                        if (this.cnf.skip_root_defaults && (tail.startsWith('#') && !(tail == '#_isReady' ||
                             tail == '#isReady' ||
                             tail == '#clientRect' ||
                             tail == '#order' ||
@@ -1982,7 +2007,7 @@ var $;
                             $$.$me_throw(`${this.name()}: .${tail} reserved for internal use` + (tail !== '#visible' ? '' : ', use .#hidden instead'));
                     }
                 });
-                if (!(this.cnf.node && this.cnf.node.ns))
+                if (!this.cnf.skip_root_defaults)
                     for (const prop of ['#width', '#height', '#alignHor', '#alignVer', '#ofsHor', '#ofsVer'])
                         if (prop_defined[prop] === void 0)
                             $$.$me_throw(`${this.name()}: requires .${prop} to be defined`);
@@ -2026,9 +2051,7 @@ var $;
                     });
                 }
                 let idx_curr = 0;
-                const { defaults, defaults_relative } = this._prepare(src + '_default', $$.$me_atom2_entity_enum.elem, this.cnf.node && this.cnf.node.ns ? {} : ($me_atom2_elem[src + '_default'] || {}));
-                if (this.cnf.node && this.cnf.node.ns && src == 'style')
-                    console.error(this.cnf.node, defaults, defaults_relative, val);
+                const { defaults, defaults_relative } = this._prepare(src + '_default', $$.$me_atom2_entity_enum.elem, $me_atom2_elem[src + '_default'] || {});
                 for (const props of [val, defaults, defaults_relative]) {
                     if (src === 'style') {
                         const reserved = {
@@ -2042,8 +2065,6 @@ var $;
                             if (props[tail])
                                 $$.$me_throw(`${this.name()}: .style.${tail} is reserved for internal use, use ${reserved[tail]} instead`);
                     }
-                    if (this.cnf.node && this.cnf.node.ns && src == 'style')
-                        console.warn(this.cnf.node, defaults, defaults_relative, props);
                     for (const tail in props)
                         if (props[tail])
                             if (src === 'style' && tail === 'visibility') {
@@ -4489,6 +4510,12 @@ var $;
                     default: () => $$.$me_theme.light,
                     valid: (val) => val == $$.$me_theme.light || val == $$.$me_theme.dark ? val : null,
                 }),
+                colorButton: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#0070a4' :
+                    '#008ecf'),
+                colorLink: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#2b87db' :
+                    '#53adff'),
             });
             $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
             $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
@@ -4503,188 +4530,11 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_logo_color_blue = 'rgb(16,16,119)';
-        $$.$nl_logo_color_cyan = 'rgb(0,214,202)';
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//colors.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const paths = {
-            prop: {
-                paths: $$.$me_atom2_prop_abstract(),
-                path_keys: $$.$me_atom2_prop_keys(['.paths']),
-            },
-            elem: {
-                path: $$.$me_atom2_prop({ keys: ['.path_keys'], masters: ['.paths'] }, ({ key: [path_key], masters: [def] }) => ({
-                    node: {
-                        ns: 'http://www.w3.org/2000/svg',
-                        tag: def[path_key].tag || 'path',
-                    },
-                    attr: def[path_key].attr,
-                    base: !def[path_key].sub ? null : paths,
-                    prop: {
-                        paths: !def[path_key].sub ? null : () => def[path_key].sub,
-                    },
-                })),
-            },
-        };
-        $$.$me_svg_paths = {
-            base: paths,
-            node: {
-                ns: 'http://www.w3.org/2000/svg',
-                tag: 'svg',
-            },
-            prop: {
-                paths: $$.$me_atom2_prop_abstract(),
-                viewBox: $$.$me_atom2_prop_abstract(),
-                path_keys: $$.$me_atom2_prop_keys(['.paths']),
-            },
-            attr: {
-                viewBox: '.viewBox',
-                preserveAspectRatio: () => "xMidYMid",
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//paths.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_logo_icon = {
-            base: $$.$me_svg_paths,
-            prop: {
-                colorWinnerBlue: () => $$.$nl_logo_color_blue,
-                colorWinnerCyan: () => $$.$nl_logo_color_cyan,
-                viewBox: () => "0 0 487 442",
-                paths: () => [
-                    {
-                        attr: {
-                            d: () => "M222.3 105.4c-3.3.9-7.5 2.5-9.4 3.5a48.6 48.6 0 0 0-15.2 14.7c-1.9 3.9-6.8 20-11.8 39.4a36240.2 36240.2 0 0 1-40.2 155c-7.4 29.5-14.4 49.5-17.3 49.5-1.9 0-4-2.8-6.3-8.5-2.5-5.8-6.7-22.8-34.8-140l-7.9-32.5-6-25-6-25.5c-2-8.3-4.6-17-5.7-19.2-4-8.3-11.9-10.4-38.7-10-16.9.2-17.4.3-19.3 2.6-1.3 1.6-1.9 3.9-1.9 7.5.1 5.9-.6 3 10.3 43.6A22792.6 22792.6 0 0 1 41 269l18 68c14.6 57.3 23 80.5 32.5 89.9 13.6 13.6 37.4 16.3 58 6.7a50.6 50.6 0 0 0 21.3-21.4c2.7-5.8 13.8-45.6 25.2-90.4C207 278 211.3 262 227.2 204c7.4-27 8-28.2 11.1-25.5 2 1.6 7 17.7 13.5 43l9 35 9 34.5 11 42 10.5 40c6.3 24.2 7.8 27.5 10.4 22.7 1.4-2.5 11-31.8 18.8-56.7 7.6-24.7 7.6-24.3 1.3-47-2.3-8.3-6.4-23.3-9-33.5l-21-80-3.6-14a305 305 0 0 0-11.5-39.2 44.5 44.5 0 0 0-14.7-15.5 55.8 55.8 0 0 0-39.7-4.4z",
-                            fill: '<.colorWinnerBlue',
-                        },
-                    },
-                    {
-                        attr: {
-                            d: () => "M302 108.5c-1.2.5-2.5 1.6-2.8 2.4-.5 1.4 3 15.3 10.3 40l3.8 13 38.3.4c36 .2 38.3.3 37.8 2l-8.5 29.2c-4.4 15-10.3 35.8-13 46a7149.1 7149.1 0 0 1-37 132c-12.6 42.2-15.6 56.3-13.2 60.8.6 1 3.1 2.8 5.5 3.7 3.8 1.5 7.6 1.6 28.7 1.2 26.8-.5 31.3-1.2 36-6 4.5-4.5 6.8-9.7 10.6-24.6 1.8-7.5 7-26.4 11.3-42.1 12-43.5 14.8-53.8 16.8-62.5a25909 25909 0 0 0 46-171.5 38.2 38.2 0 0 0 1.7-12.6c-.7-4.1-7-10-12.2-11.3-4.8-1.4-156.7-1.4-160-.1z",
-                            fill: '<.colorWinnerCyan',
-                        }
-                    },
-                    {
-                        attr: {
-                            d: () => "M434.3 2.9a41.9 41.9 0 0 0-32 33 30.2 30.2 0 0 0-.6 13.9 44.1 44.1 0 0 0 23.8 31.9c6.4 3 7.4 3.3 17.3 3.3 13.6 0 19.5-2.2 28.6-10.7A41.7 41.7 0 0 0 451 2.6a31.6 31.6 0 0 0-16.7.3z",
-                            fill: '<.colorWinnerCyan',
-                        },
-                    },
-                ],
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//icon.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_logo_word = {
-            base: $$.$me_svg_paths,
-            prop: {
-                colorWinnerBlue: () => $$.$nl_logo_color_blue,
-                colorWinnerCyan: () => $$.$nl_logo_color_cyan,
-                viewBox: () => "0 0 495 90",
-                paths: () => [
-                    {
-                        attr: {
-                            d: () => "M35.5 69.3c-.2.8-1.9 1-2.1 0-5.2-19.6-10.7-41.2-15.7-61.2-2-7.2-.3-6.3-14.3-6.3-5.5 0-1.3 9.7 0 14.3l9.2 33.4c2.1 7.8 3.8 14.7 6.1 22.4 3.4 11.4 5.4 15.5 12.2 16.4 1.5.2 3.3.1 5.4.2 2 0 3.7-1 5.1-1.8 6.3-3.5 7-13.7 8.6-19.2L55 49l2.7-9.5L62.6 21c1-1.7 2.5-2.9 4.8 7.5l12 47.6c1.6 5.4 3.5 9 6.2 10.7 2.3 1.4 4.9 1.8 9 1.8 2.7 0 4.6-.8 6.3-2 3.9-2.7 6-8.6 7.2-13.6 2-7.6 4.2-14.5 6.1-22.4l9.3-33.4c4.5-16.7 5.6-15.4-7.8-15.4-4 0-4.4.8-6 5.8l-7 26.5c-1 3.8-7 32.8-8.8 35.3-.6.8-1.5.8-2 0-.8-1.2-1.6-3.6-2.6-7.5l-7.7-28.6-5.2-19C73.6 4.5 72.6 1.7 62.6 1.7c-10.7 0-11.7 10.6-14.3 20.6l-7.5 28c-1.6 6.7-3.3 13-5.3 19",
-                            fill: '<.colorWinnerBlue',
-                        },
-                    },
-                    {
-                        attr: {
-                            d: () => "M138.7 82.8c0 3.4.7 5.2 2.7 5.5 2 .2 6.2.2 9.4.1 2.2 0 2.8-2.8 2.9-4.1V26.8c.4-1.8-4-2-7.4-2-3.2 0-7.9.2-7.7 2-.1 3 .1 49.9.1 56",
-                            fill: '<.colorWinnerBlue',
-                        },
-                    },
-                    {
-                        attr: {
-                            d: () => "M146.1 1.8a7.4 7.4 0 1 1 0 14.8 7.4 7.4 0 0 1 0-14.8",
-                            fill: '<.colorWinnerCyan',
-                        },
-                    },
-                    {
-                        attr: {
-                            d: () => "M167.9 31.6v50.5c0 4.1.7 6.1 3 6.3h8.2c4 0 3.7-3 3.7-7V38.1c0-2 .8-2.7 2.5-2.9h13.2c9.4.4 13.5 3.2 13.5 19.9v29.5c0 2.4.7 3.6 3.3 3.8h7.7c3.4 0 4.2-1.2 4.1-3.9V54.8c-.2-9.7-1.3-18.8-4.4-23.2a13.4 13.4 0 0 0-6.7-5.4c-10.1-3.2-26.6-2.6-39.6-2.6-5 0-8.5 3-8.5 8",
-                            fill: '<.colorWinnerBlue',
-                        },
-                    },
-                    {
-                        attr: {
-                            d: () => "M239.8 20.2v65.3c.1 1.5 1.3 3 2.6 3h11.8c1 0 2.4-2 2.4-3V30.8c0-3-.2-8.4.6-7.7l33.4 51.6c6 9 7.4 13.3 15.7 13.8h4c6 0 10.6-5.3 10.6-11.4V4.2c0-2.1-4.3-2.5-8.4-2.4-4 0-8 .4-8 2.4v29.5c0 12.3.4 24.6.4 30 0 2.7 0 3-.6 2.8l-33.7-52.2c-.7-1.1-6-12.6-17.3-12.6-9.1 0-13.5 9.1-13.5 18.5",
-                            fill: '<.colorWinnerBlue',
-                        },
-                    },
-                    {
-                        attr: {
-                            d: () => "M337.3 18.9v56.6c0 8.5 3.7 13 12.2 13H401c4.2 0 4-1.3 4-7 0-5.8.2-8.1-4-8.1h-41.4c-6.8 0-6 .6-6-7.2v-9c0-6 1.9-5.2 5-5.3H394c9.3 0 10.3 0 10.3-7s-1.2-6.6-10.4-6.7h-34.5c-3.9 0-5.6.3-5.6-2.6V21.7c0-4.4.3-5 2.1-5h45c4.4 0 4.2-1.9 4.2-7.2 0-5.3.1-7.8-4-7.8h-51c-10 0-12.8 7.4-12.8 17.2",
-                            fill: '<.colorWinnerBlue',
-                        },
-                    },
-                    {
-                        attr: {
-                            d: () => "M418 16.2v68.5c0 2.2.6 3.4 2.7 3.7h5.1c2.4 0 4.1.1 5.4-.1 2-.4 2.7-1.8 2.7-3.6l.1-65.9c0-2.5 2-2.1 3.6-2.1h27.3c9 0 12.7 7.2 12.7 14.5.1 7.2-3.1 13.9-12.9 14H451c-4.6 0-7.8 2.7-7.6 7.8 0 1.8 1.4 4.5 3.8 7l12.4 12.3 15.5 15a5 5 0 0 0 3 1.2H492c1.2 0 2.8-.9.7-3l-5.1-5.3-23.2-21.8c-.8-1 1.3-.8 3.7-.8 3.5-.1 25.6-2.9 25.6-26.4 0-23.6-13-29.4-21.5-29.4h-41.2c-7.9 0-13 6.6-13 14.4",
-                            fill: '<.colorWinnerBlue',
-                        },
-                    },
-                ],
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//word.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_icon_back = {
-            base: $$.$me_svg_paths,
-            prop: {
-                color: '/.colorText',
-                viewBox: () => "0 0 11 17",
-                paths: () => [
-                    {
-                        attr: {
-                            d: () => "M4.52 8.5l6.062 6.061a1.429 1.429 0 1 1-2.02 2.02L.48 8.502 8.56.418a1.429 1.429 0 1 1 2.02 2.02L4.522 8.5z",
-                            fill: '<.color',
-                        },
-                    },
-                ],
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//back.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$me_stylesheet = {
             prop: {
                 styleSheetName: $$.$me_atom2_prop_abstract(),
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName'], ({ masters: [className, styleSheetName] }) => ''),
-                styleSheetCommon: () => '',
+                styleSheet: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => ''),
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheet'], ({ masters: [styleSheet] }) => ''),
                 instanceId: () => null,
                 styleSheet_apply: $$.$me_atom2_prop(['.styleSheet', '.styleSheetName', '.instanceId'], null, styleSheet_apply_fn),
                 styleSheetCommon_apply: $$.$me_atom2_prop(['.styleSheetCommon', '.styleSheetName'], null, styleSheet_apply_fn),
@@ -4765,100 +4615,19 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$me_cross = {
-            base: $$.$me_stylesheet,
-            prop: {
-                size: $$.$me_atom2_prop_abstract(),
-                thick: $$.$me_atom2_prop_abstract(),
-                color: $$.$me_atom2_prop_abstract(),
-                opacity: () => 1,
-                opacityHover: () => 1,
-                '#width': '.size',
-                '#height': '.size',
-                styleSheetName: () => 'cross',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
-        .${className}:before {
-          transform: rotate(45deg);
-        }
-        .${className}:after {
-          transform: rotate(-45deg);
-        }
-      `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
-        .${className} {
-          opacity: ${opacity};
-        }
-        .${className}:hover {
-          opacity: ${opacityHover};
-        }
-        .${className}:before, .${className}:after {
-          position: absolute;
-          left: ${(size - thick) / 2}px;
-          content: ' ';
-          height: ${size}px;
-          width: ${thick}px;
-          background-color: ${color};
-        }
-      `),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//cross.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_icon_phoneEmail = {
-            base: $$.$me_svg_paths,
-            prop: {
-                color: '/.colorText',
-                viewBox: () => "0 0 52 21",
-                paths: () => [
-                    {
-                        tag: 'g',
-                        attr: { fill: () => 'none', fillRule: () => 'evenodd' },
-                        sub: [
-                            {
-                                tag: 'g',
-                                attr: { stroke: () => '#313745' },
-                                sub: [
-                                    { attr: { d: () => "M34 5.2a.5.5 0 0 0-.5.5v11.6a.5.5 0 0 0 .5.5h16.6a.5.5 0 0 0 .5-.5V5.7a.5.5 0 0 0-.5-.5H34z" } },
-                                    { attr: { d: () => "M35.1 16.8h14.3L44.6 12l-1.3 1.6c-.4.4-.8.6-1.3.5-.3-.1-.5-.3-1-.9L40 12l-4.8 5z" } },
-                                    { attr: { d: () => "M49.5 6.2H35l6.6 7.7c.4.4 1 .4 1.4 0l6.5-7.7z" } },
-                                ],
-                            },
-                            { attr: { stroke: () => '#313745', 'stroke-linecap': () => 'square', d: () => "M27.7 5l-8 13" } },
-                            {
-                                tag: 'g',
-                                attr: { transform: () => "translate(.4 1)" },
-                                sub: [
-                                    { tag: 'rect', attr: { width: () => "12.9", height: () => "19", x: () => ".5", y: () => ".5", stroke: () => "#313745", rx: () => "1" } },
-                                    { tag: 'rect', attr: { fill: () => "#313745", d: () => "M0 14.5h14v1.2H0z" } },
-                                    { tag: 'ellipse', attr: { cx: () => "7", cy: () => "17.3", stroke: () => "#313745", 'stroke-width': () => ".5", rx: () => "1", ry: () => "1" } },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//phoneEmail.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
+        const events = [
+            'focus',
+            'blur',
+            'change',
+            'keypress',
+            'keydown',
+            'keyup',
+        ];
         $$.$nl_input = {
             base: $$.$me_stylesheet,
             node: 'input',
             dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'focus' || dispatch_name == 'blur' || dispatch_name == 'change')
+                if (~events.indexOf(dispatch_name))
                     return true;
                 return false;
             },
@@ -4910,13 +4679,36 @@ var $;
             },
             init: (self) => {
                 const elem = self;
-                self.onChange = onChange.bind(self);
-                elem.node.addEventListener('change', self.onChange);
+                elem.node.addEventListener('change', onChange.bind(self));
+                elem.node.addEventListener('keypress', onKeyPress.bind(self));
+                elem.node.addEventListener('keydown', onKeyDown.bind(self));
+                elem.node.addEventListener('keyup', onKeyUp.bind(self));
             },
             fini: (self) => {
-                self.node.removeEventListener('change', self.onChange);
+                const elem = self;
+                elem.node.removeEventListener('change', self.onChange);
+                elem.node.removeEventListener('keypress', self.onKeyPress);
+                elem.node.removeEventListener('keydown', self.onKeyDown);
+                elem.node.removeEventListener('keyup', self.onKeyUp);
             },
         };
+        function onKeyEvent(entity, name, event) {
+            const prev = $$.a.curr;
+            $$.a.curr = entity;
+            const { ctrlKey, metaKey, shiftKey, altKey, key, type, defaultPrevented } = event;
+            if ($$.a.dispatch('', name, { ctrlKey, metaKey, shiftKey, altKey, key, type, defaultPrevented }).defaultPrevented)
+                event.preventDefault();
+            $$.a.curr = prev;
+        }
+        function onKeyUp(event) {
+            onKeyEvent(this, 'keyup', event);
+        }
+        function onKeyDown(event) {
+            onKeyEvent(this, 'keydown', event);
+        }
+        function onKeyPress(event) {
+            onKeyEvent(this, 'keypress', event);
+        }
         function onChange(event) {
             const prev = $$.a.curr;
             $$.a.curr = this;
@@ -4926,301 +4718,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //input.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_checkbox = {
-            base: $$.$me_stylesheet,
-            prop: {
-                caption: $$.$me_atom2_prop_abstract(),
-                checked: () => false,
-                space: () => 8,
-                fontSize: () => 14,
-                boxSize: () => 14,
-                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : '#ffffff'),
-                styleSheetName: () => 'checkbox',
-                className: '.styleSheetName',
-                styleSheet: () => '',
-                styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
-                    const bc = (theme == 0) ? '#0070a4' : '#ffffff';
-                    return (`
-          .${className} .box {
-            box-sizing: border-box;
-          }
-          .${className}[checked=false] .box {
-            border: solid 1px #313745;
-            background-color: white;
-          }
-          .${className}[checked=true] .box {
-            background: ${bc};
-          }
-        `);
-                }),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                '#cursor': () => 'pointer',
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('.checked', !$$.a('.checked'));
-                    return true;
-                },
-            },
-            attr: {
-                checked: '.checked',
-            },
-            style: {
-                userSelect: () => 'none',
-            },
-            elem: {
-                box: () => ({
-                    prop: {
-                        '#width': '<.boxSize',
-                        '#height': '<.boxSize',
-                        '#alignVer': () => $$.$me_align.center,
-                    },
-                    style: {
-                        borderRadius: $$.$me_atom2_prop(['<.boxSize'], ({ masters: [boxSize] }) => boxSize * 2 / 14),
-                    },
-                    dom: {
-                        className: () => 'box',
-                    },
-                    elem: {
-                        check: () => ({
-                            node: 'img',
-                            prop: {
-                                '#hidden': $$.$me_atom2_prop(['<<.checked'], ({ masters: [checked] }) => !checked),
-                                '#width': () => 10,
-                                '#height': () => 9,
-                                '#align': () => $$.$me_align.center,
-                                '#ofsVer': () => 1,
-                            },
-                            attr: {
-                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/path-4-copy-2@2x.png' : 'assets/path-4-copy-2-dark@2x.png'),
-                                draggable: () => false,
-                            },
-                        }),
-                    },
-                }),
-                caption: () => ({
-                    prop: {
-                        '#ofsHor': $$.$me_atom2_prop(['<@box.#width', '<.space'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                    },
-                    style: {
-                        color: '<.colorText',
-                        fontSize: '<.fontSize',
-                        whiteSpace: () => 'nowrap',
-                    },
-                    dom: {
-                        innerHTML: '<.caption',
-                        className: () => 'caption',
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//checkbox.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_panel = {
-            type: '$me_panel',
-            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
-                'borderRadiusLeftTop', 'borderRadiusRightTop',
-                'borderRadiusLeftBottom', 'borderRadiusRightBottom',
-            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
-                ['paddingHor', ['paddingLeft', 'paddingRight']],
-                ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
-                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
-                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
-                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
-                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
-            ])),
-            render: p => {
-                let borderHasWidth = false;
-                let borderHasWidthSame = true;
-                let borderHasColor = false;
-                let borderHasColorSame = true;
-                let prevWidth, prevColor;
-                const colorBorder = {};
-                const borderWidth = {};
-                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
-                    const side = s.toLowerCase();
-                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
-                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
-                    borderHasWidth = borderHasWidth || (currWidth > 0);
-                    borderHasColor = borderHasColor || !!currColor;
-                    if (null != prevWidth) {
-                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
-                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
-                    }
-                    prevWidth = currWidth;
-                    prevColor = currColor;
-                }
-                let prevRadius;
-                let borderHasRadius = false;
-                let borderHasRadiusSame = true;
-                for (const s of ['LeftTop', 'RightTop', 'LeftBottom', 'RightBottom']) {
-                    const corner = s.toLowerCase();
-                    const currRadius = borderWidth[corner] = $$.a('.borderRadius' + s) * p.pixelRatio;
-                    borderHasRadius = borderHasRadius || currRadius > 0;
-                    if (null != prevRadius)
-                        borderHasRadiusSame = borderHasRadiusSame && (currRadius == prevRadius);
-                    prevRadius = currRadius;
-                }
-                const colorBackground = $$.a('.colorBackground');
-                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
-                    $$.$me_atom2_ctx_rect({
-                        ctx: p.ctx,
-                        ctxTop: p.ctxRect.top,
-                        ctxLeft: p.ctxRect.left,
-                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
-                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
-                        ctxBorderRadius: !borderHasRadius ? null : borderHasRadiusSame ? prevRadius : {
-                            leftTop: p.pixelRatio * $$.a('.borderRadiusLeftTop'),
-                            rightTop: p.pixelRatio * $$.a('.borderRadiusRightTop'),
-                            rightBottom: p.pixelRatio * $$.a('.borderRadiusRightBottom'),
-                            leftBottom: p.pixelRatio * $$.a('.borderRadiusLeftBottom'),
-                        },
-                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
-                        stroke: !borderHasWidth || !borderHasColor ? null : {
-                            style: borderHasColorSame ? prevColor : colorBorder,
-                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
-                        }
-                    });
-                }
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        function $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight) {
-            const ctxContentWidth = Math.max(0, width - paddingLeft - paddingRight) * pixelRatio;
-            $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-            let ctxTextWidth = ctx.measureText(text).width;
-            let ctxLeft = pixelRatio * (left + paddingLeft);
-            if (ctxTextWidth > ctxContentWidth) {
-                const ctxPeriodWidth = ctx.measureText(period).width;
-                if (ctxContentWidth < ctxPeriodWidth) {
-                    console.error($$.a.curr.name(), { ctxContentWidth, ctxPeriodWidth });
-                    return { text, ctxLeft };
-                }
-                let len = text.length, wi = ctxTextWidth, s;
-                while (len && wi > ctxContentWidth - ctxPeriodWidth)
-                    wi = ctx.measureText(s = text.slice(0, --len)).width;
-                ctxTextWidth = wi + ctxPeriodWidth;
-                text = s + period;
-            }
-            ctxLeft += $$.$me_align_correction($$.a('.alignHor'), () => Math.max(0, ctxContentWidth - ctxTextWidth));
-            return { text, ctxLeft };
-        }
-        $$.$me_label_text_n_ctxLeft = $me_label_text_n_ctxLeft;
-        $$.$me_label = {
-            type: '$me_label',
-            base: $$.$me_panel,
-            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
-                    '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
-                ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
-                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-                    const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
-                    return result;
-                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
-                '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
-                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
-            })),
-            render: p => {
-                let { ctxWidth, ctxHeight } = p;
-                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
-                const paddingLeft = $$.a('.paddingLeft');
-                const paddingRight = $$.a('.paddingRight');
-                const ctxPaddingLeft = Math.round(p.pixelRatio * paddingLeft);
-                const ctxPaddingRight = Math.round(p.pixelRatio * paddingRight);
-                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
-                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
-                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
-                if (ctxHeight < ctxFontSize - 1) {
-                    console.error({ ctxHeight, ctxFontSize });
-                    return;
-                }
-                const align = $$.a('.alignVer');
-                const ctxOfs = $$.a('.ofsVer') * p.pixelRatio;
-                const ctxCorrection = align == $$.$me_align.bottom ? ctxOfs :
-                    align == $$.$me_align.top ? ctxHeight - ctxFontSize - ctxOfs :
-                        (ctxHeight - ctxFontSize) / 2 - ctxOfs;
-                const bottom = p.ctxRect.bottom - ctxPaddingBottom - ctxCorrection;
-                p.ctx.fillStyle = $$.a('.colorText');
-                let text = $$.a('._text') + '';
-                const ctxLeft = $$.a('._ctxLeft');
-                ctxWidth -= ctxLeft - $$.a('.#left') * p.pixelRatio;
-                while (p.ctx.measureText(text).width > ctxWidth)
-                    text = text.slice(0, -1);
-                p.ctx.fillText(text, ctxLeft, bottom);
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//label.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_button = {
-            prop: {
-                caption: $$.$me_atom2_prop_abstract(),
-                target: $$.$me_atom2_prop_abstract(),
-                cmd: () => null,
-                '#width': () => 200,
-                '#height': () => 40,
-                '#cursor': () => 'pointer',
-                source: () => null,
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        text: '<.caption',
-                        colorText: () => 'white',
-                        padding: () => 0,
-                        align: () => $$.$me_align.center,
-                        '#height': '<.#height',
-                        '#width': '<.#width',
-                    },
-                }),
-            },
-            style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
-                borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
-                    return true;
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//button.js.map
 ;
 "use strict";
 var $;
@@ -5266,6 +4763,634 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_logo_color_blue = 'rgb(16,16,119)';
+        $$.$nl_logo_color_cyan = 'rgb(0,214,202)';
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//colors.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const helper = {
+            type: '$me_svg::helper',
+            skip_root_defaults: true,
+            prop: {
+                content: $$.$me_atom2_prop_abstract(),
+                _keys: $$.$me_atom2_prop_keys(['.content']),
+            },
+            elem: {
+                item: $$.$me_atom2_prop({ keys: ['._keys'], masters: ['.content'] }, ({ key: [key], masters: [content] }) => ({
+                    node: {
+                        ns: 'http://www.w3.org/2000/svg',
+                        tag: content[key].tag || 'path',
+                    },
+                    base: !content[key].sub ? null : helper,
+                    skip_root_defaults: true,
+                    prop: {
+                        content: !content[key].sub ? null : () => content[key].sub,
+                    },
+                    attr: content[key].attr,
+                })),
+            },
+        };
+        $$.$me_svg = {
+            type: '$me_svg',
+            skip_root_defaults: false,
+            base: helper,
+            node: {
+                ns: 'http://www.w3.org/2000/svg',
+                tag: 'svg',
+            },
+            prop: {
+                viewBox: $$.$me_atom2_prop_abstract(),
+            },
+            attr: {
+                viewBox: '.viewBox',
+                preserveAspectRatio: () => "xMidYMid",
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//svg.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_logo_icon = {
+            base: $$.$me_svg,
+            prop: {
+                colorWinnerBlue: () => $$.$nl_logo_color_blue,
+                colorWinnerCyan: () => $$.$nl_logo_color_cyan,
+                viewBox: () => "0 0 487 442",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M222.3 105.4c-3.3.9-7.5 2.5-9.4 3.5a48.6 48.6 0 0 0-15.2 14.7c-1.9 3.9-6.8 20-11.8 39.4a36240.2 36240.2 0 0 1-40.2 155c-7.4 29.5-14.4 49.5-17.3 49.5-1.9 0-4-2.8-6.3-8.5-2.5-5.8-6.7-22.8-34.8-140l-7.9-32.5-6-25-6-25.5c-2-8.3-4.6-17-5.7-19.2-4-8.3-11.9-10.4-38.7-10-16.9.2-17.4.3-19.3 2.6-1.3 1.6-1.9 3.9-1.9 7.5.1 5.9-.6 3 10.3 43.6A22792.6 22792.6 0 0 1 41 269l18 68c14.6 57.3 23 80.5 32.5 89.9 13.6 13.6 37.4 16.3 58 6.7a50.6 50.6 0 0 0 21.3-21.4c2.7-5.8 13.8-45.6 25.2-90.4C207 278 211.3 262 227.2 204c7.4-27 8-28.2 11.1-25.5 2 1.6 7 17.7 13.5 43l9 35 9 34.5 11 42 10.5 40c6.3 24.2 7.8 27.5 10.4 22.7 1.4-2.5 11-31.8 18.8-56.7 7.6-24.7 7.6-24.3 1.3-47-2.3-8.3-6.4-23.3-9-33.5l-21-80-3.6-14a305 305 0 0 0-11.5-39.2 44.5 44.5 0 0 0-14.7-15.5 55.8 55.8 0 0 0-39.7-4.4z",
+                            fill: '<.colorWinnerBlue',
+                        },
+                    },
+                    {
+                        attr: {
+                            d: () => "M302 108.5c-1.2.5-2.5 1.6-2.8 2.4-.5 1.4 3 15.3 10.3 40l3.8 13 38.3.4c36 .2 38.3.3 37.8 2l-8.5 29.2c-4.4 15-10.3 35.8-13 46a7149.1 7149.1 0 0 1-37 132c-12.6 42.2-15.6 56.3-13.2 60.8.6 1 3.1 2.8 5.5 3.7 3.8 1.5 7.6 1.6 28.7 1.2 26.8-.5 31.3-1.2 36-6 4.5-4.5 6.8-9.7 10.6-24.6 1.8-7.5 7-26.4 11.3-42.1 12-43.5 14.8-53.8 16.8-62.5a25909 25909 0 0 0 46-171.5 38.2 38.2 0 0 0 1.7-12.6c-.7-4.1-7-10-12.2-11.3-4.8-1.4-156.7-1.4-160-.1z",
+                            fill: '<.colorWinnerCyan',
+                        }
+                    },
+                    {
+                        attr: {
+                            d: () => "M434.3 2.9a41.9 41.9 0 0 0-32 33 30.2 30.2 0 0 0-.6 13.9 44.1 44.1 0 0 0 23.8 31.9c6.4 3 7.4 3.3 17.3 3.3 13.6 0 19.5-2.2 28.6-10.7A41.7 41.7 0 0 0 451 2.6a31.6 31.6 0 0 0-16.7.3z",
+                            fill: '<.colorWinnerCyan',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//icon.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_logo_word = {
+            base: $$.$me_svg,
+            prop: {
+                colorWinnerBlue: () => $$.$nl_logo_color_blue,
+                colorWinnerCyan: () => $$.$nl_logo_color_cyan,
+                viewBox: () => "0 0 495 90",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M35.5 69.3c-.2.8-1.9 1-2.1 0-5.2-19.6-10.7-41.2-15.7-61.2-2-7.2-.3-6.3-14.3-6.3-5.5 0-1.3 9.7 0 14.3l9.2 33.4c2.1 7.8 3.8 14.7 6.1 22.4 3.4 11.4 5.4 15.5 12.2 16.4 1.5.2 3.3.1 5.4.2 2 0 3.7-1 5.1-1.8 6.3-3.5 7-13.7 8.6-19.2L55 49l2.7-9.5L62.6 21c1-1.7 2.5-2.9 4.8 7.5l12 47.6c1.6 5.4 3.5 9 6.2 10.7 2.3 1.4 4.9 1.8 9 1.8 2.7 0 4.6-.8 6.3-2 3.9-2.7 6-8.6 7.2-13.6 2-7.6 4.2-14.5 6.1-22.4l9.3-33.4c4.5-16.7 5.6-15.4-7.8-15.4-4 0-4.4.8-6 5.8l-7 26.5c-1 3.8-7 32.8-8.8 35.3-.6.8-1.5.8-2 0-.8-1.2-1.6-3.6-2.6-7.5l-7.7-28.6-5.2-19C73.6 4.5 72.6 1.7 62.6 1.7c-10.7 0-11.7 10.6-14.3 20.6l-7.5 28c-1.6 6.7-3.3 13-5.3 19",
+                            fill: '<.colorWinnerBlue',
+                        },
+                    },
+                    {
+                        attr: {
+                            d: () => "M138.7 82.8c0 3.4.7 5.2 2.7 5.5 2 .2 6.2.2 9.4.1 2.2 0 2.8-2.8 2.9-4.1V26.8c.4-1.8-4-2-7.4-2-3.2 0-7.9.2-7.7 2-.1 3 .1 49.9.1 56",
+                            fill: '<.colorWinnerBlue',
+                        },
+                    },
+                    {
+                        attr: {
+                            d: () => "M146.1 1.8a7.4 7.4 0 1 1 0 14.8 7.4 7.4 0 0 1 0-14.8",
+                            fill: '<.colorWinnerCyan',
+                        },
+                    },
+                    {
+                        attr: {
+                            d: () => "M167.9 31.6v50.5c0 4.1.7 6.1 3 6.3h8.2c4 0 3.7-3 3.7-7V38.1c0-2 .8-2.7 2.5-2.9h13.2c9.4.4 13.5 3.2 13.5 19.9v29.5c0 2.4.7 3.6 3.3 3.8h7.7c3.4 0 4.2-1.2 4.1-3.9V54.8c-.2-9.7-1.3-18.8-4.4-23.2a13.4 13.4 0 0 0-6.7-5.4c-10.1-3.2-26.6-2.6-39.6-2.6-5 0-8.5 3-8.5 8",
+                            fill: '<.colorWinnerBlue',
+                        },
+                    },
+                    {
+                        attr: {
+                            d: () => "M239.8 20.2v65.3c.1 1.5 1.3 3 2.6 3h11.8c1 0 2.4-2 2.4-3V30.8c0-3-.2-8.4.6-7.7l33.4 51.6c6 9 7.4 13.3 15.7 13.8h4c6 0 10.6-5.3 10.6-11.4V4.2c0-2.1-4.3-2.5-8.4-2.4-4 0-8 .4-8 2.4v29.5c0 12.3.4 24.6.4 30 0 2.7 0 3-.6 2.8l-33.7-52.2c-.7-1.1-6-12.6-17.3-12.6-9.1 0-13.5 9.1-13.5 18.5",
+                            fill: '<.colorWinnerBlue',
+                        },
+                    },
+                    {
+                        attr: {
+                            d: () => "M337.3 18.9v56.6c0 8.5 3.7 13 12.2 13H401c4.2 0 4-1.3 4-7 0-5.8.2-8.1-4-8.1h-41.4c-6.8 0-6 .6-6-7.2v-9c0-6 1.9-5.2 5-5.3H394c9.3 0 10.3 0 10.3-7s-1.2-6.6-10.4-6.7h-34.5c-3.9 0-5.6.3-5.6-2.6V21.7c0-4.4.3-5 2.1-5h45c4.4 0 4.2-1.9 4.2-7.2 0-5.3.1-7.8-4-7.8h-51c-10 0-12.8 7.4-12.8 17.2",
+                            fill: '<.colorWinnerBlue',
+                        },
+                    },
+                    {
+                        attr: {
+                            d: () => "M418 16.2v68.5c0 2.2.6 3.4 2.7 3.7h5.1c2.4 0 4.1.1 5.4-.1 2-.4 2.7-1.8 2.7-3.6l.1-65.9c0-2.5 2-2.1 3.6-2.1h27.3c9 0 12.7 7.2 12.7 14.5.1 7.2-3.1 13.9-12.9 14H451c-4.6 0-7.8 2.7-7.6 7.8 0 1.8 1.4 4.5 3.8 7l12.4 12.3 15.5 15a5 5 0 0 0 3 1.2H492c1.2 0 2.8-.9.7-3l-5.1-5.3-23.2-21.8c-.8-1 1.3-.8 3.7-.8 3.5-.1 25.6-2.9 25.6-26.4 0-23.6-13-29.4-21.5-29.4h-41.2c-7.9 0-13 6.6-13 14.4",
+                            fill: '<.colorWinnerBlue',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//word.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_back = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 11 17",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M4.52 8.5l6.062 6.061a1.429 1.429 0 1 1-2.02 2.02L.48 8.502 8.56.418a1.429 1.429 0 1 1 2.02 2.02L4.522 8.5z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//back.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_cross = {
+            type: '$me_cross',
+            base: $$.$me_stylesheet,
+            prop: {
+                size: $$.$me_atom2_prop_abstract(),
+                thick: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                opacity: () => 1,
+                opacityHover: () => 1,
+                '#width': '.size',
+                '#height': '.size',
+                styleSheetName: () => 'me_cross',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
+        .${className}:before {
+          transform: rotate(45deg);
+        }
+        .${className}:after {
+          transform: rotate(-45deg);
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
+        .${className} {
+          opacity: ${opacity};
+        }
+        .${className}:hover {
+          opacity: ${opacityHover};
+        }
+        .${className}:before, .${className}:after {
+          position: absolute;
+          left: ${(size - thick) / 2}px;
+          content: '';
+          height: ${size}px;
+          width: ${thick}px;
+          background-color: ${color};
+        }
+      `),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//cross.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_phoneEmail = {
+            type: '$nl_icon_phoneEmail',
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 52 21",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: () => 'none', fillRule: () => 'evenodd' },
+                        sub: [
+                            {
+                                tag: 'g',
+                                attr: { stroke: '<<.color' },
+                                sub: [
+                                    { attr: { d: () => 'M35.1 16.8 h14.3 L44.6 12 l-1.3 1.6 c-.4.4-.8.6-1.3.5-.3-.1-.5-.3-1-.9 L40 12 z' } },
+                                    { attr: { d: () => "M49.5 6.2H35l6.6 7.7c.4.4 1 .4 1.4 0l6.5-7.7z" } },
+                                    { attr: { d: () => "M34.6 16.8 v-10.5z" } },
+                                    { attr: { d: () => "M49.8 16.8 v-10.5z" } },
+                                ],
+                            },
+                            { attr: { stroke: '<<.color', 'stroke-linecap': () => 'square', d: () => "M27.7 5l-8 13" } },
+                            {
+                                tag: 'g',
+                                attr: { transform: () => "translate(.4 1)" },
+                                sub: [
+                                    { tag: 'rect', attr: { width: () => "12.9", height: () => "19", x: () => ".5", y: () => ".5", stroke: '<<<.color', rx: () => "1" } },
+                                    { attr: { fill: '<<<.color', d: () => "M0 14.5h14v1.2H0z" } },
+                                    { tag: 'ellipse', attr: { cx: () => "7", cy: () => "17.3", stroke: '<<<.color', 'stroke-width': () => ".5", rx: () => "1", ry: () => "1" } },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//phoneEmail.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_checkbox = {
+            type: '$nl_checkbox',
+            base: $$.$me_stylesheet,
+            prop: {
+                caption: $$.$me_atom2_prop_abstract(),
+                checked: $$.$me_atom2_prop_abstract(),
+                boxSize: () => 16,
+                space: () => 8,
+                fontSize: $$.$me_atom2_prop(['.boxSize'], $$.$me_atom2_prop_compute_fn_sum(-2)),
+                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : '#ffffff'),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                '#cursor': () => 'pointer',
+                '#height': '.boxSize',
+                styleSheetName: () => 'nl_checkbox',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName', '/.theme', '/.colorButton', '/.colorText'], ({ masters: [className, theme, colorButton, colorText] }) => `
+        .${className} {
+          user-select: none;
+        }
+        .${className}:hover > svg {
+          transform: scale(1.2)
+        }
+        .${className}[checked=false] > svg {
+          ${theme != $$.$me_theme.light ? '' : `border: solid 1px ${colorText};`}
+          background-color: white;
+          box-sizing: border-box;
+        }
+        .${className}[checked=true] > svg {
+          background: ${theme == $$.$me_theme.light ? '#0070a4' : 'white'};
+        }
+        .${className}[checked=false] > svg > path {
+          fill: transparent;
+        }
+        .${className}[checked=true] > svg > path {
+          fill: ${theme == $$.$me_theme.light ? 'white' : 'black'};
+        }
+        .${className} > div {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.boxSize', '.colorText'], ({ masters: [className, boxSize, colorText] }) => `
+        .${className} > svg {
+          border-radius: ${Math.round(boxSize * 2 / 14)}px;
+        }
+        .${className} > div {
+          color: colorText;
+        }
+      `),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('.checked', !$$.a('.checked'));
+                    return true;
+                },
+            },
+            attr: {
+                checked: '.checked',
+            },
+            elem: {
+                box: () => ({
+                    base: $$.$me_svg,
+                    prop: {
+                        '#width': '<.boxSize',
+                        '#height': '<.boxSize',
+                        '#alignVer': () => $$.$me_align.center,
+                        viewBox: () => "0 0 24 24",
+                        content: () => [
+                            {
+                                attr: {
+                                    d: () => "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                                },
+                            },
+                        ],
+                    },
+                }),
+                caption: () => ({
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<@box.#width', '<.space'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        fontSize: '<.fontSize',
+                    },
+                    dom: {
+                        innerHTML: '<.caption',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//checkbox.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_button = {
+            type: '$nl_button',
+            base: $$.$me_stylesheet,
+            prop: {
+                caption: $$.$me_atom2_prop_abstract(),
+                target: $$.$me_atom2_prop_abstract(),
+                source: () => null,
+                cmd: () => null,
+                '#width': () => 200,
+                '#height': () => 40,
+                '#cursor': () => 'pointer',
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                styleSheetName: () => 'nl_button',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
+        .${className} {
+          user-select: none;
+        }
+        .${className} > div {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      `),
+                colorBackground: '/.colorButton',
+                colorText: () => 'white',
+            },
+            elem: {
+                caption: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        '#align': () => $$.$me_align.center,
+                        fontSize: '<.fontSize',
+                        colorText: '<.colorText',
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    },
+                }),
+            },
+            style: {
+                background: '.colorBackground',
+                borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
+                    return true;
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//button.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_eyeClose = {
+            type: '$nl_icon_eyeClose',
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 26 11",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: () => 'none', fillRule: () => 'evenodd', stroke: '<.color' },
+                        sub: [
+                            { attr: { d: () => "M13 7c4.418 0 8.418-2.333 12-7-3.582 4.667-7.582 7-12 7S4.582 4.667 1 0c3.582 4.667 7.582 7 12 7zM1.168 6.311l2.106-2.224M25.277 6.308L23.166 4.09M19.93 9.556l-1.418-2.714M5.89 9.51l1.22-2.462M13 11V8" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//eyeClose.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_eyeOpen = {
+            type: '$nl_icon_eyeOpen',
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 26 19",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: () => 'none', fillRule: () => 'evenodd', stroke: '<.color' },
+                        sub: [
+                            {
+                                tag: 'g',
+                                attr: { transform: () => "translate(9 6)" },
+                                sub: [
+                                    { tag: 'circle', attr: { cx: () => "4", cy: () => "4", r: () => "4" } },
+                                    { attr: { d: () => "M4 2a2 2 0 0 0-2 2" } },
+                                ],
+                            },
+                            { attr: { d: () => "M13 18c4.418 0 8.418-2.333 12-7-3.582-4.667-7.582-7-12-7S4.582 6.333 1 11c3.582 4.667 7.582 7 12 7zM1.168 4.689l2.106 2.224M25.277 4.692L23.166 6.91M19.93 1.444l-1.418 2.714M5.89 1.49l1.22 2.462M13 0v3" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//eyeOpen.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_login_input = {
+            prop: {
+                placeholder: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                icon_width: () => 0,
+                icon: () => '',
+                type: () => 'text',
+                icon_wrapper_width: $$.$me_atom2_prop(['.icon_width', '.icon_margin_right'], ({ masters: [icon_width, icon_margin_right] }) => icon_width + 2 * icon_margin_right),
+                fontSize: () => 18,
+                icon_height: () => 18,
+                icon_margin_right: () => 8,
+                icon_isClickable: () => false,
+                error: () => '',
+                '#height': () => 45,
+            },
+            elem: {
+                input: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        placeholder: '<.placeholder',
+                    },
+                    attr: {
+                        type: '<.type',
+                    },
+                    style: {
+                        fontSize: '<.fontSize',
+                        border: $$.$me_atom2_prop(['<.error'], ({ masters: [error] }) => error ? 'solid 1px #ff3939' : ''),
+                    },
+                    dom: {
+                        value: '<.value',
+                    },
+                    dispatch: (dispatch_name, dispatch_arg) => {
+                        if (dispatch_name == 'change') {
+                            $$.a('<.value', dispatch_arg);
+                            return true;
+                        }
+                        else if (dispatch_name == 'keypress' ||
+                            dispatch_name == 'keydown' && (dispatch_arg.key == 'Delete' ||
+                                dispatch_arg.key == 'Backspace')) {
+                            $$.a('<.error', '');
+                            return true;
+                        }
+                        return false;
+                    },
+                }),
+                icon_wrapper: $$.$me_atom2_prop(['.icon_width'], ({ masters: [icon_width] }) => !icon_width ? null :
+                    {
+                        prop: {
+                            '#alignHor': () => $$.$me_align.right,
+                            '#width': '<.icon_wrapper_width',
+                            '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                            '#cursor': $$.$me_atom2_prop(['<.icon_isClickable'], ({ masters: [icon_isClickable] }) => !icon_isClickable ? null : 'pointer'),
+                        },
+                        elem: {
+                            icon: $$.$me_atom2_prop(['<.icon'], ({ masters: [icon] }) => {
+                                return !icon ? null : {
+                                    type: icon.type,
+                                    base: icon,
+                                    prop: {
+                                        '#alignHor': () => $$.$me_align.right,
+                                        '#ofsHor': '<<.icon_margin_right',
+                                        '#alignVer': () => $$.$me_align.center,
+                                        '#width': '<<.icon_width',
+                                        '#height': '<<.icon_height',
+                                    },
+                                };
+                            }),
+                        },
+                        event: {
+                            clickOrTap: () => {
+                                if ($$.a('<.icon_isClickable')) {
+                                    $$.a.dispatch('<', 'icon_click');
+                                    return true;
+                                }
+                                return false;
+                            },
+                        },
+                    }),
+                error: $$.$me_atom2_prop(['.error'], ({ masters: [error] }) => !error ? null :
+                    {
+                        base: $nl_login_error,
+                        prop: {
+                            caption: '<.error',
+                        },
+                    }),
+            },
+        };
+        const $nl_login_error = {
+            prop: {
+                caption: '<.error',
+                paddingHor: () => 16,
+                width: $$.$me_atom2_prop(['.triangle_width', '.paddingHor', '@caption.#width', '.paddingHor'], $$.$me_atom2_prop_compute_fn_sum()),
+                triangle_width: () => 16,
+                '#width': $$.$me_atom2_prop(['.width', '.triangle_width'], $$.$me_atom2_prop_compute_fn_diff()),
+                colorBackground: () => '#ff3637',
+                colorText: () => 'white',
+                '#alignHor': () => $$.$me_align.right,
+                '#ofsHor': $$.$me_atom2_prop(['.width'], ({ masters: [width] }) => -width - 4),
+            },
+            style: {
+                background: '.colorBackground',
+            },
+            elem: {
+                triangle: () => ({
+                    base: $$.$me_triangle,
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width),
+                        direction: () => $$.$me_rect_sides_enum.left,
+                        size: '.em',
+                        '#height': '<.#height',
+                        color: '<.colorBackground',
+                    },
+                }),
+                caption: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        '#align': () => $$.$me_align.center,
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    },
+                    style: {
+                        color: '<.colorText',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//input.js.map
 ;
 "use strict";
 var $;
@@ -5341,22 +5466,93 @@ var $;
     var $$;
     (function ($$) {
         $$.$nl_login = {
+            dispatch(dispatch_name, dispatch_arg) {
+                if (dispatch_name == 'no_reg') {
+                    $$.a('.login', '');
+                    $$.a('.isShown', false);
+                    return true;
+                }
+                if (dispatch_name == 'login') {
+                    $$.a('.login', dispatch_arg);
+                    $$.a('.isShown', false);
+                    return true;
+                }
+                if (dispatch_name.endsWith("@login@container@button")) {
+                    const selected = $$.a('.selected');
+                    const login = $$.a('@container@login.value').trim();
+                    if (!login) {
+                        $$.a('@container@login.error', 'Введите телефон или E-mail');
+                        return true;
+                    }
+                    let pass;
+                    if (selected != 'restore') {
+                        pass = $$.a('@container@pass.value');
+                        if (!pass) {
+                            $$.a('@container@pass.error', 'Введите пароль');
+                            return true;
+                        }
+                    }
+                    switch (selected) {
+                        case 'enter': {
+                            if (login != '98@baza-winner.ru') {
+                                $$.a('@container@login.error', 'Несуществующий логин');
+                                return true;
+                            }
+                            if (pass != '12345') {
+                                $$.a('@container@pass.error', 'Неверный пароль');
+                                return true;
+                            }
+                            $$.a.dispatch('', 'login', login);
+                            return true;
+                        }
+                        case 'register': {
+                            const pass_repeat = $$.a('@container@pass_repeat.value');
+                            if (!pass_repeat) {
+                                $$.a('@container@pass_repeat.error', 'Повторите пароль');
+                                return true;
+                            }
+                            $$.a.dispatch('', 'login', login);
+                            return true;
+                        }
+                        case 'restore': {
+                            console.log('Инструкция отправлена на ' + login);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            },
             prop: {
-                '#width': '/.#viewportWidth',
-                '#height': '/.#viewportHeight',
+                isShown: () => true,
                 selected: $$.$me_atom2_prop_store({
                     default: () => 'enter',
-                    valid: (val) => typeof val == 'string' && ~['enter', 'register', 'restore'].indexOf(val) ? val : null,
+                    valid: (val) => typeof val == 'string' && ~['enter', 'register', 'restore'].indexOf(val) ?
+                        val :
+                        null,
                 }),
-                linkColor: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#2b87db' : '#53adff'),
+                login: $$.$me_atom2_prop_store({
+                    default: () => '',
+                    valid: (val) => typeof val == 'string' ?
+                        val.trim() :
+                        null,
+                    condition: ['.stayLogged', '@container@login.value'],
+                }),
+                stayLogged: $$.$me_atom2_prop_store({
+                    default: () => false,
+                    valid: (val) => typeof val == 'boolean' ?
+                        val :
+                        null,
+                }),
+                '#width': '/.#viewportWidth',
+                '#height': '/.#viewportHeight',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 10),
-                colorWinnerBlue: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? $$.$nl_logo_color_blue : 'white'),
-                colorWinnerCyan: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? $$.$nl_logo_color_cyan : 'white'),
-                isLogin: () => true,
-            },
-            dispatch: (dispatch_name, dispatch_arg) => {
-                dispatch_arg.result = 'ok';
-                return true;
+                colorWinnerBlue: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    $$.$nl_logo_color_blue :
+                    'white'),
+                colorWinnerCyan: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    $$.$nl_logo_color_cyan :
+                    'white'),
+                isPassword: () => true,
             },
             style: {
                 background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
@@ -5424,13 +5620,13 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    $$.a('<<.isLogin', false);
+                                    $$.a.dispatch('<<', 'no_reg');
                                     return true;
                                 },
                             },
                         }),
-                        phone: () => ({
-                            base: input,
+                        login: () => ({
+                            base: $$.$nl_login_input,
                             prop: {
                                 placeholder: () => 'Введите телефон или E-mail',
                                 '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => {
@@ -5448,67 +5644,43 @@ var $;
                                 icon_margin_right: () => 17,
                                 icon_isClickable: () => false,
                                 icon: () => $$.$nl_icon_phoneEmail,
-                                error: () => 'Неверный логин',
+                                value: $$.$me_atom2_prop(['<<.login', '<<.stayLogged'], ({ masters: [login, stayLogged], prev }) => prev || login),
                             },
                         }),
                         pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
-                            base: input,
-                            dispatch(dispatch_name, dispatch_arg) {
-                                if (dispatch_name == 'icon_click') {
-                                    $$.a.update('.isPassword', val => !val);
-                                    return true;
-                                }
-                                return false;
-                            },
+                            base: input_pass,
                             prop: {
                                 placeholder: () => 'Введите пароль',
-                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@phone' + s), $$.$me_atom2_prop_compute_fn_sum(32)),
-                                type: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => !isPassword ? 'text' : 'password'),
-                                icon_width: () => 25,
-                                icon_height: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => isPassword ? 11 : 18),
-                                icon_margin_right: () => 30,
-                                icon_isClickable: () => true,
-                                icon_src: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => isPassword ?
-                                    'assets/eye-closed.svg' :
-                                    'assets/eye-open.svg'),
-                                isPassword: () => true,
-                                error: () => 'Неверный пароль',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@login' + s), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                value: () => '',
                             },
                         }),
-                        pass_confirm: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'register' ? null : {
-                            base: $$.$nl_input,
+                        pass_repeat: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'register' ? null : {
+                            base: input_pass,
                             prop: {
-                                '#width': '<.#width',
-                                '#height': () => 45,
+                                placeholder: () => 'Повторите пароль',
                                 '#ofsVer': $$.$me_atom2_prop(['<@pass.#ofsVer', '<@pass.#height'], $$.$me_atom2_prop_compute_fn_sum(32)),
-                                fontSize: () => 18,
-                                placeholder: () => 'Подтвердите пароль',
+                                value: () => '',
                             },
                         }),
                         check: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
                             base: $$.$nl_checkbox,
                             prop: {
                                 '#width': () => 200,
-                                '#height': () => 25,
-                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => selected == 'enter' ?
-                                    ['<@pass.#ofsVer', '<@pass.#height'] :
-                                    ['<@pass_confirm.#ofsVer', '<@pass_confirm.#height']), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                boxSize: () => 18,
+                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => ['.#ofsVer', '.#height'].map(s => (selected == 'enter' ? '<@pass' : '<@pass_repeat') + s)), $$.$me_atom2_prop_compute_fn_sum(32)),
                                 caption: () => 'Оставаться в системе',
-                                checked: () => true,
-                                fontSize: '.em',
+                                checked: $$.$me_atom2_prop_bind('<<.stayLogged'),
                             },
                         }),
                         forget_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
                             prop: {
-                                '#width': '<.#width',
                                 '#height': () => null,
+                                '#width': () => null,
                                 '#ofsVer': $$.$me_atom2_prop(['<@check.#ofsVer', '<@check.#height', '.#height'], ({ masters: [ofsVer_target, height_target, height] }) => ofsVer_target + height_target / 2 - height / 2),
-                                '#ofsHor': () => 370,
+                                '#alignHor': () => $$.$me_align.right,
                                 '#cursor': () => 'pointer',
-                                fontSize: () => 16,
-                                fontWeight: () => 500,
-                                fontFamily: () => 'system-ui',
-                                colorText: '<<.linkColor',
+                                colorText: '/.colorLink',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             dom: {
@@ -5528,26 +5700,15 @@ var $;
                                 '#height': () => 45,
                                 '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => selected == 'enter' || selected == 'register' ?
                                     ['<@check.#ofsVer', '<@check.#height'] :
-                                    ['<@phone.#ofsVer', '<@phone.#height']), $$.$me_atom2_prop_compute_fn_sum(32)),
-                                caption: $$.$me_atom2_prop(['<<.selected'], ({ masters: [page] }) => page == 'enter' ? 'Войти' : page == 'register' ? 'Зарегистрироваться' : 'Отправить'),
+                                    ['<@login.#ofsVer', '<@login.#height']), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                caption: $$.$me_atom2_prop(['<<.selected'], ({ masters: [selected] }) => selected == 'enter' ?
+                                    'Войти' :
+                                    selected == 'register' ?
+                                        'Зарегистрироваться' :
+                                        'Отправить'),
                                 target: () => '<<',
-                                fontSize: () => 18,
-                                cmd: () => ({ some: 'thing' })
+                                em: () => 18,
                             },
-                            event: {
-                                clickOrTap: () => {
-                                    let mode = $$.a('<<.selected');
-                                    console.log('button click ', mode);
-                                    if (mode == 'enter') {
-                                        let login = $$.a('<@phone.value');
-                                        let pass = $$.a('<@pass.value');
-                                        $$.a('<@phone.isError', login != '98@baza-winner.ru');
-                                        $$.a('<@pass.isError', pass != '12345');
-                                        console.log('login', login, pass);
-                                    }
-                                    return true;
-                                },
-                            }
                         }),
                         no_reg_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
                             prop: {
@@ -5556,10 +5717,7 @@ var $;
                                 '#ofsVer': $$.$me_atom2_prop(['<@button.#ofsVer', '<@button.#height'], $$.$me_atom2_prop_compute_fn_sum(32)),
                                 '#alignHor': () => $$.$me_align.center,
                                 '#cursor': () => 'pointer',
-                                fontSize: () => 16,
-                                fontWeight: () => 500,
-                                fontFamily: () => 'system-ui',
-                                colorText: '<<.linkColor',
+                                colorText: '/.colorLink',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             dom: {
@@ -5567,8 +5725,7 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    $$.a('<<.isLogin', false);
-                                    console.log($$.a.curr.name());
+                                    $$.a.dispatch('<<', 'no_reg');
                                     return true;
                                 },
                             },
@@ -5578,10 +5735,7 @@ var $;
                                 '#height': () => null,
                                 '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(40)),
                                 '#alignHor': () => $$.$me_align.center,
-                                fontSize: () => 18,
-                                fontWeight: () => 500,
-                                fontFamily: () => 'system-ui',
-                                colorText: () => '#6a6c74',
+                                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#6a6c74' : '#d8dce3'),
                             },
                             style: {
                                 textAlign: () => 'center',
@@ -5601,109 +5755,28 @@ var $;
             '#height': () => null,
             '#alignHor': () => $$.$me_align.center,
         };
-        const input = {
-            prop: {
-                placeholder: $$.$me_atom2_prop_abstract(),
-                icon_width: () => 0,
-                icon: () => '',
-                type: () => 'text',
-                icon_wrapper_width: $$.$me_atom2_prop(['.icon_width', '.icon_margin_right'], ({ masters: [icon_width, icon_margin_right] }) => icon_width + 2 * icon_margin_right),
-                fontSize: () => 18,
-                icon_height: () => 18,
-                icon_margin_right: () => 8,
-                icon_isClickable: () => false,
-                '#height': () => 45,
-                showError: () => true,
-                error: () => '',
+        const input_pass = {
+            base: $$.$nl_login_input,
+            dispatch(dispatch_name, dispatch_arg) {
+                if (dispatch_name == 'icon_click') {
+                    $$.a.update('.isPassword', val => !val);
+                    return true;
+                }
+                return false;
             },
-            elem: {
-                input: () => ({
-                    base: $$.$nl_input,
-                    prop: {
-                        placeholder: '<.placeholder',
-                    },
-                    attr: {
-                        type: '<.type',
-                    },
-                    style: {
-                        fontSize: '<.fontSize',
-                        border: $$.$me_atom2_prop(['<.showError', '<.error'], ({ masters: [showError, error] }) => showError && error ? 'solid 1px #ff3939' : ''),
-                    },
+            prop: {
+                type: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => !isPassword ? 'text' : 'password'),
+                icon_width: () => 25,
+                icon_height: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => isPassword ? 11 : 18),
+                icon_margin_right: () => 30,
+                icon_isClickable: () => true,
+                icon: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => {
+                    const result = isPassword ?
+                        $$.$nl_icon_eyeClose :
+                        $$.$nl_icon_eyeOpen;
+                    return result;
                 }),
-                icon_wrapper: $$.$me_atom2_prop(['.icon_width'], ({ masters: [icon_width] }) => !icon_width ? null :
-                    {
-                        prop: {
-                            '#alignHor': () => $$.$me_align.right,
-                            '#width': '<.icon_wrapper_width',
-                            '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
-                            '#cursor': $$.$me_atom2_prop(['<.icon_isClickable'], ({ masters: [icon_isClickable] }) => !icon_isClickable ? null : 'pointer'),
-                        },
-                        elem: {
-                            icon: $$.$me_atom2_prop(['<.icon'], ({ masters: [icon] }) => {
-                                console.log(icon);
-                                return !icon ? null : {
-                                    base: icon,
-                                    prop: {
-                                        '#alignHor': () => $$.$me_align.right,
-                                        '#ofsHor': '<<.icon_margin_right',
-                                        '#alignVer': () => $$.$me_align.center,
-                                        '#width': '<<.icon_width',
-                                        '#height': '<<.icon_height',
-                                    },
-                                };
-                            }),
-                        },
-                        event: {
-                            clickOrTap: () => {
-                                if ($$.a('<.icon_isClickable')) {
-                                    $$.a.dispatch('<', 'icon_click');
-                                    return true;
-                                }
-                                return false;
-                            },
-                        },
-                    }),
-                error: $$.$me_atom2_prop(['.showError', '.error'], ({ masters: [showError, error] }) => !showError || !error ? null :
-                    {
-                        prop: {
-                            caption: '<.error',
-                            width: () => 233,
-                            triangle_width: () => 16,
-                            '#width': $$.$me_atom2_prop(['.width', '.triangle_width'], $$.$me_atom2_prop_compute_fn_diff()),
-                            colorBackground: () => '#ff3637',
-                            colorText: () => 'white',
-                            '#alignHor': () => $$.$me_align.right,
-                            '#ofsHor': $$.$me_atom2_prop(['.width'], ({ masters: [width] }) => -width - 4),
-                        },
-                        style: {
-                            background: '.colorBackground',
-                        },
-                        elem: {
-                            triangle: () => ({
-                                base: $$.$me_triangle,
-                                prop: {
-                                    '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width),
-                                    direction: () => $$.$me_rect_sides_enum.left,
-                                    size: '.em',
-                                    '#height': '<.#height',
-                                    color: '<.colorBackground',
-                                },
-                            }),
-                            caption: () => ({
-                                prop: {
-                                    '#width': () => null,
-                                    '#height': () => null,
-                                    '#align': () => $$.$me_align.center,
-                                },
-                                dom: {
-                                    innerText: '<.caption',
-                                },
-                                style: {
-                                    color: '<.colorText',
-                                },
-                            }),
-                        },
-                    }),
+                isPassword: $$.$me_atom2_prop_bind('<<.isPassword'),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -6093,6 +6166,157 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_panel = {
+            type: '$me_panel',
+            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
+                'borderRadiusLeftTop', 'borderRadiusRightTop',
+                'borderRadiusLeftBottom', 'borderRadiusRightBottom',
+            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+                ['paddingHor', ['paddingLeft', 'paddingRight']],
+                ['paddingVer', ['paddingTop', 'paddingBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+                ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
+                ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
+            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+                ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
+                ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
+            ])),
+            render: p => {
+                let borderHasWidth = false;
+                let borderHasWidthSame = true;
+                let borderHasColor = false;
+                let borderHasColorSame = true;
+                let prevWidth, prevColor;
+                const colorBorder = {};
+                const borderWidth = {};
+                for (const s of ['Left', 'Top', 'Right', 'Bottom']) {
+                    const side = s.toLowerCase();
+                    const currWidth = borderWidth[side] = $$.a('.borderWidth' + s) * p.pixelRatio;
+                    const currColor = colorBorder[side] = $$.a('.colorBorder' + s);
+                    borderHasWidth = borderHasWidth || (currWidth > 0);
+                    borderHasColor = borderHasColor || !!currColor;
+                    if (null != prevWidth) {
+                        borderHasWidthSame = borderHasWidthSame && (currWidth == prevWidth);
+                        borderHasColorSame = borderHasColorSame && (currColor == prevColor);
+                    }
+                    prevWidth = currWidth;
+                    prevColor = currColor;
+                }
+                let prevRadius;
+                let borderHasRadius = false;
+                let borderHasRadiusSame = true;
+                for (const s of ['LeftTop', 'RightTop', 'LeftBottom', 'RightBottom']) {
+                    const corner = s.toLowerCase();
+                    const currRadius = borderWidth[corner] = $$.a('.borderRadius' + s) * p.pixelRatio;
+                    borderHasRadius = borderHasRadius || currRadius > 0;
+                    if (null != prevRadius)
+                        borderHasRadiusSame = borderHasRadiusSame && (currRadius == prevRadius);
+                    prevRadius = currRadius;
+                }
+                const colorBackground = $$.a('.colorBackground');
+                if (borderHasWidth && borderHasColor || colorBackground && colorBackground != 'transparent') {
+                    $$.$me_atom2_ctx_rect({
+                        ctx: p.ctx,
+                        ctxTop: p.ctxRect.top,
+                        ctxLeft: p.ctxRect.left,
+                        ctxWidth: p.ctxRect.right - p.ctxRect.left,
+                        ctxHeight: p.ctxRect.bottom - p.ctxRect.top,
+                        ctxBorderRadius: !borderHasRadius ? null : borderHasRadiusSame ? prevRadius : {
+                            leftTop: p.pixelRatio * $$.a('.borderRadiusLeftTop'),
+                            rightTop: p.pixelRatio * $$.a('.borderRadiusRightTop'),
+                            rightBottom: p.pixelRatio * $$.a('.borderRadiusRightBottom'),
+                            leftBottom: p.pixelRatio * $$.a('.borderRadiusLeftBottom'),
+                        },
+                        fillStyle: colorBackground == 'transparent' ? null : colorBackground,
+                        stroke: !borderHasWidth || !borderHasColor ? null : {
+                            style: borderHasColorSame ? prevColor : colorBorder,
+                            ctxWidth: borderHasWidthSame ? prevWidth : borderWidth,
+                        }
+                    });
+                }
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight) {
+            const ctxContentWidth = Math.max(0, width - paddingLeft - paddingRight) * pixelRatio;
+            $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+            let ctxTextWidth = ctx.measureText(text).width;
+            let ctxLeft = pixelRatio * (left + paddingLeft);
+            if (ctxTextWidth > ctxContentWidth) {
+                const ctxPeriodWidth = ctx.measureText(period).width;
+                if (ctxContentWidth < ctxPeriodWidth) {
+                    console.error($$.a.curr.name(), { ctxContentWidth, ctxPeriodWidth });
+                    return { text, ctxLeft };
+                }
+                let len = text.length, wi = ctxTextWidth, s;
+                while (len && wi > ctxContentWidth - ctxPeriodWidth)
+                    wi = ctx.measureText(s = text.slice(0, --len)).width;
+                ctxTextWidth = wi + ctxPeriodWidth;
+                text = s + period;
+            }
+            ctxLeft += $$.$me_align_correction($$.a('.alignHor'), () => Math.max(0, ctxContentWidth - ctxTextWidth));
+            return { text, ctxLeft };
+        }
+        $$.$me_label_text_n_ctxLeft = $me_label_text_n_ctxLeft;
+        $$.$me_label = {
+            type: '$me_label',
+            base: $$.$me_panel,
+            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+                    '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
+                ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
+                    $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                    const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
+                    return result;
+                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
+                '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
+            })),
+            render: p => {
+                let { ctxWidth, ctxHeight } = p;
+                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
+                const paddingLeft = $$.a('.paddingLeft');
+                const paddingRight = $$.a('.paddingRight');
+                const ctxPaddingLeft = Math.round(p.pixelRatio * paddingLeft);
+                const ctxPaddingRight = Math.round(p.pixelRatio * paddingRight);
+                const ctxPaddingTop = Math.round(p.pixelRatio * $$.a('.paddingTop'));
+                const ctxPaddingBottom = Math.round(p.pixelRatio * $$.a('.paddingBottom'));
+                ctxHeight -= ctxPaddingTop + ctxPaddingBottom;
+                if (ctxHeight < ctxFontSize - 1) {
+                    console.error({ ctxHeight, ctxFontSize });
+                    return;
+                }
+                const align = $$.a('.alignVer');
+                const ctxOfs = $$.a('.ofsVer') * p.pixelRatio;
+                const ctxCorrection = align == $$.$me_align.bottom ? ctxOfs :
+                    align == $$.$me_align.top ? ctxHeight - ctxFontSize - ctxOfs :
+                        (ctxHeight - ctxFontSize) / 2 - ctxOfs;
+                const bottom = p.ctxRect.bottom - ctxPaddingBottom - ctxCorrection;
+                p.ctx.fillStyle = $$.a('.colorText');
+                let text = $$.a('._text') + '';
+                const ctxLeft = $$.a('._ctxLeft');
+                ctxWidth -= ctxLeft - $$.a('.#left') * p.pixelRatio;
+                while (p.ctx.measureText(text).width > ctxWidth)
+                    text = text.slice(0, -1);
+                p.ctx.fillText(text, ctxLeft, bottom);
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//label.js.map
 ;
 "use strict";
 var $;
@@ -12409,18 +12633,33 @@ var $;
                         background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
-                    prop: {
-                        tapTarget: () => 0,
-                        isLogin: () => false,
-                        '#order': () => ['menu', 'workspace', 'login', 'tapEffect'],
-                    },
+                    prop: Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
+                        default: () => false,
+                        valid: (val) => typeof val == 'boolean' ?
+                            val :
+                            null,
+                    }), ['isShownLoginForm', 'isShownLoginMenu']), { login: $$.$me_atom2_prop_store({
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ?
+                                val.trim() :
+                                null,
+                            condition: ['.stayLogged'],
+                        }), stayLogged: $$.$me_atom2_prop_store({
+                            default: () => false,
+                            valid: (val) => typeof val == 'boolean' ?
+                                val :
+                                null,
+                        }), '#order': () => ['menu', 'workspace', 'login', 'tapEffect'] }),
                     elem: {
                         menu: () => menu,
                         workspace: () => workspace,
-                        login: $$.$me_atom2_prop(['.isLogin'], ({ masters: [isLogin] }) => !isLogin ? null : {
+                        login: $$.$me_atom2_prop(['.isShownLoginForm'], ({ masters: [isShownLoginForm] }) => !isShownLoginForm ? null : {
                             base: $$.$nl_login,
                             prop: {
-                                isLogin: $$.$me_atom2_prop_bind('<.isLogin'),
+                                selected: () => 'enter',
+                                isShown: $$.$me_atom2_prop_bind('<.isShownLoginForm'),
+                                stayLogged: $$.$me_atom2_prop_bind('<.stayLogged'),
+                                login: $$.$me_atom2_prop_bind('<.login'),
                             },
                         }),
                         tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
@@ -12498,8 +12737,36 @@ var $;
             },
             elem: {
                 login: () => login,
+                loginMenu: $$.$me_atom2_prop(['/@app.isShownLoginMenu'], ({ masters: [isShownLoginMenu] }) => !isShownLoginMenu ?
+                    null :
+                    {
+                        base: loginMenu,
+                        prop: {
+                            '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@login' + s), $$.$me_atom2_prop_compute_fn_sum()),
+                        },
+                        style: {
+                            background: () => 'red',
+                        },
+                        event: {
+                            clickOrTapOutside: () => {
+                                $$.a('/@app.isShownLoginMenu', false);
+                                return false;
+                            },
+                        },
+                    }),
                 ear: () => ear,
                 list: () => list,
+            },
+        };
+        const loginMenu = {
+            prop: {
+                items: () => ({
+                    'Другой пользователь': {},
+                    'Сменить пароль': {},
+                    'Выйти': {},
+                }),
+                item_keys: $$.$me_atom2_prop_keys(['.items']),
+                item: $$.$me_atom2_prop({ keys: ['.item_keys'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
             },
         };
         const login = {
@@ -12516,8 +12783,12 @@ var $;
             },
             event: {
                 clickOrTap: () => {
-                    $$.a('<<.isLogin', true);
-                    console.log($$.a('<<.isLogin'));
+                    if (!$$.a('/@app.login')) {
+                        $$.a('/@app.isShownLoginForm', true);
+                    }
+                    else {
+                        $$.a.update('/@app.isShownLoginMenu', val => !val);
+                    }
                     return true;
                 },
             },
@@ -12535,17 +12806,17 @@ var $;
                         icon: () => ({
                             node: 'img',
                             prop: {
-                                '#width': () => 20,
+                                '#width': $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => login ? 22 : 20),
                                 '#height': () => 22,
                                 '#align': () => $$.$me_align.center,
                             },
                             attr: {
-                                src: () => 'assets/' + 'icons-8-enter-2' + '@2x.png',
+                                src: $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => 'assets/' + (login ? 'icons-8-user' : 'icons-8-enter-2') + '@2x.png'),
                             },
                             style: {
                                 filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
-                                    'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
-                                    'invert(18%) sepia(11%) saturate(1273%) hue-rotate(184deg) brightness(92%) contrast(86%)'),
+                                    'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
+                                    'brightness(0%) invert(18%) sepia(11%) saturate(1273%) hue-rotate(184deg) brightness(92%) contrast(86%)'),
                             },
                         }),
                     },
@@ -12562,7 +12833,7 @@ var $;
                         color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
                     },
                     dom: {
-                        innerText: () => 'Авторизация',
+                        innerText: $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => login ? login : 'Авторизация'),
                     },
                 }),
             },
@@ -12628,7 +12899,7 @@ var $;
                         return !idx ? [] : [`.item_top[${ids[idx - 1]}]`, '.item_height'];
                     }),
                 }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
-                item_title: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
+                item_caption: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
                 item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => 'assets/' + item.icon + '@2x.png'),
                 item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
                 item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
@@ -12712,7 +12983,7 @@ var $;
                                 '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                             },
                             dom: {
-                                innerText: `<<.item_title[${id}]`,
+                                innerText: `<<.item_caption[${id}]`,
                             },
                             style: {
                                 color: '<.colorText',
