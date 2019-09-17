@@ -13756,7 +13756,7 @@ var $;
                                 '#ofsVer': () => 313,
                             },
                             style: {
-                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#ffffcc' : '#2d3341'),
+                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#ffffcc' : '#6b7277'),
                             },
                             elem: {
                                 label_1: () => ({
