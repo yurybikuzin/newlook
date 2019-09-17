@@ -1,3 +1,5 @@
+function require( path ){ return $node[ path ] }
+;
 "use strict";
 var $;
 (function ($) {
@@ -175,8 +177,8 @@ var $;
                     val instanceof Map ? val.has(id) :
                         false;
             const caption = typeof options[id].caption == 'function' ?
-                options[id].caption :
-                options[id].caption({ val, isSelected });
+                options[id].caption({ val, isSelected }) :
+                options[id].caption;
             return caption;
         }
         $$.$me_option_caption = $me_option_caption;
@@ -869,7 +871,7 @@ var $;
                     fn_compute,
                     fn_apply
                 } :
-                Object.assign({}, masters, { fn_compute,
+                Object.assign(Object.assign({}, masters), { fn_compute,
                     fn_apply });
             return result;
         }
@@ -884,7 +886,7 @@ var $;
                 typeof prop_def === 'function' ? {
                     masters: [],
                     fn_compute: prop_def,
-                } : Object.assign({}, prop_def, { masters: Array.isArray(prop_def.masters) ?
+                } : Object.assign(Object.assign({}, prop_def), { masters: Array.isArray(prop_def.masters) ?
                         [...prop_def.masters] :
                         prop_def.masters });
             if (pp.masters) {
@@ -896,7 +898,7 @@ var $;
             if (pp.fn_apply && p.fn_apply)
                 $$.$me_throw(`fn_apply collision for ${p.tail}`, p.fn_apply, pp.fn_apply);
             pp.fn_apply = pp.fn_apply || p.fn_apply;
-            return Object.assign({}, p, pp);
+            return Object.assign(Object.assign({}, p), pp);
         }
         $$.$me_atom2_prop_def_prepare = $me_atom2_prop_def_prepare;
         $$.$me_atom2_prop_compute_fn_or = (initial) => initial === void 0 ? compute_fn_or :
@@ -1360,7 +1362,7 @@ var $;
                 };
             }
         }
-        $me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer']), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
+        $me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer'])), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
         $me_atom2_ec._to_init = Array();
         $me_atom2_ec.almost_ready = new Set();
         $me_atom2_ec._cnf_cache = new Map();
@@ -1384,7 +1386,7 @@ var $;
         })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
         class $me_atom2_control extends $me_atom2_ec {
             constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
+                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.control }));
                 this._mk_controls(this.level = p.level || 1);
                 this._mk_props('<'.repeat(this.level));
             }
@@ -1715,7 +1717,7 @@ var $;
     (function ($$) {
         class $me_atom2_elem extends $$.$me_atom2_ec {
             constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.elem }));
+                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.elem }));
                 this.skipStyle = false;
                 const cnf_control = this._mk_controls();
                 const has_control = !!Object.keys(cnf_control).length;
@@ -1956,10 +1958,10 @@ var $;
                     this.cnf_items('prop'),
                     defaults,
                     defaults_relative,
-                    Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
+                    Object.assign(Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
                         '#order': this.fn_compute_order,
-                    }), { '#isHover': () => false }),
-                    Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
+                    })), { '#isHover': () => false }),
+                    Object.assign(Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
                             if (val)
                                 $$.$me_atom2_ec._to_init.push(this.path);
                         }), '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
@@ -1967,7 +1969,7 @@ var $;
                         }), '#visible': $$.$me_atom2_prop(['.#hidden'].concat(!has_parent ? [] : ['<.#visible']), this.fn_compute_visible), '#clientRect': $$.$me_atom2_prop(['.#isReady'], this.fn_compute_clientRect, this.fn_apply_clientRect) }, (!has_control ? {} : {
                         '#ctx': () => this.node.getContext('2d'),
                         '#ctxSize': $$.$me_atom2_prop(['/.#pixelRatio', '.#width', '.#height'], this.fn_compute_ctxSize, this.fn_apply_ctxSize),
-                    }), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
+                    })), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
                             '<.#height', '.#height', '.#ofsVer'], this.fn_compute_left, this.fn_apply_top) }),
                 ], {
                     def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
@@ -2709,7 +2711,7 @@ var $;
     (function ($$) {
         class $me_atom2 extends $$.$me_atom2_entity {
             constructor(p) {
-                super(Object.assign({}, p, { ent: p.is_key ?
+                super(Object.assign(Object.assign({}, p), { ent: p.is_key ?
                         $$.$me_atom2_entity_enum.key :
                         $$.$me_atom2_entity_enum.prop }));
                 this._descendant_level = p.descendant_level || 0;
@@ -2742,7 +2744,7 @@ var $;
                                 ss_prev = new Set(prev);
                                 for (const tail of val)
                                     if (!ss_prev.has(tail))
-                                        new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
+                                        new $me_atom2(Object.assign(Object.assign({}, p), { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
                             }
                             if (val && !val.length && this.path.tail.startsWith('@')) {
                                 const ec = this.parent();
@@ -2973,7 +2975,7 @@ var $;
                             anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
                         }
                         if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
-                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
+                            $me_atom2.anim_to_play.set(this.path, Object.assign(Object.assign({}, anim), { value: anim.from }));
                             $me_atom2.anim_active(anim, true);
                             $$.$me_atom2_async();
                         }
@@ -3237,7 +3239,7 @@ var $;
                     for (const k in entities_key) {
                         entities_key[k]._key_idx_changed({
                             key: p.key.concat(k),
-                            change: Object.assign({}, p.change, { i_key: p.change.i_key - 1 }),
+                            change: Object.assign(Object.assign({}, p.change), { i_key: p.change.i_key - 1 }),
                         });
                     }
                 }
@@ -3391,7 +3393,7 @@ var $;
         $$.$me_atom2_anim = $me_atom2_anim;
         class $me_atom2_anim_class {
             constructor(anim) {
-                this._anim = Object.assign({}, anim, { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
+                this._anim = Object.assign(Object.assign({}, anim), { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
             }
         }
         $$.$me_atom2_anim_class = $me_atom2_anim_class;
@@ -3456,7 +3458,7 @@ var $;
                 (null == p.stroke.ctxWidth || typeof p.stroke.ctxWidth == 'number') &&
                     (null == p.stroke.style || typeof p.stroke.style == 'string')) {
                 ctx_rect_rounded(p, p.stroke && p.stroke.ctxWidth || 0);
-                fill_stroke(Object.assign({}, p, { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
+                fill_stroke(Object.assign(Object.assign({}, p), { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
             }
             else {
                 if (!(p.fillStyle == 'transparent' || p.fillStyle == null)) {
@@ -4503,6 +4505,7 @@ var $;
         function $nl_defaults_init() {
             $$.$me_atom2_entity.root().props({
                 em: () => 16,
+                pm: () => 32,
                 colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
@@ -4517,8 +4520,8 @@ var $;
                     '#2b87db' :
                     '#53adff'),
             });
-            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
-            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
+            $$.$me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_ec.prop_default), { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
+            $$.$me_atom2_elem.style_default = Object.assign(Object.assign({}, $$.$me_atom2_elem.style_default), { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
         }
         $$.$nl_defaults_init = $nl_defaults_init;
     })($$ = $.$$ || ($.$$ = {}));
@@ -4996,8 +4999,8 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_icon_phoneEmail = {
-            type: '$nl_icon_phoneEmail',
+        $$.$nl_icon_phoneemail = {
+            type: '$nl_icon_phoneemail',
             base: $$.$me_svg,
             prop: {
                 color: '/.colorText',
@@ -5200,33 +5203,7 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_icon_eyeClose = {
-            type: '$nl_icon_eyeClose',
-            base: $$.$me_svg,
-            prop: {
-                color: '/.colorText',
-                viewBox: () => "0 0 26 11",
-                content: () => [
-                    {
-                        tag: 'g',
-                        attr: { fill: () => 'none', fillRule: () => 'evenodd', stroke: '<.color' },
-                        sub: [
-                            { attr: { d: () => "M13 7c4.418 0 8.418-2.333 12-7-3.582 4.667-7.582 7-12 7S4.582 4.667 1 0c3.582 4.667 7.582 7 12 7zM1.168 6.311l2.106-2.224M25.277 6.308L23.166 4.09M19.93 9.556l-1.418-2.714M5.89 9.51l1.22-2.462M13 11V8" } },
-                        ],
-                    },
-                ],
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//eyeClose.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_icon_eyeOpen = {
+        $$.$nl_icon_eyeopen = {
             type: '$nl_icon_eyeOpen',
             base: $$.$me_svg,
             prop: {
@@ -5254,6 +5231,32 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //eyeOpen.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_eyeclose = {
+            type: '$nl_icon_eyeClose',
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 26 11",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: () => 'none', fillRule: () => 'evenodd', stroke: '<.color' },
+                        sub: [
+                            { attr: { d: () => "M13 7c4.418 0 8.418-2.333 12-7-3.582 4.667-7.582 7-12 7S4.582 4.667 1 0c3.582 4.667 7.582 7 12 7zM1.168 6.311l2.106-2.224M25.277 6.308L23.166 4.09M19.93 9.556l-1.418-2.714M5.89 9.51l1.22-2.462M13 11V8" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//eyeClose.js.map
 ;
 "use strict";
 var $;
@@ -5369,7 +5372,6 @@ var $;
                         '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width),
                         direction: () => $$.$me_rect_sides_enum.left,
                         size: '.em',
-                        '#height': '<.#height',
                         color: '<.colorBackground',
                     },
                 }),
@@ -5428,7 +5430,7 @@ var $;
             elem: {
                 tab: $$.$me_atom2_prop({ keys: ['.tab_ids'], masters: ['.selected', '.def'] }, ({ key: [id], masters: [selected, def] }) => !def[id].condition(selected) ? null :
                     {
-                        prop: Object.assign({}, def[id].prop, { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
+                        prop: Object.assign(Object.assign({}, def[id].prop), { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
                         event: {
                             clickOrTap: () => {
                                 $$.a('<.selected', id);
@@ -5576,11 +5578,11 @@ var $;
                             null :
                             {
                                 base: $$.$nl_logo_icon,
-                                prop: Object.assign({}, logo_props, { '#ofsVer': () => 56 }),
+                                prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': () => 56 }),
                             }),
                         logo_word: () => ({
                             base: $$.$nl_logo_word,
-                            prop: Object.assign({}, logo_props, { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
+                            prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
                                     ['.#ofsVer', '.#height'].map(s => '<@logo_icon' + s)), ({ len, masters: [ofsVer, height] }) => !len ? 56 : ofsVer + height + 15) }),
                         }),
                         tabs: () => ({
@@ -5596,7 +5598,7 @@ var $;
                             prop: {
                                 '#width': () => 11,
                                 '#height': () => 17,
-                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer'], ({ masters: [ofsVer] }) => ofsVer + 7),
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer'], $$.$me_atom2_prop_compute_fn_sum(7)),
                                 '#cursor': () => 'pointer',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
@@ -5643,7 +5645,7 @@ var $;
                                 icon_height: () => 31,
                                 icon_margin_right: () => 17,
                                 icon_isClickable: () => false,
-                                icon: () => $$.$nl_icon_phoneEmail,
+                                icon: () => $$.$nl_icon_phoneemail,
                                 value: $$.$me_atom2_prop(['<<.login', '<<.stayLogged'], ({ masters: [login, stayLogged], prev }) => prev || login),
                             },
                         }),
@@ -5772,8 +5774,8 @@ var $;
                 icon_isClickable: () => true,
                 icon: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => {
                     const result = isPassword ?
-                        $$.$nl_icon_eyeClose :
-                        $$.$nl_icon_eyeOpen;
+                        $$.$nl_icon_eyeopen :
+                        $$.$nl_icon_eyeclose;
                     return result;
                 }),
                 isPassword: $$.$me_atom2_prop_bind('<<.isPassword'),
@@ -6174,16 +6176,16 @@ var $;
     (function ($$) {
         $$.$me_panel = {
             type: '$me_panel',
-            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
+            prop: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
                 'borderRadiusLeftTop', 'borderRadiusRightTop',
                 'borderRadiusLeftBottom', 'borderRadiusRightBottom',
-            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+            ])), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground'])), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
                 ['paddingHor', ['paddingLeft', 'paddingRight']],
                 ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+            ])), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
                 ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
                 ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+            ])), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
                 ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
                 ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
             ])),
@@ -6275,13 +6277,13 @@ var $;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+            prop: Object.assign(Object.assign(Object.assign(Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer'])), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer'])), { _text_n_ctxLeft: $$.$me_atom2_prop([
                     '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
                 ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
                     const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
                     return result;
-                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                }) }), $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
                 '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
                 '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
             })),
@@ -6878,7 +6880,7 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
+            prop: Object.assign(Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
                     keys: ['.curtain'],
                     masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
                         if (curtain == 'top') {
@@ -6911,7 +6913,7 @@ var $;
                 }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')), row_i_min: () => 0, row_i_max: () => -1 }, $$.$me_atom2_prop_same_def(() => 0, [
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
-            ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
+            ])), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
                         const key = +row_i;
@@ -9426,7 +9428,7 @@ var $;
                             if (def.type == 'select') {
                                 return {
                                     base: $$.$nl_select,
-                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -9438,7 +9440,7 @@ var $;
                             else if (def.type == 'address') {
                                 return {
                                     base: input_with_button,
-                                    prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
                                 };
                             }
                             else if (def.type == 'picker' || def.type == 'pickermulti') {
@@ -9479,7 +9481,7 @@ var $;
                             else if (def.type == 'diap') {
                                 return {
                                     base: diap,
-                                    prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -9524,7 +9526,7 @@ var $;
                             }
                             else if (def.type == 'include_exclude') {
                                 return {
-                                    prop: Object.assign({}, prop_common(def, { ofsVer: -5 }), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
                                     elem: {
                                         label: () => ({
                                             prop: {
@@ -11020,7 +11022,7 @@ var $;
                 colSelectedOpacity: () => 0,
                 colSelectedHeaderVisible: $$.$me_atom2_prop(['.colSelectedOpacity'], ({ masters: [opacity] }) => !!opacity),
                 '#order': () => ['wrapper', 'fixed', 'colSelectedStub', 'colResizerLeft', 'colResizerRight', 'colSelected'],
-                '#zIndex': () => 1,
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
             },
             elem: {
                 colSelectedStub: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
@@ -11269,7 +11271,7 @@ var $;
                     control: {
                         cell: () => ({
                             base: $$.$me_panel,
-                            prop: Object.assign({}, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
+                            prop: Object.assign(Object.assign({}, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
                         }),
                     },
                 }),
@@ -11282,17 +11284,18 @@ var $;
                             prop: {
                                 '#width': '<<<.col_width_sum_actual',
                                 '#ofsHor': '<<<.ofsHor',
-                                '#zIndex': () => 1,
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': () => 2 }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
                                     event: {
                                         clickOrTap: () => {
+                                            console.log('here');
                                             const ofsHor = $$.a('<<<<.ofsHor');
                                             const left = $$.a(`<<<<.col_left[${id}]`);
                                             const min = $$.a('<<<<.col_fixed_width') - left;
@@ -11776,7 +11779,7 @@ var $;
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
                                 }),
                             },
                         }),
@@ -11796,7 +11799,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
@@ -12127,7 +12130,7 @@ var $;
             base: $$.$nl_search_panel,
             dispatch: (dispatch_name, dispatch_arg) => {
                 if (dispatch_name == 'get_recs') {
-                    $$.a('.dataWorker').postMessage(Object.assign({}, dispatch_arg, { cmd: 'recs', tag: $$.a('.provider_tag') }));
+                    $$.a('.dataWorker').postMessage(Object.assign(Object.assign({}, dispatch_arg), { cmd: 'recs', tag: $$.a('.provider_tag') }));
                     return true;
                 }
                 else if (dispatch_name == 'recs') {
@@ -12605,6 +12608,1171 @@ var $;
                         '#ofsVer': () => 16,
                     },
                 }),
+                search: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': () => 54,
+                        '#width': () => 520,
+                        '#height': () => 420,
+                        inputOfs: () => 169,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('search', sections).toUpperCase()),
+                            },
+                        }),
+                        label1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 100,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Глубина поиска',
+                            },
+                        }),
+                        deepdate: () => ({
+                            base: $$.$nl_pickerdate,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#ofsHor': '<.inputOfs',
+                                '#height': () => 32,
+                                '#ofsVer': () => 93,
+                            },
+                        }),
+                        newbld: () => ({
+                            base: $$.$nl_select,
+                            prop: {
+                                '#height': () => 32,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 157,
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
+                                            text: 'Можно',
+                                            width: 100,
+                                        } },
+                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
+                                            text: 'Кроме',
+                                            width: 100,
+                                        } },
+                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
+                                            text: 'Только',
+                                            width: 100,
+                                        } },
+                                }),
+                            },
+                        }),
+                        apartment: () => ({
+                            base: $$.$nl_select,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                '#height': () => 32,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 221,
+                                options: () => ({
+                                    no_matter: {
+                                        caption: ({ isSelected }) => isSelected ? {
+                                            width: 250,
+                                            text: 'Можно апартаменты',
+                                        } : {
+                                            width: 90,
+                                            text: 'Не важно',
+                                        },
+                                    },
+                                    except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 210,
+                                            text: 'Только апартаменты',
+                                        } : {
+                                            width: 60,
+                                            text: '...',
+                                        } }
+                                }),
+                            },
+                        }),
+                        sold: () => ({
+                            base: $$.$nl_select,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm'], ({ masters: [width, ofs] }) => width - ofs - ofs),
+                                '#height': () => 32,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 285,
+                                options: () => ({
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
+                                            width: 60,
+                                            text: 'Все',
+                                        } },
+                                    except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
+                                            text: 'Кроме',
+                                        } },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            width: 250,
+                                            text: 'Только снятые с продажи',
+                                        } : {
+                                            width: 75,
+                                            text: 'Только',
+                                        } },
+                                })
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 200,
+                                '#height': () => 40,
+                                '#ofsVer': () => 349,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Сохранить',
+                                target: () => '<',
+                                fontSize: () => 16,
+                                cmd: () => ({ some: 'thing' })
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+                personal: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': () => 560,
+                        '#ofsVer': () => 54,
+                        '#width': () => 520,
+                        '#height': () => 420,
+                        inputOfs: () => 130,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('personal', sections).toUpperCase()),
+                            },
+                        }),
+                        label1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 100,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'ФИО',
+                            },
+                        }),
+                        fio: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#height': () => 32,
+                                '#ofsHor': '<.inputOfs',
+                                '#ofsVer': () => 93,
+                            },
+                        }),
+                        label2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 164,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Телефон',
+                            },
+                        }),
+                        phone: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#height': () => 32,
+                                '#ofsHor': '<.inputOfs',
+                                '#ofsVer': () => 157,
+                            },
+                        }),
+                        label3: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 228,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Е-mail',
+                            },
+                        }),
+                        email: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#height': () => 32,
+                                '#ofsHor': '<.inputOfs',
+                                '#ofsVer': () => 221,
+                            },
+                        }),
+                        label4: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 292,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Пароль',
+                            },
+                        }),
+                        password: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm', '<@edit_password.#width'], ({ masters: [width, inputOfs, ofs, epWidth] }) => width - ofs - inputOfs - epWidth - 16),
+                                '#height': () => 32,
+                                '#ofsHor': '<.inputOfs',
+                                '#ofsVer': () => 285,
+                            },
+                        }),
+                        edit_password: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => 25,
+                                '#ofsVer': () => 292,
+                                '#ofsHor': '.pm',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            dom: {
+                                innerText: () => 'редактировать'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 200,
+                                '#height': () => 40,
+                                '#ofsVer': () => 349,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Сохранить',
+                                target: () => '<',
+                                fontSize: () => 16,
+                                cmd: () => ({ some: 'thing' })
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+                profile: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': () => 1100,
+                        '#ofsVer': () => 54,
+                        '#width': () => 520,
+                        '#height': () => 420,
+                        inputOfs: () => 171,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('profile', sections).toUpperCase()),
+                            },
+                        }),
+                        label1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => 456,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 77,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Вы не раскрыли свое лицо! Ваши объявления публикуются в белой зоне Базы WinNER (в подвале выборки).',
+                            },
+                        }),
+                        label2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => 456,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 124,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Для публикации в "зелёной зоне" вам необходимо раскрыть свое лицо. Публикация в "зеленой зоне" бесплатна для действующих клиентов.',
+                            },
+                        }),
+                        label3: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 228,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Наименование',
+                            },
+                        }),
+                        rname: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#height': () => 32,
+                                '#ofsVer': () => 221,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#ofsHor': '<.inputOfs',
+                            },
+                        }),
+                        label4: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 292,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Ссылка на сайт',
+                            },
+                        }),
+                        wwwlink: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#height': () => 32,
+                                '#ofsVer': () => 285,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#ofsHor': '<.inputOfs',
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 200,
+                                '#height': () => 40,
+                                '#ofsVer': () => 349,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Отправить',
+                                target: () => '<',
+                                fontSize: () => 16,
+                                cmd: () => ({ some: 'thing' })
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_subscription_tabs = {
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                selected: $$.$me_atom2_prop_abstract(),
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+            },
+            elem: {
+                tab: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                    base: tab,
+                    prop: {
+                        id: () => id,
+                    },
+                    dom: {
+                        innerText: $$.$me_atom2_prop(['<.options'], ({ masters: [options] }) => $$.$me_option_caption_text(id, options).toUpperCase()),
+                    },
+                })),
+            },
+        };
+        const tab = {
+            node: 'span',
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    console.log($$.a('.id'), $$.a('<.selected'), $$.a.get('<.selected').name());
+                    $$.a('<.selected', $$.a('.id'));
+                    return true;
+                },
+            },
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 10,
+                paddingRight: () => 10,
+                paddingBottom: () => 5,
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//tabs.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_subscription_workspace = {
+            prop: {
+                sections: () => ({
+                    balance: {
+                        caption: 'Баланс',
+                    },
+                    subscription: {
+                        caption: 'Подписка',
+                    },
+                    docs: {
+                        caption: 'Документы',
+                    },
+                }),
+                section_ids: $$.$me_atom2_prop_keys(['.sections']),
+                selected: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.section_ids')[0],
+                    valid: (val) => val == $$.a('.sections')[val] ? val : null,
+                }),
+            },
+            elem: {
+                tabs: () => ({
+                    base: $$.$nl_subscription_tabs,
+                    prop: {
+                        options: '<.sections',
+                        selected: $$.$me_atom2_prop_bind('<.selected'),
+                        '#height': '/@app@menu@login.#height',
+                        '#ofsHor': () => 36,
+                        '#ofsVer': '.em',
+                    },
+                }),
+                balance: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': () => 54,
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - 3 * ofs),
+                        '#height': () => 205,
+                        sum: () => 0,
+                        ls: () => '00633',
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections', '<.sum'], ({ masters: [sections, sum] }) => $$.$me_option_caption_text('balance', sections).toUpperCase() + ': ' + sum + ' ₽'),
+                            },
+                        }),
+                        label_sum: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 77,
+                            },
+                            style: {
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: () => 'Пополнить баланс',
+                            },
+                        }),
+                        sum: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#width': () => 100,
+                                '#height': () => 32,
+                                '#ofsHor': $$.$me_atom2_prop(['<@label_sum.#width', '.em', '.pm'], ({ masters: [width, ofs, panelOfs] }) => panelOfs + width + ofs),
+                                '#ofsVer': () => 69,
+                            },
+                        }),
+                        label_ls: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 514,
+                                '#ofsVer': () => 77,
+                            },
+                            style: {
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<.ls'], ({ masters: [ls] }) => 'Ваш лицевой счет: ' + ls),
+                            },
+                        }),
+                        webmoney: () => ({
+                            node: 'img',
+                            prop: {
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 133,
+                                '#width': () => 150,
+                                '#height': () => 40,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_w.png' : 'assets/payment_w.png'),
+                                draggable: () => false,
+                            },
+                        }),
+                        visa: () => ({
+                            node: 'img',
+                            prop: {
+                                '#ofsHor': $$.$me_atom2_prop(['<@webmoney.#width', '.em', '.pm'], ({ masters: [width, ofs, panelOfs] }) => panelOfs + width + ofs),
+                                '#ofsVer': () => 133,
+                                '#width': () => 150,
+                                '#height': () => 40,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_v.png' : 'assets/payment_v.png'),
+                                draggable: () => false,
+                            },
+                        }),
+                        mir: () => ({
+                            node: 'img',
+                            prop: {
+                                '#ofsHor': $$.$me_atom2_prop(['<@webmoney.#width', '<@visa.#width', '.em', '.pm'], ({ masters: [width, width2, ofs, panelOfs] }) => panelOfs + width + ofs + width2 + ofs),
+                                '#ofsVer': () => 133,
+                                '#width': () => 150,
+                                '#height': () => 40,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_m.png' : 'assets/payment_m.png'),
+                                draggable: () => false,
+                            },
+                        }),
+                        ymoney: () => ({
+                            node: 'img',
+                            prop: {
+                                '#ofsHor': $$.$me_atom2_prop(['<@webmoney.#width', '<@visa.#width', '<@mir.#width', '.em', '.pm'], ({ masters: [width, width2, width3, ofs, panelOfs] }) => panelOfs + width + ofs + width2 + ofs + width3 + ofs),
+                                '#ofsVer': () => 133,
+                                '#width': () => 150,
+                                '#height': () => 40,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_y.png' : 'assets/payment_y.png'),
+                                draggable: () => false,
+                            },
+                        }),
+                    },
+                }),
+                subscription: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@balance.#height', '<@balance.#ofsVer', '.em'], ({ masters: [height, ofsVer, ofs] }) => height + ofsVer + ofs),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - 3 * ofs),
+                        '#height': () => 518,
+                        currentSubscription: () => 'Квартиры и комнаты Москва, 1 месяц',
+                        leftControlOfs: () => 236,
+                        selectedSum: () => 2500,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections', '<.currentSubscription'], ({ masters: [sections, current] }) => $$.$me_option_caption_text('subscription', sections).toUpperCase() + ': ' + current),
+                            },
+                        }),
+                        icon1: () => ({
+                            node: 'img',
+                            prop: {
+                                '#width': () => 28,
+                                '#height': () => 28,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 86,
+                            },
+                            attr: {
+                                src: () => 'assets/icons-8-conference-call.png',
+                            },
+                            style: {
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                            },
+                        }),
+                        label_sum2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 68,
+                                '#ofsVer': () => 92,
+                            },
+                            style: {
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: () => 'Пополнить баланс',
+                            },
+                        }),
+                        sum2: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#width': () => 100,
+                                '#height': () => 24,
+                                '#ofsHor': '<.leftControlOfs',
+                                '#ofsVer': () => 88,
+                            },
+                        }),
+                        label_promo: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': $$.$me_atom2_prop(['<@promocode.#width', '.pm'], ({ masters: [width, ofs] }) => width + ofs * 2),
+                                '#ofsVer': () => 92,
+                            },
+                            style: {
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: () => 'Промокод ГРМ',
+                            },
+                        }),
+                        promocode: () => ({
+                            base: $$.$nl_input,
+                            prop: {
+                                '#width': () => 100,
+                                '#height': () => 24,
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 88,
+                            },
+                        }),
+                        icongrm: () => ({
+                            node: 'img',
+                            prop: {
+                                '#width': () => 28,
+                                '#height': () => 28,
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': $$.$me_atom2_prop(['<@promocode.#width', '<@label_promo.#width', '.pm'], ({ masters: [width, width2, ofs, ofs2] }) => width + width2 + 8 + ofs * 2),
+                                '#ofsVer': () => 86,
+                            },
+                            attr: {
+                                src: () => 'assets/grm-logo-fnl.png',
+                            },
+                        }),
+                        icon2: () => ({
+                            node: 'img',
+                            prop: {
+                                '#width': () => 28,
+                                '#height': () => 28,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 146,
+                            },
+                            attr: {
+                                src: () => 'assets/icons-8-data-sheet.png',
+                            },
+                            style: {
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                            },
+                        }),
+                        label_period: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 68,
+                                '#ofsVer': () => 152,
+                            },
+                            style: {
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: () => 'Период подключения',
+                            },
+                        }),
+                        period: () => ({
+                            base: $$.$nl_select,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.leftControlOfs'], ({ masters: [width, ofs, leftOfs] }) => width - ofs - leftOfs),
+                                '#height': () => 24,
+                                '#ofsHor': '<.leftControlOfs',
+                                '#ofsVer': () => 148,
+                                'fontsyze': () => 14,
+                                options: () => ({
+                                    per1: { caption: '2 дня' },
+                                    per2: { caption: '7 дней' },
+                                    per3: { caption: '1 месяц' },
+                                    per4: { caption: '3 месяца' },
+                                    per5: { caption: '6 месяцев' },
+                                    per6: { caption: '12 месяцев' },
+                                }),
+                            },
+                        }),
+                        icon3: () => ({
+                            node: 'img',
+                            prop: {
+                                '#width': () => 28,
+                                '#height': () => 28,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 206,
+                            },
+                            attr: {
+                                src: () => 'assets/icons-8-apartment.png',
+                            },
+                            style: {
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                            },
+                        }),
+                        label_segment: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 68,
+                                '#ofsVer': () => 212,
+                            },
+                            style: {
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: () => 'Раздел недвижимости',
+                            },
+                        }),
+                        segment: () => ({
+                            base: $$.$nl_select,
+                            prop: {
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.leftControlOfs'], ({ masters: [width, ofs, leftOfs] }) => width - ofs - leftOfs),
+                                '#height': () => 64,
+                                '#ofsHor': '<.leftControlOfs',
+                                '#ofsVer': () => 204,
+                                'fontSize': () => 14,
+                                options: () => ({
+                                    seg1: { caption: 'Жилая\nМосковская область 1250 ₽', width: 100 },
+                                    seg2: { caption: 'Жилая\nМосква и область 2500 ₽' },
+                                    seg3: { caption: 'Загородная\nМосква и область 2500 ₽' },
+                                    seg4: { caption: 'Коммерческая\nМосква и область 2500 ₽' },
+                                    seg5: { caption: 'Все разделы\nМосква и область 6250 ₽' },
+                                }),
+                            },
+                        }),
+                        banner: () => ({
+                            prop: {
+                                '#height': () => 125,
+                                '#width': '<.#width',
+                                '#ofsVer': () => 313,
+                            },
+                            style: {
+                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#ffffcc' : '#2d3341'),
+                            },
+                            elem: {
+                                label_1: () => ({
+                                    prop: {
+                                        '#ofsHor': '.pm',
+                                        '#ofsVer': () => 38,
+                                    },
+                                    style: {
+                                        fontSize: () => 18,
+                                    },
+                                    dom: {
+                                        innerText: () => 'Сумма к оплате',
+                                    },
+                                }),
+                                label_2: () => ({
+                                    prop: {
+                                        '#ofsHor': '.pm',
+                                        '#ofsVer': () => 69,
+                                        fontSize: () => 14,
+                                    },
+                                    dom: {
+                                        innerText: () => 'С учетом баланса лицевого счёта',
+                                    },
+                                }),
+                                label_3: () => ({
+                                    prop: {
+                                        '#ofsHor': () => 305,
+                                        '#ofsVer': () => 25,
+                                    },
+                                    style: {
+                                        fontSize: () => 32,
+                                        fontWeight: () => 500,
+                                    },
+                                    dom: {
+                                        innerText: $$.$me_atom2_prop(['<<.selectedSum'], ({ masters: [sum] }) => sum + ' ₽'),
+                                    },
+                                }),
+                                autoprolongation: () => ({
+                                    base: $$.$nl_checkbox,
+                                    prop: {
+                                        boxSize: () => 14,
+                                        '#height': () => 32,
+                                        '#ofsVer': () => 62,
+                                        '#ofsHor': () => 305,
+                                        caption: () => 'Автоматически продлить подписку на следующий',
+                                        checked: () => true,
+                                        fontSize: () => 14,
+                                    },
+                                }),
+                                label_4: () => ({
+                                    prop: {
+                                        '#ofsHor': () => 328,
+                                        '#ofsVer': () => 90,
+                                        fontSize: () => 14,
+                                    },
+                                    dom: {
+                                        innerText: () => ' период при положительном балансе',
+                                    },
+                                }),
+                                pay_button: () => ({
+                                    base: $$.$nl_button,
+                                    prop: {
+                                        '#width': () => 208,
+                                        '#height': () => 52,
+                                        '#ofsVer': () => 36,
+                                        '#alignHor': () => $$.$me_align.right,
+                                        '#ofsHor': '.pm',
+                                        caption: () => 'Оплатить',
+                                        target: () => '<',
+                                        fontSize: () => 20,
+                                        cmd: () => ({ some: 'thing' })
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            return true;
+                                        },
+                                    }
+                                }),
+                            },
+                        }),
+                    },
+                }),
+                docs: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@balance.#height', '<@subscription.#height', '<@balance.#ofsVer', '.em'], ({ masters: [height, height2, ofsVer, ofs] }) => height + height2 + ofsVer + ofs + ofs),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - 3 * ofs),
+                        '#height': () => 420,
+                        inputOfs: () => 171,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('docs', sections).toUpperCase()),
+                            },
+                        }),
+                        label1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => 456,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 77,
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Договоры:',
+                            },
+                        }),
+                        doc1: () => ({
+                            base: document_item,
+                            prop: {
+                                '#height': () => null,
+                                '#ofsHor': () => 64,
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@label1' + s), $$.$me_atom2_prop_compute_fn_sum(5)),
+                                caption: () => 'Договор №00937-18 от 18.10.2018',
+                                fontSize: () => 14,
+                            },
+                        }),
+                        label2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => 456,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@doc1' + s), $$.$me_atom2_prop_compute_fn_sum(40)),
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Акты:',
+                            },
+                        }),
+                        act1: () => ({
+                            base: document_item,
+                            prop: {
+                                '#height': () => null,
+                                '#ofsHor': () => 64,
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@label2' + s), $$.$me_atom2_prop_compute_fn_sum(5)),
+                                caption: () => 'Акт приема передачи №Ф-33871 от 05.09.2019',
+                                fontSize: () => 14,
+                            },
+                        }),
+                        label3: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => 456,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@act1' + s), $$.$me_atom2_prop_compute_fn_sum(40)),
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Прочие:',
+                            },
+                        }),
+                        other1: () => ({
+                            base: document_item,
+                            prop: {
+                                '#height': () => null,
+                                '#ofsHor': () => 64,
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@label3' + s), $$.$me_atom2_prop_compute_fn_sum(5)),
+                                caption: () => 'Договор-оферта об использовании ЭЦП',
+                                fontSize: () => 14,
+                            },
+                        }),
+                        label4: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => 456,
+                                '#ofsHor': '.pm',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@other1' + s), $$.$me_atom2_prop_compute_fn_sum(40)),
+                            },
+                            style: {
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Ключи клиента:',
+                            },
+                        }),
+                        public_key: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@label4' + s), $$.$me_atom2_prop_compute_fn_sum(5)),
+                                '#ofsHor': () => 64,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                fontSize: () => 14,
+                            },
+                            dom: {
+                                innerText: () => 'Публичный (открытый) ключ клиента от 09.10.2017 13:58:14'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        private_key: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@public_key' + s), $$.$me_atom2_prop_compute_fn_sum(5)),
+                                '#ofsHor': () => 64,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                fontSize: () => 14,
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            dom: {
+                                innerText: () => 'Приватный (закрытый) ключ клиента от 09.10.2017 13:58:14'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        const document_item = {
+            prop: {
+                fontSize: $$.$me_atom2_prop_abstract(),
+                caption: $$.$me_atom2_prop_abstract(),
+                ofs: () => 5,
+            },
+            elem: {
+                doc_link: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        '#cursor': () => 'pointer',
+                        fontSize: '<.fontSize',
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    dom: {
+                        innerText: '<.caption'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            return true;
+                        },
+                    },
+                }),
+                text1: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        fontSize: '<.fontSize',
+                        '#ofsHor': $$.$me_atom2_prop(['<@doc_link.#width', '<.ofs'], ({ masters: [width, ofs] }) => width + ofs),
+                    },
+                    dom: {
+                        innerText: () => ' (подписи: ',
+                    },
+                }),
+                winner_sign: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        '#ofsHor': $$.$me_atom2_prop(['<@doc_link.#width', '<@text1.#width', '<.ofs'], ({ masters: [width, width2, ofs] }) => width + ofs + width2 + ofs),
+                        '#cursor': () => 'pointer',
+                        fontSize: '<.fontSize',
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    dom: {
+                        innerText: () => 'WinNER',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            return true;
+                        },
+                    },
+                }),
+                text2: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        fontSize: '<.fontSize',
+                        '#ofsHor': $$.$me_atom2_prop(['<@doc_link.#width', '<@text1.#width', '<@winner_sign.#width', '<.ofs'], ({ masters: [width, width2, width3, ofs] }) => width + ofs + width2 + ofs + width3 + ofs),
+                    },
+                    dom: {
+                        innerText: () => ' | ',
+                    },
+                }),
+                client_sign: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        '#cursor': () => 'pointer',
+                        '#ofsHor': $$.$me_atom2_prop(['<@doc_link.#width', '<@text1.#width', '<@winner_sign.#width', '<@text2.#width', '<.ofs'], ({ masters: [width, width2, width3, width4, ofs] }) => width + ofs + width2 + ofs + width3 + ofs + width4 + ofs),
+                        fontSize: '<.fontSize',
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    dom: {
+                        innerText: () => 'клиента'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            return true;
+                        },
+                    },
+                }),
+                text3: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        '#ofsHor': $$.$me_atom2_prop(['<@doc_link.#width', '<@text1.#width', '<@winner_sign.#width', '<@text2.#width', '<@client_sign.#width', '<.ofs'], ({ masters: [width, width2, width3, width4, width5, ofs] }) => width + ofs + width2 + ofs + width3 + ofs + width4 + ofs + width5),
+                        fontSize: '<.fontSize',
+                    },
+                    dom: {
+                        innerText: () => ')',
+                    },
+                }),
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -12633,12 +13801,12 @@ var $;
                         background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
-                    prop: Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
+                    prop: Object.assign(Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
                         default: () => false,
                         valid: (val) => typeof val == 'boolean' ?
                             val :
                             null,
-                    }), ['isShownLoginForm', 'isShownLoginMenu']), { login: $$.$me_atom2_prop_store({
+                    }), ['isShownLoginForm', 'isShownLoginMenu'])), { login: $$.$me_atom2_prop_store({
                             default: () => '',
                             valid: (val) => typeof val == 'string' ?
                                 val.trim() :
@@ -12719,6 +13887,13 @@ var $;
                         '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'settings'),
                     },
                 }),
+                subscription: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'subscription' ? prev || null : {
+                    type: '$nl_subscription_workspace',
+                    base: $$.$nl_subscription_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'subscription'),
+                    },
+                }),
             },
             style: {},
         };
@@ -12737,23 +13912,6 @@ var $;
             },
             elem: {
                 login: () => login,
-                loginMenu: $$.$me_atom2_prop(['/@app.isShownLoginMenu'], ({ masters: [isShownLoginMenu] }) => !isShownLoginMenu ?
-                    null :
-                    {
-                        base: loginMenu,
-                        prop: {
-                            '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@login' + s), $$.$me_atom2_prop_compute_fn_sum()),
-                        },
-                        style: {
-                            background: () => 'red',
-                        },
-                        event: {
-                            clickOrTapOutside: () => {
-                                $$.a('/@app.isShownLoginMenu', false);
-                                return false;
-                            },
-                        },
-                    }),
                 ear: () => ear,
                 list: () => list,
             },
@@ -12773,7 +13931,9 @@ var $;
             prop: {
                 '#height': () => 54,
                 '#cursor': () => 'pointer',
-                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#474F61' : '#d8dce3'),
+                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#474F61' :
+                    '#d8dce3'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
             },
             style: {
@@ -12831,6 +13991,9 @@ var $;
                     },
                     style: {
                         color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+                        whiteSpace: () => 'nowrap',
+                        overflow: () => 'hidden',
+                        textOverflow: () => 'ellipsis',
                     },
                     dom: {
                         innerText: $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => login ? login : 'Авторизация'),

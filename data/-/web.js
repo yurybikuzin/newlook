@@ -1,3 +1,5 @@
+function require( path ){ return $node[ path ] }
+;
 "use strict";
 var $;
 (function ($) {
@@ -236,7 +238,7 @@ var $;
                         const nextGuid = () => {
                             const next = guidIter.next();
                             if (next.done) {
-                                postMessage(Object.assign({ cmd, tag, status: 'ok' }, response, { timing: Date.now() - start }));
+                                postMessage(Object.assign(Object.assign({ cmd, tag, status: 'ok' }, response), { timing: Date.now() - start }));
                             }
                             else {
                                 let guidRequest = objectStore.get(next.value);
@@ -280,7 +282,7 @@ var $;
                                     });
                                     response.by_idx[idx] = idx_response;
                                     if (Object.keys(response.by_idx).length >= Object.keys(request.by_idx).length) {
-                                        postMessage(Object.assign({ cmd, tag, status: 'ok' }, response, { timing: Date.now() - start }));
+                                        postMessage(Object.assign(Object.assign({ cmd, tag, status: 'ok' }, response), { timing: Date.now() - start }));
                                         return;
                                     }
                                 }
@@ -288,7 +290,7 @@ var $;
                                 cursor.continue();
                             }
                             else {
-                                postMessage(Object.assign({ cmd, tag, status: 'ok' }, response, { timing: Date.now() - start }));
+                                postMessage(Object.assign(Object.assign({ cmd, tag, status: 'ok' }, response), { timing: Date.now() - start }));
                             }
                         };
                     }
