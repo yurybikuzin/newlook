@@ -12668,18 +12668,154 @@ var $;
         $$.$nl_feedback_workspace = {
             prop: {},
             elem: {
-                label1: () => ({
+                panel: () => ({
+                    base: $$.$nl_panel,
                     prop: {
-                        '#height': () => null,
-                        '#width': () => null,
-                        '#ofsHor': '.pm',
-                        '#ofsVer': () => 50,
+                        '#ofsHor': '.em',
+                        '#ofsVer': () => 54,
+                        '#width': () => 620,
+                        '#height': () => 800,
                     },
-                    style: {
-                        fontSize: () => 16,
-                    },
-                    dom: {
-                        innerText: () => 'Обратная связь',
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#ofsHor': '.pm',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: () => 'ОБРАТНАЯ СВЯЗЬ',
+                            },
+                        }),
+                        label1: () => ({
+                            prop: {
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 85,
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'E-mail',
+                            },
+                        }),
+                        email: () => ({
+                            prop: {
+                                '#ofsVer': () => 85,
+                                '#ofsHor': () => 198,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                fontSize: () => 16,
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            dom: {
+                                innerText: () => '911@baza-winner.ru'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        label2: () => ({
+                            prop: {
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 116,
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => 'Телефон',
+                            },
+                        }),
+                        phone: () => ({
+                            prop: {
+                                '#ofsHor': () => 198,
+                                '#ofsVer': () => 116,
+                                fontSize: () => 16,
+                            },
+                            dom: {
+                                innerText: () => '+7 (495) 921-41-03',
+                            },
+                        }),
+                        panel: () => ({
+                            base: $$.$nl_panel,
+                            prop: {
+                                '#ofsHor': '.pm',
+                                '#ofsVer': () => 167,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.pm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                '#height': $$.$me_atom2_prop(['<.#height', '.pm'], ({ masters: [height, ofs] }) => height - ofs - 167),
+                            },
+                            style: {
+                                borderRadius: () => 4,
+                                border: () => '2px solid #d8dce3',
+                                boxShadow: () => 'none',
+                            },
+                            elem: {
+                                send_data: () => ({
+                                    node: 'textarea',
+                                    prop: {
+                                        '#ofsHor': '.em',
+                                        '#ofsVer': () => 72,
+                                        '#alignVer': () => $$.$me_align.bottom,
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                        '#height': () => 66,
+                                    },
+                                    style: {
+                                        borderRadius: () => 4,
+                                        border: () => '1px solid #bdc3d1',
+                                        boxShadow: () => 'none',
+                                        boxSizing: () => 'border-box',
+                                        '-webkit-appearance': () => 'none',
+                                        padding: () => 12,
+                                        resize: () => 'none',
+                                        outline: () => 'none',
+                                    },
+                                    attr: {
+                                        placeholder: () => 'Введите новое сообщение',
+                                        rows: () => 3,
+                                        cols: () => 27,
+                                    },
+                                }),
+                                send_button: () => ({
+                                    base: $$.$nl_button,
+                                    prop: {
+                                        '#width': () => 130,
+                                        '#height': () => 40,
+                                        '#ofsVer': '.em',
+                                        '#ofsHor': '.em',
+                                        '#alignVer': () => $$.$me_align.bottom,
+                                        '#alignHor': () => $$.$me_align.right,
+                                        caption: () => 'Отправить',
+                                        target: () => '<',
+                                        fontSize: () => 16,
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            return true;
+                                        },
+                                    }
+                                }),
+                                icon_attach: () => ({
+                                    node: 'img',
+                                    prop: {
+                                        '#width': () => 14,
+                                        '#height': () => 28,
+                                        '#ofsVer': '.em',
+                                        '#ofsHor': '.em',
+                                        '#alignVer': () => $$.$me_align.bottom,
+                                        '#alignHor': () => $$.$me_align.left,
+                                        '#cursor': () => 'pointer',
+                                    },
+                                    attr: {
+                                        src: () => 'assets/icons-8-attach.png',
+                                    },
+                                    style: {
+                                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                    },
+                                }),
+                            }
+                        })
                     },
                 }),
             },
