@@ -12753,6 +12753,7 @@ var $;
                             },
                             elem: {
                                 send_data: () => ({
+                                    base: $$.$me_stylesheet,
                                     node: 'textarea',
                                     prop: {
                                         '#ofsHor': '.em',
@@ -12760,6 +12761,16 @@ var $;
                                         '#alignVer': () => $$.$me_align.bottom,
                                         '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
                                         '#height': () => 66,
+                                        styleSheetName: () => 'nl_input',
+                                        className: '.styleSheetName',
+                                        styleSheet: () => '',
+                                        styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
+                                            return (`
+                      .${className}::placeholder {
+                        color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+                      }
+                    `);
+                                        }),
                                     },
                                     style: {
                                         borderRadius: () => 4,
@@ -12770,6 +12781,8 @@ var $;
                                         padding: () => 12,
                                         resize: () => 'none',
                                         outline: () => 'none',
+                                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'),
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'),
                                     },
                                     attr: {
                                         placeholder: () => 'Введите новое сообщение',
