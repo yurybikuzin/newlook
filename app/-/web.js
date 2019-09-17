@@ -5790,6 +5790,34 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_main_workspace = {
+            prop: {},
+            elem: {
+                label1: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '.pm',
+                        '#ofsVer': () => 50,
+                    },
+                    style: {
+                        fontSize: () => 16,
+                    },
+                    dom: {
+                        innerText: () => 'Главная страница',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_search_tabs = {
             elem: {
                 tab: $$.$me_atom2_prop({ keys: ['<.order_ids'] }, ({ key: [id] }) => ({
@@ -12525,6 +12553,146 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_favorites_workspace = {
+            prop: {},
+            elem: {
+                label1: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '.pm',
+                        '#ofsVer': () => 50,
+                    },
+                    style: {
+                        fontSize: () => 16,
+                    },
+                    dom: {
+                        innerText: () => 'Избранное',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_orders_workspace = {
+            prop: {},
+            elem: {
+                label1: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '.pm',
+                        '#ofsVer': () => 50,
+                    },
+                    style: {
+                        fontSize: () => 16,
+                    },
+                    dom: {
+                        innerText: () => 'Заказы',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_clients_workspace = {
+            prop: {},
+            elem: {
+                label1: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '.pm',
+                        '#ofsVer': () => 50,
+                    },
+                    style: {
+                        fontSize: () => 16,
+                    },
+                    dom: {
+                        innerText: () => 'Клиенты',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_advs_workspace = {
+            prop: {},
+            elem: {
+                label1: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '.pm',
+                        '#ofsVer': () => 50,
+                    },
+                    style: {
+                        fontSize: () => 16,
+                    },
+                    dom: {
+                        innerText: () => 'Мои объявления',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_feedback_workspace = {
+            prop: {},
+            elem: {
+                label1: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '.pm',
+                        '#ofsVer': () => 50,
+                    },
+                    style: {
+                        fontSize: () => 16,
+                    },
+                    dom: {
+                        innerText: () => 'Обратная связь',
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_settings_tabs = {
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
@@ -13873,11 +14041,53 @@ var $;
                 '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.#ofsHor'], ({ masters: [viewportWidth, ofsHor] }) => viewportWidth - ofsHor),
             },
             elem: {
+                main: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'main' ? prev || null : {
+                    type: '$nl_main_workspace',
+                    base: $$.$nl_main_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'main'),
+                    },
+                }),
                 search: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'search' ? prev || null : {
                     type: '$nl_search_workspace',
                     base: $$.$nl_search_workspace,
                     prop: {
                         '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'search'),
+                    },
+                }),
+                favorites: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'favorites' ? prev || null : {
+                    type: '$nl_favorites_workspace',
+                    base: $$.$nl_favorites_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'favorites'),
+                    },
+                }),
+                orders: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'orders' ? prev || null : {
+                    type: '$nl_orders_workspace',
+                    base: $$.$nl_orders_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'orders'),
+                    },
+                }),
+                clients: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'clients' ? prev || null : {
+                    type: '$nl_clients_workspace',
+                    base: $$.$nl_clients_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'clients'),
+                    },
+                }),
+                advs: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'advs' ? prev || null : {
+                    type: '$nl_advs_workspace',
+                    base: $$.$nl_advs_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'advs'),
+                    },
+                }),
+                feedback: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'feedback' ? prev || null : {
+                    type: '$nl_feedback_workspace',
+                    base: $$.$nl_feedback_workspace,
+                    prop: {
+                        '#hidden': $$.$me_atom2_prop(['<<@menu@list.selected'], ({ masters: [selected] }) => selected != 'feedback'),
                     },
                 }),
                 settings: $$.$me_atom2_prop(['<@menu@list.selected'], ({ masters: [selected], prev }) => selected != 'settings' ? prev || null : {
