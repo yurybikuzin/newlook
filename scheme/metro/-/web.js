@@ -4943,7 +4943,6 @@ var $;
                 userSelect: () => 'none',
                 overflow: () => 'hidden',
             },
-            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'cross', 'lasso'] }),
             dispatch(dispatch_name, dispatch_arg) {
                 if (dispatch_name == 'lassoShow') {
                     const { clientX, clientY } = dispatch_arg;
@@ -4975,7 +4974,54 @@ var $;
                 }
                 return true;
             },
+            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'label', 'cross', 'lasso'], labels: $$.$me_atom2_prop([], () => null), label_ids: $$.$me_atom2_prop_keys(['.labels']), label_ofsHor: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsHor), label_ofsVer: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsVer), label_hidden: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => !labels[id].visible), radius_station: () => 6, thick_station: () => 1, background_station: () => 'white', circles: $$.$me_atom2_prop([], () => null, ({ val }) => console.log(val)), circle_ids: $$.$me_atom2_prop_keys(['.circles']), circle_x: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles',] }, ({ key: [id], masters: [circles] }) => circles[id].x), circle_y: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => circles[id].y), circle_color: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => circles[id].color), circle_hidden: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => !circles[id].visible) }),
             elem: {
+                label: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => ({
+                    prop: {
+                        '#width': () => 0,
+                        '#height': () => 0,
+                        '#ofsHor': `<.label_ofsHor[${id}]`,
+                        '#ofsVer': `<.label_ofsVer[${id}]`,
+                        '#hidden': `<.label_hidden[${id}]`,
+                    },
+                    elem: {
+                        text: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#alignHor': () => labels[id].alignHor,
+                                '#alignVer': () => labels[id].alignVer,
+                                fontSize: $$.$me_atom2_prop(['<<@container^scheme._scale'], ({ masters: [scale] }) => 14 * scale),
+                                '#cursor': () => 'pointer',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            dom: {
+                                innerText: () => labels[id].text,
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    console.log(labels[id].code);
+                                    return true;
+                                },
+                            },
+                        }),
+                    },
+                })),
+                circle: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => ({
+                    prop: Object.assign({}, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['<@container^scheme._scale', '<.radius_station'], ({ masters: [scale, radius] }) => 2 * radius * scale), ['#width', '#height']), { '#ofsHor': $$.$me_atom2_prop([`<.circle_x[${id}]`, '.#width'], ({ masters: [x, width] }) => x - width / 2), '#ofsVer': $$.$me_atom2_prop([`<.circle_y[${id}]`, '.#height'], ({ masters: [x, width] }) => x - width / 2), '#hidden': `<.circle_hidden[${id}]`, '#cursor': () => 'pointer', '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
+                    style: {
+                        border: $$.$me_atom2_prop([`<@container^scheme._scale`, '<.thick_station', `<.circle_color[${id}]`], ({ masters: [scale, thick, color] }) => `${scale * thick}px solid ${color}`),
+                        borderRadius: () => '50%',
+                        boxSizing: () => 'border-box',
+                        background: '<.background_station',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log(circles[id].code);
+                            return true;
+                        },
+                    },
+                })),
                 cross: () => ({
                     base: $$.$me_cross,
                     prop: {
@@ -5076,13 +5122,16 @@ var $;
                                     }
                                     return true;
                                 },
+                                clickOrTap: (p) => {
+                                    return true;
+                                },
                             },
                             prop: {
                                 ofsVer_initial: () => 32,
                                 ofsHor_initial: () => 32,
                                 width_initial: () => 1136,
                                 height_initial: () => 1148,
-                                scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial, ({ val }) => console.log(val)),
+                                scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial),
                                 scale: $$.$me_atom2_prop_store({
                                     default: () => $$.a('.scale_initial'),
                                     valid: (val) => typeof val == 'number' ? val : null,
@@ -5098,11 +5147,8 @@ var $;
                                 }),
                                 width: $$.$me_atom2_prop(['.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
                                 height: $$.$me_atom2_prop(['.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
-                                fontSize: $$.$me_atom2_prop(['._scale'], ({ masters: [scale] }) => 14 * scale),
-                                radius_station: () => 6,
+                                radius_station: '<<.radius_station',
                                 thick_line: () => 4,
-                                thick_station: () => 2,
-                                background_station: () => 'white',
                                 lines: () => ({
                                     '5': {
                                         type: 'circle',
@@ -5115,18 +5161,21 @@ var $;
                                         circles: {
                                             '0': {
                                                 angle: -5,
+                                                code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
                                                 label: {
                                                     text: 'Курская',
                                                 },
                                             },
                                             '1': {
                                                 angle: 25,
+                                                code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
                                                 label: {
                                                     text: 'Таганская',
                                                 },
                                             },
                                             '2': {
                                                 angle: 60,
+                                                code: 'ru-msk-metro-paveletskaya-paveletskaya',
                                                 label: {
                                                     text: 'Павелецкая',
                                                 },
@@ -5147,9 +5196,7 @@ var $;
                                 });
                                 const thick_line = $$.a('.thick_line');
                                 const radius_station = $$.a('.radius_station');
-                                const thick_station = $$.a('.thick_station');
                                 const lines = $$.a('.lines');
-                                const background_station = $$.a('.background_station');
                                 for (const line_id in lines) {
                                     const line_def = lines[line_id];
                                     if (line_def.type == 'circle') {
@@ -5167,6 +5214,10 @@ var $;
                                     else
                                         $$.$me_throw(line_def.type);
                                 }
+                                const circles = $$.a('<<.circles') || {};
+                                for (const circle_id in circles) {
+                                    circles[circle_id].visible = false;
+                                }
                                 for (const line_id in lines) {
                                     const line_def = lines[line_id];
                                     if (line_def.type == 'circle') {
@@ -5177,18 +5228,22 @@ var $;
                                                 x: Math.cos(angle * Math.PI / 180) * (line_def.ctxRadius - thick_line * p.pixelRatio / 2) + line_def.ctxCenterX,
                                                 y: Math.sin(angle * Math.PI / 180) * (line_def.ctxRadius - thick_line * p.pixelRatio / 2) + line_def.ctxCenterY,
                                             };
-                                            $$.$me_atom2_ctx_circle({
-                                                ctx: p.ctx,
-                                                ctxCenterX: circle_def.center.x,
-                                                ctxCenterY: circle_def.center.y,
-                                                ctxRadius: radius_station * p.pixelRatio * $$.a('._scale'),
-                                                stroke: { ctxWidth: thick_station * p.pixelRatio, style: line_def.color },
-                                                fillStyle: background_station,
-                                            });
+                                            circles[line_id + '-' + circle_id] = {
+                                                x: circle_def.center.x / p.pixelRatio,
+                                                y: circle_def.center.y / p.pixelRatio,
+                                                color: line_def.color,
+                                                code: circle_def.code,
+                                                visible: true
+                                            };
                                         }
                                     }
                                     else
                                         $$.$me_throw(line_def.type);
+                                }
+                                $$.a('<<.circles', circles, true);
+                                const labels = $$.a('<<.labels') || {};
+                                for (const label_id in labels) {
+                                    labels[label_id].visible = false;
                                 }
                                 for (const line_id in lines) {
                                     const line_def = lines[line_id];
@@ -5196,13 +5251,20 @@ var $;
                                         for (const circle_id in line_def.circles) {
                                             const circle_def = line_def.circles[circle_id];
                                             if (circle_def.label) {
-                                                p.ctx.fillStyle = $$.a('.colorText');
                                                 const alignHor = circle_def.label.alignHor || $$.$me_align.left;
                                                 const alignVer = circle_def.label.alignVer == null ? $$.$me_align.center : circle_def.label.alignVer;
                                                 const ofsHor = circle_def.label.ofsHor != null ? circle_def.label.ofsHor : alignHor != $$.$me_align.center ? 4 : 0;
                                                 const ofsVer = circle_def.label.ofsVer != null ? circle_def.label.ofsVer : alignVer != $$.$me_align.center ? 4 : 0;
                                                 if (alignHor == $$.$me_align.left && alignVer == $$.$me_align.center) {
-                                                    p.ctx.fillText(circle_def.label.text, circle_def.center.x + (radius_station + ofsHor) * p.pixelRatio * $$.a('._scale'), circle_def.center.y + ctxFontSize * 1.125 / 2);
+                                                    labels[line_id + '-' + circle_id] = {
+                                                        text: circle_def.label.text,
+                                                        ofsHor: (circle_def.center.x + (radius_station + ofsHor) * p.pixelRatio * $$.a('._scale')) / p.pixelRatio,
+                                                        ofsVer: circle_def.center.y / p.pixelRatio,
+                                                        code: circle_def.code,
+                                                        alignHor,
+                                                        alignVer,
+                                                        visible: true,
+                                                    };
                                                 }
                                                 else
                                                     $$.$me_throw('TODO: ', { alignHor, alignVer });
@@ -5212,6 +5274,7 @@ var $;
                                     else
                                         $$.$me_throw(line_def.type);
                                 }
+                                $$.a('<<.labels', labels, true);
                                 return true;
                             },
                         }),
