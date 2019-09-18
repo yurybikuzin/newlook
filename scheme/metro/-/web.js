@@ -5003,7 +5003,7 @@ var $;
                         '#height': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.y - lassoEnd.y)),
                     },
                     style: {
-                        border: () => '1px dotted silver',
+                        border: () => '1px dashed red',
                     },
                 }),
                 container: () => ({
@@ -5083,14 +5083,60 @@ var $;
                                 width_initial: () => 1136,
                                 height_initial: () => 1148,
                                 scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial, ({ val }) => console.log(val)),
-                                scale: '.scale_initial',
+                                scale: $$.$me_atom2_prop_store({
+                                    default: () => $$.a('.scale_initial'),
+                                    valid: (val) => typeof val == 'number' ? val : null,
+                                }),
                                 _scale: '.scale',
-                                ofsHor: '.ofsHor_initial',
-                                ofsVer: '.ofsVer_initial',
+                                ofsHor: $$.$me_atom2_prop_store({
+                                    default: () => $$.a('.ofsHor_initial'),
+                                    valid: (val) => typeof val == 'number' ? val : null,
+                                }),
+                                ofsVer: $$.$me_atom2_prop_store({
+                                    default: () => $$.a('.ofsVer_initial'),
+                                    valid: (val) => typeof val == 'number' ? val : null,
+                                }),
                                 width: $$.$me_atom2_prop(['.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
                                 height: $$.$me_atom2_prop(['.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                                fontSize: $$.$me_atom2_prop(['._scale'], ({ masters: [scale] }) => 14 * scale),
+                                radius_station: () => 6,
+                                thick_line: () => 4,
+                                thick_station: () => 2,
+                                background_station: () => 'white',
+                                lines: () => ({
+                                    '5': {
+                                        type: 'circle',
+                                        radius: 210,
+                                        center: {
+                                            x: 398 + 210,
+                                            y: 270 + 210,
+                                        },
+                                        color: '#80372C',
+                                        circles: {
+                                            '0': {
+                                                angle: -5,
+                                                label: {
+                                                    text: 'Курская',
+                                                },
+                                            },
+                                            '1': {
+                                                angle: 25,
+                                                label: {
+                                                    text: 'Таганская',
+                                                },
+                                            },
+                                            '2': {
+                                                angle: 60,
+                                                label: {
+                                                    text: 'Павелецкая',
+                                                },
+                                            },
+                                        },
+                                    },
+                                }),
                             },
                             render: p => {
+                                const ctxFontSize = $$.$me_atom2_control.font_prepare(p.ctx, p.pixelRatio);
                                 $$.$me_atom2_ctx_rect({
                                     ctx: p.ctx,
                                     ctxTop: p.pixelRatio * $$.a('.ofsVer'),
@@ -5099,26 +5145,72 @@ var $;
                                     ctxHeight: p.pixelRatio * $$.a('.height'),
                                     stroke: { ctxWidth: p.pixelRatio, style: 'red' },
                                 });
-                                const color_line_5 = '#80372C';
-                                {
-                                    const radius_line_5 = 420 / 2;
-                                    const ofs_hor_line_5 = 398;
-                                    const ofs_ver_line_5 = 270;
-                                    const ctxCenterX = ($$.a('.ofsHor') + (ofs_hor_line_5 + radius_line_5) * $$.a('._scale')) * p.pixelRatio;
-                                    const ctxCenterY = ($$.a('.ofsVer') + (ofs_ver_line_5 + radius_line_5) * $$.a('._scale')) * p.pixelRatio;
-                                    const ctxRadius = radius_line_5 * p.pixelRatio * $$.a('._scale');
-                                    $$.$me_atom2_ctx_circle({
-                                        ctx: p.ctx,
-                                        ctxCenterX,
-                                        ctxCenterY,
-                                        ctxRadius,
-                                        stroke: { ctxWidth: 4 * p.pixelRatio, style: color_line_5 },
-                                    });
-                                    const angle_line_5_station_0 = 45;
-                                    {
-                                        const x = Math.cos(angle_line_5_station_0) * ctxRadius + ctxCenterX;
-                                        const y = Math.sin(angle_line_5_station_0) * ctxRadius + ctxCenterY;
+                                const thick_line = $$.a('.thick_line');
+                                const radius_station = $$.a('.radius_station');
+                                const thick_station = $$.a('.thick_station');
+                                const lines = $$.a('.lines');
+                                const background_station = $$.a('.background_station');
+                                for (const line_id in lines) {
+                                    const line_def = lines[line_id];
+                                    if (line_def.type == 'circle') {
+                                        line_def.ctxCenterX = ($$.a('.ofsHor') + line_def.center.x * $$.a('._scale')) * p.pixelRatio;
+                                        line_def.ctxCenterY = ($$.a('.ofsVer') + line_def.center.y * $$.a('._scale')) * p.pixelRatio;
+                                        line_def.ctxRadius = line_def.radius * $$.a('._scale') * p.pixelRatio;
+                                        $$.$me_atom2_ctx_circle({
+                                            ctx: p.ctx,
+                                            ctxCenterX: line_def.ctxCenterX,
+                                            ctxCenterY: line_def.ctxCenterY,
+                                            ctxRadius: line_def.ctxRadius,
+                                            stroke: { ctxWidth: thick_line * p.pixelRatio, style: line_def.color },
+                                        });
                                     }
+                                    else
+                                        $$.$me_throw(line_def.type);
+                                }
+                                for (const line_id in lines) {
+                                    const line_def = lines[line_id];
+                                    if (line_def.type == 'circle') {
+                                        for (const circle_id in line_def.circles) {
+                                            const circle_def = line_def.circles[circle_id];
+                                            const angle = circle_def.angle;
+                                            circle_def.center = {
+                                                x: Math.cos(angle * Math.PI / 180) * (line_def.ctxRadius - thick_line * p.pixelRatio / 2) + line_def.ctxCenterX,
+                                                y: Math.sin(angle * Math.PI / 180) * (line_def.ctxRadius - thick_line * p.pixelRatio / 2) + line_def.ctxCenterY,
+                                            };
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx: p.ctx,
+                                                ctxCenterX: circle_def.center.x,
+                                                ctxCenterY: circle_def.center.y,
+                                                ctxRadius: radius_station * p.pixelRatio * $$.a('._scale'),
+                                                stroke: { ctxWidth: thick_station * p.pixelRatio, style: line_def.color },
+                                                fillStyle: background_station,
+                                            });
+                                        }
+                                    }
+                                    else
+                                        $$.$me_throw(line_def.type);
+                                }
+                                for (const line_id in lines) {
+                                    const line_def = lines[line_id];
+                                    if (line_def.type == 'circle') {
+                                        for (const circle_id in line_def.circles) {
+                                            const circle_def = line_def.circles[circle_id];
+                                            if (circle_def.label) {
+                                                p.ctx.fillStyle = $$.a('.colorText');
+                                                const alignHor = circle_def.label.alignHor || $$.$me_align.left;
+                                                const alignVer = circle_def.label.alignVer == null ? $$.$me_align.center : circle_def.label.alignVer;
+                                                const ofsHor = circle_def.label.ofsHor != null ? circle_def.label.ofsHor : alignHor != $$.$me_align.center ? 4 : 0;
+                                                const ofsVer = circle_def.label.ofsVer != null ? circle_def.label.ofsVer : alignVer != $$.$me_align.center ? 4 : 0;
+                                                if (alignHor == $$.$me_align.left && alignVer == $$.$me_align.center) {
+                                                    p.ctx.fillText(circle_def.label.text, circle_def.center.x + (radius_station + ofsHor) * p.pixelRatio * $$.a('._scale'), circle_def.center.y + ctxFontSize * 1.125 / 2);
+                                                }
+                                                else
+                                                    $$.$me_throw('TODO: ', { alignHor, alignVer });
+                                            }
+                                        }
+                                    }
+                                    else
+                                        $$.$me_throw(line_def.type);
                                 }
                                 return true;
                             },
