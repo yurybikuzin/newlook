@@ -4867,6 +4867,12 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let will_action_enum;
+        (function (will_action_enum) {
+            will_action_enum[will_action_enum["none"] = 0] = "none";
+            will_action_enum[will_action_enum["select"] = 1] = "select";
+            will_action_enum[will_action_enum["deselect"] = 2] = "deselect";
+        })(will_action_enum || (will_action_enum = {}));
         function handle_pinch(scale_new, pinch_center, prop_name = '.scale') {
             handle_helper(p => {
                 const width = p.width;
@@ -4965,16 +4971,78 @@ var $;
                         const x = clientX - clientRect.left;
                         const y = clientY - clientRect.top;
                         $$.a('.lassoEnd', { x, y });
+                        const lassoStart = $$.a('.lassoStart');
+                        const rect = {
+                            left: Math.min(x, lassoStart.x),
+                            top: Math.min(y, lassoStart.y),
+                            right: Math.max(x, lassoStart.x),
+                            bottom: Math.max(y, lassoStart.y),
+                        };
+                        const circles = $$.a('.circles');
+                        const selected = $$.a('.selected');
+                        const codes = $$.a('.will_codes');
+                        codes.clear();
+                        let will_action = will_action_enum.deselect;
+                        for (const circle_id in circles) {
+                            const circle_def = circles[circle_id];
+                            if (!circle_def.visible)
+                                continue;
+                            if (!$$.$me_point_in_rect(circle_def.x, circle_def.y, rect))
+                                continue;
+                            codes.add(circle_def.code);
+                            if (!selected.has(circle_def.code))
+                                will_action = will_action_enum.select;
+                        }
+                        $$.a('.will_codes', codes, true);
+                        $$.a('.will_action', will_action);
+                        console.log(codes, will_action);
                     }
                     return true;
                 }
                 else if (dispatch_name == 'lassoHide') {
+                    const will_action = $$.a('.will_action');
+                    $$.a.update('.selected', val => {
+                        for (const code of $$.a('.will_codes')) {
+                            if (will_action == will_action_enum.select) {
+                                val.set(code, null);
+                            }
+                            else {
+                                val.delete(code);
+                            }
+                        }
+                        return val;
+                    }, true);
+                    $$.a('.will_action', will_action_enum.none);
                     $$.a('.isLasso', false);
+                    return true;
+                }
+                else if (dispatch_name = 'codeTapped') {
+                    const code = dispatch_arg;
+                    $$.a.update('.selected', val => {
+                        if (val.has(code)) {
+                            val.delete(code);
+                        }
+                        else {
+                            val.set(code, null);
+                        }
+                        return val;
+                    }, true);
                     return true;
                 }
                 return true;
             },
-            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'label', 'cross', 'lasso'], labels: $$.$me_atom2_prop([], () => null), label_ids: $$.$me_atom2_prop_keys(['.labels']), label_ofsHor: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsHor), label_ofsVer: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsVer), label_hidden: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => !labels[id].visible), radius_station: () => 6, thick_station: () => 1, background_station: () => 'white', circles: $$.$me_atom2_prop([], () => null, ({ val }) => console.log(val)), circle_ids: $$.$me_atom2_prop_keys(['.circles']), circle_x: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles',] }, ({ key: [id], masters: [circles] }) => circles[id].x), circle_y: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => circles[id].y), circle_color: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => circles[id].color), circle_hidden: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => !circles[id].visible) }),
+            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', will_action: () => will_action_enum.none, will_codes: () => new Set(), isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'label', 'cross', 'lasso'], labels: $$.$me_atom2_prop([], () => null), label_ids: $$.$me_atom2_prop_keys(['.labels']), label_ofsHor: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsHor), label_ofsVer: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsVer), label_hidden: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => !labels[id].visible), selected: $$.$me_atom2_prop_store({
+                    default: () => new Map(),
+                    valid: val => {
+                        const isMap = val instanceof Map;
+                        const result = isMap ? val : new Map();
+                        return result;
+                    },
+                    toJSON: val => [...val].map(([id]) => id),
+                    fromJSON: val => !Array.isArray(val) ?
+                        new Map() :
+                        new Map(val.map(id => [id, null])),
+                }), radius_station: () => 6, thick_station: () => 1, background_station: () => 'white', background_station_selected: () => 'red', background_station_will_select: () => '#F8CFD3', background_station_will_deselect: () => '#3F88DE', colorText_will_select: () => '#D5483E', colorText_will_deselect: '.background_station_will_deselect', circles: $$.$me_atom2_prop([], () => null, ({ val }) => console.log(val)), circle_ids: $$.$me_atom2_prop_keys(['.circles']), circle_x: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles',] }, ({ key: [id], masters: [circles] }) => circles[id].x), circle_y: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => circles[id].y), circle_color: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => circles[id].color), circle_hidden: $$.$me_atom2_prop({ keys: ['.circle_ids'], masters: ['.circles'] }, ({ key: [id], masters: [circles] }) => !circles[id].visible) }),
             elem: {
                 label: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => ({
                     prop: {
@@ -4994,13 +5062,28 @@ var $;
                                 fontSize: $$.$me_atom2_prop(['<<@container^scheme._scale'], ({ masters: [scale] }) => 14 * scale),
                                 '#cursor': () => 'pointer',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                colorText: $$.$me_atom2_prop([
+                                    '<<.will_action',
+                                    '<<.will_codes',
+                                    '<<.colorText_will_select',
+                                    '<<.colorText_will_deselect',
+                                    '/.colorText',
+                                ], ({ masters: [will_action, will_codes, colorText_will_select, colorText_will_deselect, colorText] }) => {
+                                    const code = labels[id].code;
+                                    const result = will_action == will_action_enum.select && will_codes.has(code) ?
+                                        colorText_will_select :
+                                        will_action == will_action_enum.deselect && will_codes.has(code) ?
+                                            colorText_will_deselect :
+                                            colorText;
+                                    return result;
+                                }),
                             },
                             dom: {
                                 innerText: () => labels[id].text,
                             },
                             event: {
                                 clickOrTap: () => {
-                                    console.log(labels[id].code);
+                                    $$.a.dispatch('<<', 'codeTapped', labels[id].code);
                                     return true;
                                 },
                             },
@@ -5013,11 +5096,29 @@ var $;
                         border: $$.$me_atom2_prop([`<@container^scheme._scale`, '<.thick_station', `<.circle_color[${id}]`], ({ masters: [scale, thick, color] }) => `${scale * thick}px solid ${color}`),
                         borderRadius: () => '50%',
                         boxSizing: () => 'border-box',
-                        background: '<.background_station',
+                        background: $$.$me_atom2_prop([
+                            '<.will_action',
+                            '<.will_codes',
+                            '<.background_station_will_select',
+                            '<.background_station_will_deselect',
+                            '<.selected',
+                            '<.background_station',
+                            '<.background_station_selected',
+                        ], ({ masters: [will_action, will_codes, background_station_will_select, background_station_will_deselect, selected, background, background_selected,] }) => {
+                            const code = circles[id].code;
+                            const result = will_action == will_action_enum.deselect && will_codes.has(code) ?
+                                background_station_will_deselect :
+                                selected.has(code) ?
+                                    background_selected :
+                                    will_action == will_action_enum.select && will_codes.has(code) ?
+                                        background_station_will_select :
+                                        background;
+                            return result;
+                        }),
                     },
                     event: {
                         clickOrTap: () => {
-                            console.log(circles[id].code);
+                            $$.a.dispatch('<', 'codeTapped', circles[id].code);
                             return true;
                         },
                     },
@@ -5074,7 +5175,7 @@ var $;
                                     return false;
                                 },
                                 wheelDragFini: p => {
-                                    $$.a('<<.isLasso', false);
+                                    $$.a.dispatch('<<', 'lassoHide');
                                     return false;
                                 },
                                 wheelDrag: p => {
@@ -5247,32 +5348,28 @@ var $;
                                 }
                                 for (const line_id in lines) {
                                     const line_def = lines[line_id];
-                                    if (line_def.type == 'circle') {
-                                        for (const circle_id in line_def.circles) {
-                                            const circle_def = line_def.circles[circle_id];
-                                            if (circle_def.label) {
-                                                const alignHor = circle_def.label.alignHor || $$.$me_align.left;
-                                                const alignVer = circle_def.label.alignVer == null ? $$.$me_align.center : circle_def.label.alignVer;
-                                                const ofsHor = circle_def.label.ofsHor != null ? circle_def.label.ofsHor : alignHor != $$.$me_align.center ? 4 : 0;
-                                                const ofsVer = circle_def.label.ofsVer != null ? circle_def.label.ofsVer : alignVer != $$.$me_align.center ? 4 : 0;
-                                                if (alignHor == $$.$me_align.left && alignVer == $$.$me_align.center) {
-                                                    labels[line_id + '-' + circle_id] = {
-                                                        text: circle_def.label.text,
-                                                        ofsHor: (circle_def.center.x + (radius_station + ofsHor) * p.pixelRatio * $$.a('._scale')) / p.pixelRatio,
-                                                        ofsVer: circle_def.center.y / p.pixelRatio,
-                                                        code: circle_def.code,
-                                                        alignHor,
-                                                        alignVer,
-                                                        visible: true,
-                                                    };
-                                                }
-                                                else
-                                                    $$.$me_throw('TODO: ', { alignHor, alignVer });
+                                    for (const circle_id in line_def.circles) {
+                                        const circle_def = line_def.circles[circle_id];
+                                        if (circle_def.label) {
+                                            const alignHor = circle_def.label.alignHor || $$.$me_align.left;
+                                            const alignVer = circle_def.label.alignVer == null ? $$.$me_align.center : circle_def.label.alignVer;
+                                            const ofsHor = circle_def.label.ofsHor != null ? circle_def.label.ofsHor : alignHor != $$.$me_align.center ? 4 : 0;
+                                            const ofsVer = circle_def.label.ofsVer != null ? circle_def.label.ofsVer : alignVer != $$.$me_align.center ? 4 : 0;
+                                            if (alignHor == $$.$me_align.left && alignVer == $$.$me_align.center) {
+                                                labels[line_id + '-' + circle_id] = {
+                                                    text: circle_def.label.text,
+                                                    ofsHor: (circle_def.center.x + (radius_station + ofsHor) * p.pixelRatio * $$.a('._scale')) / p.pixelRatio,
+                                                    ofsVer: circle_def.center.y / p.pixelRatio,
+                                                    code: circle_def.code,
+                                                    alignHor,
+                                                    alignVer,
+                                                    visible: true,
+                                                };
                                             }
+                                            else
+                                                $$.$me_throw('TODO: ', { alignHor, alignVer });
                                         }
                                     }
-                                    else
-                                        $$.$me_throw(line_def.type);
                                 }
                                 $$.a('<<.labels', labels, true);
                                 return true;
