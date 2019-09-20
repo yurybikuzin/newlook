@@ -4899,10 +4899,22 @@ var $;
                 },
                 style: '#80372C',
                 points: {
+                    'Восток-Арбатско-Покровская': {
+                        type: 'anchor',
+                        angle: -8,
+                    },
                     'Курская': {
                         angle: -5,
                         code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
                         label: {},
+                    },
+                    'Юг-Люблинско-Дмитровская': {
+                        type: 'anchor',
+                        angle: 0,
+                    },
+                    'Юг-Таганско-Краспресненская': {
+                        type: 'anchor',
+                        angle: 22,
                     },
                     'Таганская': {
                         angle: 25,
@@ -4914,6 +4926,10 @@ var $;
                             ofsVer: -2,
                         },
                     },
+                    'Восток-Калининская': {
+                        type: 'anchor',
+                        angle: 30,
+                    },
                     'Павелецкая': {
                         angle: 60,
                         code: 'ru-msk-metro-paveletskaya-paveletskaya',
@@ -4922,11 +4938,11 @@ var $;
                             ofsVer: 16,
                         },
                     },
-                    'Павелецкая-Замоскворецкая': {
+                    'Юг-Замоскворецкая': {
                         type: 'anchor',
                         angle: 63,
                     },
-                    'Кольцевая-Серпуховская': {
+                    'Юг-Серпуховско-Тимирязевская': {
                         angle: 99,
                         type: 'anchor',
                     },
@@ -4940,6 +4956,10 @@ var $;
                             ofsVer: -4,
                         },
                     },
+                    'Юг-Калужско-Рижская': {
+                        angle: 128,
+                        type: 'anchor',
+                    },
                     'Октябрьская': {
                         angle: 130,
                         code: 'ru-msk-metro-oktyabrskaya',
@@ -4949,6 +4969,10 @@ var $;
                             ofsHor: -4,
                             ofsVer: -4,
                         },
+                    },
+                    'Юг-Сокольническая': {
+                        angle: 143,
+                        type: 'anchor',
                     },
                     'Парк культуры': {
                         angle: 150,
@@ -4961,13 +4985,10 @@ var $;
                         },
                     },
                     'Киевская': {
-                        angle: 170,
+                        angle: 168,
                         code: 'ru-msk-metro-kievskaya',
                         label: {
                             alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
                         },
                     },
                     'Краснопресненская': {
@@ -4980,6 +5001,10 @@ var $;
                             ofsVer: -4,
                         },
                     },
+                    'Север-Таганско-Краспресненская': {
+                        type: 'anchor',
+                        angle: 194,
+                    },
                     'Белорусская': {
                         angle: 210,
                         code: 'ru-msk-metro-belorusskaya-belorusskaya',
@@ -4989,6 +5014,10 @@ var $;
                             ofsHor: -4,
                             ofsVer: -4,
                         },
+                    },
+                    'Север-Замоскворецкая': {
+                        angle: 212,
+                        type: 'anchor',
                     },
                     'Новослободская': {
                         angle: 250,
@@ -5000,6 +5029,18 @@ var $;
                             ofsVer: -4,
                         },
                     },
+                    'Север-Серпуховско-Тимирязевская': {
+                        angle: 252,
+                        type: 'anchor',
+                    },
+                    'Север-Люблинско-Дмитровская': {
+                        angle: 260,
+                        type: 'anchor',
+                    },
+                    'Север-Калужско-Рижская': {
+                        angle: 288,
+                        type: 'anchor',
+                    },
                     'Проспект Мира': {
                         angle: 290,
                         code: 'ru-msk-metro-prospekt-mira',
@@ -5010,8 +5051,12 @@ var $;
                             ofsVer: -4,
                         },
                     },
+                    'Север-Сокольническая': {
+                        angle: 318,
+                        type: 'anchor',
+                    },
                     'Комсомольская': {
-                        angle: 320,
+                        angle: 324,
                         code: 'ru-msk-metro-komsomolskaya',
                         label: {
                             alignHor: $$.$me_align.right,
@@ -5076,7 +5121,7 @@ var $;
                         },
                     },
                     'Кутузовская': {
-                        angle: 165,
+                        angle: 160,
                         code: 'ru-msk-metro-kutuzovskaya',
                         label: {
                             alignHor: $$.$me_align.center,
@@ -5084,14 +5129,14 @@ var $;
                             ofsVer: 2,
                         },
                     },
-                    'Деловой центр (МЦК)': {
-                        angle: 180,
+                    'Деловой центр': {
+                        angle: 175.6,
                         code: 'ru-msk-metro-mejdunarodnaya',
                         label: {
                             alignHor: $$.$me_align.right,
                             alignVer: $$.$me_align.center,
                             ofsHor: 2,
-                            text: 'Деловой центр<br>(МЦК)',
+                            text: 'Деловой центр',
                         },
                     },
                     'Шелепиха': {
@@ -5211,7 +5256,7 @@ var $;
                         },
                     },
                     'Бульвар Рокоссовского': {
-                        angle: -46,
+                        angle: -44,
                         code: 'ru-msk-metro-bulvar-rokossovskogo',
                         label: {
                             alignHor: $$.$me_align.center,
@@ -5298,8 +5343,8 @@ var $;
                         label: {
                             alignHor: $$.$me_align.right,
                             alignVer: $$.$me_align.bottom,
-                            ofsHor: -10,
-                            ofsVer: 2,
+                            ofsHor: -8,
+                            ofsVer: 3,
                         },
                     },
                     'Автозаводская': {
@@ -5323,258 +5368,765 @@ var $;
                     },
                 },
             },
-            'Серпуховско-Тимирязевская': {
-                type: 'groups',
-                style: '#ABAEB9',
-                groups: {
-                    'Центр': {
-                        type: 'segments',
-                        segments: {
-                            'Полянка': {
-                                type: 'line',
-                                from: 'Кольцевая-Серпуховская::Кольцевая',
-                                to: {
-                                    anchor: 'from',
-                                    ofsVer: -46,
-                                },
-                                points: {
-                                    'Полянка': {
-                                        code: 'ru-msk-metro-polyanka',
-                                        anchor: 'from',
-                                        dist: 26,
-                                        label: {},
-                                    },
-                                },
-                            },
-                            'Полянка-Боровицкая': {
-                                type: 'bezier',
-                                from: 'to::Полянка',
-                                to: {
-                                    anchor: 'from',
-                                    ofsHor: -70,
-                                    ofsVer: -85,
-                                },
-                                control_point: {
-                                    anchor: 'from',
-                                    ofsVer: -30,
-                                },
-                                control_point2: {
-                                    anchor: 'to',
-                                    ofsVer: 30,
+            'Сокольническая': {
+                style: '#BF3431',
+                type: 'segments',
+                segments: {
+                    'Парк культуры-Кропоткинская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Юг-Сокольническая::Кольцевая',
+                            ofsHor: -19,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 46,
+                        },
+                    },
+                    'Кропоткинская-Черкизовская': {
+                        from: {
+                            anchor: 'to::Парк культуры-Кропоткинская',
+                            ofsHor: 20,
+                            ofsVer: -10,
+                        },
+                        to: {
+                            anchor: 'Локомотив::МЦК',
+                            ofsHor: -20,
+                        },
+                        points: {
+                            'Библиотека им.Ленина': {
+                                anchor: 'from',
+                                dist: 40,
+                                label: {
+                                    ofsVer: 10,
+                                    text: 'Библиотека<br>им.Ленина',
                                 },
                             },
-                            'Боровицкая': {
-                                type: 'line',
-                                from: 'to::Полянка-Боровицкая',
-                                to: {
-                                    anchor: 'from',
-                                    ofsVer: -40,
-                                },
-                                points: {
-                                    'Боровицкая': {
-                                        anchor: 'from',
-                                        code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
-                                        label: {
-                                            alignHor: $$.$me_align.right,
-                                        },
-                                    },
+                            'Охотный ряд': {
+                                anchor: 'from',
+                                dist: 160,
+                                label: {
+                                    alignHor: $$.$me_align.right,
+                                    alignVer: $$.$me_align.bottom,
+                                    ofsVer: 2,
+                                    ofsHor: -10,
+                                    textAlign: 'right',
+                                    text: 'Охотный<br>ряд',
                                 },
                             },
-                            'Боровицкая-Чеховская': {
-                                type: 'quadratic',
-                                from: 'to::Боровицкая',
-                                to: {
-                                    anchor: 'from',
-                                    ofsVer: -20,
-                                    ofsHor: 10,
+                            'Черкизовская': {
+                                anchor: 'to',
+                                code: '',
+                                label: {
+                                    alignHor: $$.$me_align.right,
                                 },
-                                control_point: {
-                                    anchor: 'from',
+                                transit: 'Локомотив::МЦК',
+                            },
+                        },
+                    },
+                    'Бульвар Рокоссовского': {
+                        from: {
+                            anchor: 'Бульвар Рокоссовского::МЦК',
+                            ofsHor: 20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 10,
+                        },
+                        points: {
+                            'Бульвар Рокоссовского': {
+                                anchor: 'from',
+                                transit: 'Бульвар Рокоссовского::МЦК',
+                            },
+                        },
+                    },
+                    'Парк культуры-Спортивная': {
+                        from: {
+                            anchor: 'from::Парк культуры-Кропоткинская',
+                            ofsVer: 10,
+                            ofsHor: -20,
+                        },
+                        to: {
+                            anchor: 'Лужники::МЦК',
+                            ofsVer: -20,
+                        },
+                    },
+                    'Воробьевы горы-Коммунарка': {
+                        from: {
+                            anchor: 'to::Парк культуры-Спортивная',
+                            ofsVer: 30,
+                            ofsHor: -20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 250,
+                        },
+                    },
+                },
+            },
+            'Калужско-Рижская': {
+                style: '#EA924C',
+                type: 'segments',
+                segments: {
+                    'Октябрьская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Юг-Калужско-Рижская::Кольцевая',
+                            ofsHor: -40,
+                            ofsVer: 50,
+                        },
+                        to: {
+                            anchor: 'Юг-Калужско-Рижская::Кольцевая',
+                            ofsHor: 30,
+                            ofsVer: -20,
+                        },
+                    },
+                    'Шаболовская-Ясенево': {
+                        through: {
+                            anchor: 'Пл. Гагарина::МЦК',
+                            ofsHor: -10,
+                            ofsVer: -18,
+                        },
+                        from: {
+                            anchor: 'through',
+                            ofsVer: -66,
+                        },
+                        dist: 286,
+                        points: {
+                            'Шаболовская': {
+                                anchor: 'from',
+                                label: {},
+                            },
+                            'Ленинский проспект': {
+                                anchor: 'through',
+                                label: {
+                                    text: 'Ленинский<br>проспект',
                                     ofsVer: -10,
+                                    transit: 'Пл. Гагарина::МЦК',
                                 },
                             },
-                            'Чеховская': {
-                                type: 'line',
-                                from: 'to::Боровицкая-Чеховская',
-                                to: {
-                                    anchor: 'from',
-                                    ofsHor: 63,
-                                    ofsVer: -60,
-                                },
-                                points: {
-                                    'Чеховская': {
-                                        anchor: 'from',
-                                        code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
-                                        dist: 50,
-                                        label: {
-                                            alignHor: $$.$me_align.right,
-                                        },
-                                    },
+                            'Академическая': {
+                                anchor: 'Ленинский проспект',
+                                dist: 54,
+                                label: {},
+                            },
+                            'Профсоюзная': {
+                                anchor: 'Академическая',
+                                dist: 24,
+                                label: {},
+                            },
+                            'Новые Черёмушки': {
+                                anchor: 'Профсоюзная',
+                                dist: 24,
+                                label: {},
+                            },
+                            'Калужская': {
+                                anchor: 'Новые Черёмушки',
+                                dist: 24,
+                                label: {},
+                            },
+                            'Беляево': {
+                                anchor: 'Калужская',
+                                dist: 24,
+                                label: {},
+                            },
+                            'Коньково': {
+                                anchor: 'Беляево',
+                                dist: 24,
+                                label: {},
+                            },
+                            'Тёплый стан': {
+                                anchor: 'Коньково',
+                                dist: 24,
+                                label: {},
+                            },
+                            'Ясенево': {
+                                anchor: 'Тёплый стан',
+                                dist: 24,
+                                label: {},
+                            },
+                        },
+                    },
+                    'Полянка': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Октябрьская',
+                            ofsHor: 20,
+                            ofsVer: -10,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 90,
+                        },
+                    },
+                    'Третьяковская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Полянка',
+                            ofsHor: 20,
+                            ofsVer: -10,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 60,
+                            ofsVer: -50,
+                        },
+                    },
+                    'Китай-город': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Третьяковская',
+                            ofsHor: 20,
+                            ofsVer: -35,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -100,
+                        },
+                    },
+                    'Тургеневская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Китай-город',
+                            ofsHor: -10,
+                            ofsVer: -10,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: -40,
+                            ofsVer: -20,
+                        },
+                    },
+                    'Сухаревская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Тургеневская',
+                            ofsHor: -10,
+                            ofsVer: -10,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -50,
+                        },
+                    },
+                    'Проспект мира-Рижская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Сухаревская',
+                            ofsHor: 10,
+                            ofsVer: -40,
+                        },
+                        to: {
+                            anchor: 'Ботанический сад::МЦК',
+                            ofsHor: 5,
+                            ofsVer: 97,
+                        },
+                    },
+                    'Алексеевская-Медведково': {
+                        from: {
+                            anchor: 'Ботанический сад::МЦК',
+                            ofsHor: 20,
+                            ofsVer: 62,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -165,
+                        },
+                    },
+                },
+            },
+            'Люблинско-Дмитровская': {
+                style: '#B1CF7A',
+                type: 'segments',
+                segments: {
+                    'Римская-Чкаловская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Юг-Люблинско-Дмитровская::Кольцевая',
+                            ofsHor: 40,
+                            ofsVer: 40,
+                        },
+                        to: {
+                            anchor: 'Юг-Люблинско-Дмитровская::Кольцевая',
+                            ofsHor: -100,
+                            ofsVer: -100,
+                        },
+                    },
+                    'Сретенский бульвар': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Римская-Чкаловская',
+                            ofsHor: -20,
+                            ofsVer: -20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: -75,
+                        },
+                    },
+                    'Фонвизинская-Трубная': {
+                        from: {
+                            anchor: 'Владыкино::МЦК',
+                            ofsHor: 10,
+                            ofsVer: 60,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 160,
+                        },
+                    },
+                    'Петровско-Разумовская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'from::Фонвизинская-Трубная',
+                            ofsHor: -8,
+                            ofsVer: -15,
+                        },
+                        to: {
+                            anchor: 'Окружная::МЦК',
+                            ofsVer: -15,
+                            ofsHor: 15,
+                        },
+                    },
+                    'Окружная-Селигерская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Окружная::МЦК',
+                            ofsVer: -20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -73,
+                        },
+                    },
+                    'Крестьянская застава': {
+                        from: {
+                            anchor: 'from::Римская-Чкаловская',
+                            ofsHor: 10,
+                            ofsVer: 20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 90,
+                        },
+                    },
+                    'Юг': {
+                        from: {
+                            anchor: 'Дубровка::МЦК',
+                            ofsHor: 10,
+                            ofsVer: -22,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 268,
+                        },
+                        points: {
+                            'Дубровка': {
+                                anchor: 'from',
+                                transit: 'Дубровка::МЦК',
+                            },
+                            'Кожуховская': {
+                                anchor: 'Дубровка',
+                                ofsVer: 44,
+                                label: {},
+                            },
+                            'Печатники': {
+                                anchor: 'Кожуховская',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                            'Волжская': {
+                                anchor: 'Печатники',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                            'Люблино': {
+                                anchor: 'Волжская',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                            'Братиславская': {
+                                anchor: 'Люблино',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                            'Марьино': {
+                                anchor: 'Братиславская',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                            'Борисово': {
+                                anchor: 'Марьино',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                            'Шипиловская': {
+                                anchor: 'Борисово',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                            'Зябликово': {
+                                anchor: 'Шипиловская',
+                                ofsVer: 28,
+                                label: {},
+                            },
+                        },
+                    },
+                },
+            },
+            'Таганско-Краспресненская': {
+                style: '#9A6191',
+                type: 'segments',
+                segments: {
+                    'Планерная-Октябрьское поле': {
+                        from: {
+                            anchor: 'Панфиловская::МЦК',
+                            ofsHor: -27,
+                            ofsVer: 42,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -231,
+                        },
+                    },
+                    'Баррикадная-Кузнецкий мост': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Север-Таганско-Краспресненская::Кольцевая',
+                            ofsHor: -30,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 271,
+                        },
+                        points: {
+                            'Баррикадная': {
+                                code: '',
+                                anchor: 'from',
+                                dist: 45,
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                    alignHor: $$.$me_align.center,
                                 },
                             },
-                            'Чеховская-Цветной бульвар': {
-                                type: 'quadratic',
-                                from: 'to::Чеховская',
-                                to: {
-                                    anchor: 'from',
-                                    ofsHor: 20,
-                                    ofsVer: -30,
-                                },
-                                control_point: {
-                                    anchor: 'from',
-                                    ofsHor: 20,
-                                    ofsVer: -20,
+                            'Пушкинская': {
+                                code: '',
+                                anchor: 'from',
+                                dist: 165,
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                    alignHor: $$.$me_align.center,
                                 },
                             },
-                            'Чеховская-Цветной бульвар 2': {
-                                type: 'line',
-                                from: 'to::Чеховская-Цветной бульвар',
-                                to: {
-                                    anchor: 'from',
-                                    ofsVer: -36,
-                                },
-                            },
-                            'Чеховская-Цветной бульвар 3': {
-                                type: 'bezier',
-                                from: {
-                                    anchor: 'to::Чеховская-Цветной бульвар 2',
-                                },
-                                to: {
-                                    anchor: 'from',
-                                    ofsHor: -20,
-                                    ofsVer: -20,
-                                },
-                                control_point: {
-                                    anchor: 'from',
-                                    ofsVer: -7,
-                                },
-                                control_point2: {
-                                    anchor: 'to',
-                                    ofsVer: 7,
-                                },
-                                points: {
-                                    'Цветной бульвар': {
-                                        anchor: 'from',
-                                        ofsVer: -10,
-                                        ofsHor: -10,
-                                        label: {
-                                            alignVer: $$.$me_align.top,
-                                            alignHor: $$.$me_align.center,
-                                        },
-                                    },
+                            'Кузнецкий мост': {
+                                code: '',
+                                anchor: 'to',
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                    alignHor: $$.$me_align.center,
                                 },
                             },
                         },
                     },
-                    'Юг': {
-                        type: 'segments',
-                        segments: {
-                            'Серпуховскaя-Бульвар Дмитрия Донского': {
-                                type: 'line',
-                                from: 'Кольцевая-Серпуховская::Кольцевая',
-                                to: {
-                                    anchor: 'from',
-                                    ofsVer: 400,
+                    'Полежаевская-Улица 1905 года': {
+                        from: {
+                            anchor: 'from::Планерная-Октябрьское поле',
+                            ofsHor: 20,
+                            ofsVer: 30,
+                        },
+                        to: {
+                            anchor: 'from::Баррикадная-Кузнецкий мост',
+                            ofsHor: -30,
+                            ofsVer: -20,
+                        },
+                    },
+                    'Китай-город-Волгоградский проспект': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Кузнецкий мост::Баррикадная-Кузнецкий мост::Таганско-Краспресненская',
+                            ofsHor: 82,
+                            ofsVer: 42,
+                        },
+                        through: {
+                            anchor: 'Таганская::Кольцевая',
+                            ofsHor: 10,
+                            ofsVer: -10
+                        },
+                        dist: 258,
+                        points: {
+                            'Китай-город': {
+                                code: '',
+                                anchor: 'to',
+                                dist: -30,
+                            },
+                        },
+                    },
+                    'Текстильщики-Кузьминки': {
+                        from: {
+                            anchor: 'to::Китай-город-Волгоградский проспект',
+                            ofsHor: 37,
+                            ofsVer: 25,
+                        },
+                        through: {
+                            anchor: 'from',
+                            ofsHor: 77,
+                        },
+                        dist: 114,
+                        points: {
+                            'Текстильщики': {
+                                anchor: 'from',
+                            },
+                            'Кузьминки': {
+                                anchor: 'through',
+                            },
+                        },
+                    },
+                    'Рязанский проспект-Выхино': {
+                        from: {
+                            anchor: 'to::Текстильщики-Кузьминки',
+                            ofsHor: 20,
+                            ofsVer: 20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 30,
+                        },
+                        points: {
+                            'Рязанский проспект': {
+                                anchor: 'from',
+                                label: {},
+                            },
+                            'Выхино': {
+                                anchor: 'to',
+                                label: {},
+                            },
+                        },
+                    },
+                    'Лермонтовский проспект-Котельники': {
+                        from: {
+                            anchor: 'to::Рязанский проспект-Выхино',
+                            ofsHor: -20,
+                            ofsVer: 40,
+                        },
+                        through: {
+                            anchor: 'from',
+                            ofsHor: -20,
+                            ofsVer: 20,
+                        },
+                        dist: 90,
+                        points: {
+                            'Лермонтовский проспект': {
+                                anchor: 'through',
+                            },
+                            'Жулебино': {
+                                anchor: 'Лермонтовский проспект',
+                                dist: 30,
+                            },
+                            'Котельники': {
+                                anchor: 'Жулебино',
+                                dist: 30,
+                            },
+                        },
+                    },
+                },
+            },
+            'Серпуховско-Тимирязевская': {
+                style: '#ABAEB9',
+                type: 'segments',
+                segments: {
+                    'Полянка': {
+                        type: 'line',
+                        from: 'Юг-Серпуховско-Тимирязевская::Кольцевая',
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -46,
+                        },
+                        points: {
+                            'Полянка': {
+                                code: 'ru-msk-metro-polyanka',
+                                anchor: 'from',
+                                dist: 26,
+                                label: {},
+                            },
+                        },
+                    },
+                    'Боровицкая': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Полянка',
+                            ofsHor: -84,
+                            ofsVer: -85,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -24,
+                        },
+                        points: {
+                            'Боровицкая': {
+                                anchor: 'from',
+                                code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                                label: {
+                                    alignHor: $$.$me_align.right,
+                                    ofsHor: -4,
+                                    alignVer: $$.$me_align.top,
+                                    ofsVer: -4,
                                 },
-                                points: {
-                                    'Серпуховскaя': {
-                                        code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
-                                        anchor: 'from',
-                                        dist: 16,
-                                        transit: 'Добрынинская::Кольцевая',
-                                        label: {},
-                                    },
-                                    'Тульская': {
-                                        code: 'ru-msk-metro-tulskaya',
-                                        anchor: 'Серпуховскaя',
-                                        dist: 70,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Нагатинская': {
-                                        code: 'ru-msk-metro-nagatinskaya',
-                                        anchor: 'Тульская',
-                                        dist: 90,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Нагорная': {
-                                        code: 'ru-msk-metro-nagornaya',
-                                        anchor: 'Нагатинская',
-                                        dist: 20,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Нахимовский проспект': {
-                                        code: 'ru-msk-metro-nagornaya',
-                                        anchor: 'Нагорная',
-                                        dist: 20,
-                                        label: {
-                                            ofsHor: 2,
-                                            text: 'Нахимовский<br>проспект',
-                                        },
-                                    },
-                                    'Севастопольская': {
-                                        code: 'ru-msk-metro-nahimovskiy-prospekt',
-                                        anchor: 'Нахимовский проспект',
-                                        dist: 46,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Чертановская': {
-                                        code: 'ru-msk-metro-chertanovskaya',
-                                        anchor: 'Севастопольская',
-                                        dist: 22,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Южная': {
-                                        code: 'ru-msk-metro-yujnaya',
-                                        anchor: 'Чертановская',
-                                        dist: 23,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Пражская': {
-                                        code: 'ru-msk-metro-prajskaya',
-                                        anchor: 'Южная',
-                                        dist: 23,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Улица Академика Янгеля': {
-                                        code: 'ru-msk-metro-ulitsa-akademika-yangelya',
-                                        anchor: 'Пражская',
-                                        dist: 23,
-                                        label: {
-                                            ofsHor: 2,
-                                            text: 'Улица Академика<br>Янгеля',
-                                        },
-                                    },
-                                    'Аннино': {
-                                        code: 'ru-msk-metro-annino',
-                                        anchor: 'Улица Академика Янгеля',
-                                        dist: 23,
-                                        label: {
-                                            ofsHor: 2,
-                                        },
-                                    },
-                                    'Бульвар Дмитрия Донского': {
-                                        code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
-                                        anchor: 'to',
-                                        label: {
-                                            ofsHor: 2,
-                                            text: 'Бульвар<br>Дмитрия Донского',
-                                        },
-                                    },
-                                }
+                                dist: 8,
+                                transit: 'Библиотека им.Ленина::Кропоткинская-Черкизовская::Сокольническая',
+                            },
+                        },
+                    },
+                    'Чеховская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Боровицкая',
+                            ofsVer: -20,
+                            ofsHor: 15,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 63,
+                            ofsVer: -60,
+                        },
+                        points: {
+                            'Чеховская': {
+                                anchor: 'from',
+                                code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
+                                dist: 50,
+                                label: {
+                                    alignHor: $$.$me_align.right,
+                                },
+                            },
+                        },
+                    },
+                    'Чеховская-Цветной бульвар 2': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Владыкино::МЦК',
+                            ofsVer: 224 - 5,
+                            ofsHor: -5,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 10,
+                            ofsHor: 10,
+                        },
+                    },
+                    'Алтуфьево-Менделеевская': {
+                        from: {
+                            anchor: 'Владыкино::МЦК',
+                            ofsHor: -18,
+                            ofsVer: -85,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 296,
+                        },
+                    },
+                    'Серпуховскaя-Бульвар Дмитрия Донского': {
+                        type: 'line',
+                        from: 'Юг-Серпуховско-Тимирязевская::Кольцевая',
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 400,
+                        },
+                        points: {
+                            'Серпуховскaя': {
+                                code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
+                                anchor: 'from',
+                                dist: 16,
+                                transit: 'Добрынинская::Кольцевая',
+                                label: {},
+                            },
+                            'Тульская': {
+                                code: 'ru-msk-metro-tulskaya',
+                                anchor: 'Серпуховскaя',
+                                dist: 70,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Нагатинская': {
+                                code: 'ru-msk-metro-nagatinskaya',
+                                anchor: 'Тульская',
+                                dist: 90,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Нагорная': {
+                                code: 'ru-msk-metro-nagornaya',
+                                anchor: 'Нагатинская',
+                                dist: 20,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Нахимовский проспект': {
+                                code: 'ru-msk-metro-nahimovskiy-prospekt',
+                                anchor: 'Нагорная',
+                                dist: 20,
+                                label: {
+                                    ofsHor: 2,
+                                    text: 'Нахимовский<br>проспект',
+                                },
+                            },
+                            'Севастопольская': {
+                                code: 'ru-msk-metro-kahovskaya-sevastopolskaya',
+                                anchor: 'Нахимовский проспект',
+                                dist: 46,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Чертановская': {
+                                code: 'ru-msk-metro-chertanovskaya',
+                                anchor: 'Севастопольская',
+                                dist: 22,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Южная': {
+                                code: 'ru-msk-metro-yujnaya',
+                                anchor: 'Чертановская',
+                                dist: 23,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Пражская': {
+                                code: 'ru-msk-metro-prajskaya',
+                                anchor: 'Южная',
+                                dist: 23,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Улица Академика Янгеля': {
+                                code: 'ru-msk-metro-ulitsa-akademika-yangelya',
+                                anchor: 'Пражская',
+                                dist: 23,
+                                label: {
+                                    ofsHor: 2,
+                                    text: 'Улица Академика<br>Янгеля',
+                                },
+                            },
+                            'Аннино': {
+                                code: 'ru-msk-metro-annino',
+                                anchor: 'Улица Академика Янгеля',
+                                dist: 23,
+                                label: {
+                                    ofsHor: 2,
+                                },
+                            },
+                            'Бульвар Дмитрия Донского': {
+                                code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
+                                anchor: 'to',
+                                label: {
+                                    ofsHor: 2,
+                                    text: 'Бульвар<br>Дмитрия Донского',
+                                },
                             },
                         }
                     },
@@ -5587,18 +6139,18 @@ var $;
                     'Улица Старокачаловская': {
                         type: 'line',
                         from: {
-                            anchor: 'Аннино::Серпуховскaя-Бульвар Дмитрия Донского::Юг::Серпуховско-Тимирязевская',
+                            anchor: 'Аннино::Серпуховскaя-Бульвар Дмитрия Донского::Серпуховско-Тимирязевская',
                             ofsHor: -18,
                         },
                         to: {
-                            anchor: 'Бульвар Дмитрия Донского::Серпуховскaя-Бульвар Дмитрия Донского::Юг::Серпуховско-Тимирязевская',
+                            anchor: 'Бульвар Дмитрия Донского::Серпуховскaя-Бульвар Дмитрия Донского::Серпуховско-Тимирязевская',
                             ofsHor: -18,
                         },
                         points: {
                             'Улица Старокачаловская': {
                                 anchor: 'to',
                                 code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
-                                transit: 'Бульвар Дмитрия Донского::Серпуховскaя-Бульвар Дмитрия Донского::Юг::Серпуховско-Тимирязевская',
+                                transit: 'Бульвар Дмитрия Донского::Серпуховскaя-Бульвар Дмитрия Донского::Серпуховско-Тимирязевская',
                                 label: {
                                     alignHor: $$.$me_align.right,
                                     textAlign: 'right',
@@ -5608,23 +6160,15 @@ var $;
                             },
                         },
                     },
-                    'Улица Старокачаловская-Лесопарковая': {
-                        type: 'quadratic',
-                        from: 'from::Улица Старокачаловская',
-                        control_point: {
-                            anchor: 'from',
+                    'Лесопарковая-Битцевский парк': {
+                        type: 'line',
+                        from: {
+                            anchor: 'from::Улица Старокачаловская',
+                            ofsHor: -20,
                             ofsVer: -20,
                         },
                         to: {
-                            anchor: 'control_point',
-                            ofsHor: -20,
-                        },
-                    },
-                    'Лесопарковая-Битцевский парк': {
-                        type: 'line',
-                        from: 'to::Улица Старокачаловская-Лесопарковая',
-                        to: {
-                            anchor: 'to::Улица Старокачаловская-Лесопарковая',
+                            anchor: 'from',
                             ofsHor: -80,
                         },
                         points: {
@@ -5648,21 +6192,13 @@ var $;
                             },
                         },
                     },
-                    'Улица Старокачаловская-Улица Скобелевская': {
-                        type: 'quadratic',
-                        from: 'to::Улица Старокачаловская',
-                        control_point: {
-                            anchor: 'from',
-                            ofsVer: 20,
-                        },
-                        to: {
-                            anchor: 'control_point',
-                            ofsHor: -20,
-                        },
-                    },
                     'Улица Скобелевская-Бунинская аллея': {
                         type: 'line',
-                        from: 'to::Улица Старокачаловская-Улица Скобелевская',
+                        from: {
+                            anchor: 'to::Улица Старокачаловская',
+                            ofsHor: -20,
+                            ofsVer: 20,
+                        },
                         to: {
                             anchor: 'from',
                             ofsHor: -200,
@@ -5717,52 +6253,604 @@ var $;
                 },
             },
             'Замоскворецкая': {
-                type: 'groups',
                 style: '#326E3F',
-                groups: {
+                type: 'segments',
+                segments: {
+                    'Аэропорт-Ховрино': {
+                        from: {
+                            anchor: 'Балтийская::МЦК',
+                            ofsHor: -10,
+                            ofsVer: 90,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -220,
+                        },
+                    },
+                    'Динамо-Тверская': {
+                        from: {
+                            anchor: 'from::Аэропорт-Ховрино',
+                            ofsHor: 30,
+                            ofsVer: 45,
+                        },
+                        to: {
+                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
+                            ofsHor: -30,
+                            ofsVer: 15,
+                        },
+                    },
+                    'Театральная': {
+                        from: {
+                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
+                            ofsHor: -5,
+                            ofsVer: 15,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 30,
+                        },
+                        points: {
+                            'Театральная': {
+                                anchor: 'from',
+                                dist: 15,
+                                transit: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                },
+                            },
+                        },
+                    },
+                    'Новокузнецкая-Домодедовская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'Юг-Замоскворецкая::Кольцевая',
+                            ofsVer: -104,
+                        },
+                        to: {
+                            anchor: 'Юг-Замоскворецкая::Кольцевая',
+                            ofsVer: 355,
+                        },
+                        points: {
+                            'Новокузнецкая': {
+                                code: '',
+                                anchor: 'Юг-Замоскворецкая::Кольцевая',
+                                dist: -85,
+                                label: {},
+                            },
+                            'Павелецкая': {
+                                code: 'ru-msk-metro-paveletskaya-paveletskaya',
+                                anchor: 'Юг-Замоскворецкая::Кольцевая',
+                                dist: 16,
+                                transit: 'Павелецкая::Кольцевая',
+                            },
+                            'Автозаводская': {
+                                code: '',
+                                anchor: 'Павелецкая',
+                                dist: 130,
+                                transit: 'Автозаводская::МЦК',
+                            },
+                            'Технопарк': {
+                                code: '',
+                                anchor: 'Автозаводская',
+                                dist: 43,
+                                label: {},
+                            },
+                            'Коломенская': {
+                                code: '',
+                                anchor: 'Технопарк',
+                                dist: 33,
+                                label: {},
+                            },
+                            'Каширская': {
+                                code: '',
+                                anchor: 'Коломенская',
+                                dist: 31,
+                                label: {},
+                            },
+                            'Кантемировская': {
+                                code: '',
+                                anchor: 'Каширская',
+                                dist: 29,
+                                label: {},
+                            },
+                            'Царицино': {
+                                code: '',
+                                anchor: 'Кантемировская',
+                                dist: 24,
+                                label: {},
+                            },
+                            'Орехово': {
+                                code: '',
+                                anchor: 'Царицино',
+                                dist: 25,
+                                label: {},
+                            },
+                            'Домодедовская': {
+                                code: '',
+                                anchor: 'Орехово',
+                                dist: 25,
+                                label: {},
+                            },
+                        },
+                    },
                     'Юг': {
-                        type: 'segments',
-                        segments: {
-                            'Павелецкая-Домодедовская': {
-                                type: 'line',
-                                from: 'Павелецкая-Замоскворецкая::Кольцевая',
-                                to: {
-                                    anchor: 'Павелецкая-Замоскворецкая::Кольцевая',
-                                    ofsVer: 355,
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Новокузнецкая-Домодедовская',
+                            ofsHor: 20,
+                            ofsVer: 20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 190,
+                        },
+                        points: {
+                            'Красногвардейская': {
+                                anchor: 'from',
+                                dist: 109,
+                                code: '',
+                                label: {
+                                    alignVer: $$.$me_align.top,
+                                    alignHor: $$.$me_align.center,
                                 },
-                                points: {
-                                    'Павелецкая': {
-                                        code: 'ru-msk-metro-paveletskaya-paveletskaya',
-                                        anchor: 'from',
-                                        dist: 16,
-                                        transit: 'Павелецкая::Кольцевая',
-                                    },
-                                },
+                                transit: 'Зябликово::Юг::Люблинско-Дмитровская',
                             },
-                            'Красногвардейская-Алма-Атинская': {
-                                type: 'line',
-                                from: {
-                                    anchor: 'to::Павелецкая-Домодедовская',
-                                    ofsHor: 20,
-                                    ofsVer: 20,
-                                },
-                                to: {
-                                    anchor: 'from',
-                                    ofsHor: 190,
-                                },
-                            },
-                            'Домодедовская-Красногвардейская': {
-                                type: 'quadratic',
-                                from: 'to::Павелецкая-Домодедовская',
-                                to: 'from::Красногвардейская-Алма-Атинская',
-                                control_point: {
-                                    anchor: 'from',
-                                    ofsVer: 20,
+                            'Алма-Атинская': {
+                                anchor: 'to',
+                                code: '',
+                                label: {
+                                    alignVer: $$.$me_align.top,
+                                    alignHor: $$.$me_align.center,
+                                    ofsHor: 30,
                                 },
                             },
                         },
                     },
                 },
+            },
+            'Арбатско-Покровская': {
+                style: '#2B3A7C',
+                type: 'segments',
+                segments: {
+                    'Пл. Революции': {
+                        from: {
+                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
+                            ofsHor: -10,
+                            ofsVer: 30,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 126,
+                        },
+                        points: {
+                            'Пл. Революции': {
+                                anchor: 'from',
+                                dist: 30,
+                                transit: 'Театральная::Театральная::Замоскворецкая',
+                                label: {
+                                    alignVer: $$.$me_align.top,
+                                    alignHor: $$.$me_align.center,
+                                    ofsHor: 15,
+                                    ofsVer: -1,
+                                },
+                            },
+                        },
+                    },
+                    'Арбатская-Киевская': {
+                        through: {
+                            anchor: 'Киевская::Кольцевая',
+                            ofsVer: 15,
+                        },
+                        from: {
+                            anchor: 'through',
+                            ofsHor: 177,
+                        },
+                        dist: 196,
+                        points: {
+                            'Арбатская': {
+                                anchor: 'from',
+                                dist: 56,
+                                label: {
+                                    alignHor: $$.$me_align.center,
+                                    alignVer: $$.$me_align.bottom,
+                                    ofsHor: 8,
+                                    ofsVer: 2,
+                                },
+                                transit: [
+                                    'Библиотека им.Ленина::Кропоткинская-Черкизовская::Сокольническая',
+                                    'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
+                                ],
+                            },
+                            'Смоленская': {
+                                anchor: 'from',
+                                dist: 133,
+                                label: {
+                                    alignHor: $$.$me_align.center,
+                                    alignVer: $$.$me_align.bottom,
+                                    ofsVer: 3,
+                                },
+                            },
+                            'Киевская': {
+                                anchor: 'to',
+                                transit: 'Киевская::Кольцевая',
+                            },
+                        },
+                    },
+                    'Киевская-Парк Победы': {
+                        from: {
+                            anchor: 'to::Арбатская-Киевская',
+                            ofsHor: -20,
+                            ofsVer: 10,
+                        },
+                        to: {
+                            anchor: 'Кутузовская::МЦК',
+                            ofsVer: 18,
+                            ofsHor: 20,
+                        },
+                    },
+                    'Парк Победы-Славянский бульвар': {
+                        from: {
+                            anchor: 'to::Киевская-Парк Победы',
+                            ofsVer: 10,
+                            ofsHor: -25,
+                        },
+                        through: {
+                            anchor: 'from',
+                            ofsHor: -60,
+                        },
+                        dist: 80,
+                        points: {
+                            'Парк Победы': {
+                                anchor: 'from',
+                            },
+                            'Славянский бульвар': {
+                                anchor: 'through',
+                            },
+                        },
+                    },
+                    'Кунцевская': {
+                        from: {
+                            anchor: 'to::Парк Победы-Славянский бульвар',
+                            ofsHor: -40,
+                            ofsVer: -20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: -110,
+                            ofsVer: -110,
+                        },
+                        points: {
+                            'Кунцевская': {
+                                anchor: 'to',
+                                label: {
+                                    alignVer: $$.$me_align.top,
+                                    alignHor: $$.$me_align.center,
+                                    ofsHor: 20,
+                                },
+                            },
+                        },
+                    },
+                    'Запад': {
+                        from: 'to::Кунцевская',
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -202,
+                        },
+                        points: {
+                            'Молодёжная': {
+                                anchor: 'from',
+                                dist: 202 - 25 * 6,
+                                label: {},
+                            },
+                            'Крылатское': {
+                                anchor: 'Молодёжная',
+                                dist: 25,
+                                label: {},
+                            },
+                            'Строгино': {
+                                anchor: 'Крылатское',
+                                dist: 25,
+                                label: {},
+                            },
+                            'Мякинино': {
+                                anchor: 'Строгино',
+                                dist: 25,
+                                label: {},
+                            },
+                            'Волоколамская': {
+                                anchor: 'Мякинино',
+                                dist: 25,
+                                label: {},
+                            },
+                            'Митино': {
+                                anchor: 'Волоколамская',
+                                dist: 25,
+                                label: {},
+                            },
+                            'Пятницкое шоссе': {
+                                anchor: 'Митино',
+                                dist: 25,
+                                label: {},
+                            },
+                        },
+                    },
+                    'Курская-Партизанская': {
+                        from: {
+                            anchor: 'to::Пл. Революции',
+                            ofsHor: 20,
+                            ofsVer: -10,
+                        },
+                        to: {
+                            anchor: 'Измайлово::МЦК',
+                            ofsVer: -26,
+                        },
+                    },
+                    'Измайловская-Щёлковская': {
+                        from: {
+                            anchor: 'to::Курская-Партизанская',
+                            ofsHor: 35,
+                            ofsVer: -41,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -65,
+                        },
+                    },
+                },
+            },
+            'Калининская': {
+                style: '#F9E36A',
+                type: 'segments',
+                segments: {
+                    'Третьяковская': {
+                        from: {
+                            anchor: 'Новокузнецкая::Новокузнецкая-Домодедовская::Замоскворецкая',
+                            ofsHor: -20,
+                            ofsVer: 20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 96,
+                        },
+                    },
+                    'Марксистская-Новокосино': {
+                        from: {
+                            anchor: 'Таганская::Кольцевая',
+                            ofsHor: 20,
+                            ofsVer: 10,
+                        },
+                        through: {
+                            anchor: 'Шоссе Энтузиастов::МЦК',
+                            ofsHor: -20,
+                        },
+                        dist: 350,
+                    },
+                }
+            },
+            'Филевская': {
+                style: '#459BCF',
+                type: 'segments',
+                segments: {
+                    'Александровский сад-Арбатская': {
+                        from: {
+                            anchor: 'Арбатская::Арбатская-Киевская::Арбатско-Покровская',
+                            ofsVer: 14,
+                            ofsHor: -12,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -32,
+                            ofsHor: -20,
+                        },
+                        points: {
+                            'Александровский сад': {
+                                anchor: 'from',
+                                label: {},
+                                transit: [
+                                    'Библиотека им.Ленина::Кропоткинская-Черкизовская::Сокольническая',
+                                    'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
+                                    'Арбатская::Арбатская-Киевская::Арбатско-Покровская',
+                                ],
+                            },
+                            'Арбатская': {
+                                anchor: 'to',
+                            },
+                        },
+                    },
+                    'Смоленская-Международная': {
+                        to: {
+                            anchor: 'Деловой центр::МЦК',
+                        },
+                        from: {
+                            anchor: 'to',
+                            ofsHor: 202,
+                        },
+                        points: {
+                            'Смоленская': {
+                                anchor: 'from',
+                            },
+                            'Киевская': {
+                                anchor: 'to',
+                                dist: -140,
+                                transit: [
+                                    'Киевская::Кольцевая',
+                                    'Киевская::Арбатская-Киевская::Арбатско-Покровская'
+                                ],
+                            },
+                            'Выставочная': {
+                                anchor: 'to',
+                                dist: -54,
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                    alignHor: $$.$me_align.center,
+                                    ofsHor: 40,
+                                },
+                            },
+                            'Международная': {
+                                anchor: 'to',
+                                dist: -22,
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                    alignHor: $$.$me_align.center,
+                                    ofsHor: -20,
+                                },
+                            },
+                        },
+                    },
+                    'Киевская-Кутузовская': {
+                        from: 'Киевская::Смоленская-Международная::Филевская',
+                        to: {
+                            anchor: 'Кутузовская::МЦК',
+                            ofsHor: 15,
+                        },
+                        points: {
+                            'Кутузовская': {
+                                anchor: 'to',
+                                transit: 'Кутузовская::МЦК',
+                            },
+                        },
+                    },
+                    'Кутузовская-Фили': {
+                        from: {
+                            anchor: 'from::Парк Победы-Славянский бульвар::Арбатско-Покровская',
+                            ofsVer: -15,
+                            ofsHor: -20,
+                        },
+                        to: {
+                            anchor: 'to::Парк Победы-Славянский бульвар::Арбатско-Покровская',
+                            ofsVer: -15,
+                            ofsHor: 20,
+                        },
+                    },
+                    'Фили-Кунцевская': {
+                        from: {
+                            anchor: 'to::Кутузовская-Фили',
+                            ofsHor: -54,
+                            ofsVer: -20,
+                        },
+                        to: {
+                            anchor: 'Кунцевская::Кунцевская::Арбатско-Покровская',
+                            ofsHor: 20,
+                        },
+                        points: {
+                            'Фили': {
+                                anchor: 'from',
+                                label: {},
+                            },
+                            'Багратионовская': {
+                                anchor: 'Фили',
+                                dist: 30,
+                                label: {},
+                            },
+                            'Филёвский парк': {
+                                anchor: 'Багратионовская',
+                                dist: 30,
+                                label: {},
+                            },
+                            'Пионерская': {
+                                anchor: 'Филёвский парк',
+                                dist: 30,
+                                label: {},
+                            },
+                            'Кунцевская': {
+                                anchor: 'to',
+                            },
+                        },
+                    },
+                }
+            },
+            'Некрасовская': {
+                style: '#EFC0D0',
+                type: 'segments',
+                segments: {
+                    'Нижегородская улица-Стахановская': {
+                        from: {
+                            anchor: 'Нижегородская::МЦК',
+                            ofsHor: 10,
+                            ofsVer: 10,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 40,
+                            ofsVer: 50,
+                        },
+                        points: {
+                            'Нижегородская улица': {
+                                anchor: 'from',
+                            },
+                            'Стахановская': {
+                                anchor: 'to',
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                },
+                            },
+                        },
+                    },
+                    'Окская улица-Юго-Восточная': {
+                        from: {
+                            anchor: 'Кузьминки::Текстильщики-Кузьминки::Таганско-Краспресненская',
+                            ofsHor: 18,
+                            ofsVer: -40,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: 100,
+                        },
+                        points: {
+                            'Окская улица': {
+                                anchor: 'from',
+                                label: {
+                                    text: 'Окская<br>улица'
+                                },
+                            },
+                            'Юго-Восточная': {
+                                anchor: 'to',
+                                label: {
+                                    alignHor: $$.$me_align.right,
+                                },
+                            },
+                        },
+                    },
+                    'Косино': {
+                        from: 'to::Окская улица-Юго-Восточная',
+                        to: {
+                            anchor: 'Лермонтовский проспект::Лермонтовский проспект-Котельники::Таганско-Краспресненская',
+                            ofsHor: 20,
+                        },
+                        points: {
+                            'Косино': {
+                                anchor: 'to',
+                                transit: 'Лермонтовский проспект::Лермонтовский проспект-Котельники::Таганско-Краспресненская',
+                            },
+                        },
+                    },
+                    'Юг': {
+                        from: {
+                            anchor: 'to::Косино',
+                            ofsHor: 5,
+                            ofsVer: 20,
+                        },
+                        through: {
+                            anchor: 'from',
+                            ofsVer: 50,
+                        },
+                        dist: 100,
+                        points: {
+                            'Улица Дмитриевского': {
+                                anchor: 'from',
+                                dist: 50,
+                            },
+                            'Лухмановская': {
+                                anchor: 'Улица Дмитриевского',
+                                dist: 25,
+                            },
+                            'Некрасовка': {
+                                anchor: 'Лухмановская',
+                                dist: 25,
+                            },
+                        },
+                    },
+                }
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -5800,8 +6888,14 @@ var $;
             const alignVer = point_def.label.alignVer == null ?
                 $$.$me_align.center :
                 point_def.label.alignVer;
-            const ofsHor = point_def.label.ofsHor || 0;
-            const ofsVer = point_def.label.ofsVer || 0;
+            const ofsHor = point_def.label.ofsHor != null ?
+                point_def.label.ofsHor :
+                alignHor == $$.$me_align.center ? 0 :
+                    alignVer == $$.$me_align.center ? 2 : -2;
+            const ofsVer = point_def.label.ofsVer != null ?
+                point_def.label.ofsVer :
+                alignVer == $$.$me_align.center ? 0 :
+                    alignHor == $$.$me_align.center ? 2 : -2;
             const result = labels[id([point_id])] = {
                 text: point_def.label.text || point_id,
                 ofsHor: alignHor == $$.$me_align.left ?
@@ -5853,7 +6947,7 @@ var $;
             if (typeof arg == 'string') {
                 result = Object.assign({}, props, { x: result.x, y: result.y });
             }
-            else if (arg.angle) {
+            else if (arg.angle != null) {
                 const angle = arg.angle;
                 if (!provider)
                     $$.$me_throw(`provider expected due to ${id([prop_name])}.angle`);
@@ -5867,7 +6961,7 @@ var $;
                 const { centerX, centerY, radius } = ret;
                 result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
             }
-            else if (arg.dist) {
+            else if (arg.dist != null) {
                 const dist = arg.dist;
                 if (!provider)
                     $$.$me_throw(`provider expected due to ${id([prop_name])}.dist`);
@@ -6330,21 +7424,28 @@ var $;
                                         };
                                     }
                                     if (req == 'transit') {
-                                        const point_to = points[p.point_def.transit];
-                                        if (point_to.type != 'circle')
-                                            $$.$me_throw(`.anchor'${p.id([p.point_id, 'transit'])}' of ${p.point_def.transit} must refer to point with .type'circle', not`, point_to);
-                                        const dx = point_to.x - result.x;
-                                        const dy = point_to.y - result.y;
-                                        const len = Math.hypot(dx, dy);
-                                        const gradient = ctx.createLinearGradient((result.x + dx / len * radius_station) * pixelRatio, (result.y + dy / len * radius_station) * pixelRatio, (point_to.x - dx / len * radius_station) * pixelRatio, (point_to.y - dy / len * radius_station) * pixelRatio);
-                                        gradient.addColorStop(0, styleColor(p.line_def.style));
-                                        gradient.addColorStop(1, point_to.color);
-                                        ctx.beginPath();
-                                        ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
-                                        ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
-                                        ctx.strokeStyle = gradient;
-                                        ctx.lineWidth = thick_transit * pixelRatio;
-                                        ctx.stroke();
+                                        const anchors = typeof p.point_def.transit == 'string' ?
+                                            [p.point_def.transit] :
+                                            Array.isArray(p.point_def.transit) ?
+                                                p.point_def.transit :
+                                                $$.$me_throw('unsupported .transit', p.point_def.transit);
+                                        for (const anchor of anchors) {
+                                            const point_to = points[anchor];
+                                            if (point_to.type != 'circle')
+                                                $$.$me_throw(`.anchor'${p.id([p.point_id, 'transit'])}' of ${anchor} must refer to point with .type'circle', not`, point_to);
+                                            const dx = point_to.x - result.x;
+                                            const dy = point_to.y - result.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const gradient = ctx.createLinearGradient((result.x + dx / len * radius_station) * pixelRatio, (result.y + dy / len * radius_station) * pixelRatio, (point_to.x - dx / len * radius_station) * pixelRatio, (point_to.y - dy / len * radius_station) * pixelRatio);
+                                            gradient.addColorStop(0, styleColor(p.line_def.style));
+                                            gradient.addColorStop(1, point_to.color);
+                                            ctx.beginPath();
+                                            ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
+                                            ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
+                                            ctx.strokeStyle = gradient;
+                                            ctx.lineWidth = thick_transit * pixelRatio;
+                                            ctx.stroke();
+                                        }
                                         return true;
                                     }
                                 };
@@ -6355,14 +7456,13 @@ var $;
                                             continue;
                                         result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale);
                                     }
-                                    for (const prop_name of prop_names)
-                                        if (!result[prop_name])
-                                            anchored_point(id, segment_def, prop_name, points, scale);
                                     return result;
                                 };
                                 const segment_helper = {
                                     circle: (line_def, segment_def, id) => {
                                         const p = prepare_point(['center'], id, segment_def, points, scale);
+                                        if (!p['center'])
+                                            anchored_point(id, segment_def, 'center', points, scale);
                                         line_def.ctxCenterX = p.center.x * pixelRatio;
                                         line_def.ctxCenterY = p.center.y * pixelRatio;
                                         line_def.ctxRadius = line_def.radius * scale * pixelRatio;
@@ -6417,7 +7517,34 @@ var $;
                                         }
                                     },
                                     line: (line_def, segment_def, id) => {
-                                        const p = prepare_point(['from', 'to'], id, segment_def, points, scale);
+                                        const p = prepare_point(['from', 'to', 'through'], id, segment_def, points, scale);
+                                        if (p['from'] && p['to'] && p['through']) {
+                                            $$.$me_throw('.through is not expected whilst .from and .to are set');
+                                        }
+                                        else if (!p['to']) {
+                                            if (!(p['from'] && p['through'] && segment_def.dist))
+                                                $$.$me_throw(id() + ': .from, .through and .dist must be set whilst .to is absent');
+                                            const dx = p.through.x - p.from.x;
+                                            const dy = p.through.y - p.from.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const dist = segment_def.dist;
+                                            points[id(['to'])] = p['to'] = {
+                                                x: p.from.x + dx / len * dist * scale,
+                                                y: p.from.y + dy / len * dist * scale,
+                                            };
+                                        }
+                                        else if (!p['from']) {
+                                            if (!(p['to'] && p['through']) && segment_def.dist)
+                                                $$.$me_throw('.to, .through and .dist must be set whilst .from is absent');
+                                            const dx = p.through.x - p.to.x;
+                                            const dy = p.through.y - p.to.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const dist = segment_def.dist;
+                                            points[id(['from'])] = p['from'] = {
+                                                x: p.to.x - dx / len * dist * scale,
+                                                y: p.to.y - dy / len * dist * scale,
+                                            };
+                                        }
                                         ctx.beginPath();
                                         ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
                                         ctx.lineTo(p.to.x * pixelRatio, p.to.y * pixelRatio);
@@ -6439,49 +7566,9 @@ var $;
                                             });
                                         }
                                     },
-                                    quadratic: (line_def, segment_def, id) => {
-                                        const p = prepare_point(['from', 'to', 'control_point'], id, segment_def, points, scale);
-                                        ctx.beginPath();
-                                        ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
-                                        ctx.quadraticCurveTo(p.control_point.x * pixelRatio, p.control_point.y * pixelRatio, p.to.x * pixelRatio, p.to.y * pixelRatio);
-                                        ctx.strokeStyle = styleColor(line_def.style);
-                                        ctx.lineWidth = thick_line * pixelRatio;
-                                        ctx.stroke();
-                                        for (const point_id in segment_def.points) {
-                                            const point_def = segment_def.points[point_id];
-                                            const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
-                                                return anchored_point_provider(req, result, {
-                                                    point_id,
-                                                    point_def,
-                                                    line_def,
-                                                    id,
-                                                });
-                                            });
-                                        }
-                                    },
-                                    bezier: (line_def, segment_def, id) => {
-                                        const p = prepare_point(['from', 'to', 'control_point', 'control_point2'], id, segment_def, points, scale);
-                                        ctx.beginPath();
-                                        ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
-                                        ctx.bezierCurveTo(p.control_point.x * pixelRatio, p.control_point.y * pixelRatio, p.control_point2.x * pixelRatio, p.control_point2.y * pixelRatio, p.to.x * pixelRatio, p.to.y * pixelRatio);
-                                        ctx.strokeStyle = styleColor(line_def.style);
-                                        ctx.lineWidth = thick_line * pixelRatio;
-                                        ctx.stroke();
-                                        for (const point_id in segment_def.points) {
-                                            const point_def = segment_def.points[point_id];
-                                            const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
-                                                return anchored_point_provider(req, result, {
-                                                    point_id,
-                                                    point_def,
-                                                    line_def,
-                                                    id,
-                                                });
-                                            });
-                                        }
-                                    },
                                 };
                                 const segment = (line_def, segment_def, id_items) => {
-                                    const fn = segment_helper[segment_def.type];
+                                    const fn = segment_helper[segment_def.type || 'line'];
                                     if (!fn) {
                                         $$.$me_throw('unsupported segment_def.type', segment_def.type);
                                     }
@@ -6489,15 +7576,11 @@ var $;
                                         fn(line_def, segment_def, (tail) => id_items.concat(!tail ? [] : tail).reverse().join('::'));
                                     }
                                 };
-                                const group = (line_def, group_def, id_items) => {
-                                    if (group_def.type == 'segments') {
-                                        for (const segment_id in group_def.segments) {
-                                            const segment_def = group_def.segments[segment_id];
-                                            segment(line_def, segment_def, id_items.concat(segment_id));
-                                        }
+                                const segments = (line_def, group_def, id_items) => {
+                                    for (const segment_id in group_def.segments) {
+                                        const segment_def = group_def.segments[segment_id];
+                                        segment(line_def, segment_def, id_items.concat(segment_id));
                                     }
-                                    else
-                                        $$.$me_throw('unsupported group_def.type', group_def.type);
                                 };
                                 const points = $$.a('<<.points') || {};
                                 for (const point_id in points) {
@@ -6505,17 +7588,11 @@ var $;
                                 }
                                 for (const line_id in lines) {
                                     const line_def = lines[line_id];
-                                    if (line_def.type == 'groups') {
-                                        for (const group_id in line_def.groups) {
-                                            const group_def = line_def.groups[group_id];
-                                            group(line_def, group_def, [line_id, group_id]);
-                                        }
-                                    }
-                                    else if (line_def.type == 'segments') {
-                                        group(line_def, line_def, [line_id]);
-                                    }
-                                    else if (~Object.keys(segment_helper).indexOf(line_def.type)) {
+                                    if (~Object.keys(segment_helper).indexOf(line_def.type)) {
                                         segment(line_def, line_def, [line_id]);
+                                    }
+                                    else if (line_def.type == null || line_def.type == 'segments') {
+                                        segments(line_def, line_def, [line_id]);
                                     }
                                     else
                                         $$.$me_throw('unsupported line_def.type', line_def.type);
