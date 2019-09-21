@@ -173,6 +173,30 @@ var $;
             $me_theme[$me_theme["light"] = 0] = "light";
             $me_theme[$me_theme["dark"] = 1] = "dark";
         })($me_theme = $$.$me_theme || ($$.$me_theme = {}));
+        function $me_vector_transform(v, dist, from) {
+            const dx = v.to.x - v.from.x;
+            const dy = v.to.y - v.from.y;
+            const len = Math.hypot(dx, dy);
+            if (!from)
+                from = v.from;
+            const result = {
+                from,
+                to: {
+                    x: dx / len * dist + from.x,
+                    y: dy / len * dist + from.y,
+                },
+            };
+            return result;
+        }
+        $$.$me_vector_transform = $me_vector_transform;
+        function $me_vector_revert(v) {
+            const result = {
+                from: v.to,
+                to: v.from,
+            };
+            return result;
+        }
+        $$.$me_vector_revert = $me_vector_revert;
         $$.$me_rect = () => ({ left: 0, top: 0, right: 0, bottom: 0 });
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
@@ -5432,6 +5456,7 @@ var $;
                         to: {
                             anchor: 'from',
                             ofsVer: 10,
+                            link: 'to::Кропоткинская-Черкизовская',
                         },
                         points: {
                             'Бульвар Рокоссовского': {
@@ -5489,7 +5514,8 @@ var $;
                         },
                         from: {
                             anchor: 'through',
-                            ofsVer: -66,
+                            ofsVer: -36,
+                            link: 'from::Октябрьская',
                         },
                         dist: 286,
                         points: {
@@ -5609,19 +5635,6 @@ var $;
                             ofsVer: -50,
                         },
                     },
-                    'Проспект мира-Рижская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Сухаревская',
-                            ofsHor: 10,
-                            ofsVer: -40,
-                        },
-                        to: {
-                            anchor: 'Ботанический сад::МЦК',
-                            ofsHor: 5,
-                            ofsVer: 97,
-                        },
-                    },
                     'Алексеевская-Медведково': {
                         from: {
                             anchor: 'Ботанический сад::МЦК',
@@ -5631,6 +5644,19 @@ var $;
                         to: {
                             anchor: 'from',
                             ofsVer: -165,
+                        },
+                    },
+                    'Проспект мира-Рижская': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Сухаревская',
+                            ofsHor: 10,
+                            ofsVer: -40,
+                        },
+                        to: {
+                            anchor: 'from::Алексеевская-Медведково',
+                            ofsHor: -15,
+                            ofsVer: 35,
                         },
                     },
                 },
@@ -5656,12 +5682,12 @@ var $;
                         type: 'line',
                         from: {
                             anchor: 'to::Римская-Чкаловская',
-                            ofsHor: -20,
+                            ofsHor: -40,
                             ofsVer: -20,
                         },
                         to: {
                             anchor: 'from',
-                            ofsHor: -75,
+                            ofsHor: -55,
                         },
                     },
                     'Фонвизинская-Трубная': {
@@ -5672,6 +5698,7 @@ var $;
                         },
                         to: {
                             anchor: 'from',
+                            link: 'to::Сретенский бульвар',
                             ofsVer: 160,
                         },
                     },
@@ -5684,7 +5711,6 @@ var $;
                         },
                         to: {
                             anchor: 'Окружная::МЦК',
-                            ofsVer: -15,
                             ofsHor: 15,
                         },
                     },
@@ -5693,6 +5719,7 @@ var $;
                         from: {
                             anchor: 'Окружная::МЦК',
                             ofsVer: -20,
+                            link: 'to::Петровско-Разумовская',
                         },
                         to: {
                             anchor: 'from',
@@ -5713,6 +5740,7 @@ var $;
                     'Юг': {
                         from: {
                             anchor: 'Дубровка::МЦК',
+                            link: 'to::Крестьянская застава',
                             ofsHor: 10,
                             ofsVer: -22,
                         },
@@ -5836,14 +5864,14 @@ var $;
                         },
                         to: {
                             anchor: 'from::Баррикадная-Кузнецкий мост',
-                            ofsHor: -30,
+                            ofsHor: -40,
                             ofsVer: -20,
                         },
                     },
                     'Китай-город-Волгоградский проспект': {
                         type: 'line',
                         from: {
-                            anchor: 'Кузнецкий мост::Баррикадная-Кузнецкий мост::Таганско-Краспресненская',
+                            anchor: 'to::Баррикадная-Кузнецкий мост',
                             ofsHor: 82,
                             ofsVer: 42,
                         },
@@ -5999,6 +6027,18 @@ var $;
                             },
                         },
                     },
+                    'Чеховская-Цветной бульвар': {
+                        type: 'line',
+                        from: {
+                            anchor: 'to::Чеховская',
+                            ofsHor: 30,
+                            ofsVer: -60,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsVer: -30,
+                        },
+                    },
                     'Чеховская-Цветной бульвар 2': {
                         type: 'line',
                         from: {
@@ -6008,8 +6048,9 @@ var $;
                         },
                         to: {
                             anchor: 'from',
-                            ofsVer: 10,
-                            ofsHor: 10,
+                            ofsVer: 2,
+                            ofsHor: 2,
+                            link: 'to::Чеховская-Цветной бульвар',
                         },
                     },
                     'Алтуфьево-Менделеевская': {
@@ -6020,7 +6061,8 @@ var $;
                         },
                         to: {
                             anchor: 'from',
-                            ofsVer: 296,
+                            ofsVer: 280,
+                            link: 'from::Чеховская-Цветной бульвар 2',
                         },
                     },
                     'Серпуховскaя-Бульвар Дмитрия Донского': {
@@ -6276,12 +6318,13 @@ var $;
                         to: {
                             anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
                             ofsHor: -30,
-                            ofsVer: 15,
+                            ofsVer: 5,
                         },
                     },
                     'Театральная': {
                         from: {
                             anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
+                            link: 'to::Динамо-Тверская',
                             ofsHor: -5,
                             ofsVer: 15,
                         },
@@ -6304,6 +6347,7 @@ var $;
                         type: 'line',
                         from: {
                             anchor: 'Юг-Замоскворецкая::Кольцевая',
+                            link: 'to::Театральная',
                             ofsVer: -104,
                         },
                         to: {
@@ -6412,30 +6456,6 @@ var $;
                 style: '#2B3A7C',
                 type: 'segments',
                 segments: {
-                    'Пл. Революции': {
-                        from: {
-                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
-                            ofsHor: -10,
-                            ofsVer: 30,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 126,
-                        },
-                        points: {
-                            'Пл. Революции': {
-                                anchor: 'from',
-                                dist: 30,
-                                transit: 'Театральная::Театральная::Замоскворецкая',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.center,
-                                    ofsHor: 15,
-                                    ofsVer: -1,
-                                },
-                            },
-                        },
-                    },
                     'Арбатская-Киевская': {
                         through: {
                             anchor: 'Киевская::Кольцевая',
@@ -6443,9 +6463,9 @@ var $;
                         },
                         from: {
                             anchor: 'through',
-                            ofsHor: 177,
+                            ofsHor: 163,
                         },
-                        dist: 196,
+                        dist: 182,
                         points: {
                             'Арбатская': {
                                 anchor: 'from',
@@ -6473,6 +6493,31 @@ var $;
                             'Киевская': {
                                 anchor: 'to',
                                 transit: 'Киевская::Кольцевая',
+                            },
+                        },
+                    },
+                    'Пл. Революции': {
+                        from: {
+                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
+                            ofsHor: -10,
+                            ofsVer: 30,
+                            link: 'from::Арбатская-Киевская',
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: 126,
+                        },
+                        points: {
+                            'Пл. Революции': {
+                                anchor: 'from',
+                                dist: 30,
+                                transit: 'Театральная::Театральная::Замоскворецкая',
+                                label: {
+                                    alignVer: $$.$me_align.top,
+                                    alignHor: $$.$me_align.center,
+                                    ofsHor: 15,
+                                    ofsVer: -1,
+                                },
                             },
                         },
                     },
@@ -6618,6 +6663,7 @@ var $;
                             anchor: 'Таганская::Кольцевая',
                             ofsHor: 20,
                             ofsVer: 10,
+                            link: 'to::Третьяковская',
                         },
                         through: {
                             anchor: 'Шоссе Энтузиастов::МЦК',
@@ -6715,6 +6761,7 @@ var $;
                             anchor: 'from::Парк Победы-Славянский бульвар::Арбатско-Покровская',
                             ofsVer: -15,
                             ofsHor: -20,
+                            link: 'to::Киевская-Кутузовская',
                         },
                         to: {
                             anchor: 'to::Парк Победы-Славянский бульвар::Арбатско-Покровская',
@@ -6788,6 +6835,7 @@ var $;
                     },
                     'Окская улица-Юго-Восточная': {
                         from: {
+                            link: 'to::Нижегородская улица-Стахановская',
                             anchor: 'Кузьминки::Текстильщики-Кузьминки::Таганско-Краспресненская',
                             ofsHor: 18,
                             ofsVer: -40,
@@ -6868,214 +6916,6 @@ var $;
             $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
             $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
         })($nl_scheme_will_action_enum || ($nl_scheme_will_action_enum = {}));
-        function styleType(style) {
-            const result = typeof style == 'string' ?
-                $$.$nl_scheme_style_type_enum.solid :
-                style.type || $$.$nl_scheme_style_type_enum.solid;
-            return result;
-        }
-        function styleColor(style) {
-            const result = typeof style == 'string' ?
-                style :
-                style.color;
-            return result;
-        }
-        function add_label(id, src, point_id, labels, scale, centerX, centerY, radius_station) {
-            const point_def = src[point_id];
-            if (!point_def.label)
-                return;
-            const alignHor = point_def.label.alignHor || $$.$me_align.left;
-            const alignVer = point_def.label.alignVer == null ?
-                $$.$me_align.center :
-                point_def.label.alignVer;
-            const ofsHor = point_def.label.ofsHor != null ?
-                point_def.label.ofsHor :
-                alignHor == $$.$me_align.center ? 0 :
-                    alignVer == $$.$me_align.center ? 2 : -2;
-            const ofsVer = point_def.label.ofsVer != null ?
-                point_def.label.ofsVer :
-                alignVer == $$.$me_align.center ? 0 :
-                    alignHor == $$.$me_align.center ? 2 : -2;
-            const result = labels[id([point_id])] = {
-                text: point_def.label.text || point_id,
-                ofsHor: alignHor == $$.$me_align.left ?
-                    centerX + radius_station + ofsHor * scale :
-                    alignHor == $$.$me_align.right ?
-                        centerX - radius_station - ofsHor * scale :
-                        centerX + ofsHor * scale,
-                ofsVer: alignVer == $$.$me_align.top ?
-                    centerY + radius_station + ofsVer * scale :
-                    alignVer == $$.$me_align.bottom ?
-                        centerY - radius_station - ofsVer * scale :
-                        centerY + ofsVer * scale,
-                code: point_def.code,
-                alignHor,
-                alignVer,
-                visible: true,
-                textAlign: point_def.label.textAlign,
-                whiteSpace: point_def.label.whiteSpace || 'pre',
-                lineHeight: point_def.label.lineHeight || '1.0',
-            };
-        }
-        function anchored_point(id, src, prop_name, points, scale, provider) {
-            let result;
-            if (!src[prop_name])
-                $$.$me_throw(`${id()}: .${prop_name} expected due to .type'${src.type}' `);
-            const arg = src[prop_name];
-            let point_id = typeof arg == 'string' ?
-                arg :
-                arg.anchor;
-            if (!point_id) {
-                result = { x: $$.a('.ofsHor'), y: $$.a('.ofsVer') };
-            }
-            else {
-                result = points[point_id];
-                if (!result) {
-                    const splitted_point_id = point_id.split('::');
-                    const splitted_id = id().split('::');
-                    const point_id_extended = splitted_point_id.concat(splitted_id.slice(splitted_point_id.length - 1)).join('::');
-                    if (point_id_extended == point_id) {
-                        $$.$me_throw(`points['${point_id}'] not found for ${id([prop_name])}.anchor`, points);
-                    }
-                    result = points[point_id_extended];
-                    if (!result) {
-                        $$.$me_throw(`nor points['${point_id}'] neither points['${point_id_extended}'] found for ${id([prop_name])}.anchor`, points);
-                    }
-                }
-            }
-            const props = provider && provider('props', result) || {};
-            if (typeof arg == 'string') {
-                result = Object.assign({}, props, { x: result.x, y: result.y });
-            }
-            else if (arg.angle != null) {
-                const angle = arg.angle;
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.angle`);
-                const ret = provider('circle', result);
-                if (ret == null ||
-                    typeof ret.centerX != 'number' ||
-                    typeof ret.centerY != 'number' ||
-                    typeof ret.radius != 'number' ||
-                    false)
-                    $$.$me_throw(`provider('circle') expected to return {centerX: number, centerY: number, radius: number}, not`, ret);
-                const { centerX, centerY, radius } = ret;
-                result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
-            }
-            else if (arg.dist != null) {
-                const dist = arg.dist;
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.dist`);
-                const ret = provider('line', result);
-                if (ret == null ||
-                    !ret.from ||
-                    typeof ret.from.x != 'number' ||
-                    typeof ret.from.y != 'number' ||
-                    !ret.to ||
-                    typeof ret.to.x != 'number' ||
-                    typeof ret.to.y != 'number' ||
-                    false)
-                    $$.$me_throw(`provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
-                const dx = ret.to.x - ret.from.x;
-                const dy = ret.to.y - ret.from.y;
-                const len = Math.hypot(dx, dy);
-                result = Object.assign({}, props, { x: dx / len * dist * scale + result.x, y: dy / len * dist * scale + result.y });
-            }
-            else {
-                result = Object.assign({}, props, { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
-            }
-            if (typeof arg != 'string' && arg.label) {
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.label`);
-                const ret = provider('label', result);
-                if (ret == null ||
-                    !ret.labels ||
-                    typeof ret.radius_station != 'number' ||
-                    false)
-                    $$.$me_throw(`provider('label') expected to return {labels: any, radius_station: number}, not`, ret);
-                const { labels, radius_station } = ret;
-                add_label(id, src, prop_name, labels, scale, result.x, result.y, radius_station);
-            }
-            if (typeof arg != 'string' && arg.transit) {
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.transit`);
-                const ret = provider('transit', result);
-                if (ret !== true)
-                    $$.$me_throw(`provider('transit') expected to return true, not`, ret);
-            }
-            points[id([prop_name])] = result;
-            return result;
-        }
-        function handle_pinch(scale_new, pinch_center, prop_name = '.scale') {
-            handle_helper(p => {
-                const width = p.width;
-                const height = p.height;
-                const scale = $$.a(prop_name);
-                p.width = width / scale * scale_new;
-                p.height = height / scale * scale_new;
-                const width_max = 3500;
-                const height_max = 3500;
-                const width_netto = p.width_upper - 2 * p.padding_Hor;
-                const height_netto = p.height_upper - 2 * p.padding_Ver;
-                if (p.width < width_netto &&
-                    p.height < height_netto &&
-                    true) {
-                    p.scale = Math.min(width_netto / width * scale, height_netto / height * scale);
-                }
-                else if (p.width > width_max && p.height > height_max) {
-                    p.scale = Math.max(width_max / width * scale, height_max / height * scale);
-                }
-                else {
-                    p.scale = scale_new;
-                }
-                if (pinch_center.x < p.ofsHor) {
-                    pinch_center.x = p.ofsHor;
-                }
-                else if (pinch_center.x > p.ofsHor + width) {
-                    pinch_center.x = p.ofsHor + width;
-                }
-                $$.a(prop_name, p.scale);
-                p.width = $$.a('.width_initial') * p.scale;
-                p.height = $$.a('.height_initial') * p.scale;
-                p.ofsHor += (scale - p.scale) * pinch_center.x;
-                p.ofsVer += (scale - p.scale) * pinch_center.y;
-            });
-        }
-        function handle_move(deltaX, deltaY) {
-            handle_helper(p => {
-                p.ofsHor -= deltaX;
-                p.ofsVer -= deltaY;
-            });
-        }
-        function handle_helper(fn) {
-            const width_upper = $$.a('<.#width');
-            const height_upper = $$.a('<.#height');
-            const padding_Hor = $$.a('.ofsHor_initial');
-            const padding_Ver = $$.a('.ofsVer_initial');
-            const p = {
-                ofsHor: $$.a('.ofsHor'),
-                ofsVer: $$.a('.ofsVer'),
-                width: $$.a('.width'),
-                height: $$.a('.height'),
-                scale: $$.a('.scale'),
-                width_upper,
-                height_upper,
-                padding_Hor,
-                padding_Ver,
-            };
-            fn(p);
-            const ofsHor_max = Math.max($$.a('.ofsHor_initial'), (p.width_upper - p.width) / 2);
-            const ofsHor_min = p.width_upper >= p.width ?
-                (p.width_upper - p.width) / 2 :
-                p.width_upper - $$.a('.ofsHor_initial') - p.width;
-            const ofsVer_max = Math.max($$.a('.ofsVer_initial'), (p.height_upper - p.height) / 2);
-            const ofsVer_min = p.height_upper >= p.height ?
-                (p.height_upper - p.height) / 2 :
-                p.height_upper - $$.a('.ofsVer_initial') - p.height;
-            p.ofsHor = Math.round(Math.min(ofsHor_max, Math.max(ofsHor_min, p.ofsHor)));
-            p.ofsVer = Math.round(Math.min(ofsVer_max, Math.max(ofsVer_min, p.ofsVer)));
-            $$.a('.ofsHor', p.ofsHor);
-            $$.a('.ofsVer', p.ofsVer);
-        }
         $$.$nl_scheme_metro = {
             style: {
                 userSelect: () => 'none',
@@ -7402,61 +7242,45 @@ var $;
                                 const thick_transit = $$.a('.thick_transit') * scale;
                                 const thick_line = $$.a('.thick_line') * scale;
                                 const radius_station = $$.a('.radius_station') * scale;
-                                const lines = $$.a('.data');
                                 const labels = $$.a('<<.labels') || {};
                                 for (const label_id in labels) {
                                     labels[label_id].visible = false;
                                 }
-                                const anchored_point_provider = (req, result, p) => {
-                                    if (req == 'props') {
-                                        const type = p.point_def.type || 'circle';
-                                        return type != 'circle' ? { type } : {
-                                            type,
-                                            visible: true,
-                                            color: styleColor(p.line_def.style),
-                                            code: p.point_def.code,
-                                        };
-                                    }
-                                    if (req == 'label') {
-                                        return {
-                                            labels,
-                                            radius_station,
-                                        };
-                                    }
-                                    if (req == 'transit') {
-                                        const anchors = typeof p.point_def.transit == 'string' ?
-                                            [p.point_def.transit] :
-                                            Array.isArray(p.point_def.transit) ?
-                                                p.point_def.transit :
-                                                $$.$me_throw('unsupported .transit', p.point_def.transit);
-                                        for (const anchor of anchors) {
-                                            const point_to = points[anchor];
-                                            if (point_to.type != 'circle')
-                                                $$.$me_throw(`.anchor'${p.id([p.point_id, 'transit'])}' of ${anchor} must refer to point with .type'circle', not`, point_to);
-                                            const dx = point_to.x - result.x;
-                                            const dy = point_to.y - result.y;
-                                            const len = Math.hypot(dx, dy);
-                                            const gradient = ctx.createLinearGradient((result.x + dx / len * radius_station) * pixelRatio, (result.y + dy / len * radius_station) * pixelRatio, (point_to.x - dx / len * radius_station) * pixelRatio, (point_to.y - dy / len * radius_station) * pixelRatio);
-                                            gradient.addColorStop(0, styleColor(p.line_def.style));
-                                            gradient.addColorStop(1, point_to.color);
-                                            ctx.beginPath();
-                                            ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
-                                            ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
-                                            ctx.strokeStyle = gradient;
-                                            ctx.lineWidth = thick_transit * pixelRatio;
-                                            ctx.stroke();
+                                const points = $$.a('<<.points') || {};
+                                for (const point_id in points) {
+                                    points[point_id].visible = false;
+                                }
+                                const lines = {};
+                                const main = () => {
+                                    const items = $$.a('.data');
+                                    for (const item_id in items) {
+                                        const item_def = items[item_id];
+                                        if (~Object.keys(segment_helper).indexOf(item_def.type)) {
+                                            segment(item_def, item_def, [item_id]);
                                         }
-                                        return true;
+                                        else if (item_def.type == null || item_def.type == 'segments') {
+                                            segments(item_def, item_def, [item_id]);
+                                        }
+                                        else
+                                            $$.$me_throw('unsupported item_def.type', item_def.type);
+                                    }
+                                    $$.a('<<.points', points, true);
+                                    $$.a('<<.labels', labels, true);
+                                };
+                                const segments = (line_def, group_def, id_items) => {
+                                    for (const segment_id in group_def.segments) {
+                                        const segment_def = group_def.segments[segment_id];
+                                        segment(line_def, segment_def, id_items.concat(segment_id));
                                     }
                                 };
-                                const prepare_point = (prop_names, id, segment_def, points, scale) => {
-                                    const result = {};
-                                    for (const prop_name in segment_def) {
-                                        if (!~prop_names.indexOf(prop_name))
-                                            continue;
-                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale);
+                                const segment = (line_def, segment_def, id_items) => {
+                                    const fn = segment_helper[segment_def.type || 'line'];
+                                    if (!fn) {
+                                        $$.$me_throw('unsupported segment_def.type', segment_def.type);
                                     }
-                                    return result;
+                                    else {
+                                        fn(line_def, segment_def, (tail) => id_items.concat(!tail ? [] : tail).reverse().join('::'));
+                                    }
                                 };
                                 const segment_helper = {
                                     circle: (line_def, segment_def, id) => {
@@ -7518,33 +7342,24 @@ var $;
                                     },
                                     line: (line_def, segment_def, id) => {
                                         const p = prepare_point(['from', 'to', 'through'], id, segment_def, points, scale);
-                                        if (p['from'] && p['to'] && p['through']) {
+                                        if (p.from && p.to && p.through) {
                                             $$.$me_throw('.through is not expected whilst .from and .to are set');
                                         }
-                                        else if (!p['to']) {
-                                            if (!(p['from'] && p['through'] && segment_def.dist))
+                                        else if (!p.to) {
+                                            if (!(p.from && p.through && segment_def.dist))
                                                 $$.$me_throw(id() + ': .from, .through and .dist must be set whilst .to is absent');
-                                            const dx = p.through.x - p.from.x;
-                                            const dy = p.through.y - p.from.y;
-                                            const len = Math.hypot(dx, dy);
-                                            const dist = segment_def.dist;
-                                            points[id(['to'])] = p['to'] = {
-                                                x: p.from.x + dx / len * dist * scale,
-                                                y: p.from.y + dy / len * dist * scale,
-                                            };
+                                            points[id(['to'])] = p.to = $$.$me_vector_transform({ from: p.from, to: p.through }, segment_def.dist * scale).to;
                                         }
-                                        else if (!p['from']) {
-                                            if (!(p['to'] && p['through']) && segment_def.dist)
+                                        else if (!p.from) {
+                                            if (!(p.to && p.through) && segment_def.dist)
                                                 $$.$me_throw('.to, .through and .dist must be set whilst .from is absent');
                                             const dx = p.through.x - p.to.x;
                                             const dy = p.through.y - p.to.y;
                                             const len = Math.hypot(dx, dy);
                                             const dist = segment_def.dist;
-                                            points[id(['from'])] = p['from'] = {
-                                                x: p.to.x - dx / len * dist * scale,
-                                                y: p.to.y - dy / len * dist * scale,
-                                            };
+                                            points[id(['from'])] = p.from = $$.$me_vector_transform({ from: p.to, to: p.through }, -segment_def.dist * scale).to;
                                         }
+                                        const line = lines[id()] = { from: p.from, to: p.to };
                                         ctx.beginPath();
                                         ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
                                         ctx.lineTo(p.to.x * pixelRatio, p.to.y * pixelRatio);
@@ -7552,6 +7367,46 @@ var $;
                                         ctx.strokeStyle = styleColor(line_def.style);
                                         ctx.lineWidth = thick_line * pixelRatio;
                                         ctx.stroke();
+                                        for (const link_prop of ['from', 'to']) {
+                                            const link = !segment_def[link_prop] ?
+                                                null :
+                                                segment_def[link_prop].hasOwnProperty('link') ?
+                                                    segment_def[link_prop].link :
+                                                    segment_def[link_prop].hasOwnProperty('anchor') &&
+                                                        (() => {
+                                                            const splitted = segment_def[link_prop].anchor.split('::');
+                                                            return splitted.length == 2 && (splitted[0] == 'from' || splitted[0] == 'to');
+                                                        })() ?
+                                                        segment_def[link_prop].anchor :
+                                                        null;
+                                            if (!link)
+                                                continue;
+                                            const point_id = get_point_id(link, points, id, () => `${id}.${link_prop}.link`);
+                                            const [line_link_prop, line_link_id] = point_id.startsWith('to::') ? [point_id.slice(0, 2), point_id.slice(4)] :
+                                                point_id.startsWith('from::') ? [point_id.slice(0, 4), point_id.slice(6)] :
+                                                    $$.$me_throw(`${id()}.${link_prop}.link'${link}': must start with 'to::' or '::from'`);
+                                            let line_link = lines[line_link_id];
+                                            if (!line_link)
+                                                $$.$me_throw(`${id()}.${link_prop}.link'${link}': lines['${line_link_id}'] not found`);
+                                            line_link = line_link_prop == 'from' ? line_link : $$.$me_vector_revert(line_link);
+                                            const intersection_result = intersection(line, line_link);
+                                            ctx.beginPath();
+                                            ctx.moveTo(line_link.from.x * pixelRatio, line_link.from.y * pixelRatio);
+                                            if (intersection_result && (intersection_result.gamma <= 0 && (link_prop == 'from' ?
+                                                intersection_result.lambda <= 1 :
+                                                intersection_result.lambda >= 0))) {
+                                                ctx.quadraticCurveTo(intersection_result.point.x * pixelRatio, intersection_result.point.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            else {
+                                                const dist = -Math.hypot(line_link.from.x - line.from.x, line_link.from.y - line.from.y) / 2;
+                                                const control_point = $$.$me_vector_transform(line_link, dist).to;
+                                                const control_point2 = $$.$me_vector_transform(line, dist).to;
+                                                ctx.bezierCurveTo(control_point.x * pixelRatio, control_point.y * pixelRatio, control_point2.x * pixelRatio, control_point2.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            ctx.strokeStyle = styleColor(line_def.style);
+                                            ctx.lineWidth = thick_line * pixelRatio;
+                                            ctx.stroke();
+                                        }
                                         for (const point_id in segment_def.points) {
                                             const point_def = segment_def.points[point_id];
                                             const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
@@ -7567,38 +7422,88 @@ var $;
                                         }
                                     },
                                 };
-                                const segment = (line_def, segment_def, id_items) => {
-                                    const fn = segment_helper[segment_def.type || 'line'];
-                                    if (!fn) {
-                                        $$.$me_throw('unsupported segment_def.type', segment_def.type);
+                                function intersection(v, v2) {
+                                    const a = v.from.x;
+                                    const b = v.from.y;
+                                    const c = v.to.x;
+                                    const d = v.to.y;
+                                    const p = v2.from.x;
+                                    const q = v2.from.y;
+                                    const r = v2.to.x;
+                                    const s = v2.to.y;
+                                    var det, gamma, lambda;
+                                    det = (c - a) * (s - q) - (r - p) * (d - b);
+                                    if (det === 0) {
+                                        return null;
                                     }
                                     else {
-                                        fn(line_def, segment_def, (tail) => id_items.concat(!tail ? [] : tail).reverse().join('::'));
+                                        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+                                        gamma = 1 - ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+                                        const result = {
+                                            lambda,
+                                            gamma,
+                                            point: {
+                                                x: (1 - lambda) * v.from.x + lambda * v.to.x,
+                                                y: (1 - lambda) * v.from.y + lambda * v.to.y,
+                                            },
+                                        };
+                                        return result;
+                                    }
+                                }
+                                const anchored_point_provider = (req, result, p) => {
+                                    if (req == 'props') {
+                                        const type = p.point_def.type || 'circle';
+                                        return type != 'circle' ? { type } : {
+                                            type,
+                                            visible: true,
+                                            color: styleColor(p.line_def.style),
+                                            code: p.point_def.code,
+                                        };
+                                    }
+                                    if (req == 'label') {
+                                        return {
+                                            labels,
+                                            radius_station,
+                                        };
+                                    }
+                                    if (req == 'transit') {
+                                        const anchors = typeof p.point_def.transit == 'string' ?
+                                            [p.point_def.transit] :
+                                            Array.isArray(p.point_def.transit) ?
+                                                p.point_def.transit :
+                                                $$.$me_throw('unsupported .transit', p.point_def.transit);
+                                        for (const anchor of anchors) {
+                                            const point_to = points[anchor];
+                                            if (point_to.type != 'circle')
+                                                $$.$me_throw(`.anchor'${p.id([p.point_id, 'transit'])}' of ${anchor} must refer to point with .type'circle', not`, point_to);
+                                            const dx = point_to.x - result.x;
+                                            const dy = point_to.y - result.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const gradient_from = $$.$me_vector_transform({ from: result, to: point_to }, radius_station);
+                                            const gradient_to = $$.$me_vector_transform({ from: point_to, to: result }, radius_station);
+                                            const gradient = ctx.createLinearGradient(gradient_from.to.x * pixelRatio, gradient_from.to.y * pixelRatio, gradient_to.to.x * pixelRatio, gradient_to.to.y * pixelRatio);
+                                            gradient.addColorStop(0, styleColor(p.line_def.style));
+                                            gradient.addColorStop(1, point_to.color);
+                                            ctx.beginPath();
+                                            ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
+                                            ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
+                                            ctx.strokeStyle = gradient;
+                                            ctx.lineWidth = thick_transit * pixelRatio;
+                                            ctx.stroke();
+                                        }
+                                        return true;
                                     }
                                 };
-                                const segments = (line_def, group_def, id_items) => {
-                                    for (const segment_id in group_def.segments) {
-                                        const segment_def = group_def.segments[segment_id];
-                                        segment(line_def, segment_def, id_items.concat(segment_id));
+                                const prepare_point = (prop_names, id, segment_def, points, scale) => {
+                                    const result = {};
+                                    for (const prop_name in segment_def) {
+                                        if (!~prop_names.indexOf(prop_name))
+                                            continue;
+                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale);
                                     }
+                                    return result;
                                 };
-                                const points = $$.a('<<.points') || {};
-                                for (const point_id in points) {
-                                    points[point_id].visible = false;
-                                }
-                                for (const line_id in lines) {
-                                    const line_def = lines[line_id];
-                                    if (~Object.keys(segment_helper).indexOf(line_def.type)) {
-                                        segment(line_def, line_def, [line_id]);
-                                    }
-                                    else if (line_def.type == null || line_def.type == 'segments') {
-                                        segments(line_def, line_def, [line_id]);
-                                    }
-                                    else
-                                        $$.$me_throw('unsupported line_def.type', line_def.type);
-                                }
-                                $$.a('<<.points', points, true);
-                                $$.a('<<.labels', labels, true);
+                                main();
                                 return true;
                             },
                         }),
@@ -7606,6 +7511,215 @@ var $;
                 }),
             },
         };
+        function styleType(style) {
+            const result = typeof style == 'string' ?
+                $$.$nl_scheme_style_type_enum.solid :
+                style.type || $$.$nl_scheme_style_type_enum.solid;
+            return result;
+        }
+        function styleColor(style) {
+            const result = typeof style == 'string' ?
+                style :
+                style.color;
+            return result;
+        }
+        function add_label(id, src, point_id, labels, scale, centerX, centerY, radius_station) {
+            const point_def = src[point_id];
+            if (!point_def.label)
+                return;
+            const alignHor = point_def.label.alignHor || $$.$me_align.left;
+            const alignVer = point_def.label.alignVer == null ?
+                $$.$me_align.center :
+                point_def.label.alignVer;
+            const ofsHor = point_def.label.ofsHor != null ?
+                point_def.label.ofsHor :
+                alignHor == $$.$me_align.center ? 0 :
+                    alignVer == $$.$me_align.center ? 2 : -2;
+            const ofsVer = point_def.label.ofsVer != null ?
+                point_def.label.ofsVer :
+                alignVer == $$.$me_align.center ? 0 :
+                    alignHor == $$.$me_align.center ? 2 : -2;
+            const result = labels[id([point_id])] = {
+                text: point_def.label.text || point_id,
+                ofsHor: alignHor == $$.$me_align.left ?
+                    centerX + radius_station + ofsHor * scale :
+                    alignHor == $$.$me_align.right ?
+                        centerX - radius_station - ofsHor * scale :
+                        centerX + ofsHor * scale,
+                ofsVer: alignVer == $$.$me_align.top ?
+                    centerY + radius_station + ofsVer * scale :
+                    alignVer == $$.$me_align.bottom ?
+                        centerY - radius_station - ofsVer * scale :
+                        centerY + ofsVer * scale,
+                code: point_def.code,
+                alignHor,
+                alignVer,
+                visible: true,
+                textAlign: point_def.label.textAlign,
+                whiteSpace: point_def.label.whiteSpace || 'pre',
+                lineHeight: point_def.label.lineHeight || '1.0',
+            };
+        }
+        function get_point_id(point_id, points, id, err) {
+            let result = point_id;
+            if (!points[point_id]) {
+                const splitted_point_id = point_id.split('::');
+                const splitted_id = id().split('::');
+                const point_id_extended = splitted_point_id.concat(splitted_id.slice(splitted_point_id.length - 1)).join('::');
+                if (point_id_extended == point_id) {
+                    $$.$me_throw(`points['${point_id}'] not found for ${err()}`, points);
+                }
+                result = point_id_extended;
+                if (!points[point_id_extended]) {
+                    $$.$me_throw(`nor points['${point_id}'] neither points['${point_id_extended}'] found for ${err()}`, points);
+                }
+            }
+            return result;
+        }
+        function anchored_point(id, src, prop_name, points, scale, provider) {
+            let result;
+            if (!src[prop_name])
+                $$.$me_throw(`${id()}: .${prop_name} expected due to .type'${src.type}' `);
+            const arg = src[prop_name];
+            let point_id = typeof arg == 'string' ?
+                arg :
+                arg.anchor;
+            if (!point_id) {
+                result = { x: $$.a('.ofsHor'), y: $$.a('.ofsVer') };
+            }
+            else {
+                result = points[get_point_id(point_id, points, id, () => `${id([prop_name])}.anchor`)];
+            }
+            const props = provider && provider('props', result) || {};
+            if (typeof arg == 'string') {
+                result = Object.assign({}, props, { x: result.x, y: result.y });
+            }
+            else if (arg.angle != null) {
+                const angle = arg.angle;
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.angle`);
+                const ret = provider('circle', result);
+                if (ret == null ||
+                    typeof ret.centerX != 'number' ||
+                    typeof ret.centerY != 'number' ||
+                    typeof ret.radius != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('circle') expected to return {centerX: number, centerY: number, radius: number}, not`, ret);
+                const { centerX, centerY, radius } = ret;
+                result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
+            }
+            else if (arg.dist != null) {
+                const dist = arg.dist;
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.dist`);
+                const ret = provider('line', result);
+                if (ret == null ||
+                    !ret.from ||
+                    typeof ret.from.x != 'number' ||
+                    typeof ret.from.y != 'number' ||
+                    !ret.to ||
+                    typeof ret.to.x != 'number' ||
+                    typeof ret.to.y != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
+                result = Object.assign({}, props, $$.$me_vector_transform(ret, dist * scale, result).to);
+            }
+            else {
+                result = Object.assign({}, props, { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
+            }
+            if (typeof arg != 'string' && arg.label) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.label`);
+                const ret = provider('label', result);
+                if (ret == null ||
+                    !ret.labels ||
+                    typeof ret.radius_station != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('label') expected to return {labels: any, radius_station: number}, not`, ret);
+                const { labels, radius_station } = ret;
+                add_label(id, src, prop_name, labels, scale, result.x, result.y, radius_station);
+            }
+            if (typeof arg != 'string' && arg.transit) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.transit`);
+                const ret = provider('transit', result);
+                if (ret !== true)
+                    $$.$me_throw(`provider('transit') expected to return true, not`, ret);
+            }
+            points[id([prop_name])] = result;
+            return result;
+        }
+        function handle_pinch(scale_new, pinch_center, prop_name = '.scale') {
+            handle_helper(p => {
+                const width = p.width;
+                const height = p.height;
+                const scale = $$.a(prop_name);
+                p.width = width / scale * scale_new;
+                p.height = height / scale * scale_new;
+                const width_max = 3500;
+                const height_max = 3500;
+                const width_netto = p.width_upper - 2 * p.padding_Hor;
+                const height_netto = p.height_upper - 2 * p.padding_Ver;
+                if (p.width < width_netto &&
+                    p.height < height_netto &&
+                    true) {
+                    p.scale = Math.min(width_netto / width * scale, height_netto / height * scale);
+                }
+                else if (p.width > width_max && p.height > height_max) {
+                    p.scale = Math.max(width_max / width * scale, height_max / height * scale);
+                }
+                else {
+                    p.scale = scale_new;
+                }
+                if (pinch_center.x < p.ofsHor) {
+                    pinch_center.x = p.ofsHor;
+                }
+                else if (pinch_center.x > p.ofsHor + width) {
+                    pinch_center.x = p.ofsHor + width;
+                }
+                $$.a(prop_name, p.scale);
+                p.width = $$.a('.width_initial') * p.scale;
+                p.height = $$.a('.height_initial') * p.scale;
+                p.ofsHor += (scale - p.scale) * pinch_center.x;
+                p.ofsVer += (scale - p.scale) * pinch_center.y;
+            });
+        }
+        function handle_move(deltaX, deltaY) {
+            handle_helper(p => {
+                p.ofsHor -= deltaX;
+                p.ofsVer -= deltaY;
+            });
+        }
+        function handle_helper(fn) {
+            const width_upper = $$.a('<.#width');
+            const height_upper = $$.a('<.#height');
+            const padding_Hor = $$.a('.ofsHor_initial');
+            const padding_Ver = $$.a('.ofsVer_initial');
+            const p = {
+                ofsHor: $$.a('.ofsHor'),
+                ofsVer: $$.a('.ofsVer'),
+                width: $$.a('.width'),
+                height: $$.a('.height'),
+                scale: $$.a('.scale'),
+                width_upper,
+                height_upper,
+                padding_Hor,
+                padding_Ver,
+            };
+            fn(p);
+            const ofsHor_max = Math.max($$.a('.ofsHor_initial'), (p.width_upper - p.width) / 2);
+            const ofsHor_min = p.width_upper >= p.width ?
+                (p.width_upper - p.width) / 2 :
+                p.width_upper - $$.a('.ofsHor_initial') - p.width;
+            const ofsVer_max = Math.max($$.a('.ofsVer_initial'), (p.height_upper - p.height) / 2);
+            const ofsVer_min = p.height_upper >= p.height ?
+                (p.height_upper - p.height) / 2 :
+                p.height_upper - $$.a('.ofsVer_initial') - p.height;
+            p.ofsHor = Math.round(Math.min(ofsHor_max, Math.max(ofsHor_min, p.ofsHor)));
+            p.ofsVer = Math.round(Math.min(ofsVer_max, Math.max(ofsVer_min, p.ofsVer)));
+            $$.a('.ofsHor', p.ofsHor);
+            $$.a('.ofsVer', p.ofsVer);
+        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //metro.js.map
