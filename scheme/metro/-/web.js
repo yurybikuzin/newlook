@@ -5030,7 +5030,7 @@ var $;
                         angle: 194,
                     },
                     'Белорусская': {
-                        angle: 210,
+                        angle: 220,
                         code: 'ru-msk-metro-belorusskaya-belorusskaya',
                         label: {
                             alignHor: $$.$me_align.right,
@@ -5174,7 +5174,7 @@ var $;
                         },
                     },
                     'Хорошёво': {
-                        angle: 200,
+                        angle: 196,
                         code: 'ru-msk-metro-polejaevskaya',
                         label: {
                             alignHor: $$.$me_align.right,
@@ -5806,7 +5806,7 @@ var $;
                 style: '#9A6191',
                 type: 'segments',
                 segments: {
-                    'Планерная-Октябрьское поле': {
+                    'Север': {
                         from: {
                             anchor: 'Панфиловская::МЦК',
                             ofsHor: -27,
@@ -5858,7 +5858,7 @@ var $;
                     },
                     'Полежаевская-Улица 1905 года': {
                         from: {
-                            anchor: 'from::Планерная-Октябрьское поле',
+                            anchor: 'from::Север',
                             ofsHor: 20,
                             ofsVer: 30,
                         },
@@ -5866,6 +5866,20 @@ var $;
                             anchor: 'from::Баррикадная-Кузнецкий мост',
                             ofsHor: -40,
                             ofsVer: -20,
+                        },
+                        points: {
+                            'Полежаевская': {
+                                anchor: 'from',
+                                label: {
+                                    alignVer: $$.$me_align.bottom,
+                                    ofsHor: 35,
+                                    alignHor: $$.$me_align.center,
+                                    ofsVer: 2,
+                                    text: 'Полеж<br>аевская',
+                                    textAlign: 'right',
+                                },
+                                transit: 'Хорошёво::МЦК',
+                            },
                         },
                     },
                     'Китай-город-Волгоградский проспект': {
@@ -6063,6 +6077,12 @@ var $;
                             anchor: 'from',
                             ofsVer: 280,
                             link: 'from::Чеховская-Цветной бульвар 2',
+                        },
+                        points: {
+                            'Савёловская': {
+                                anchor: 'to',
+                                dist: -70,
+                            },
                         },
                     },
                     'Серпуховскaя-Бульвар Дмитрия Донского': {
@@ -6319,6 +6339,12 @@ var $;
                             anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
                             ofsHor: -30,
                             ofsVer: 5,
+                        },
+                        points: {
+                            'Динамо': {
+                                anchor: 'from',
+                                dist: 20,
+                            },
                         },
                     },
                     'Театральная': {
@@ -6781,6 +6807,7 @@ var $;
                         },
                         points: {
                             'Фили': {
+                                type: 'anchor',
                                 anchor: 'from',
                                 label: {},
                             },
@@ -6899,6 +6926,75 @@ var $;
                         },
                     },
                 }
+            },
+            'Большая кольцевая': {
+                style: '#51AFA6',
+                segments: {
+                    'Савёловская': {
+                        from: {
+                            anchor: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
+                            ofsVer: 12,
+                            ofsHor: -15,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: -40,
+                        },
+                        points: {
+                            'Савёловская': {
+                                anchor: 'from',
+                                transit: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
+                            },
+                        },
+                    },
+                    'Петровский парк-ЦСКА': {
+                        from: {
+                            anchor: 'to::Савёловская',
+                            ofsHor: -20,
+                            ofsVer: 5,
+                        },
+                        through: {
+                            anchor: 'Динамо::Динамо-Тверская::Замоскворецкая',
+                            ofsVer: -20,
+                        },
+                        dist: 210,
+                        points: {
+                            'Петровский парк': {
+                                anchor: 'through',
+                                transit: 'Динамо::Динамо-Тверская::Замоскворецкая',
+                            },
+                            'ЦСКА': {
+                                anchor: 'Петровский парк',
+                                dist: 60,
+                                label: {
+                                    alignHor: $$.$me_align.center,
+                                    alignVer: $$.$me_align.top,
+                                },
+                            },
+                        },
+                    },
+                    'Хорошёвская': {
+                        from: {
+                            anchor: 'to::Петровский парк-ЦСКА',
+                            ofsHor: -40,
+                            ofsVer: 20,
+                        },
+                        to: {
+                            anchor: 'from',
+                            ofsHor: -60,
+                        },
+                        points: {
+                            'Хорошёвская': {
+                                anchor: 'from',
+                                dist: 20,
+                                transit: [
+                                    'Полежаевская::Полежаевская-Улица 1905 года::Таганско-Краспресненская',
+                                    'Хорошёво::МЦК',
+                                ],
+                            },
+                        },
+                    },
+                },
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
