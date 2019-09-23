@@ -6162,7 +6162,7 @@ var $;
                         '#ofsHor': '.em',
                         '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
                         '#width': () => 619,
-                        '#height': () => 243,
+                        '#height': () => 300,
                     },
                     elem: {
                         title: () => ({
@@ -6183,6 +6183,7 @@ var $;
                         more: () => ({
                             prop: {
                                 '#width': () => null,
+                                '#height': () => null,
                                 '#ofsVer': '.em',
                                 '#ofsHor': '.em',
                                 '#alignHor': () => $$.$me_align.right,
@@ -6200,6 +6201,32 @@ var $;
                                 },
                             },
                         }),
+                        news1: () => ({
+                            base: news_item,
+                            prop: {
+                                '#ofsHor': '.em',
+                                '#ofsVer': () => 46,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                caption: () => 'Функционал Объявлений только от Собственников',
+                                imageUrl: () => 'https://baza-winner.ru/img/news/thumbnail/sob.jpg',
+                                text: () => 'Вы можете искать собственников очень просто на всех площадках по недвижимости в один клик, всего лишь поставьте галочку "Только от собственников" на форме фильтров.',
+                                url: () => 'https://alpha0.baza-winner.ru/item?guid=139',
+                                date: () => '11.06.2019',
+                            }
+                        }),
+                        news2: () => ({
+                            base: news_item,
+                            prop: {
+                                '#ofsHor': '.em',
+                                '#ofsVer': $$.$me_atom2_prop(['<@news1.#ofsVer', '<@news1.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + 100 + ofs2),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                caption: () => '27 мая в Москве пройдет конференция, организованная ГРМ и Райффайзен банком.',
+                                imageUrl: () => 'http://baza-winner.ru/img/news/thumbnail/conferense.png',
+                                text: () => 'Ипотечные продукты, налоги, связанные с приобретением недвижимости, и практические вопросы о риэлторской деятельности.',
+                                url: () => 'https://alpha0.baza-winner.ru/item?guid=137',
+                                date: () => '15.05.2019',
+                            }
+                        })
                     },
                 }),
                 orders: () => ({
@@ -6492,6 +6519,96 @@ var $;
                     },
                 }),
             },
+        };
+        const news_item = {
+            prop: {
+                '#height': () => 100,
+                caption: $$.$me_atom2_prop_abstract(),
+                imageUrl: $$.$me_atom2_prop_abstract(),
+                text: $$.$me_atom2_prop_abstract(),
+                url: $$.$me_atom2_prop_abstract(),
+                date: $$.$me_atom2_prop_abstract(),
+            },
+            elem: {
+                image: () => ({
+                    node: 'img',
+                    prop: {
+                        '#width': () => 130,
+                        '#height': () => 97,
+                        '#ofsHor': () => 0,
+                        '#ofsVer': () => 0,
+                    },
+                    attr: {
+                        src: '<.imageUrl',
+                    },
+                }),
+                title: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsVer': '<@icon1.#ofsVer',
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                    },
+                    style: {
+                        fontFamily: () => 'system-ui',
+                        fontSize: () => 12,
+                        fontWeight: () => 500,
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    },
+                }),
+                text: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': $$.$me_atom2_prop(['<.#width', '<@image.#width', '.em'], ({ masters: [width, img_width, ofs] }) => width - img_width - ofs),
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer', '<@title.#height'], ({ masters: [ofs, height] }) => ofs + height + 10),
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                    },
+                    style: {
+                        fontFamily: () => 'system-ui',
+                        fontSize: () => 12,
+                        fontWeight: () => 400,
+                    },
+                    dom: {
+                        innerText: '<.text',
+                    },
+                }),
+                more: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                        '#cursor': () => 'pointer',
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        fontSize: () => 12,
+                    },
+                    dom: {
+                        innerText: () => 'Подробнее'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log('link');
+                            return true;
+                        },
+                    },
+                }),
+                date: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
+                        '#alignHor': () => $$.$me_align.right,
+                        fontSize: () => 10,
+                    },
+                    dom: {
+                        innerText: '<.date'
+                    },
+                    style: {
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#6a6c74' : '#d0d0d0'),
+                    },
+                }),
+            }
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
