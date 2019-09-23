@@ -2501,7 +2501,9 @@ var $;
                             }
                             if ((lazy_prop_to_apply === $me_atom2_elem._lazy_prop_to_apply_clientRect) ||
                                 (elem.node.style.width == 'auto' || elem.node.style.height == 'auto') && (elem_props['sfontSize'] !== void 0 ||
-                                    elem_props['dinnerText'] !== void 0)) {
+                                    elem_props['dinnerText'] !== void 0 ||
+                                    elem_props['dinnerHTML'] !== void 0 ||
+                                    false)) {
                                 elem.invalidateClientRect();
                             }
                             lazy_prop_to_apply.delete(path);
@@ -2539,7 +2541,7 @@ var $;
             static _lazy_prop_style_px(prop) {
                 if (!$me_atom2_elem._lazy_prop_style_px_cache) {
                     $me_atom2_elem._lazy_prop_style_px_cache = {};
-                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius', 'borderWidth'];
+                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius', 'borderWidth', 'borderTopLeftRadius', 'borderBottomLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderRightWidth', 'borderLeftWidth', 'borderTopWidth', 'borderBottomWidth'];
                     const sides = ['left', 'top', 'right', 'bottom'];
                     pxStyleProps.push(...sides);
                     pxStyleProps.push('margin');
@@ -14597,6 +14599,231 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_select_elem = {
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                colorBorder: $$.$me_atom2_prop_abstract(),
+                colorBorderSelected: $$.$me_atom2_prop_abstract(),
+                colorText: $$.$me_atom2_prop_abstract(),
+                colorTextSelected: $$.$me_atom2_prop_abstract(),
+                colorBackground: $$.$me_atom2_prop_abstract(),
+                colorBackgroundSelected: $$.$me_atom2_prop_abstract(),
+                borderRadius: $$.$me_atom2_prop_abstract(),
+                borderWidth: $$.$me_atom2_prop_abstract(),
+                '#width': $$.$me_atom2_prop_abstract(),
+                '#height': $$.$me_atom2_prop_abstract(),
+                option_width_min: $$.$me_atom2_prop_abstract(),
+                fontFamily: $$.$me_atom2_prop_abstract(),
+                fontWeight: $$.$me_atom2_prop_abstract(),
+                fontWeightSelected: $$.$me_atom2_prop_abstract(),
+                fontSize: $$.$me_atom2_prop_abstract(),
+                no_adjust: () => false,
+                itemAlignHor: () => $$.$me_align.center,
+                itemAlignVer: () => $$.$me_align.center,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                _option_width: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [option_ids] }) => {
+                    const result = ['.no_adjust', '.option_ids', '.options', '.value', '.#width', '.option_width_min'];
+                    for (const id of option_ids)
+                        result.push(`^option[${id}]._textWidth`, `^option[${id}].paddingLeft`, `^option[${id}].paddingRight`);
+                    return result;
+                }), ({ masters, prev }) => {
+                    const [no_adjust, option_ids, options, value, width_total, option_width_min] = masters;
+                    if (no_adjust && prev)
+                        return prev;
+                    const masters_base = 6;
+                    const width = {};
+                    let width_sum = 0;
+                    let width_excess_base = 0;
+                    const ids = [];
+                    let w;
+                    for (let i = 0; i < option_ids.length; i++) {
+                        const id = option_ids[i];
+                        const caption = $$.$me_option_caption(id, options, value);
+                        const isSpecifiedWidth = typeof caption != 'string' &&
+                            caption &&
+                            typeof caption.width == 'number';
+                        const w = width[id] =
+                            isSpecifiedWidth ?
+                                caption.width :
+                                Math.max(option_width_min, masters[masters_base + i * 3] + masters[masters_base + 1 + i * 3] + masters[masters_base + 2 + i * 3]);
+                        width_sum += w;
+                        if (!isSpecifiedWidth) {
+                            width_excess_base += w;
+                            ids.push(id);
+                        }
+                    }
+                    const width_excess = width_total - width_sum;
+                    for (const id of ids)
+                        width[id] *= (1 + width_excess / width_excess_base);
+                    return width;
+                }),
+                option_width: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['._option_width'] }, ({ key: [id], masters: [width] }) => width[id]),
+                option_left: $$.$me_atom2_prop({
+                    keys: ['.option_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.option_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        const result = [];
+                        if (!idx)
+                            return result;
+                        for (let i = 0; i < idx; i++)
+                            result.push(`.option_width[${ids[i]}]`);
+                        return result;
+                    }),
+                }, $$.$me_atom2_prop_compute_fn_sum()),
+                idx_selected: $$.$me_atom2_prop(['.option_ids', '.value'], ({ masters: [ids, id] }) => typeof id == 'string' ? [ids.indexOf(id)].filter(idx => ~idx) :
+                    id instanceof Set ? [...id].map((id) => ids.indexOf(id)).filter(idx => ~idx) :
+                        []),
+            },
+            event: {},
+            elem: {
+                option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                    prop: {
+                        id: () => id,
+                        fontSize: '<.fontSize',
+                        fontWeight: $$.$me_atom2_prop(['.isSelected', '<.fontWeightSelected', '<.fontWeight'], ({ masters: [isSelected, fontWeightSelected, fontWeight] }) => isSelected ? fontWeightSelected : fontWeight),
+                        fontFamily: '<.fontFamily',
+                        isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set ? value.has(id) : value == id),
+                        '#width': $$.$me_atom2_prop(['<.option_ids', '<.#width'], ({ masters: [ids, w] }) => Math.round(w / ids.length)),
+                        '#height': '<.#height',
+                        '#ofsHor': $$.$me_atom2_prop(['<.option_ids', '.#width'], ({ masters: [ids, w] }) => ids.indexOf(id) * w),
+                        idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
+                        borderLeft: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
+                            const idx = option_ids.indexOf(id);
+                            const result = ~idx_selected.indexOf(idx) ?
+                                (~idx_selected.indexOf(idx - 1) ? { width: borderWidth, color: 'transparent' } : { width: borderWidth, color: colorBorderSelected }) :
+                                !idx ? { width: borderWidth, color: colorBorder } :
+                                    !idx ? { width: borderWidth, color: colorBorder } : { width: borderWidth, color: 'transparent' };
+                            return result;
+                        }),
+                        borderRight: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
+                            const idx = option_ids.indexOf(id);
+                            const result = ~idx_selected.indexOf(idx) ? { width: borderWidth, color: colorBorderSelected } :
+                                idx == option_ids.length - 1 || !~idx_selected.indexOf(idx + 1) ? { width: borderWidth, color: colorBorder } :
+                                    { width: borderWidth, color: 'transparent' };
+                            return result;
+                        }),
+                        colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#alignHor': '<<.itemAlignHor',
+                                '#alignVer': '<<.itemAlignVer',
+                                fontSize: '<.fontSize',
+                            },
+                            dom: {
+                                innerHTML: $$.$me_atom2_prop(['<<.options', '<<.value'], ({ masters: [options, value] }) => $$.$me_option_caption_text(id, options, value)),
+                            },
+                            style: {
+                                textAlign: $$.$me_atom2_prop(['<<.itemAlignHor'], ({ masters: [align] }) => {
+                                    var res = 'left';
+                                    if (align == $$.$me_align.center) {
+                                        res = 'center';
+                                    }
+                                    else if (align == $$.$me_align.right) {
+                                        res = 'right';
+                                    }
+                                    return res;
+                                }),
+                            }
+                        }),
+                    },
+                    style: {
+                        overflow: () => 'hidden',
+                        borderStyle: () => 'solid',
+                        borderWidth: $$.$me_atom2_prop(['<.borderWidth'], ({ masters: [w] }) => w || 0),
+                        borderLeftWidth: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.width || 0),
+                        borderLeftColor: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.color || 'transparent'),
+                        borderRightWidth: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.width || 0),
+                        borderRightColor: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.color || 'transparent'),
+                        borderColor: $$.$me_atom2_prop(['.isSelected', '<.colorBorder', '<.colorBorderSelected'], ({ masters: [isSelected, colorBorder, colorBorderSelected] }) => isSelected ? colorBorderSelected : colorBorder),
+                        borderTopLeftRadius: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
+                        borderBottomLeftRadius: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
+                        borderTopRightRadius: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
+                        borderBottomRightRadius: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
+                        backgroundColor: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected', '<.colorBackground'], ({ masters: [isSelected, colorBackgroundSelected, colorBackground] }) => isSelected ? colorBackgroundSelected : colorBackground),
+                    },
+                    prop_non_render: {
+                        '#cursor': $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set || value != id ? 'pointer' : null),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            let value = $$.a('<.value');
+                            if (typeof value == 'string' && value == id)
+                                return false;
+                            if (value instanceof Set) {
+                                if (value.has(id)) {
+                                    value.delete(id);
+                                }
+                                else {
+                                    value.add(id);
+                                }
+                            }
+                            else
+                                value = id;
+                            $$.a('<.value', value, true);
+                            return true;
+                        },
+                    },
+                })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_select_elem = {
+            base: $$.$me_select_elem,
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
+                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#bdc3d1' :
+                    '#d8dce3'),
+                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#008ecf' :
+                    '#008ecf'),
+                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    'white' :
+                    '#878f9b'),
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#f0f1f4' :
+                    '#747B89'),
+                borderRadius: () => 4,
+                borderWidth: () => 1,
+                paddingHor: () => 0,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                '#width': () => 440,
+                '#height': () => 32,
+                option_width_min: () => 40,
+                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$me_theme.light ?
+                    '#0070a4' :
+                    colorText),
+                colorTextSelected: '/.colorText',
+                fontFamily: '/.fontFamily',
+                fontWeight: '/.fontWeight',
+                fontWeightSelected: '.fontWeight',
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_subscription_workspace = {
             prop: {
                 sections: () => ({
@@ -14877,7 +15104,7 @@ var $;
                             },
                         }),
                         period: () => ({
-                            base: $$.$nl_select,
+                            base: $$.$nl_select_elem,
                             prop: {
                                 '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.leftControlOfs'], ({ masters: [width, ofs, leftOfs] }) => width - ofs - leftOfs),
                                 '#height': () => 24,
@@ -14924,19 +15151,20 @@ var $;
                             },
                         }),
                         segment: () => ({
-                            base: $$.$nl_select,
+                            base: $$.$nl_select_elem,
                             prop: {
                                 '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.leftControlOfs'], ({ masters: [width, ofs, leftOfs] }) => width - ofs - leftOfs),
                                 '#height': () => 64,
                                 '#ofsHor': '<.leftControlOfs',
                                 '#ofsVer': () => 204,
                                 'fontSize': () => 14,
+                                '#alignHor': () => $$.$me_align.left,
                                 options: () => ({
-                                    seg1: { caption: 'Жилая\nМосковская область 1250 ₽', width: 100 },
-                                    seg2: { caption: 'Жилая\nМосква и область 2500 ₽' },
-                                    seg3: { caption: 'Загородная\nМосква и область 2500 ₽' },
-                                    seg4: { caption: 'Коммерческая\nМосква и область 2500 ₽' },
-                                    seg5: { caption: 'Все разделы\nМосква и область 6250 ₽' },
+                                    seg1: { caption: 'Жилая<br>Московская область<br>1250 ₽', width: 100 },
+                                    seg2: { caption: 'Жилая<br>Москва и область<br>2500 ₽' },
+                                    seg3: { caption: 'Загородная<br>Москва и область<br>2500 ₽' },
+                                    seg4: { caption: 'Коммерческая<br>Москва и область<br>2500 ₽' },
+                                    seg5: { caption: 'Все разделы<br>Москва и область<br>6250 ₽' },
                                 }),
                             },
                         }),
@@ -14952,6 +15180,8 @@ var $;
                             elem: {
                                 label_1: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': '.pm',
                                         '#ofsVer': () => 38,
                                     },
@@ -14964,6 +15194,8 @@ var $;
                                 }),
                                 label_2: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': '.pm',
                                         '#ofsVer': () => 69,
                                         fontSize: () => 14,
@@ -14974,6 +15206,8 @@ var $;
                                 }),
                                 label_3: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': () => 305,
                                         '#ofsVer': () => 25,
                                     },
@@ -14990,6 +15224,7 @@ var $;
                                     prop: {
                                         boxSize: () => 14,
                                         '#height': () => 32,
+                                        '#width': () => 360,
                                         '#ofsVer': () => 62,
                                         '#ofsHor': () => 305,
                                         caption: () => 'Автоматически продлить подписку на следующий',
@@ -14999,6 +15234,8 @@ var $;
                                 }),
                                 label_4: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': () => 328,
                                         '#ofsVer': () => 90,
                                         fontSize: () => 14,
