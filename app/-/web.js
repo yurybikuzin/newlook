@@ -1,5 +1,3 @@
-function require( path ){ return $node[ path ] }
-;
 "use strict";
 var $;
 (function ($) {
@@ -153,6 +151,30 @@ var $;
             $me_theme[$me_theme["light"] = 0] = "light";
             $me_theme[$me_theme["dark"] = 1] = "dark";
         })($me_theme = $$.$me_theme || ($$.$me_theme = {}));
+        function $me_vector_transform(v, dist, from) {
+            const dx = v.to.x - v.from.x;
+            const dy = v.to.y - v.from.y;
+            const len = Math.hypot(dx, dy);
+            if (!from)
+                from = v.from;
+            const result = {
+                from,
+                to: {
+                    x: dx / len * dist + from.x,
+                    y: dy / len * dist + from.y,
+                },
+            };
+            return result;
+        }
+        $$.$me_vector_transform = $me_vector_transform;
+        function $me_vector_revert(v) {
+            const result = {
+                from: v.to,
+                to: v.from,
+            };
+            return result;
+        }
+        $$.$me_vector_revert = $me_vector_revert;
         $$.$me_rect = () => ({ left: 0, top: 0, right: 0, bottom: 0 });
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
@@ -871,7 +893,7 @@ var $;
                     fn_compute,
                     fn_apply
                 } :
-                Object.assign(Object.assign({}, masters), { fn_compute,
+                Object.assign({}, masters, { fn_compute,
                     fn_apply });
             return result;
         }
@@ -886,7 +908,7 @@ var $;
                 typeof prop_def === 'function' ? {
                     masters: [],
                     fn_compute: prop_def,
-                } : Object.assign(Object.assign({}, prop_def), { masters: Array.isArray(prop_def.masters) ?
+                } : Object.assign({}, prop_def, { masters: Array.isArray(prop_def.masters) ?
                         [...prop_def.masters] :
                         prop_def.masters });
             if (pp.masters) {
@@ -898,7 +920,7 @@ var $;
             if (pp.fn_apply && p.fn_apply)
                 $$.$me_throw(`fn_apply collision for ${p.tail}`, p.fn_apply, pp.fn_apply);
             pp.fn_apply = pp.fn_apply || p.fn_apply;
-            return Object.assign(Object.assign({}, p), pp);
+            return Object.assign({}, p, pp);
         }
         $$.$me_atom2_prop_def_prepare = $me_atom2_prop_def_prepare;
         $$.$me_atom2_prop_compute_fn_or = (initial) => initial === void 0 ? compute_fn_or :
@@ -1021,6 +1043,333 @@ var $;
 ;
 "use strict";
 //control.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const accel_scrollAccu_threshold = 30;
+        class $me_atom2_wheel_synth_class {
+            constructor() {
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                this.lastDeltaX = 0;
+                this.lastDeltaY = 0;
+                this.accelX = 0;
+                this.accelY = 0;
+            }
+            cancel() {
+                this.mode = null;
+            }
+            endHelper() {
+                if (this.mode != $$.$me_atom2_wheel_synth_mode.move) {
+                    this.cancel();
+                }
+                else {
+                    this.accel_k = 1;
+                    this.mode = $$.$me_atom2_wheel_synth_mode.end;
+                    $$.$me_atom2_async();
+                }
+            }
+            raf(t) {
+                return (this.mode == $$.$me_atom2_wheel_synth_mode.move ||
+                    this.mode == $$.$me_atom2_wheel_synth_mode.init ||
+                    false ?
+                    this.rafMove(t) :
+                    this.mode == $$.$me_atom2_wheel_synth_mode.end ?
+                        this.rafEnd(t) :
+                        null);
+            }
+            rafMoveHeler(t) {
+                const timeCurr = performance.now();
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
+                if (Math.abs(this.scrollAccuX) < accel_threshold) {
+                    this.accelX = 0;
+                }
+                else if (this.timePrevX != null &&
+                    Math.abs(this.scrollAccuX) >= accel_scrollAccu_threshold &&
+                    timeCurr != this.timePrevX &&
+                    true) {
+                    this.tPrev = t;
+                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
+                    this.timePrevX = timeCurr;
+                }
+                if (Math.abs(this.scrollAccuY) < accel_threshold) {
+                    this.accelY = 0;
+                }
+                else if (this.timePrevY != null &&
+                    Math.abs(this.scrollAccuY) >= accel_scrollAccu_threshold &&
+                    timeCurr != this.timePrevY &&
+                    true) {
+                    this.tPrev = t;
+                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
+                    this.timePrevY = timeCurr;
+                }
+                const result = {
+                    mode: this.mode,
+                    _deltaX: this.scrollAccuX,
+                    _deltaY: this.scrollAccuY,
+                };
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                return result;
+            }
+        }
+        $$.$me_atom2_wheel_synth_class = $me_atom2_wheel_synth_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_synth.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $me_atom2_wheel_touch_class extends $$.$me_atom2_wheel_synth_class {
+            start(event) {
+                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
+                this._start = event;
+                this._last = event;
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                if (event.touches.length > 1) {
+                    this.clientX1 = event.touches[1].clientX;
+                    this.clientY1 = event.touches[1].clientY;
+                    if (event.touches.length > 2) {
+                        this.clientX2 = event.touches[2].clientX;
+                        this.clientY2 = event.touches[2].clientY;
+                    }
+                }
+                this.scrollAccuX = 0;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+                this.timePrevX = null;
+                this.timePrevY = null;
+            }
+            move(event) {
+                this._last = event;
+                this._end = event;
+                const deltaX = event.touches.length == 1 ?
+                    this.clientX0 - event.touches[0].clientX :
+                    event.touches.length == 2 ?
+                        Math.sign(this.clientX0 - event.touches[0].clientX) *
+                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX)) :
+                        event.touches.length == 3 ?
+                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX), Math.abs(this.clientX2 - event.touches[2].clientX)) :
+                            0;
+                const deltaY = event.touches.length == 1 ?
+                    this.clientY0 - event.touches[0].clientY :
+                    event.touches.length == 2 ?
+                        Math.sign(this.clientY0 - event.touches[0].clientY) *
+                            Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY)) :
+                        event.touches.length == 3 ?
+                            Math.sign(this.clientY0 - event.touches[0].clientY) *
+                                Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY), Math.abs(this.clientY2 - event.touches[2].clientY)) :
+                            0;
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                if (event.touches.length > 1) {
+                    this.clientX1 = event.touches[1].clientX;
+                    this.clientY1 = event.touches[1].clientY;
+                    if (event.touches.length > 2) {
+                        this.clientX2 = event.touches[2].clientX;
+                        this.clientY2 = event.touches[2].clientY;
+                    }
+                }
+                if (deltaX) {
+                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
+                        this.scrollAccuX = deltaX;
+                        this.timePrevX = performance.now();
+                    }
+                    else {
+                        if (this.timePrevX == null)
+                            this.timePrevX = performance.now();
+                        this.scrollAccuX += deltaX;
+                    }
+                }
+                if (deltaY) {
+                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
+                        this.scrollAccuY = deltaY;
+                        this.timePrevY = performance.now();
+                    }
+                    else {
+                        if (this.timePrevY == null)
+                            this.timePrevY = performance.now();
+                        this.scrollAccuY += deltaY;
+                    }
+                }
+                this.lastDeltaX = deltaX;
+                this.lastDeltaY = deltaY;
+                if (deltaX || deltaY) {
+                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
+                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
+                    }
+                    $$.$me_atom2_async();
+                }
+            }
+            end(event) {
+                this._end = event;
+                this.endHelper();
+            }
+            rafMove(t) {
+                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafMoveHeler(t));
+            }
+            rafEndHelper(t) {
+                const tDelta = t - this.tPrev;
+                const scrollAccuX = this.accelX * tDelta;
+                const scrollAccuY = this.accelY * tDelta;
+                const result = {
+                    mode: this.mode,
+                    _deltaX: scrollAccuX,
+                    _deltaY: scrollAccuY,
+                };
+                if (!(Math.abs(scrollAccuX) >= 1 ||
+                    Math.abs(scrollAccuY) >= 1)) {
+                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
+                }
+                else {
+                    this.accelX = this.accelX * this.accel_k;
+                    this.accelY = this.accelY * this.accel_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
+                    this.tPrev = t;
+                    $$.$me_atom2_async();
+                }
+                return result;
+            }
+            rafEnd(t) {
+                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafEndHelper(t));
+            }
+        }
+        $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_touch.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $me_atom2_wheel_drag_class extends $$.$me_atom2_wheel_synth_class {
+            start(event) {
+                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
+                this._start = event;
+                this._last = event;
+                this.scrollAccuX = 0;
+                this.clientX = event.clientX;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.clientY = event.clientY;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+                this.timePrevX = null;
+                this.timePrevY = null;
+            }
+            move(event) {
+                this._last = event;
+                this._end = event;
+                const deltaX = this.clientX - event.clientX;
+                if (deltaX)
+                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
+                        this.scrollAccuX = deltaX;
+                        this.timePrevX = performance.now();
+                    }
+                    else {
+                        if (this.timePrevX == null)
+                            this.timePrevX = performance.now();
+                        this.scrollAccuX += deltaX;
+                    }
+                this.clientX = event.clientX;
+                this.lastDeltaX = deltaX;
+                const deltaY = this.clientY - event.clientY;
+                if (deltaY)
+                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
+                        this.scrollAccuY = deltaY;
+                        this.timePrevY = performance.now();
+                    }
+                    else {
+                        if (this.timePrevY == null)
+                            this.timePrevY = performance.now();
+                        this.scrollAccuY += deltaY;
+                    }
+                this.clientY = event.clientY;
+                this.lastDeltaY = deltaY;
+                if (deltaX || deltaY) {
+                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
+                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
+                    }
+                    $$.$me_atom2_async();
+                }
+            }
+            end(event) {
+                this._end = event;
+                this.endHelper();
+            }
+            rafMove(t) {
+                const timeCurr = performance.now();
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
+                if (Math.abs(this.scrollAccuX) < accel_threshold) {
+                    this.accelX = 0;
+                }
+                else if (this.timePrevX != null) {
+                    this.tPrev = t;
+                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
+                    this.timePrevX = timeCurr;
+                }
+                if (Math.abs(this.scrollAccuY) < accel_threshold) {
+                    this.accelY = 0;
+                }
+                else if (this.timePrevY != null) {
+                    this.tPrev = t;
+                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
+                    this.timePrevY = timeCurr;
+                }
+                const result = {
+                    mode: this.mode,
+                    start: this._start,
+                    last: this._last,
+                    end: this._end,
+                    _deltaX: this.scrollAccuX,
+                    _deltaY: this.scrollAccuY,
+                };
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                return result;
+            }
+            rafEnd(t) {
+                const tDelta = t - this.tPrev;
+                const scrollAccuX = this.accelX * tDelta;
+                const scrollAccuY = this.accelY * tDelta;
+                const result = {
+                    start: this._start,
+                    last: this._last,
+                    end: this._end,
+                    _deltaX: scrollAccuX,
+                    _deltaY: scrollAccuY,
+                };
+                if (!(Math.abs(scrollAccuX) >= 1 ||
+                    Math.abs(scrollAccuY) >= 1)) {
+                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
+                }
+                else {
+                    this.accelX = this.accelX * this.accel_k;
+                    this.accelY = this.accelY * this.accel_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
+                    this.tPrev = t;
+                    $$.$me_atom2_async();
+                }
+                return result;
+            }
+        }
+        $$.$me_atom2_wheel_drag_class = $me_atom2_wheel_drag_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_drag.js.map
 ;
 "use strict";
 var $;
@@ -1362,7 +1711,7 @@ var $;
                 };
             }
         }
-        $me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer'])), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
+        $me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer']), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
         $me_atom2_ec._to_init = Array();
         $me_atom2_ec.almost_ready = new Set();
         $me_atom2_ec._cnf_cache = new Map();
@@ -1386,7 +1735,7 @@ var $;
         })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
         class $me_atom2_control extends $me_atom2_ec {
             constructor(p) {
-                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.control }));
+                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
                 this._mk_controls(this.level = p.level || 1);
                 this._mk_props('<'.repeat(this.level));
             }
@@ -1717,7 +2066,7 @@ var $;
     (function ($$) {
         class $me_atom2_elem extends $$.$me_atom2_ec {
             constructor(p) {
-                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.elem }));
+                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.elem }));
                 this.skipStyle = false;
                 const cnf_control = this._mk_controls();
                 const has_control = !!Object.keys(cnf_control).length;
@@ -1958,10 +2307,10 @@ var $;
                     this.cnf_items('prop'),
                     defaults,
                     defaults_relative,
-                    Object.assign(Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
+                    Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
                         '#order': this.fn_compute_order,
-                    })), { '#isHover': () => false }),
-                    Object.assign(Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
+                    }), { '#isHover': () => false }),
+                    Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
                             if (val)
                                 $$.$me_atom2_ec._to_init.push(this.path);
                         }), '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
@@ -1969,7 +2318,7 @@ var $;
                         }), '#visible': $$.$me_atom2_prop(['.#hidden'].concat(!has_parent ? [] : ['<.#visible']), this.fn_compute_visible), '#clientRect': $$.$me_atom2_prop(['.#isReady'], this.fn_compute_clientRect, this.fn_apply_clientRect) }, (!has_control ? {} : {
                         '#ctx': () => this.node.getContext('2d'),
                         '#ctxSize': $$.$me_atom2_prop(['/.#pixelRatio', '.#width', '.#height'], this.fn_compute_ctxSize, this.fn_apply_ctxSize),
-                    })), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
+                    }), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
                             '<.#height', '.#height', '.#ofsVer'], this.fn_compute_left, this.fn_apply_top) }),
                 ], {
                     def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
@@ -2150,7 +2499,9 @@ var $;
                             }
                             if ((lazy_prop_to_apply === $me_atom2_elem._lazy_prop_to_apply_clientRect) ||
                                 (elem.node.style.width == 'auto' || elem.node.style.height == 'auto') && (elem_props['sfontSize'] !== void 0 ||
-                                    elem_props['dinnerText'] !== void 0)) {
+                                    elem_props['dinnerText'] !== void 0 ||
+                                    elem_props['dinnerHTML'] !== void 0 ||
+                                    false)) {
                                 elem.invalidateClientRect();
                             }
                             lazy_prop_to_apply.delete(path);
@@ -2188,7 +2539,7 @@ var $;
             static _lazy_prop_style_px(prop) {
                 if (!$me_atom2_elem._lazy_prop_style_px_cache) {
                     $me_atom2_elem._lazy_prop_style_px_cache = {};
-                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius', 'borderWidth'];
+                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius', 'borderWidth', 'borderTopLeftRadius', 'borderBottomLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderRightWidth', 'borderLeftWidth', 'borderTopWidth', 'borderBottomWidth'];
                     const sides = ['left', 'top', 'right', 'bottom'];
                     pxStyleProps.push(...sides);
                     pxStyleProps.push('margin');
@@ -2411,9 +2762,16 @@ var $;
             'mousedown',
             'mousemove',
             'mouseup',
+            'pinchInit',
+            'pinch',
+            'pinchFini',
             'wheel',
+            'wheelTouchInit',
             'wheelTouch',
+            'wheelTouchFini',
+            'wheelDragInit',
             'wheelDrag',
+            'wheelDragFini',
             'click',
             'tap',
             'clickOrTap',
@@ -2421,6 +2779,14 @@ var $;
             'clickOutside',
             'tapOutside',
         ];
+        let $me_atom2_wheel_synth_mode;
+        (function ($me_atom2_wheel_synth_mode) {
+            $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["justStarted"] = 0] = "justStarted";
+            $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["init"] = 1] = "init";
+            $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["move"] = 2] = "move";
+            $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["end"] = 3] = "end";
+            $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["fini"] = 4] = "fini";
+        })($me_atom2_wheel_synth_mode = $$.$me_atom2_wheel_synth_mode || ($$.$me_atom2_wheel_synth_mode = {}));
         $$.$me_atom2_event_wheel_y_is = (event) => Math.abs(event._deltaX) < Math.abs(event._deltaY);
         $$.$me_atom2_event_wheel_x_is = (event) => Math.abs(event._deltaX) > Math.abs(event._deltaY);
         let click;
@@ -2711,7 +3077,7 @@ var $;
     (function ($$) {
         class $me_atom2 extends $$.$me_atom2_entity {
             constructor(p) {
-                super(Object.assign(Object.assign({}, p), { ent: p.is_key ?
+                super(Object.assign({}, p, { ent: p.is_key ?
                         $$.$me_atom2_entity_enum.key :
                         $$.$me_atom2_entity_enum.prop }));
                 this._descendant_level = p.descendant_level || 0;
@@ -2744,7 +3110,7 @@ var $;
                                 ss_prev = new Set(prev);
                                 for (const tail of val)
                                     if (!ss_prev.has(tail))
-                                        new $me_atom2(Object.assign(Object.assign({}, p), { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
+                                        new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
                             }
                             if (val && !val.length && this.path.tail.startsWith('@')) {
                                 const ec = this.parent();
@@ -2975,7 +3341,7 @@ var $;
                             anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
                         }
                         if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
-                            $me_atom2.anim_to_play.set(this.path, Object.assign(Object.assign({}, anim), { value: anim.from }));
+                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
                             $me_atom2.anim_active(anim, true);
                             $$.$me_atom2_async();
                         }
@@ -3239,7 +3605,7 @@ var $;
                     for (const k in entities_key) {
                         entities_key[k]._key_idx_changed({
                             key: p.key.concat(k),
-                            change: Object.assign(Object.assign({}, p.change), { i_key: p.change.i_key - 1 }),
+                            change: Object.assign({}, p.change, { i_key: p.change.i_key - 1 }),
                         });
                     }
                 }
@@ -3393,7 +3759,7 @@ var $;
         $$.$me_atom2_anim = $me_atom2_anim;
         class $me_atom2_anim_class {
             constructor(anim) {
-                this._anim = Object.assign(Object.assign({}, anim), { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
+                this._anim = Object.assign({}, anim, { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
             }
         }
         $$.$me_atom2_anim_class = $me_atom2_anim_class;
@@ -3458,7 +3824,7 @@ var $;
                 (null == p.stroke.ctxWidth || typeof p.stroke.ctxWidth == 'number') &&
                     (null == p.stroke.style || typeof p.stroke.style == 'string')) {
                 ctx_rect_rounded(p, p.stroke && p.stroke.ctxWidth || 0);
-                fill_stroke(Object.assign(Object.assign({}, p), { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
+                fill_stroke(Object.assign({}, p, { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
             }
             else {
                 if (!(p.fillStyle == 'transparent' || p.fillStyle == null)) {
@@ -3677,296 +4043,78 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let $me_atom2_wheel_touch_mode;
-        (function ($me_atom2_wheel_touch_mode) {
-            $me_atom2_wheel_touch_mode[$me_atom2_wheel_touch_mode["move"] = 0] = "move";
-            $me_atom2_wheel_touch_mode[$me_atom2_wheel_touch_mode["end"] = 1] = "end";
-        })($me_atom2_wheel_touch_mode = $$.$me_atom2_wheel_touch_mode || ($$.$me_atom2_wheel_touch_mode = {}));
-        class $me_atom2_wheel_touch_class {
-            constructor() {
-                this.scrollAccuX = 0;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-            }
+        let $me_atom2_pinch_mode;
+        (function ($me_atom2_pinch_mode) {
+            $me_atom2_pinch_mode[$me_atom2_pinch_mode["justStarted"] = 0] = "justStarted";
+            $me_atom2_pinch_mode[$me_atom2_pinch_mode["init"] = 1] = "init";
+            $me_atom2_pinch_mode[$me_atom2_pinch_mode["move"] = 2] = "move";
+            $me_atom2_pinch_mode[$me_atom2_pinch_mode["fini"] = 3] = "fini";
+        })($me_atom2_pinch_mode = $$.$me_atom2_pinch_mode || ($$.$me_atom2_pinch_mode = {}));
+        class $me_atom2_pinch_class {
             start(event) {
-                this.mode = null;
+                this.mode = $me_atom2_pinch_mode.justStarted;
                 this._start = event;
-                this.scrollAccuX = 0;
-                this.clientX = event.touches[0].clientX;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.clientY = event.touches[0].clientY;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-                this.timePrevX = null;
-                this.timePrevY = null;
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                this.clientX1 = event.touches[1].clientX;
+                this.clientY1 = event.touches[1].clientY;
+                this.distInitial = Math.hypot(this.clientX0 - this.clientX1, this.clientY0 - this.clientY1);
+            }
+            accum(event) {
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                this.clientX1 = event.touches[1].clientX;
+                this.clientY1 = event.touches[1].clientY;
             }
             move(event) {
                 this._end = event;
-                const deltaX = this.clientX - event.touches[0].clientX;
-                if (deltaX)
-                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
-                        this.scrollAccuX = deltaX;
-                        this.timePrevX = performance.now();
-                    }
-                    else {
-                        if (this.timePrevX == null)
-                            this.timePrevX = performance.now();
-                        this.scrollAccuX += deltaX;
-                    }
-                this.clientX = event.touches[0].clientX;
-                this.lastDeltaX = deltaX;
-                const deltaY = this.clientY - event.touches[0].clientY;
-                if (deltaY)
-                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
-                        this.scrollAccuY = deltaY;
-                        this.timePrevY = performance.now();
-                    }
-                    else {
-                        if (this.timePrevY == null)
-                            this.timePrevY = performance.now();
-                        this.scrollAccuY += deltaY;
-                    }
-                this.clientY = event.touches[0].clientY;
-                this.lastDeltaY = deltaY;
-                this.mode = $me_atom2_wheel_touch_mode.move;
+                this.center = {
+                    x: (this.clientX0 + this.clientX1) / 2,
+                    y: (this.clientY0 + this.clientY1) / 2,
+                };
+                this.distCurrent = Math.hypot(this.clientX0 - this.clientX1, this.clientY0 - this.clientY1);
+                this.clientX0 = event.touches[0].clientX;
+                this.clientX1 = event.touches[1].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                this.clientY1 = event.touches[1].clientY;
+                if (this.mode == $me_atom2_pinch_mode.justStarted) {
+                    this.mode = $me_atom2_pinch_mode.init;
+                }
                 $$.$me_atom2_async();
             }
             cancel() {
                 this.mode = null;
             }
             end(event) {
-                if (this.mode != $me_atom2_wheel_touch_mode.move) {
-                    this.cancel();
-                }
-                else {
-                    this._end = event;
-                    this.accel_k = 1;
-                    this.mode = $me_atom2_wheel_touch_mode.end;
-                    $$.$me_atom2_async();
-                }
-            }
-            raf(t) {
-                return (this.mode == $me_atom2_wheel_touch_mode.move ? this.rafMove(t) :
-                    this.mode == $me_atom2_wheel_touch_mode.end ? this.rafEnd(t) :
-                        null);
-            }
-            rafMove(t) {
-                if (Math.abs(this.scrollAccuY) > Math.abs(this.scrollAccuX)) {
-                    this.scrollAccuX = 0;
-                }
-                else {
-                    this.scrollAccuY = 0;
-                }
-                const timeCurr = performance.now();
-                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
-                if (Math.abs(this.scrollAccuX) < accel_threshold) {
-                    this.accelX = 0;
-                }
-                else if (this.timePrevX != null) {
-                    this.tPrev = t;
-                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
-                    this.timePrevX = timeCurr;
-                }
-                if (Math.abs(this.scrollAccuY) < accel_threshold) {
-                    this.accelY = 0;
-                }
-                else if (this.timePrevY != null) {
-                    this.tPrev = t;
-                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
-                    this.timePrevY = timeCurr;
-                }
-                const result = {
-                    start: this._start,
-                    end: this._end,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
-                };
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                return result;
-            }
-            rafEnd(t) {
-                const tDelta = t - this.tPrev;
-                const scrollAccuX = this.accelX * tDelta;
-                const scrollAccuY = this.accelY * tDelta;
-                if (!(Math.abs(scrollAccuX) >= 1 ||
-                    Math.abs(scrollAccuY) >= 1)) {
-                    this.mode = null;
-                    return null;
-                }
-                else {
-                    const result = {
-                        start: this._start,
-                        end: this._end,
-                        _deltaX: scrollAccuX,
-                        _deltaY: scrollAccuY,
-                    };
-                    this.accelX = this.accelX * this.accel_k;
-                    this.accelY = this.accelY * this.accel_k;
-                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
-                    this.tPrev = t;
-                    $$.$me_atom2_async();
-                    return result;
-                }
-            }
-        }
-        $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//wheel_touch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        let $me_atom2_wheel_drag_mode;
-        (function ($me_atom2_wheel_drag_mode) {
-            $me_atom2_wheel_drag_mode[$me_atom2_wheel_drag_mode["move"] = 0] = "move";
-            $me_atom2_wheel_drag_mode[$me_atom2_wheel_drag_mode["end"] = 1] = "end";
-        })($me_atom2_wheel_drag_mode = $$.$me_atom2_wheel_drag_mode || ($$.$me_atom2_wheel_drag_mode = {}));
-        class $me_atom2_wheel_drag_class {
-            constructor() {
-                this.scrollAccuX = 0;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-            }
-            start(event) {
-                this.mode = null;
-                this._start = event;
-                this.scrollAccuX = 0;
-                this.clientX = event.clientX;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.clientY = event.clientY;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-                this.timePrevX = null;
-                this.timePrevY = null;
-            }
-            move(event) {
-                this._end = event;
-                const deltaX = this.clientX - event.clientX;
-                if (deltaX)
-                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
-                        this.scrollAccuX = deltaX;
-                        this.timePrevX = performance.now();
-                    }
-                    else {
-                        if (this.timePrevX == null)
-                            this.timePrevX = performance.now();
-                        this.scrollAccuX += deltaX;
-                    }
-                this.clientX = event.clientX;
-                this.lastDeltaX = deltaX;
-                const deltaY = this.clientY - event.clientY;
-                if (deltaY)
-                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
-                        this.scrollAccuY = deltaY;
-                        this.timePrevY = performance.now();
-                    }
-                    else {
-                        if (this.timePrevY == null)
-                            this.timePrevY = performance.now();
-                        this.scrollAccuY += deltaY;
-                    }
-                this.clientY = event.clientY;
-                this.lastDeltaY = deltaY;
-                this.mode = $me_atom2_wheel_drag_mode.move;
+                this.mode = $me_atom2_pinch_mode.fini;
                 $$.$me_atom2_async();
             }
-            cancel() {
-                this.mode = null;
-            }
-            end(event) {
-                if (this.mode != $me_atom2_wheel_drag_mode.move) {
-                    this.cancel();
-                }
-                else {
-                    this._end = event;
-                    this.accel_k = 1;
-                    this.mode = $me_atom2_wheel_drag_mode.end;
-                    $$.$me_atom2_async();
-                }
-            }
             raf(t) {
-                return (this.mode == $me_atom2_wheel_drag_mode.move ? this.rafMove(t) :
-                    this.mode == $me_atom2_wheel_drag_mode.end ? this.rafEnd(t) :
-                        null);
-            }
-            rafMove(t) {
-                if (Math.abs(this.scrollAccuY) > Math.abs(this.scrollAccuX)) {
-                    this.scrollAccuX = 0;
+                if ($$.$me_atom2_pinch.mode == $me_atom2_pinch_mode.fini && this.distCurrent == null) {
+                    this.distCurrent = this.distPrev;
                 }
-                else {
-                    this.scrollAccuY = 0;
-                }
-                const timeCurr = performance.now();
-                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
-                if (Math.abs(this.scrollAccuX) < accel_threshold) {
-                    this.accelX = 0;
-                }
-                else if (this.timePrevX != null) {
-                    this.tPrev = t;
-                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
-                    this.timePrevX = timeCurr;
-                }
-                if (Math.abs(this.scrollAccuY) < accel_threshold) {
-                    this.accelY = 0;
-                }
-                else if (this.timePrevY != null) {
-                    this.tPrev = t;
-                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
-                    this.timePrevY = timeCurr;
-                }
-                const result = {
-                    start: this._start,
-                    end: this._end,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
-                };
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                return result;
-            }
-            rafEnd(t) {
-                const tDelta = t - this.tPrev;
-                const scrollAccuX = this.accelX * tDelta;
-                const scrollAccuY = this.accelY * tDelta;
-                if (!(Math.abs(scrollAccuX) >= 1 ||
-                    Math.abs(scrollAccuY) >= 1)) {
-                    this.mode = null;
-                    return null;
-                }
-                else {
-                    const result = {
+                const result = this.mode == null ||
+                    this.distCurrent == null ||
+                    false
+                    ?
+                        null :
+                    {
                         start: this._start,
                         end: this._end,
-                        _deltaX: scrollAccuX,
-                        _deltaY: scrollAccuY,
+                        distInitial: this.distInitial,
+                        distCurrent: this.distCurrent,
+                        scale: this.distCurrent / this.distInitial,
+                        center: this.center,
                     };
-                    this.accelX = this.accelX * this.accel_k;
-                    this.accelY = this.accelY * this.accel_k;
-                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
-                    this.tPrev = t;
-                    $$.$me_atom2_async();
-                    return result;
-                }
+                if (result)
+                    this.distPrev = this.distCurrent;
+                return result;
             }
         }
-        $$.$me_atom2_wheel_drag_class = $me_atom2_wheel_drag_class;
+        $$.$me_atom2_pinch_class = $me_atom2_pinch_class;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//wheel_drag.js.map
+//pinch.js.map
 ;
 "use strict";
 var $;
@@ -4049,27 +4197,69 @@ var $;
                 }
                 return [count, pre];
             },
+            pinch: (last_now, t) => {
+                const pre = performance.now() - last_now;
+                let count = 0;
+                if ($$.$me_atom2_pinch && $$.$me_atom2_pinch.mode != null) {
+                    const event_pinch_to_process = $$.$me_atom2_pinch.raf(t);
+                    if (event_pinch_to_process) {
+                        if ($$.$me_atom2_pinch.mode == $$.$me_atom2_pinch_mode.init) {
+                            $$.$me_atom2_event_process('pinchInit', event_pinch_to_process);
+                            $$.$me_atom2_pinch.mode = $$.$me_atom2_pinch_mode.move;
+                        }
+                        if ($$.$me_atom2_pinch.mode == $$.$me_atom2_pinch_mode.move) {
+                            $$.$me_atom2_event_process('pinch', event_pinch_to_process);
+                        }
+                        if ($$.$me_atom2_pinch.mode == $$.$me_atom2_pinch_mode.fini) {
+                            $$.$me_atom2_event_process('pinchFini', event_pinch_to_process);
+                            $$.$me_atom2_pinch.mode = null;
+                        }
+                        count = 1;
+                    }
+                }
+                return [count, pre];
+            },
             wheelTouch: (last_now, t) => {
                 const pre = performance.now() - last_now;
                 let count = 0;
-                let event_wheel_touch_to_process;
-                if ($$.$me_atom2_wheel_touch)
-                    event_wheel_touch_to_process = $$.$me_atom2_wheel_touch.raf(t);
-                if (event_wheel_touch_to_process) {
-                    $$.$me_atom2_event_process('wheelTouch', event_wheel_touch_to_process);
-                    count = 1;
+                if ($$.$me_atom2_wheel_touch && $$.$me_atom2_wheel_touch.mode != null) {
+                    const event_wheel_touch_to_process = $$.$me_atom2_wheel_touch.raf(t);
+                    if (event_wheel_touch_to_process) {
+                        if ($$.$me_atom2_wheel_touch.mode == $$.$me_atom2_wheel_synth_mode.init) {
+                            $$.$me_atom2_event_process('wheelTouchInit', event_wheel_touch_to_process);
+                            $$.$me_atom2_wheel_touch.mode = $$.$me_atom2_wheel_synth_mode.move;
+                        }
+                        if ($$.$me_atom2_wheel_touch.mode == $$.$me_atom2_wheel_synth_mode.move || $$.$me_atom2_wheel_synth_mode.end) {
+                            $$.$me_atom2_event_process('wheelTouch', event_wheel_touch_to_process);
+                        }
+                        if ($$.$me_atom2_wheel_touch.mode == $$.$me_atom2_wheel_synth_mode.fini) {
+                            $$.$me_atom2_event_process('wheelTouchFini', event_wheel_touch_to_process);
+                            $$.$me_atom2_wheel_touch.mode = null;
+                        }
+                        count = 1;
+                    }
                 }
                 return [count, pre];
             },
             wheelDrag: (last_now, t) => {
                 const pre = performance.now() - last_now;
                 let count = 0;
-                let event_wheel_drag_to_process;
-                if ($$.$me_atom2_wheel_drag)
-                    event_wheel_drag_to_process = $$.$me_atom2_wheel_drag.raf(t);
-                if (event_wheel_drag_to_process) {
-                    $$.$me_atom2_event_process('wheelDrag', event_wheel_drag_to_process);
-                    count = 1;
+                if ($$.$me_atom2_wheel_drag && $$.$me_atom2_wheel_drag.mode != null) {
+                    const event_wheel_drag_to_process = $$.$me_atom2_wheel_drag.raf(t);
+                    if (event_wheel_drag_to_process) {
+                        if ($$.$me_atom2_wheel_drag.mode == $$.$me_atom2_wheel_synth_mode.init) {
+                            $$.$me_atom2_event_process('wheelDragInit', event_wheel_drag_to_process);
+                            $$.$me_atom2_wheel_drag.mode = $$.$me_atom2_wheel_synth_mode.move;
+                        }
+                        if ($$.$me_atom2_wheel_drag.mode == $$.$me_atom2_wheel_synth_mode.move || $$.$me_atom2_wheel_synth_mode.end) {
+                            $$.$me_atom2_event_process('wheelDrag', event_wheel_drag_to_process);
+                        }
+                        if ($$.$me_atom2_wheel_drag.mode == $$.$me_atom2_wheel_synth_mode.fini) {
+                            $$.$me_atom2_event_process('wheelDragFini', event_wheel_drag_to_process);
+                            $$.$me_atom2_wheel_drag.mode = null;
+                        }
+                        count = 1;
+                    }
                 }
                 return [count, pre];
             },
@@ -4286,20 +4476,83 @@ var $;
             $$.$me_atom2_event_wheel_to_process ||
             false);
         const touchstart = (event) => {
-            if (!$$.$me_atom2_wheel_touch)
-                $$.$me_atom2_wheel_touch = new $$.$me_atom2_wheel_touch_class();
-            $$.$me_atom2_wheel_touch.start(event);
+            if (event.touches.length == 1) {
+                if (!$$.$me_atom2_wheel_touch)
+                    $$.$me_atom2_wheel_touch = new $$.$me_atom2_wheel_touch_class();
+                $$.$me_atom2_wheel_touch.start(event);
+            }
+            else {
+                touchAccu = {
+                    clientX0: event.touches[0].clientX,
+                    clientX1: event.touches[1].clientX,
+                    clientY0: event.touches[0].clientY,
+                    clientY1: event.touches[1].clientY,
+                    deltaX0: 0,
+                    deltaY0: 0,
+                    deltaX1: 0,
+                    deltaY1: 0,
+                };
+            }
             return $$.$me_atom2_event_process('touchstart', event);
         };
+        let touchAccu;
+        const touchAccu_threshold = 30;
         const touchmove = (event) => {
             event.preventDefault();
-            if ($$.$me_atom2_wheel_touch)
-                $$.$me_atom2_wheel_touch.move(event);
+            if (event.touches.length == 1) {
+                if ($$.$me_atom2_wheel_touch)
+                    $$.$me_atom2_wheel_touch.move(event);
+            }
+            else {
+                if (touchAccu) {
+                    touchAccu.deltaX0 += event.touches[0].clientX - touchAccu.clientX0;
+                    touchAccu.deltaX1 += event.touches[1].clientX - touchAccu.clientX1;
+                    touchAccu.deltaY0 += event.touches[0].clientY - touchAccu.clientY0;
+                    touchAccu.deltaY1 += event.touches[1].clientY - touchAccu.clientY1;
+                    if (Math.abs(touchAccu.deltaX0) < touchAccu_threshold &&
+                        Math.abs(touchAccu.deltaX1) < touchAccu_threshold &&
+                        Math.abs(touchAccu.deltaY0) < touchAccu_threshold &&
+                        Math.abs(touchAccu.deltaY1) < touchAccu_threshold &&
+                        true) {
+                        touchAccu.clientX0 = event.touches[0].clientX;
+                        touchAccu.clientX1 = event.touches[1].clientX;
+                        touchAccu.clientY0 = event.touches[0].clientY;
+                        touchAccu.clientY1 = event.touches[1].clientY;
+                    }
+                    else {
+                        if (Math.sign(touchAccu.deltaX0) *
+                            Math.sign(touchAccu.deltaX1) +
+                            Math.sign(touchAccu.deltaY0) *
+                                Math.sign(touchAccu.deltaY1) +
+                            0 >= 1) {
+                            if (!$$.$me_atom2_wheel_touch)
+                                $$.$me_atom2_wheel_touch = new $$.$me_atom2_wheel_touch_class();
+                            $$.$me_atom2_wheel_touch.start(event);
+                        }
+                        else {
+                            if (!$$.$me_atom2_pinch)
+                                $$.$me_atom2_pinch = new $$.$me_atom2_pinch_class();
+                            $$.$me_atom2_pinch.start(event);
+                        }
+                        touchAccu = null;
+                    }
+                }
+                if (!touchAccu) {
+                    if ($$.$me_atom2_pinch && $$.$me_atom2_pinch.mode != null) {
+                        $$.$me_atom2_pinch.move(event);
+                    }
+                    else if ($$.$me_atom2_wheel_touch && $$.$me_atom2_wheel_touch.mode != null) {
+                        $$.$me_atom2_wheel_touch.move(event);
+                    }
+                }
+            }
             return $$.$me_atom2_event_process('touchmove', event);
         };
         const touchend = (event) => {
-            if ($$.$me_atom2_wheel_touch)
+            if ($$.$me_atom2_wheel_touch && $$.$me_atom2_wheel_touch.mode != null)
                 $$.$me_atom2_wheel_touch.end(event);
+            if ($$.$me_atom2_pinch && $$.$me_atom2_pinch.mode != null)
+                $$.$me_atom2_pinch.end(event);
             return $$.$me_atom2_event_process('touchend', event);
         };
         const mousedown = (event) => {
@@ -4326,8 +4579,14 @@ var $;
                 $$.$me_atom2_event_wheel_to_process._deltaY = event.deltaY;
             }
             else {
-                $$.$me_atom2_event_wheel_to_process._deltaX = event.deltaX + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaX) * Math.sign(event.deltaX) < 0 ? 0 : $$.$me_atom2_event_wheel_to_process._deltaX);
-                $$.$me_atom2_event_wheel_to_process._deltaY = event.deltaY + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaY) * Math.sign(event.deltaY) < 0 ? 0 : $$.$me_atom2_event_wheel_to_process._deltaY);
+                $$.$me_atom2_event_wheel_to_process._deltaX =
+                    event.deltaX + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaX) * Math.sign(event.deltaX) < 0 ?
+                        0 :
+                        $$.$me_atom2_event_wheel_to_process._deltaX);
+                $$.$me_atom2_event_wheel_to_process._deltaY =
+                    event.deltaY + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaY) * Math.sign(event.deltaY) < 0 ?
+                        0 :
+                        $$.$me_atom2_event_wheel_to_process._deltaY);
             }
             $$.$me_atom2_async();
             event.preventDefault();
@@ -4520,13 +4779,35 @@ var $;
                     '#2b87db' :
                     '#53adff'),
             });
-            $$.$me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_ec.prop_default), { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
-            $$.$me_atom2_elem.style_default = Object.assign(Object.assign({}, $$.$me_atom2_elem.style_default), { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
+            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
+            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
         }
         $$.$nl_defaults_init = $nl_defaults_init;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //defaults.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $nl_scheme_style_type_enum;
+        (function ($nl_scheme_style_type_enum) {
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["solid"] = 0] = "solid";
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dashed"] = 1] = "dashed";
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dotted"] = 2] = "dotted";
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["double"] = 3] = "double";
+        })($nl_scheme_style_type_enum = $$.$nl_scheme_style_type_enum || ($$.$nl_scheme_style_type_enum = {}));
+        let $nl_scheme_will_action_enum;
+        (function ($nl_scheme_will_action_enum) {
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
+        })($nl_scheme_will_action_enum = $$.$nl_scheme_will_action_enum || ($$.$nl_scheme_will_action_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//scheme.js.map
 ;
 "use strict";
 var $;
@@ -4612,6 +4893,4250 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //stylesheet.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_cross = {
+            type: '$me_cross',
+            base: $$.$me_stylesheet,
+            prop: {
+                size: $$.$me_atom2_prop_abstract(),
+                thick: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                opacity: () => 1,
+                opacityHover: () => 1,
+                '#width': '.size',
+                '#height': '.size',
+                styleSheetName: () => 'me_cross',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
+        .${className}:before {
+          transform: rotate(45deg);
+        }
+        .${className}:after {
+          transform: rotate(-45deg);
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
+        .${className} {
+          opacity: ${opacity};
+        }
+        .${className}:hover {
+          opacity: ${opacityHover};
+        }
+        .${className}:before, .${className}:after {
+          position: absolute;
+          left: ${(size - thick) / 2}px;
+          content: '';
+          height: ${size}px;
+          width: ${thick}px;
+          background-color: ${color};
+        }
+      `),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//cross.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $nl_scheme_will_action_enum;
+        (function ($nl_scheme_will_action_enum) {
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
+        })($nl_scheme_will_action_enum || ($nl_scheme_will_action_enum = {}));
+        $$.$nl_scheme_engine = {
+            style: {
+                userSelect: () => 'none',
+                overflow: () => 'hidden',
+                background: () => 'white',
+            },
+            dispatch(dispatch_name, dispatch_arg) {
+                if (dispatch_name == 'lassoShow') {
+                    const { clientX, clientY } = dispatch_arg;
+                    const clientRect = $$.a('@container.#clientRect');
+                    const x = clientX - clientRect.left;
+                    const y = clientY - clientRect.top;
+                    const point = { x, y };
+                    $$.a('.isLasso', true);
+                    $$.a('.lassoStart', point);
+                    $$.a('.lassoEnd', point);
+                    return true;
+                }
+                else if (dispatch_name == 'lassoMove') {
+                    const { mode, clientX, clientY } = dispatch_arg;
+                    if (mode == $$.$me_atom2_wheel_synth_mode.end) {
+                        $$.a.dispatch('', 'lassoHide');
+                    }
+                    else {
+                        const clientRect = $$.a('@container.#clientRect');
+                        const x = clientX - clientRect.left;
+                        const y = clientY - clientRect.top;
+                        $$.a('.lassoEnd', { x, y });
+                        const lassoStart = $$.a('.lassoStart');
+                        const rect = {
+                            left: Math.min(x, lassoStart.x),
+                            top: Math.min(y, lassoStart.y),
+                            right: Math.max(x, lassoStart.x),
+                            bottom: Math.max(y, lassoStart.y),
+                        };
+                        const points = $$.a('.points');
+                        const selected = $$.a('.selected');
+                        const codes = $$.a('.will_codes');
+                        codes.clear();
+                        let will_action = $nl_scheme_will_action_enum.deselect;
+                        for (const point_id in points) {
+                            const point_def = points[point_id];
+                            if (point_def.type != 'circle')
+                                continue;
+                            if (!point_def.visible)
+                                continue;
+                            if (!$$.$me_point_in_rect(point_def.x, point_def.y, rect))
+                                continue;
+                            codes.add(point_def.code);
+                            if (!selected.has(point_def.code))
+                                will_action = $nl_scheme_will_action_enum.select;
+                        }
+                        $$.a('.will_codes', codes, true);
+                        $$.a('.will_action', will_action);
+                    }
+                    return true;
+                }
+                else if (dispatch_name == 'lassoHide') {
+                    const will_action = $$.a('.will_action');
+                    $$.a.update('.selected', val => {
+                        for (const code of $$.a('.will_codes')) {
+                            if (will_action == $nl_scheme_will_action_enum.select) {
+                                val.set(code, null);
+                            }
+                            else {
+                                val.delete(code);
+                            }
+                        }
+                        return val;
+                    }, true);
+                    $$.a('.will_action', $nl_scheme_will_action_enum.none);
+                    $$.a('.isLasso', false);
+                    return true;
+                }
+                else if (dispatch_name == 'codeTapped') {
+                    const code = dispatch_arg;
+                    $$.a.update('.selected', val => {
+                        if (val.has(code)) {
+                            val.delete(code);
+                        }
+                        else {
+                            val.set(code, null);
+                        }
+                        return val;
+                    }, true);
+                    return true;
+                }
+                else if (dispatch_name == 'close') {
+                    return true;
+                }
+                return false;
+            },
+            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32, ofsHor_initial: () => 32, scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial, ({ val }) => console.warn({ val })), scale: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.scale_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsHor: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.ofsHor_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsVer: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.ofsVer_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), will_action: () => $nl_scheme_will_action_enum.none, will_codes: () => new Set(), isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'circle', 'label', 'cross', 'lasso'], labels: $$.$me_atom2_prop([], () => null), label_ids: $$.$me_atom2_prop_keys(['.labels']), label_ofsHor: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsHor), label_ofsVer: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsVer), label_hidden: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => !labels[id].visible), selected: $$.$me_atom2_prop_store({
+                    default: () => new Map(),
+                    valid: val => {
+                        const isMap = val instanceof Map;
+                        const result = isMap ? val : new Map();
+                        return result;
+                    },
+                    toJSON: val => [...val].map(([id]) => id),
+                    fromJSON: val => !Array.isArray(val) ?
+                        new Map() :
+                        new Map(val.map(id => [id, null])),
+                }), thick_transit: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.thick_transit), thick_line: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.thick_line), radius_station: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.circle_radius), thick_station: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.circle_thick), label_ofsHor_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.ofsHor), label_ofsVer_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.ofsVer), label_alignHor_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.alignHor), label_alignVer_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.alignVer), fontSize_label: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.fontSize_label), points: $$.$me_atom2_prop([], () => null), point_ids: $$.$me_atom2_prop_keys(['.points']), point_x: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points',] }, ({ key: [id], masters: [points] }) => points[id].x), point_y: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].y), point_color: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].color), point_hidden: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => !points[id].visible), demo_border: () => '' }),
+            elem: {
+                label: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => ({
+                    prop: {
+                        '#width': () => 0,
+                        '#height': () => 0,
+                        '#ofsHor': `<.label_ofsHor[${id}]`,
+                        '#ofsVer': `<.label_ofsVer[${id}]`,
+                        '#hidden': `<.label_hidden[${id}]`,
+                    },
+                    elem: {
+                        text: () => ({
+                            dom: {
+                                innerHTML: () => labels[id].text,
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a.dispatch('<<', 'codeTapped', labels[id].code);
+                                    return true;
+                                },
+                            },
+                            style: Object.assign({}, (!labels[id].lineHeight ? {} : { lineHeight: () => labels[id].lineHeight }), (!labels[id].textAlign ? {} : { textAlign: () => labels[id].textAlign }), (!labels[id].whiteSpace ? {} : { whiteSpace: () => labels[id].whiteSpace }), { background: () => 'rgba(255,255,255,.5)' }),
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#alignHor': () => labels[id].alignHor,
+                                '#alignVer': () => labels[id].alignVer,
+                                fontSize: $$.$me_atom2_prop(['<<@container^scheme._scale', '<<.fontSize_label'], ({ masters: [scale, fontSize] }) => fontSize * scale),
+                                '#cursor': () => 'pointer',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                colorText: $$.$me_atom2_prop([
+                                    '<<.will_action',
+                                    '<<.will_codes',
+                                    '<<.colorText_will_select',
+                                    '<<.colorText_will_deselect',
+                                    '/.colorText',
+                                ], ({ masters: [will_action, will_codes, colorText_will_select, colorText_will_deselect, colorText] }) => {
+                                    const code = labels[id].code;
+                                    const result = will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
+                                        colorText_will_select :
+                                        will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
+                                            colorText_will_deselect :
+                                            colorText;
+                                    return result;
+                                }),
+                            },
+                        }),
+                    },
+                })),
+                circle: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].type != 'circle' ? null : {
+                    prop: Object.assign({}, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['<@container^scheme._scale', '<.radius_station'], ({ masters: [scale, radius] }) => 2 * radius * scale), ['#width', '#height']), { '#ofsHor': $$.$me_atom2_prop([`<.point_x[${id}]`, '.#width'], ({ masters: [x, width] }) => x - width / 2), '#ofsVer': $$.$me_atom2_prop([`<.point_y[${id}]`, '.#height'], ({ masters: [x, width] }) => x - width / 2), '#hidden': `<.point_hidden[${id}]`, '#cursor': () => 'pointer', '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
+                    style: {
+                        border: $$.$me_atom2_prop([`<@container^scheme._scale`, '<.thick_station', `<.point_color[${id}]`], ({ masters: [scale, thick, color] }) => `${scale * thick}px solid ${color}`),
+                        borderRadius: () => '50%',
+                        boxSizing: () => 'border-box',
+                        background: $$.$me_atom2_prop([
+                            '<.will_action',
+                            '<.will_codes',
+                            '<.background_station_will_select',
+                            '<.background_station_will_deselect',
+                            '<.selected',
+                            '<.background_station',
+                            '<.background_station_selected',
+                        ], ({ masters: [will_action, will_codes, background_station_will_select, background_station_will_deselect, selected, background, background_selected,] }) => {
+                            const code = points[id].code;
+                            const result = will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
+                                background_station_will_deselect :
+                                selected.has(code) ?
+                                    background_selected :
+                                    will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
+                                        background_station_will_select :
+                                        background;
+                            return result;
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a.dispatch('<', 'codeTapped', points[id].code);
+                            return true;
+                        },
+                    },
+                }),
+                cross: () => ({
+                    base: $$.$me_cross,
+                    prop: {
+                        size: () => 24,
+                        thick: () => 3,
+                        '#ofsVer': () => 8,
+                        '#ofsHor': () => 16,
+                        '#alignHor': () => $$.$me_align.right,
+                        color: '/.colorText',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a.dispatch('<', 'close');
+                            return true;
+                        },
+                    },
+                }),
+                lasso: $$.$me_atom2_prop(['.isLasso'], ({ masters: [isLasso] }) => !isLasso ? null : {
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.x, lassoEnd.x)),
+                        '#ofsVer': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.y, lassoEnd.y)),
+                        '#width': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.x - lassoEnd.x)),
+                        '#height': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.y - lassoEnd.y)),
+                    },
+                    style: {
+                        border: () => '1px dashed red',
+                    },
+                }),
+                container: () => ({
+                    prop: {
+                        '#width': '<.#width',
+                        '#height': '<.#height',
+                    },
+                    control: {
+                        scheme: () => ({
+                            event: {
+                                pinchFini: p => {
+                                    console.warn('pinchFini', p.event);
+                                    $$.a('<<.scale', $$.a('._scale'));
+                                    return false;
+                                },
+                                pinch: p => {
+                                    handle_pinch($$.a('<<.scale') * p.event.scale, p.event.center, '._scale');
+                                    return false;
+                                },
+                                wheelDragInit: p => {
+                                    $$.a.dispatch('<<', 'lassoShow', p.event.last);
+                                    return false;
+                                },
+                                wheelDragFini: p => {
+                                    $$.a.dispatch('<<', 'lassoHide');
+                                    return false;
+                                },
+                                wheelDrag: p => {
+                                    const { clientX, clientY } = p.event.last;
+                                    $$.a.dispatch('<<', 'lassoMove', {
+                                        clientX, clientY,
+                                        mode: p.event.mode,
+                                    });
+                                    return true;
+                                },
+                                wheelTouchInit: p => {
+                                    if (p.event.last.touches.length == 1) {
+                                        $$.a.dispatch('<<', 'lassoShow', p.event.last.touches[0]);
+                                    }
+                                    return false;
+                                },
+                                wheelTouch: p => {
+                                    if (p.event.start.touches.length > 1) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const { clientX, clientY } = p.event.last.touches[0];
+                                        $$.a.dispatch('<<', 'lassoMove', {
+                                            clientX, clientY,
+                                            mode: p.event.mode,
+                                        });
+                                    }
+                                    return true;
+                                },
+                                wheelTouchFini: p => {
+                                    if (p.event.start.touches.length == 1) {
+                                        $$.a.dispatch('<<', 'lassoHide');
+                                    }
+                                    return false;
+                                },
+                                wheel: p => {
+                                    if (!p.event.ctrlKey) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const clientRect = $$.a('.#clientRect');
+                                        const x = p.event.clientX - clientRect.left;
+                                        const y = p.event.clientY - clientRect.top;
+                                        handle_pinch($$.a('<<.scale') - p.event.deltaY * 0.002, { x, y });
+                                    }
+                                    return true;
+                                },
+                                clickOrTap: (p) => {
+                                    return true;
+                                },
+                            },
+                            prop: {
+                                _scale: '<<.scale',
+                                ofsHor: '<<.ofsHor',
+                                ofsVer: '<<.ofsVer',
+                                width: $$.$me_atom2_prop(['<<.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                                height: $$.$me_atom2_prop(['<<.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                            },
+                            render: p => {
+                                const { ctx, pixelRatio } = p;
+                                const ctxFontSize = $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
+                                const demo_border = $$.a('<<.demo_border');
+                                if (demo_border) {
+                                    $$.$me_atom2_ctx_rect({
+                                        ctx,
+                                        ctxTop: pixelRatio * $$.a('<<.ofsVer'),
+                                        ctxLeft: pixelRatio * $$.a('<<.ofsHor'),
+                                        ctxWidth: pixelRatio * $$.a('.width'),
+                                        ctxHeight: pixelRatio * $$.a('.height'),
+                                        stroke: { ctxWidth: pixelRatio, style: demo_border },
+                                    });
+                                }
+                                const scale = $$.a('._scale');
+                                const thick_transit = $$.a('<<.thick_transit') * scale;
+                                const thick_line = $$.a('<<.thick_line') * scale;
+                                const radius_station = $$.a('<<.radius_station') * scale;
+                                const labels = $$.a('<<.labels') || {};
+                                for (const label_id in labels) {
+                                    labels[label_id].visible = false;
+                                }
+                                const points = $$.a('<<.points') || {};
+                                for (const point_id in points) {
+                                    points[point_id].visible = false;
+                                }
+                                const lines = {};
+                                const main = () => {
+                                    const items = $$.a('<<.data');
+                                    for (const item_id in items) {
+                                        const item_def = items[item_id];
+                                        if (item_id == 'settings') {
+                                            points['root'] = {
+                                                x: item_def.root.x * scale + $$.a('<<.ofsHor'),
+                                                y: item_def.root.y * scale + $$.a('<<.ofsVer'),
+                                            };
+                                        }
+                                        else if (~Object.keys(segment_helper).indexOf(item_def.type)) {
+                                            segment(item_def, item_def, [item_id]);
+                                        }
+                                        else if (item_def.type == null || item_def.type == 'segments') {
+                                            segments(item_def, item_def, [item_id]);
+                                        }
+                                        else
+                                            $$.$me_throw('unsupported item_def.type', item_def.type);
+                                    }
+                                    $$.a('<<.points', points, true);
+                                    $$.a('<<.labels', labels, true);
+                                };
+                                const segments = (line_def, group_def, id_items) => {
+                                    for (const segment_id in group_def.segments) {
+                                        const segment_def = group_def.segments[segment_id];
+                                        segment(line_def, segment_def, id_items.concat(segment_id));
+                                    }
+                                };
+                                const segment = (line_def, segment_def, id_items) => {
+                                    const fn = segment_helper[segment_def.type || 'line'];
+                                    if (!fn) {
+                                        $$.$me_throw('unsupported segment_def.type', segment_def.type);
+                                    }
+                                    else {
+                                        fn(line_def, segment_def, (tail) => id_items.concat(!tail ? [] : tail).reverse().join('::'));
+                                    }
+                                };
+                                const segment_helper = {
+                                    circle: (line_def, segment_def, id) => {
+                                        const p = prepare_point(['center'], id, segment_def, points, scale);
+                                        if (!p.center)
+                                            anchored_point(id, segment_def, 'center', points, scale);
+                                        line_def.ctxCenterX = p.center.x * pixelRatio;
+                                        line_def.ctxCenterY = p.center.y * pixelRatio;
+                                        line_def.ctxRadius = line_def.radius * scale * pixelRatio;
+                                        const type = styleType(line_def.style);
+                                        if (type == $$.$nl_scheme_style_type_enum.solid) {
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + (thick_line * pixelRatio) / 2,
+                                                stroke: { ctxWidth: thick_line * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                        }
+                                        else if (type == $$.$nl_scheme_style_type_enum.double) {
+                                            const thickStyle = (line_def.style.thickStyle || thick_line) * scale;
+                                            const thickLine = (line_def.style.thickLine || pixelRatio) * scale;
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + thickLine / 2 - thickStyle / 2,
+                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + thickLine / 2 + thickStyle / 2,
+                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                        }
+                                        else {
+                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$nl_scheme_style_type_enum[type]}`, line_def);
+                                        }
+                                        const retCircle = {
+                                            centerX: line_def.ctxCenterX / pixelRatio,
+                                            centerY: line_def.ctxCenterY / pixelRatio,
+                                            radius: line_def.ctxRadius / pixelRatio,
+                                        };
+                                        for (const point_id in line_def.points) {
+                                            const point_def = line_def.points[point_id];
+                                            const point = anchored_point(id, line_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'circle';
+                                                if (req == 'circle')
+                                                    return retCircle;
+                                                return anchored_point_provider(req, result, {
+                                                    point_id,
+                                                    point_def,
+                                                    line_def,
+                                                    id,
+                                                });
+                                            });
+                                        }
+                                    },
+                                    line: (line_def, segment_def, id) => {
+                                        const props = ['through'];
+                                        for (const prop of ['from', 'to'])
+                                            if (segment_def.hasOwnProperty(prop) && (typeof segment_def[prop] == 'string' ||
+                                                segment_def[prop].hasOwnProperty('anchor')))
+                                                props.push(prop);
+                                        const p = prepare_point(props, id, segment_def, points, scale);
+                                        if (p.from && p.to && p.through) {
+                                            $$.$me_throw('.through is not expected whilst .from and .to are set');
+                                        }
+                                        else if (!p.to) {
+                                            if (!(p.from && p.through && segment_def.dist))
+                                                $$.$me_throw(id() + ': .from, .through and .dist must be set whilst .to is absent');
+                                            let to = $$.$me_vector_transform({ from: p.from, to: p.through }, segment_def.dist * scale).to;
+                                            points[id(['to'])] = p.to = to;
+                                        }
+                                        else if (!p.from) {
+                                            if (!(p.to && p.through) && segment_def.dist)
+                                                $$.$me_throw('.to, .through and .dist must be set whilst .from is absent');
+                                            const dx = p.through.x - p.to.x;
+                                            const dy = p.through.y - p.to.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const dist = segment_def.dist;
+                                            points[id(['from'])] = p.from = $$.$me_vector_transform({ from: p.to, to: p.through }, -segment_def.dist * scale).to;
+                                        }
+                                        const line = lines[id()] = { from: p.from, to: p.to };
+                                        ctx.beginPath();
+                                        ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
+                                        ctx.lineTo(p.to.x * pixelRatio, p.to.y * pixelRatio);
+                                        ctx.closePath();
+                                        ctx.strokeStyle = styleColor(line_def.style);
+                                        ctx.lineWidth = thick_line * pixelRatio;
+                                        ctx.stroke();
+                                        for (const link_prop of ['from', 'to']) {
+                                            const link = !segment_def[link_prop] ?
+                                                null :
+                                                segment_def[link_prop].hasOwnProperty('link') ?
+                                                    segment_def[link_prop].link :
+                                                    segment_def[link_prop].hasOwnProperty('anchor') &&
+                                                        (() => {
+                                                            const splitted = segment_def[link_prop].anchor.split('::');
+                                                            return splitted.length == 2 && (splitted[0] == 'from' || splitted[0] == 'to');
+                                                        })() ?
+                                                        segment_def[link_prop].anchor :
+                                                        null;
+                                            if (!link)
+                                                continue;
+                                            const point_id = get_point_id(link, points, id, () => `${id}.${link_prop}.link`);
+                                            const [line_link_prop, line_link_id] = point_id.startsWith('to::') ? [point_id.slice(0, 2), point_id.slice(4)] :
+                                                point_id.startsWith('from::') ? [point_id.slice(0, 4), point_id.slice(6)] :
+                                                    $$.$me_throw(`${id()}.${link_prop}.link'${link}': must start with 'to::' or '::from'`);
+                                            let line_link = lines[line_link_id];
+                                            if (!line_link)
+                                                $$.$me_throw(`${id()}.${link_prop}.link'${link}': lines['${line_link_id}'] not found`);
+                                            line_link = line_link_prop == 'from' ? line_link : $$.$me_vector_revert(line_link);
+                                            const intersection_result = intersection(line, line_link);
+                                            ctx.beginPath();
+                                            ctx.moveTo(line_link.from.x * pixelRatio, line_link.from.y * pixelRatio);
+                                            if (intersection_result && (intersection_result.gamma <= 0 && (link_prop == 'from' ?
+                                                intersection_result.lambda <= 1 :
+                                                intersection_result.lambda >= 0))) {
+                                                ctx.quadraticCurveTo(intersection_result.point.x * pixelRatio, intersection_result.point.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            else {
+                                                const dist = -Math.hypot(line_link.from.x - line.from.x, line_link.from.y - line.from.y) / 2;
+                                                const control_point = $$.$me_vector_transform(line_link, dist).to;
+                                                const control_point2 = $$.$me_vector_transform(line, dist).to;
+                                                ctx.bezierCurveTo(control_point.x * pixelRatio, control_point.y * pixelRatio, control_point2.x * pixelRatio, control_point2.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            ctx.strokeStyle = styleColor(line_def.style);
+                                            ctx.lineWidth = thick_line * pixelRatio;
+                                            ctx.stroke();
+                                        }
+                                        let point_def_prev;
+                                        let point_id_prev;
+                                        for (const point_id in segment_def.points) {
+                                            const point_def = segment_def.points[point_id];
+                                            if (point_def.anchor === '' && point_id_prev) {
+                                                point_def.anchor = point_id_prev;
+                                            }
+                                            if (point_def.dist === null && point_def_prev) {
+                                                point_def.dist = point_def_prev.dist;
+                                            }
+                                            point_def_prev = point_def;
+                                            point_id_prev = point_id;
+                                            const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'line';
+                                                if (req == 'line')
+                                                    return p;
+                                                return anchored_point_provider(req, result, {
+                                                    point_id,
+                                                    point_def,
+                                                    line_def,
+                                                    id,
+                                                });
+                                            });
+                                        }
+                                    },
+                                };
+                                function intersection(v, v2) {
+                                    const a = v.from.x;
+                                    const b = v.from.y;
+                                    const c = v.to.x;
+                                    const d = v.to.y;
+                                    const p = v2.from.x;
+                                    const q = v2.from.y;
+                                    const r = v2.to.x;
+                                    const s = v2.to.y;
+                                    var det, gamma, lambda;
+                                    det = (c - a) * (s - q) - (r - p) * (d - b);
+                                    if (det === 0) {
+                                        return null;
+                                    }
+                                    else {
+                                        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+                                        gamma = 1 - ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+                                        const result = {
+                                            lambda,
+                                            gamma,
+                                            point: {
+                                                x: (1 - lambda) * v.from.x + lambda * v.to.x,
+                                                y: (1 - lambda) * v.from.y + lambda * v.to.y,
+                                            },
+                                        };
+                                        return result;
+                                    }
+                                }
+                                const anchored_point_provider = (req, result, p) => {
+                                    if (req == 'props') {
+                                        const type = p.point_def.type || 'circle';
+                                        return type != 'circle' ? { type } : {
+                                            type,
+                                            visible: true,
+                                            color: styleColor(p.line_def.style),
+                                            code: p.point_def.code,
+                                        };
+                                    }
+                                    if (req == 'label') {
+                                        return {
+                                            labels,
+                                            radius_station,
+                                        };
+                                    }
+                                    if (req == 'transit') {
+                                        const anchors = typeof p.point_def.transit == 'string' ?
+                                            [p.point_def.transit] :
+                                            Array.isArray(p.point_def.transit) ?
+                                                p.point_def.transit :
+                                                $$.$me_throw('unsupported .transit', p.point_def.transit);
+                                        for (const anchor of anchors) {
+                                            const point_to = points[anchor];
+                                            if (!point_to)
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit refers to unknown points['${anchor}']`, points);
+                                            if (point_to.type != 'circle')
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit'${anchor}' must refer to point with .type'circle', not`, point_to);
+                                            const dx = point_to.x - result.x;
+                                            const dy = point_to.y - result.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const gradient_from = $$.$me_vector_transform({ from: result, to: point_to }, radius_station);
+                                            const gradient_to = $$.$me_vector_transform({ from: point_to, to: result }, radius_station);
+                                            const gradient = ctx.createLinearGradient(gradient_from.to.x * pixelRatio, gradient_from.to.y * pixelRatio, gradient_to.to.x * pixelRatio, gradient_to.to.y * pixelRatio);
+                                            gradient.addColorStop(0, styleColor(p.line_def.style));
+                                            gradient.addColorStop(1, point_to.color);
+                                            ctx.beginPath();
+                                            ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
+                                            ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
+                                            ctx.strokeStyle = gradient;
+                                            ctx.lineWidth = thick_transit * pixelRatio;
+                                            ctx.stroke();
+                                        }
+                                        return true;
+                                    }
+                                };
+                                const prepare_point = (prop_names, id, segment_def, points, scale, type) => {
+                                    const result = {};
+                                    for (const prop_name in segment_def) {
+                                        if (!~prop_names.indexOf(prop_name))
+                                            continue;
+                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale, !type ? null : (req, result) => {
+                                            if (req == 'type')
+                                                return type;
+                                        });
+                                    }
+                                    return result;
+                                };
+                                main();
+                                return true;
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        function styleType(style) {
+            const result = typeof style == 'string' ?
+                $$.$nl_scheme_style_type_enum.solid :
+                style.type || $$.$nl_scheme_style_type_enum.solid;
+            return result;
+        }
+        function styleColor(style) {
+            const result = typeof style == 'string' ?
+                style :
+                style.color;
+            return result;
+        }
+        function add_label(id, src, point_id, labels, scale, centerX, centerY, radius_station) {
+            const point_def = src[point_id];
+            if (!point_def.label)
+                return;
+            const alignHor = point_def.label.alignHor != null ?
+                point_def.label.alignHor :
+                $$.a('<<.label_alignHor_default');
+            const alignVer = point_def.label.alignVer != null ?
+                point_def.label.alignVer :
+                $$.a('<<.label_alignVer_default');
+            const ofsHor = point_def.label.ofsHor != null ?
+                point_def.label.ofsHor : (() => {
+                const ofsHor = $$.a('<<.label_ofsHor_default');
+                if (typeof ofsHor == 'number')
+                    return ofsHor;
+                if (typeof ofsHor == 'function')
+                    return ofsHor(alignHor, alignVer);
+                return 0;
+            })();
+            const ofsVer = point_def.label.ofsVer != null ?
+                point_def.label.ofsVer : (() => {
+                const ofsVer = $$.a('<<.label_ofsVer_default');
+                if (typeof ofsVer == 'number')
+                    return ofsVer;
+                if (typeof ofsVer == 'function')
+                    return ofsVer(alignHor, alignVer);
+                return 0;
+            })();
+            const result = labels[id([point_id])] = {
+                text: point_def.label.text || point_id,
+                ofsHor: alignHor == $$.$me_align.left ?
+                    centerX + radius_station + ofsHor * scale :
+                    alignHor == $$.$me_align.right ?
+                        centerX - radius_station - ofsHor * scale :
+                        centerX + ofsHor * scale,
+                ofsVer: alignVer == $$.$me_align.top ?
+                    centerY + radius_station + ofsVer * scale :
+                    alignVer == $$.$me_align.bottom ?
+                        centerY - radius_station - ofsVer * scale :
+                        centerY + ofsVer * scale,
+                code: point_def.code,
+                alignHor,
+                alignVer,
+                visible: true,
+                textAlign: point_def.label.textAlign,
+                whiteSpace: point_def.label.whiteSpace || 'pre',
+                lineHeight: point_def.label.lineHeight || '1.0',
+            };
+        }
+        function get_point_id(point_id, points, id, err) {
+            let result = point_id;
+            if (!points[point_id]) {
+                const splitted_point_id = point_id.split('::');
+                const splitted_id = id().split('::');
+                const point_id_extended = splitted_point_id.concat(splitted_id.slice(splitted_point_id.length - 1)).join('::');
+                if (point_id_extended == point_id) {
+                    $$.$me_throw(`points['${point_id}'] not found for ${err()}`, points);
+                }
+                result = point_id_extended;
+                if (!points[point_id_extended]) {
+                    $$.$me_throw(`nor points['${point_id}'] neither points['${point_id_extended}'] found for ${err()}`, points);
+                }
+            }
+            return result;
+        }
+        function anchored_point(id, src, prop_name, points, scale, provider) {
+            let result;
+            if (!src[prop_name])
+                $$.$me_throw(`${id()}: .${prop_name} expected due to .type'${src.type}' `);
+            const arg = src[prop_name];
+            let point_id = typeof arg == 'string' ?
+                arg :
+                arg.anchor;
+            const parent_type = provider && provider('type', result) || '';
+            if (parent_type == 'circle') {
+                if (point_id)
+                    $$.$me_throw(`${id([prop_name])}.anchor is not expected`, src);
+            }
+            else if (!point_id) {
+                $$.$me_throw(`${id([prop_name])}.anchor expected`, src);
+            }
+            else {
+                result = points[get_point_id(point_id, points, id, () => `${id([prop_name])}.anchor`)];
+            }
+            const props = provider && provider('props', result) || {};
+            if (typeof arg == 'string') {
+                result = Object.assign({}, props, { x: result.x, y: result.y });
+            }
+            else if (parent_type == 'circle') {
+                const angle = arg.angle;
+                if (angle == null)
+                    $$.$me_throw(`${id([prop_name])}.angle is expected`);
+                const ret = provider('circle', result);
+                if (ret == null ||
+                    typeof ret.centerX != 'number' ||
+                    typeof ret.centerY != 'number' ||
+                    typeof ret.radius != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('circle') expected to return {centerX: number, centerY: number, radius: number}, not`, ret);
+                const { centerX, centerY, radius } = ret;
+                result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
+            }
+            else if (parent_type == 'line') {
+                const dist = arg.dist;
+                if (dist == null)
+                    $$.$me_throw(`${id([prop_name])}.dist is expected`);
+                const ret = provider('line', result);
+                if (ret == null ||
+                    !ret.from ||
+                    typeof ret.from.x != 'number' ||
+                    typeof ret.from.y != 'number' ||
+                    !ret.to ||
+                    typeof ret.to.x != 'number' ||
+                    typeof ret.to.y != 'number' ||
+                    false)
+                    $$.$me_throw(`${id()}: provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
+                result = Object.assign({}, props, $$.$me_vector_transform(ret, dist * scale, result).to);
+            }
+            else {
+                if (!result)
+                    $$.$me_throw(`${id([prop_name])}`);
+                result = Object.assign({}, props, { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
+            }
+            if (typeof arg != 'string' && arg.label) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.label`);
+                const ret = provider('label', result);
+                if (ret == null ||
+                    !ret.labels ||
+                    typeof ret.radius_station != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('label') expected to return {labels: any, radius_station: number}, not`, ret);
+                const { labels, radius_station } = ret;
+                add_label(id, src, prop_name, labels, scale, result.x, result.y, radius_station);
+            }
+            if (typeof arg != 'string' && arg.transit) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.transit`);
+                const ret = provider('transit', result);
+                if (ret !== true)
+                    $$.$me_throw(`provider('transit') expected to return true, not`, ret);
+            }
+            points[id([prop_name])] = result;
+            return result;
+        }
+        function handle_pinch(scale_new, pinch_center, prop_name = '<<.scale') {
+            handle_helper(p => {
+                const width = p.width;
+                const height = p.height;
+                const scale = $$.a(prop_name);
+                p.width = width / scale * scale_new;
+                p.height = height / scale * scale_new;
+                const width_netto = p.width_upper - 2 * p.padding_Hor;
+                const height_netto = p.height_upper - 2 * p.padding_Ver;
+                p.scale =
+                    Math.min(Math.max(scale_new, Math.min(width_netto / width * scale, height_netto / height * scale)), $$.a('<<.scale_max'));
+                if (pinch_center.x < p.ofsHor) {
+                    pinch_center.x = p.ofsHor;
+                }
+                else if (pinch_center.x > p.ofsHor + width) {
+                    pinch_center.x = p.ofsHor + width;
+                }
+                $$.a(prop_name, p.scale);
+                p.width = $$.a('<<.width_initial') * p.scale;
+                p.height = $$.a('<<.height_initial') * p.scale;
+                p.ofsHor = pinch_center.x - (pinch_center.x - p.ofsHor) * p.scale / scale;
+                p.ofsVer = pinch_center.y - (pinch_center.y - p.ofsVer) * p.scale / scale;
+            });
+        }
+        function handle_move(deltaX, deltaY) {
+            handle_helper(p => {
+                p.ofsHor -= deltaX;
+                p.ofsVer -= deltaY;
+            });
+        }
+        function handle_helper(fn) {
+            const width_upper = $$.a('<.#width');
+            const height_upper = $$.a('<.#height');
+            const padding_Hor = $$.a('<<.ofsHor_initial');
+            const padding_Ver = $$.a('<<.ofsVer_initial');
+            const p = {
+                ofsHor: $$.a('<<.ofsHor'),
+                ofsVer: $$.a('<<.ofsVer'),
+                width: $$.a('.width'),
+                height: $$.a('.height'),
+                scale: $$.a('<<.scale'),
+                width_upper,
+                height_upper,
+                padding_Hor,
+                padding_Ver,
+            };
+            fn(p);
+            const ofsHor_max = Math.max($$.a('<<.ofsHor_initial'), (p.width_upper - p.width) / 2);
+            const ofsHor_min = p.width_upper >= p.width ?
+                (p.width_upper - p.width) / 2 :
+                p.width_upper - $$.a('<<.ofsHor_initial') - p.width;
+            const ofsVer_max = Math.max($$.a('<<.ofsVer_initial'), (p.height_upper - p.height) / 2);
+            const ofsVer_min = p.height_upper >= p.height ?
+                (p.height_upper - p.height) / 2 :
+                p.height_upper - $$.a('<<.ofsVer_initial') - p.height;
+            p.ofsHor = Math.round(Math.min(ofsHor_max, Math.max(ofsHor_min, p.ofsHor)));
+            p.ofsVer = Math.round(Math.min(ofsVer_max, Math.max(ofsVer_min, p.ofsVer)));
+            $$.a('<<.ofsHor', p.ofsHor);
+            $$.a('<<.ofsVer', p.ofsVer);
+            console.log(p.ofsHor, p.ofsVer);
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//engine.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_settings_width = 2700;
+        $$.$nl_scheme_metro_settings_height = 3100;
+        $$.$nl_scheme_metro_settings_circle_radius = 16;
+        $$.$nl_scheme_metro_settings_root = {
+            x: 1450,
+            y: 1220,
+        };
+        $$.$nl_scheme_metro_settings_kolcevaya_radius = 500;
+        $$.$nl_scheme_metro_settings_fontSize_label = 26;
+        $$.$nl_scheme_metro_settings_default_label_ofsHor = $$.$nl_scheme_metro_settings_fontSize_label / 4;
+        $$.$nl_scheme_metro_settings_default_label_ofsVer = $$.$nl_scheme_metro_settings_default_label_ofsHor;
+        $$.$nl_scheme_metro_settings_circle_thick = 8;
+        $$.$nl_scheme_metro_settings_thick_line = 10;
+        $$.$nl_scheme_metro_settings_thick_transit = 12;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//settings.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kolcevaya_radius = $$.$nl_scheme_metro_settings_kolcevaya_radius;
+        $$.$nl_scheme_metro_data_kolcevaya = {
+            type: 'circle',
+            radius: $$.$nl_scheme_metro_data_kolcevaya_radius,
+            center: 'root',
+            style: '#835342',
+            points: {
+                'Курская': {
+                    angle: -17,
+                    code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                        ofsHor: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Таганская': {
+                    angle: 21,
+                    code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Павелецкая': {
+                    angle: 56,
+                    code: 'ru-msk-metro-paveletskaya-paveletskaya',
+                    label: {},
+                },
+                'Добрынинская': {
+                    angle: 93,
+                    code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Октябрьская': {
+                    angle: 125.5,
+                    code: 'ru-msk-metro-oktyabrskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Парк культуры': {
+                    angle: 154,
+                    code: 'ru-msk-metro-park-kulturyi',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Киевская': {
+                    angle: 174.5,
+                    code: 'ru-msk-metro-kievskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                    },
+                },
+                'Краснопресненская': {
+                    angle: 193,
+                    code: 'ru-msk-metro-krasnopresnenskaya-barrikadnaya',
+                    label: {
+                        text: 'Красно-<br>пресненская',
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Белорусская': {
+                    angle: 225,
+                    code: 'ru-msk-metro-belorusskaya-belorusskaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Новослободская': {
+                    angle: 256,
+                    code: 'ru-msk-metro-novoslobodskaya-mendeleevskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Проспект Мира': {
+                    angle: 296.2,
+                    code: 'ru-msk-metro-prospekt-mira',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Комсомольская': {
+                    angle: 320.85,
+                    code: 'ru-msk-metro-komsomolskaya',
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kolcevaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_arbatsko_pokrovskaya = {
+            style: '#2E6BA1',
+            type: 'segments',
+            segments: {
+                'Пл. Революции': {
+                    from: {
+                        anchor: 'Театральная::Театральная::Замоскворецкая',
+                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Пл. Революции': {
+                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
+                            anchor: 'from',
+                            dist: $$.$nl_scheme_metro_settings_circle_radius,
+                            transit: 'Театральная::Театральная::Замоскворецкая',
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+                'Курская': {
+                    from: {
+                        anchor: 'Курская::Кольцевая',
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: -1,
+                    },
+                    dist: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    to: {
+                        link: 'to::Пл. Революции',
+                    },
+                    points: {
+                        'Курская': {
+                            code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: [
+                                'Курская::Кольцевая',
+                                'Чкаловская::Чкаловская-Римская::Люблинско-Дмитровская',
+                            ],
+                        },
+                    },
+                },
+                'Бауманская-Партизанская': {
+                    from: 'from::Курская',
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .81 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Партизанская': {
+                            code: 'ru-msk-metro-partizanskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {},
+                            transit: 'Измайлово::МЦК',
+                        },
+                    },
+                },
+                'Измайловская-Щёлковская': {
+                    from: {
+                        anchor: 'to::Бауманская-Партизанская',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Измайловская': {
+                            code: 'ru-msk-metro-izmaylovskaya',
+                            anchor: 'from',
+                            dist: .4 / 3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Первомайская': {
+                            code: 'ru-msk-metro-pervomayskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Щёлковская': {
+                            code: 'ru-msk-metro-schelkovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Арбатская-Славянский бульвар': {
+                    from: 'from::Пл. Революции',
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -2.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Арбатская': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            color: '',
+                            anchor: 'from',
+                            dist: 0.385 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                                ofsHor: $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Смоленская': {
+                            code: 'ru-msk-metro-smolenskaya',
+                            anchor: 'from',
+                            dist: 0.82 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                        'Киевская': {
+                            code: 'ru-msk-metro-kievskaya',
+                            anchor: 'from',
+                            dist: 1.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Киевская::Кольцевая',
+                        },
+                        'Парк Победы': {
+                            code: 'ru-msk-metro-park-pobedyi-park-pobedyi',
+                            anchor: '',
+                            dist: 0.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: .5 * $$.$nl_scheme_metro_settings_circle_thick,
+                            },
+                        },
+                        'Славянский бульвар': {
+                            code: 'ru-msk-metro-slavyanskiy-bulvar',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Славянский<br>бульвар',
+                                textAlign: 'center',
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                    },
+                },
+                'Кунцевская-Пятницкое-Шоссе': {
+                    from: {
+                        anchor: 'to::Арбатская-Славянский бульвар',
+                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -2.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кунцевская': {
+                            code: 'ru-msk-metro-kuntsevskaya-kuntsevskaya',
+                            anchor: 'from',
+                            dist: 0.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Молодёжная': {
+                            code: 'ru-msk-metro-molodejnaya',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Крылатское': {
+                            code: 'ru-msk-metro-kryilatskoe',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Строгино': {
+                            code: 'ru-msk-metro-strogino',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Мякинино': {
+                            code: 'ru-msk-metro-myakinino',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Волоколамская': {
+                            code: 'ru-msk-metro-volokolamskaya',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Митино': {
+                            code: 'ru-msk-metro-mitino',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Пятницкое шоссе': {
+                            code: 'ru-msk-metro-pyatnitskoe-shosse',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    }
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//arbatsko_pokrovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_bolshaya_kolcevaya = {
+            style: '#51AFA6',
+            segments: {
+                'Савёловская': {
+                    from: {
+                        anchor: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
+                        ofsVer: 12,
+                        ofsHor: -15,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -40,
+                    },
+                    points: {
+                        'Савёловская': {
+                            anchor: 'from',
+                            transit: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
+                        },
+                    },
+                },
+                'Петровский парк-ЦСКА': {
+                    from: {
+                        anchor: 'to::Савёловская',
+                        ofsHor: -20,
+                        ofsVer: 5,
+                    },
+                    through: {
+                        anchor: 'Динамо::Динамо-Тверская::Замоскворецкая',
+                        ofsVer: -20,
+                    },
+                    dist: 210,
+                    points: {
+                        'Петровский парк': {
+                            anchor: 'through',
+                            transit: 'Динамо::Динамо-Тверская::Замоскворецкая',
+                        },
+                        'ЦСКА': {
+                            anchor: 'Петровский парк',
+                            dist: 60,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+                'Хорошёвская': {
+                    from: {
+                        anchor: 'to::Петровский парк-ЦСКА',
+                        ofsHor: -40,
+                        ofsVer: 20,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -60,
+                    },
+                    points: {
+                        'Хорошёвская': {
+                            anchor: 'from',
+                            dist: 20,
+                            transit: [
+                                'Полежаевская::Полежаевская-Улица 1905 года::Таганско-Краспресненская',
+                                'Хорошёво::МЦК',
+                            ],
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//bolshaya_kolcevaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_butovskaya = {
+            type: 'segments',
+            style: '#BFDDE9',
+            segments: {
+                'Улица Старокачаловская': {
+                    from: {
+                        anchor: 'Бульвар Дмитрия Донского::Серпуховская-Бульвар-Дмитрия-Донского::Серпуховско-Тимирязевская',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.0001 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 0.00001,
+                    },
+                    dist: $$.$nl_scheme_metro_settings_circle_radius,
+                    points: {
+                        'Улица<br>Старокачаловская': {
+                            code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
+                            anchor: 'from',
+                            transit: 'Бульвар Дмитрия Донского::Серпуховская-Бульвар-Дмитрия-Донского::Серпуховско-Тимирязевская',
+                            dist: 0.001,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                textAlign: 'right',
+                            },
+                        },
+                    },
+                },
+                'Лесопарковая-Битцевский парк': {
+                    from: {
+                        anchor: 'from::Улица Старокачаловская',
+                        ofsVer: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -0.42 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Лесопарковая': {
+                            code: 'ru-msk-metro-lesoparkovaya',
+                            anchor: 'from',
+                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                        'Битцевский<br>парк': {
+                            code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
+                            anchor: '',
+                            dist: 0.245 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Новоясеневская::Новоясеневская::Калужско-Рижская',
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                textAlign: 'right',
+                            },
+                        },
+                    },
+                },
+                'Улица Скобелевская-Бунинская аллея': {
+                    from: {
+                        anchor: 'to::Улица Старокачаловская',
+                        ofsVer: 0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -$$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Улица Скобелевская': {
+                            code: 'ru-msk-metro-ulitsa-skobelevskaya',
+                            anchor: 'from',
+                            dist: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Улица<br>Скобелевская',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Бульвар Адмирала Ушакова': {
+                            code: 'ru-msk-metro-bulvar-admirala-ushakova',
+                            anchor: '',
+                            dist: 0.29 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Бульвар<br>Адмирала<br>Ушакова',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Улица Горчакова': {
+                            code: 'ru-msk-metro-ulitsa-gorchakova',
+                            anchor: '',
+                            dist: 0.29 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Улица<br>Горчакова',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Бунинская аллея': {
+                            code: 'ru-msk-metro-buninskaya-alleya',
+                            anchor: '',
+                            dist: 0.29 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Бунинская<br>аллея',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//butovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_mck_radius = 1.67 * $$.$nl_scheme_metro_data_kolcevaya_radius;
+        $$.$nl_scheme_metro_data_mck = {
+            type: 'circle',
+            radius: $$.$nl_scheme_metro_data_mck_radius,
+            center: 'center::Кольцевая',
+            style: {
+                type: $$.$nl_scheme_style_type_enum.double,
+                color: '#D57352',
+                thickLine: 2,
+                thickStyle: 10,
+            },
+            points: {
+                'Верхние котлы': {
+                    angle: 89,
+                    code: 'ru-msk-metro-verhnie-kotlyi',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Крымская': {
+                    angle: 107,
+                    code: 'ru-msk-metro-kryimskaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Площадь<br>Гагарина': {
+                    angle: 120,
+                    code: 'ru-msk-metro-leninskiy-prospekt',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Лужники': {
+                    angle: 141.2,
+                    code: 'ru-msk-metro-sportivnaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                        ofsHor: 2,
+                    },
+                },
+                'Кутузовская': {
+                    angle: 164.6,
+                    code: 'ru-msk-metro-kutuzovskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                    },
+                },
+                'Деловой центр МЦК': {
+                    angle: 185.5,
+                    code: 'ru-msk-metro-mejdunarodnaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        text: 'Деловой<br>центр МЦК',
+                        ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
+                        textAlign: 'right',
+                    },
+                },
+                'Шелепиха': {
+                    angle: 194,
+                    code: 'ru-msk-metro-shelepiha',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -1.9 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Хорошёво': {
+                    angle: 201.5,
+                    code: 'ru-msk-metro-polejaevskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                    },
+                },
+                'Зорге': {
+                    angle: 210,
+                    code: 'ru-msk-metro-zorge',
+                    label: {},
+                },
+                'Панфиловская': {
+                    angle: 214,
+                    code: 'ru-msk-metro-oktyabrskoe-pole',
+                    label: {
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                    },
+                },
+                'Стрешнево': {
+                    angle: 221,
+                    code: 'ru-msk-metro-streshnevo',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Балтийская': {
+                    angle: 228,
+                    code: 'ru-msk-metro-voykovskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.center,
+                    },
+                },
+                'Коптево': {
+                    angle: 241,
+                    code: 'ru-msk-metro-koptevo',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Лихоборы': {
+                    angle: 248,
+                    code: 'ru-msk-metro-lihoboryi',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Окружная': {
+                    angle: 255,
+                    code: 'ru-msk-metro-okrujnaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Владыкино': {
+                    angle: 270.5,
+                    code: 'ru-msk-metro-vladyikino',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                    },
+                },
+                'Ботанический сад': {
+                    angle: -67,
+                    code: 'ru-msk-metro-botanicheskiy-sad',
+                },
+                'Ростокино': {
+                    angle: -63.5,
+                    code: 'ru-msk-metro-belokamennaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Белокаменная': {
+                    angle: -60,
+                    code: 'ru-msk-metro-belokamennaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Бульвар Рокоссовского': {
+                    angle: -56.9,
+                    code: 'ru-msk-metro-bulvar-rokossovskogo',
+                },
+                'Локомотив': {
+                    angle: -46.7,
+                    code: 'ru-msk-metro-cherkizovskaya',
+                    label: {},
+                },
+                'Измайлово': {
+                    angle: -23.5,
+                    code: 'ru-msk-metro-partizanskaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                    },
+                },
+                'Соколиная гора': {
+                    angle: -18.8,
+                    code: 'ru-msk-metro-sokolinaya-gora',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                        text: 'Соколиная<br>гора',
+                    },
+                },
+                'Шоссе Энтузиастов': {
+                    angle: -4,
+                    code: 'ru-msk-metro-shosse-entuziastov',
+                    label: {
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .5 * $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                    },
+                },
+                'Андроновка': {
+                    angle: 5,
+                    code: 'ru-msk-metro-andronovka',
+                    label: {},
+                },
+                'Нижегородская': {
+                    angle: 10,
+                    code: 'ru-msk-metro-nijegorodskaya',
+                    label: {},
+                },
+                'Новохохловская': {
+                    angle: 17,
+                    code: 'ru-msk-metro-novohohlovskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Угрешская': {
+                    angle: 32.7,
+                    code: 'ru-msk-metro-ugreshskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                        ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Дубровка': {
+                    angle: 51,
+                    code: 'ru-msk-metro-dubrovka',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        ofsVer: 0.85 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Автозаводская': {
+                    angle: 68,
+                    code: 'ru-msk-metro-avtozavodskaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                    },
+                },
+                'ЗИЛ': {
+                    angle: 77,
+                    code: 'ru-msk-metro-zil',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//mck.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_sokolnicheskaya = {
+            style: '#CE4135',
+            type: 'segments',
+            segments: {
+                'Охотный ряд-Сокольники': {
+                    type: 'line',
+                    from: {
+                        anchor: 'root',
+                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 1,
+                        ofsVer: -1,
+                    },
+                    dist: 1.34 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Охотный ряд': {
+                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
+                            anchor: 'from',
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                            dist: 0,
+                        },
+                        'Лубянка': {
+                            code: 'ru-msk-metro-kuznetskiy-most-lubyanka',
+                            anchor: 'from',
+                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Чистые пруды': {
+                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
+                            anchor: 'from',
+                            dist: .67 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Красные ворота': {
+                            code: 'ru-msk-metro-krasnyie-vorota',
+                            anchor: 'from',
+                            dist: .85 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Красные<br>ворота',
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Комсомольская': {
+                            code: 'ru-msk-metro-komsomolskaya',
+                            anchor: 'from',
+                            dist: 1.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Комсомольская::Кольцевая',
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Красносельская': {
+                            code: 'ru-msk-metro-krasnoselskaya',
+                            anchor: 'to',
+                            dist: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Сокольники': {
+                            code: 'ru-msk-metro-sokolniki',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {},
+                        },
+                    },
+                },
+                'Преображенская площадь-Бульвар Рокоссовского': {
+                    from: {
+                        anchor: 'to::Охотный ряд-Сокольники',
+                        ofsHor: 0.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Преображенская площадь': {
+                            code: 'ru-msk-metro-preobrajenskaya-ploschad',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                text: 'Преображенская<br>площадь',
+                            },
+                        },
+                        'Черкизовская': {
+                            code: 'ru-msk-metro-cherkizovskaya',
+                            anchor: 'from',
+                            dist: .135 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                            transit: 'Локомотив::МЦК',
+                        },
+                        'Бульвар Рокоссовского': {
+                            code: 'ru-msk-metro-bulvar-rokossovskogo',
+                            anchor: 'from',
+                            dist: .315 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: 3 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                            transit: 'Бульвар Рокоссовского::МЦК',
+                        },
+                    },
+                },
+                'Охотный ряд-Библиотека им.Ленина': {
+                    type: 'line',
+                    from: {
+                        anchor: 'from::Охотный ряд-Сокольники',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.5,
+                    points: {
+                        'Библиотека им.Ленина': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                text: 'Библиотека<br>им.Ленина',
+                                ofsVer: $$.$nl_scheme_metro_settings_circle_radius / 2,
+                            },
+                        },
+                    },
+                },
+                'Кропоткинская': {
+                    from: {
+                        anchor: 'to::Охотный ряд-Библиотека им.Ленина',
+                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кропоткинская': {
+                            code: 'ru-msk-metro-kropotkinskaya',
+                            anchor: 'from',
+                            dist: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                                ofsVer: 0,
+                            },
+                        },
+                    },
+                },
+                'Парк культуры-Спортивная': {
+                    from: {
+                        anchor: 'Парк культуры::Кольцевая',
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'to::Кропоткинская',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: -1,
+                    },
+                    dist: .67 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Парк культуры': {
+                            code: 'ru-msk-metro-park-kulturyi',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Парк культуры::Кольцевая',
+                        },
+                        'Фрунзенская': {
+                            code: 'ru-msk-metro-frunzenskaya',
+                            anchor: 'from',
+                            dist: .57 / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Спортивная': {
+                            code: 'ru-msk-metro-sportivnaya',
+                            anchor: 'from',
+                            dist: .57 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Лужники::МЦК',
+                            label: {},
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Парк культуры-Спортивная',
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 1.1 * $$.$nl_scheme_metro_data_mck_radius,
+                    },
+                    points: {
+                        'Воробьевы горы': {
+                            code: 'ru-msk-metro-vorobevyi-goryi',
+                            anchor: 'from',
+                            dist: .1 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {
+                                text: 'Воробьевы<br>горы',
+                            },
+                        },
+                        'Университет': {
+                            code: 'ru-msk-metro-universitet',
+                            anchor: 'from',
+                            dist: .2 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {},
+                        },
+                        'Проспект Вернадского': {
+                            code: 'ru-msk-metro-prospekt-vernadskogo',
+                            anchor: 'from',
+                            dist: .37 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {
+                                text: 'Проспект<br>Вернадского',
+                            },
+                        },
+                        'Юго-Западная': {
+                            code: 'ru-msk-metro-yugo-zapadnaya',
+                            anchor: '',
+                            dist: (1.1 - .37) / 8 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {},
+                        },
+                        'Тропарево': {
+                            code: 'ru-msk-metro-troparevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Румянцево': {
+                            code: 'ru-msk-metro-rumyantsevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Саларьево': {
+                            code: 'ru-msk-metro-salarevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Филатов луг': {
+                            code: 'ru-msk-metro-filatov-lug',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Прокшино': {
+                            code: 'ru-msk-metro-prokshino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Ольховая': {
+                            code: 'ru-msk-metro-olkhovaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Коммунарка': {
+                            code: 'ru-msk-metro-kommunarka',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//sokolnicheskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_zamoskvoreckaya = {
+            style: '#64A667',
+            type: 'segments',
+            segments: {
+                'Театральная': {
+                    from: {
+                        anchor: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
+                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    points: {
+                        'Театральная': {
+                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
+                            anchor: 'from',
+                            dist: $$.$nl_scheme_metro_settings_circle_radius,
+                            transit: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                            },
+                        },
+                    },
+                },
+                'Новокузнецкая': {
+                    from: {
+                        anchor: 'to::Театральная',
+                        ofsHor: 5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 1,
+                    },
+                    dist: .26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Новокузнецкая': {
+                            code: 'ru-msk-metro-novokuznetskaya-tretyakovskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                text: 'Ново-<br>кузнецкая',
+                            }
+                        },
+                    },
+                },
+                'Павелецкая-Домодедовская': {
+                    from: {
+                        anchor: 'to::Новокузнецкая',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 6 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 2.43 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Павелецкая': {
+                            code: 'ru-msk-metro-paveletskaya-paveletskaya',
+                            anchor: 'from',
+                            dist: 0.34 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Павелецкая::Кольцевая',
+                        },
+                        'Автозаводская': {
+                            code: 'ru-msk-metro-avtozavodskaya',
+                            anchor: 'from',
+                            dist: 0.85 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Автозаводская::МЦК',
+                            label: {},
+                        },
+                        'Технопарк': {
+                            code: 'ru-msk-metro-tehnopark',
+                            anchor: 'from',
+                            dist: 1.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Коломенская': {
+                            code: 'ru-msk-metro-kolomenskaya',
+                            anchor: '',
+                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Каширская': {
+                            code: 'ru-msk-metro-kashirskaya',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Кантемировская': {
+                            code: 'ru-msk-metro-kantemirovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Царицыно': {
+                            code: 'ru-msk-metro-tsaritsyino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Орехово': {
+                            code: 'ru-msk-metro-orehovo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Домодедовская': {
+                            code: 'ru-msk-metro-domodedovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Красногвардейская-Алма-Атинская': {
+                    from: {
+                        anchor: 'to::Павелецкая-Домодедовская',
+                        dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: 0.9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Красногвардейская': {
+                            code: 'ru-msk-metro-zyablikovo-krasnogvardeyskaya',
+                            anchor: 'from',
+                            dist: 0.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                        'Алма-Атинская': {
+                            code: 'ru-msk-metro-alma-atinskaya',
+                            anchor: '',
+                            dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                    },
+                },
+                'Тверская-Динамо': {
+                    from: {
+                        anchor: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: -2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'from::Театральная',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: -1,
+                    },
+                    dist: 1.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Тверская': {
+                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
+                            anchor: 'from',
+                            dist: .38 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Маяковская': {
+                            code: 'ru-msk-metro-mayakovskaya',
+                            anchor: 'from',
+                            dist: .7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Белорусская': {
+                            code: 'ru-msk-metro-belorusskaya-belorusskaya',
+                            anchor: 'from',
+                            dist: 0.9325 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Белорусская::Кольцевая',
+                        },
+                        'Динамо': {
+                            code: 'ru-msk-metro-dinamo',
+                            anchor: 'from',
+                            dist: 1.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Аэропорт-Ховрино': {
+                    from: {
+                        anchor: 'to::Тверская-Динамо',
+                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -1.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Аэропорт': {
+                            code: 'ru-msk-metro-aeroport',
+                            anchor: 'from',
+                            dist: .08 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Сокол': {
+                            code: 'ru-msk-metro-sokol',
+                            anchor: '',
+                            dist: .09 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Войковская': {
+                            code: 'ru-msk-metro-voykovskaya',
+                            anchor: '',
+                            dist: .24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                            transit: 'Балтийская::МЦК',
+                        },
+                        'Водный стадион': {
+                            code: 'ru-msk-metro-vodnyiy-stadion',
+                            anchor: '',
+                            dist: .365 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Речной вокзал': {
+                            code: 'ru-msk-metro-rechnoy-vokzal',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Беломорская': {
+                            code: 'ru-msk-metro-belomorskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Ховрино': {
+                            code: 'ru-msk-metro-hovrino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    }
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//zamoskvoreckaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kaluzhsko_rizhskaya = {
+            style: '#D48550',
+            type: 'segments',
+            segments: {
+                'Тургеневская': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Тургеневская': {
+                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                            transit: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        },
+                    },
+                },
+                'Сухаревская': {
+                    from: {
+                        anchor: 'to::Тургеневская',
+                        ofsHor: -0.6 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 0,
+                    },
+                    dist: .30 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Сухаревская': {
+                            code: 'ru-msk-metro-suharevskaya',
+                            anchor: 'from',
+                            dist: .17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.left,
+                            },
+                        },
+                    },
+                },
+                'Проспект Мира': {
+                    from: {
+                        anchor: 'to::Сухаревская',
+                        ofsHor: 0.6 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .30 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Проспект Мира': {
+                            code: 'ru-msk-metro-prospekt-mira',
+                            anchor: 'from',
+                            dist: .14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Проспект Мира::Кольцевая',
+                        },
+                    },
+                },
+                'Рижская-Медведково': {
+                    from: {
+                        anchor: 'to::Проспект Мира',
+                        ofsHor: 0.6 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 0,
+                    },
+                    dist: 1.26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Рижская': {
+                            code: 'ru-msk-metro-rijskaya',
+                            anchor: 'from',
+                            dist: .03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {}
+                        },
+                        'Алексеевская': {
+                            code: 'ru-msk-metro-alekseevskaya',
+                            anchor: '',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'ВДНХ': {
+                            code: 'ru-msk-metro-vdnh',
+                            anchor: '',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Ботанический сад': {
+                            code: 'ru-msk-metro-botanicheskiy-sad',
+                            anchor: '',
+                            dist: .18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Ботанический сад::МЦК',
+                            label: {},
+                        },
+                        'Свиблово': {
+                            code: 'ru-msk-metro-sviblovo',
+                            anchor: '',
+                            dist: .34 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Бабушкинская': {
+                            code: 'ru-msk-metro-babushkinskaya',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Медведково': {
+                            code: 'ru-msk-metro-medvedkovo',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Китай-город': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'from::Тургеневская',
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Китай-город': {
+                            code: 'ru-msk-metro-kitay-gorod',
+                            anchor: 'from',
+                            dist: .24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.center,
+                                ofsHor: -$$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                    },
+                },
+                'Третьяковская': {
+                    through: {
+                        anchor: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        anchor: 'through',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                        link: 'to::Китай-город',
+                    },
+                    dist: .25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Третьяковская': {
+                            code: 'ru-msk-metro-novokuznetskaya-tretyakovskaya',
+                            anchor: 'through',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                            transit: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                        },
+                    },
+                },
+                'Около-Третьяковской': {
+                    from: {
+                        anchor: 'to::Третьяковская',
+                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Октябрьская-Шаболовская': {
+                    from: {
+                        anchor: 'to::Около-Третьяковской',
+                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: -1,
+                    },
+                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Октябрьская': {
+                            code: 'ru-msk-metro-oktyabrskaya',
+                            anchor: 'from',
+                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Октябрьская::Кольцевая',
+                        },
+                        'Шаболовская': {
+                            code: 'ru-msk-metro-shabolovskaya',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    }
+                },
+                'Ленинский-проспект-Ясенево': {
+                    from: {
+                        anchor: 'to::Октябрьская-Шаболовская',
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 0,
+                    },
+                    dist: 1.65 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Ленинский проспект': {
+                            code: 'ru-msk-metro-leninskiy-prospekt',
+                            anchor: 'from',
+                            dist: 0.24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Площадь<br>Гагарина::МЦК',
+                            label: {
+                                text: 'Ленинский<br>проспект',
+                            },
+                        },
+                        'Академическая': {
+                            code: 'ru-msk-metro-akademicheskaya',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Профсоюзная': {
+                            code: 'ru-msk-metro-profsoyuznaya',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Новые Черёмушки': {
+                            code: 'ru-msk-metro-novyie-cheremushki',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Калужская': {
+                            code: 'ru-msk-metro-kalujskaya',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Беляево': {
+                            code: 'ru-msk-metro-belyaevo',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Коньково': {
+                            code: 'ru-msk-metro-konkovo',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Тёплый стан': {
+                            code: 'ru-msk-metro-teplyiy-stan',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Ясенево': {
+                            code: 'ru-msk-metro-yasenevo',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    }
+                },
+                'Новоясеневская': {
+                    from: {
+                        anchor: 'to::Ленинский-проспект-Ясенево',
+                        dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: 0.02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Новоясеневская': {
+                            code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kaluzhsko_rizhskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_tagansko_kraspresnenskaya = {
+            style: '#774980',
+            type: 'segments',
+            segments: {
+                'Баррикадная-Кузнецкий мост': {
+                    through: {
+                        anchor: 'Тверская::Тверская-Динамо::Замоскворецкая',
+                        ofsHor: 1.75 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2.75 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        anchor: 'through',
+                        ofsHor: -.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    dist: 1.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Баррикадная': {
+                            code: 'ru-msk-metro-krasnopresnenskaya-barrikadnaya',
+                            anchor: 'from',
+                            dist: .06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Краснопресненская::Кольцевая',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                        'Пушкинская': {
+                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
+                            anchor: 'through',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                            transit: 'Тверская::Тверская-Динамо::Замоскворецкая',
+                        },
+                        'Кузнецкий мост': {
+                            code: 'ru-msk-metro-kuznetskiy-most-lubyanka',
+                            anchor: 'from',
+                            dist: 1.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.bottom,
+                            },
+                            transit: 'Лубянка::Охотный ряд-Сокольники::Сокольническая',
+                        },
+                    },
+                },
+                'Улица 1905 года-Полежаевская': {
+                    from: {
+                        anchor: 'from::Баррикадная-Кузнецкий мост',
+                        ofsHor: -.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .63 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Улица 1905 года': {
+                            code: 'ru-msk-metro-ulitsa-1905-goda',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: .2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Беговая': {
+                            code: 'ru-msk-metro-begovaya',
+                            anchor: 'from',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Полежаевская': {
+                            code: 'ru-msk-metro-polejaevskaya',
+                            anchor: 'from',
+                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Север': {
+                    from: {
+                        anchor: 'to::Улица 1905 года-Полежаевская',
+                        ofsHor: -.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -1.26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Октябрьское Поле': {
+                            code: 'ru-msk-metro-oktyabrskoe-pole',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Панфиловская::МЦК',
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                text: 'Октябрьское<br>Поле',
+                                textAlign: 'right',
+                                ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Щукинская': {
+                            code: 'ru-msk-metro-schukinskaya',
+                            anchor: 'from',
+                            dist: .44 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Спартак': {
+                            code: 'ru-msk-metro-spartak',
+                            anchor: '',
+                            dist: (1.26 - .44) / 4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Тушинская': {
+                            code: 'ru-msk-metro-tushinskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Сходненская': {
+                            code: 'ru-msk-metro-shodnenskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Планерная': {
+                            code: 'ru-msk-metro-planernaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Китай-город-Текстильщики': {
+                    through: {
+                        anchor: 'Китай-город::Китай-город::Калужско-Рижская',
+                        ofsHor: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        link: 'to::Баррикадная-Кузнецкий мост',
+                        anchor: 'through',
+                        ofsVer: -4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: -4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    dist: 1.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Китай-город': {
+                            code: 'ru-msk-metro-kitay-gorod',
+                            anchor: 'through',
+                            dist: 0,
+                            transit: 'Китай-город::Китай-город::Калужско-Рижская',
+                        },
+                        'Таганская': {
+                            code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
+                            anchor: 'through',
+                            dist: .57 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Таганская::Кольцевая',
+                        },
+                        'Пролетарская': {
+                            code: 'ru-msk-metro-proletarskaya-krestyanskaya-zastava',
+                            anchor: 'through',
+                            dist: 1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Волгоградский проспект': {
+                            code: 'ru-msk-metro-volgogradskiy-prospekt',
+                            anchor: 'through',
+                            dist: 1.14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Угрешская::МЦК',
+                            label: {},
+                        },
+                        'Текстильщики': {
+                            code: 'ru-msk-metro-tekstilschiki',
+                            anchor: 'through',
+                            dist: 1.41 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                            },
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Китай-город-Текстильщики',
+                        ofsHor: 0.08 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: .8 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кузьминки': {
+                            code: 'ru-msk-metro-kuzminki',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                        },
+                        'Рязанский проспект': {
+                            code: 'ru-msk-metro-ryazanskiy-prospekt',
+                            anchor: '',
+                            dist: .8 / 5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Рязанский<br>проспект',
+                            },
+                        },
+                        'Выхино': {
+                            code: 'ru-msk-metro-vyihino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Лермонтовский проспект': {
+                            code: 'ru-msk-metro-lermontovskiy-prospekt',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Лермонтовский<br>проспект',
+                            },
+                        },
+                        'Жулебино': {
+                            code: 'ru-msk-metro-julebino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Котельники': {
+                            code: 'ru-msk-metro-kotelniki',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//tagansko_kraspresnenskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_lyublinsko_dmitrovskaya = {
+            style: '#B4CC5E',
+            type: 'segments',
+            segments: {
+                'Сретенский бульвар': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.27 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Сретенский бульвар': {
+                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                                text: 'Сретенский<br>бульвар',
+                                textAlign: 'center',
+                            },
+                            transit: [
+                                'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                                'Тургеневская::Тургеневская::Калужско-Рижская',
+                            ],
+                        },
+                    },
+                },
+                'Сретенский бульвар-Трубная': {
+                    from: {
+                        anchor: 'to::Сретенский бульвар',
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: 0.02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                },
+                'Трубная-Бутырская': {
+                    from: {
+                        anchor: 'to::Сретенский бульвар-Трубная',
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.6 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Трубная': {
+                            code: 'ru-msk-metro-tsvetnoy-bulvar-trubnaya',
+                            anchor: 'from',
+                            dist: .02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Достоевская': {
+                            code: 'ru-msk-metro-dostoevskaya',
+                            anchor: 'from',
+                            dist: .33 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Марьина Роща': {
+                            code: 'ru-msk-metro-marina-roscha',
+                            anchor: '',
+                            dist: .11 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Бутырская': {
+                            code: 'ru-msk-metro-butyirskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Фонвизинская-Окружная': {
+                    from: {
+                        anchor: 'to::Трубная-Бутырская',
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Фонвизинская': {
+                            code: 'ru-msk-metro-fonvizinskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                        },
+                        'Петровско-Разумовская': {
+                            code: 'ru-msk-metro-petrovsko-razumovskaya',
+                            anchor: 'from',
+                            dist: 0.14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                ofsVer: -.3 * $$.$nl_scheme_metro_settings_fontSize_label,
+                                ofsHor: .4 * $$.$nl_scheme_metro_settings_default_label_ofsHor,
+                            },
+                        },
+                        'Окружная': {
+                            code: 'ru-msk-metro-okrujnaya',
+                            anchor: 'to',
+                            dist: 0,
+                            transit: 'Окружная::МЦК',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                    },
+                },
+                'Лихоборы-Селигерская': {
+                    from: {
+                        anchor: 'to::Фонвизинская-Окружная',
+                        ofsHor: -0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 0,
+                        ofsVer: -1,
+                    },
+                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Верхние<br>Лихоборы': {
+                            code: 'ru-msk-metro-verhnie-lihoboryi',
+                            anchor: 'from',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Селигерская': {
+                            code: 'ru-msk-metro-seligerskaya',
+                            anchor: '',
+                            dist: .20 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    }
+                },
+                'Чкаловская-Римская': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: 5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'from::Сретенский бульвар',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 1,
+                    },
+                    dist: .795 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Чкаловская': {
+                            code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
+                            anchor: 'from',
+                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Курская::Кольцевая',
+                        },
+                        'Римская': {
+                            code: 'ru-msk-metro-ploschad-ilicha-rimskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                alignVer: $$.$me_align.top,
+                                ofsHor: -.35 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+                'Римская-Крестьянская Застава': {
+                    from: {
+                        anchor: 'to::Чкаловская-Римская',
+                        ofsHor: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 6 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: .1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Крестьянская Застава': {
+                    through: {
+                        anchor: 'Пролетарская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        anchor: 'through',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'to::Римская-Крестьянская Застава',
+                    },
+                    dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Крестьянская Застава': {
+                            code: 'ru-msk-metro-proletarskaya-krestyanskaya-zastava',
+                            anchor: 'through',
+                            dist: 0,
+                            transit: 'Пролетарская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                            label: {
+                                text: 'Крестьянская<br>Застава',
+                                textAlign: 'right',
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: 0.2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Крестьянская Застава',
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 1.3 * $$.$nl_scheme_metro_data_mck_radius,
+                    },
+                    points: {
+                        'Дубровка': {
+                            code: 'ru-msk-metro-dubrovka',
+                            anchor: 'from',
+                            dist: .22 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                            transit: 'Дубровка::МЦК',
+                        },
+                        'Кожуховская': {
+                            code: 'ru-msk-metro-kojuhovskaya',
+                            anchor: 'from',
+                            dist: .42 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {},
+                        },
+                        'Печатники': {
+                            code: 'ru-msk-metro-pechatniki',
+                            anchor: '',
+                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Волжская': {
+                            code: 'ru-msk-metro-voljskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Люблино': {
+                            code: 'ru-msk-metro-lyublino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Братиславская': {
+                            code: 'ru-msk-metro-bratislavskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Марьино': {
+                            code: 'ru-msk-metro-marino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Борисово': {
+                            code: 'ru-msk-metro-borisovo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Шипиловская': {
+                            code: 'ru-msk-metro-shipilovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Зябликово': {
+                            code: 'ru-msk-metro-zyablikovo-krasnogvardeyskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                            transit: 'Красногвардейская::Красногвардейская-Алма-Атинская::Замоскворецкая',
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//lyublinsko_dmitrovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_serpuhovsko_timiryazevskaya = {
+            style: '#ABAEB9',
+            type: 'segments',
+            segments: {
+                'Боровицкая': {
+                    from: {
+                        anchor: 'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                        ofsHor: -0.165 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Боровицкая': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: [
+                                'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                                'Арбатская::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                            ],
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                    },
+                },
+                'Чеховская': {
+                    from: {
+                        anchor: 'Тверская::Тверская-Динамо::Замоскворецкая',
+                        ofsHor: 3.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Чеховская': {
+                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                            transit: [
+                                'Тверская::Тверская-Динамо::Замоскворецкая',
+                                'Пушкинская::Баррикадная-Кузнецкий мост::Таганско-Краспресненская',
+                            ],
+                        },
+                    },
+                },
+                'Чеховская-Цветной бульвар': {
+                    from: {
+                        anchor: 'to::Чеховская',
+                        ofsHor: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.19 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Цветной бульвар-Менделеевская': {
+                    from: {
+                        anchor: 'to::Чеховская-Цветной бульвар',
+                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Цветной бульвар': {
+                            code: 'ru-msk-metro-tsvetnoy-bulvar-trubnaya',
+                            anchor: 'from',
+                            dist: .04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                ofsVer: $$.$nl_scheme_metro_settings_fontSize_label,
+                                textAlign: 'right',
+                                text: 'Цветной<br>бульвар',
+                            },
+                            transit: 'Трубная::Трубная-Бутырская::Люблинско-Дмитровская',
+                        },
+                        'Менделеевская': {
+                            code: 'ru-msk-metro-novoslobodskaya-mendeleevskaya',
+                            anchor: 'from',
+                            dist: .31 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                            },
+                            transit: 'Новослободская::Кольцевая',
+                        },
+                    },
+                },
+                'Савёловская': {
+                    from: {
+                        anchor: 'to::Цветной бульвар-Менделеевская',
+                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.21 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Савёловская': {
+                            code: 'ru-msk-metro-savelovskaya',
+                            anchor: 'from',
+                            dist: .04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Дмитровская-Владыкино': {
+                    from: {
+                        anchor: 'to::Савёловская',
+                        ofsHor: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .355 / 2 * 3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Дмитровская': {
+                            code: 'ru-msk-metro-dmitrovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Тимирязевская': {
+                            code: 'ru-msk-metro-timiryazevskaya',
+                            anchor: 'from',
+                            dist: .355 / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -1 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Петровско-Разумовская': {
+                            code: 'ru-msk-metro-petrovsko-razumovskaya',
+                            anchor: 'from',
+                            dist: .355 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Петровско-Разумовская::Фонвизинская-Окружная::Люблинско-Дмитровская',
+                        },
+                        'Владыкино': {
+                            code: 'ru-msk-metro-vladyikino',
+                            anchor: 'to',
+                            dist: 0,
+                            transit: 'Владыкино::МЦК',
+                        },
+                    },
+                },
+                'Отрадное-Алтуфьево': {
+                    from: {
+                        anchor: 'to::Дмитровская-Владыкино',
+                        ofsHor: 0,
+                        ofsVer: 0,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.64 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Отрадное': {
+                            code: 'ru-msk-metro-otradnoe',
+                            anchor: 'from',
+                            dist: .237 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Бибирево': {
+                            code: 'ru-msk-metro-bibirevo',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Алтуфьево': {
+                            code: 'ru-msk-metro-altufevo',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Чеховская-Боровицкая': {
+                    from: {
+                        anchor: 'from::Чеховская',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    to: {
+                        link: 'to::Боровицкая',
+                    },
+                    dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                },
+                'Боровицкая-Полянка': {
+                    from: {
+                        anchor: 'from::Боровицкая',
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 1,
+                        ofsVer: 1,
+                    },
+                    dist: 0.45 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Полянка': {
+                            code: 'ru-msk-metro-polyanka',
+                            anchor: 'from',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    }
+                },
+                'Серпуховская-Бульвар-Дмитрия-Донского': {
+                    from: {
+                        anchor: 'to::Боровицкая-Полянка',
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: 0.3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 0,
+                        ofsVer: 1,
+                    },
+                    dist: 2.54 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Серпуховскaя': {
+                            code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
+                            anchor: 'from',
+                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Добрынинская::Кольцевая',
+                            label: {},
+                        },
+                        'Тульская': {
+                            code: 'ru-msk-metro-tulskaya',
+                            anchor: 'Серпуховскaя',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Нагатинская': {
+                            code: 'ru-msk-metro-nagatinskaya',
+                            anchor: 'Тульская',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Верхние котлы::МЦК',
+                            label: {},
+                        },
+                        'Нагорная': {
+                            code: 'ru-msk-metro-nagornaya',
+                            anchor: 'Нагатинская',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Нахимовский проспект': {
+                            code: 'ru-msk-metro-nahimovskiy-prospekt',
+                            anchor: 'Нагорная',
+                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Нахимовский<br>проспект',
+                            },
+                        },
+                        'Севастопольская': {
+                            code: 'ru-msk-metro-kahovskaya-sevastopolskaya',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Чертановская': {
+                            code: 'ru-msk-metro-chertanovskaya',
+                            anchor: '',
+                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Южная': {
+                            code: 'ru-msk-metro-yujnaya',
+                            anchor: '',
+                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Пражская': {
+                            code: 'ru-msk-metro-prajskaya',
+                            anchor: '',
+                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Улица Академика Янгеля': {
+                            code: 'ru-msk-metro-ulitsa-akademika-yangelya',
+                            anchor: '',
+                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Улица Академика<br>Янгеля',
+                            },
+                        },
+                        'Аннино': {
+                            code: 'ru-msk-metro-annino',
+                            anchor: '',
+                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Бульвар Дмитрия Донского': {
+                            code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
+                            anchor: '',
+                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Бульвар<br>Дмитрия Донского',
+                            },
+                        },
+                    }
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//serpuhovsko_timiryazevskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_filevskaya = {
+            style: '#459BCF',
+            type: 'segments',
+            segments: {
+                'Александровский сад-Арбатская': {
+                    from: {
+                        anchor: 'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
+                        ofsHor: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.11,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: -1,
+                    },
+                    dist: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.27,
+                    points: {
+                        'Александровский сад': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                            transit: [
+                                'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                                'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
+                                'Арбатская::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                            ],
+                        },
+                        'Арбатская': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                color: '#459BCF',
+                                alignVer: $$.$me_align.bottom,
+                            },
+                        },
+                    },
+                },
+                'Смоленская-Киевская': {
+                    from: {
+                        anchor: 'to::Александровский сад-Арбатская',
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.45 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Смоленская': {
+                            code: 'ru-msk-metro-smolenskaya',
+                            color: '#459BCF',
+                            anchor: 'from',
+                            dist: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                        'Киевская': {
+                            code: 'ru-msk-metro-kievskaya',
+                            anchor: 'from',
+                            dist: 0.358 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: [
+                                'Киевская::Кольцевая',
+                                'Киевская::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                            ],
+                        },
+                    },
+                },
+                'Выставочная': {
+                    from: {
+                        anchor: 'to::Смоленская-Киевская',
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Выставочная': {
+                            code: 'ru-msk-metro-vyistavochnaya-delovoy-tsentr',
+                            anchor: 'from',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Международная': {
+                    from: {
+                        anchor: 'to::Выставочная',
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Международная': {
+                            code: 'ru-msk-metro-mejdunarodnaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                            transit: 'Деловой центр МЦК::МЦК',
+                        },
+                    },
+                },
+                'Студенческая': {
+                    from: {
+                        anchor: 'to::Смоленская-Киевская',
+                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Студенческая': {
+                            code: 'ru-msk-metro-studencheskaya',
+                            anchor: 'from',
+                            label: {},
+                            dist: .33 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        },
+                    },
+                },
+                'Кутузовская': {
+                    from: {
+                        anchor: 'to::Студенческая',
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.65 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кутузовская': {
+                            code: 'ru-msk-metro-kutuzovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Кутузовская::МЦК',
+                        },
+                    },
+                },
+                'Фили-Кунцевская': {
+                    from: {
+                        anchor: 'to::Кутузовская',
+                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.82 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Фили': {
+                            code: 'ru-msk-metro-fili',
+                            anchor: 'from',
+                            dist: .03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Багратионовская': {
+                            code: 'ru-msk-metro-bagrationovskaya',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Филёвский парк': {
+                            code: 'ru-msk-metro-filevskiy-park',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Пионерская': {
+                            code: 'ru-msk-metro-pionerskaya',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Кунцевская': {
+                            code: 'ru-msk-metro-kuntsevskaya-kuntsevskaya',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Кунцевская::Кунцевская-Пятницкое-Шоссе::Арбатско-Покровская',
+                        },
+                    },
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//filevskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kalininskaya = {
+            style: '#F1C959',
+            type: 'segments',
+            segments: {
+                'Третьяковская': {
+                    from: {
+                        anchor: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                        ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: .48 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Третьяковская': {
+                            anchor: 'from',
+                            dist: 0,
+                            transit: [
+                                'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                                'Третьяковская::Третьяковская::Калужско-Рижская',
+                            ],
+                        },
+                    },
+                },
+                'Марксистская-Новокосино': {
+                    from: {
+                        anchor: 'Таганская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'to::Третьяковская',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 1,
+                        ofsVer: -1,
+                    },
+                    dist: 1.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Марксистская': {
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.center,
+                                ofsHor: 2 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                            transit: [
+                                'Таганская::Кольцевая',
+                                'Таганская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                            ],
+                        },
+                        'Площадь Ильича': {
+                            anchor: 'from',
+                            dist: .43 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Римская::Чкаловская-Римская::Люблинско-Дмитровская',
+                            label: {
+                                text: 'Площадь<br>Ильича',
+                                ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Авиамоторная': {
+                            anchor: 'from',
+                            dist: (.43 + .83) / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Шоссе Энтузиастов': {
+                            anchor: 'from',
+                            dist: .83 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Шоссе Энтузиастов::МЦК',
+                        },
+                        'Перово': {
+                            anchor: 'from',
+                            dist: (2 * .83 - (.43 + .83) / 2) * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Новогиреево': {
+                            anchor: '',
+                            dist: (1.4 - (2 * .83 - (.43 + .83) / 2)) / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Новокосино': {
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kalininskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_solncevskaya_biryuzovaya = {
+            style: '#bdc38b',
+            segments: {
+                'Савёловская': {
+                    from: {
+                        anchor: 'Савёловская::Савёловская::Серпуховско-Тимирязевская',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Савёловская': {
+                            code: 'ru-msk-metro-savelovskaya',
+                            anchor: 'from',
+                            transit: 'Савёловская::Савёловская::Серпуховско-Тимирязевская',
+                            dist: 0,
+                        },
+                    },
+                },
+                'Петровский парк-Хорошёвская': {
+                    from: {
+                        anchor: 'to::Савёловская',
+                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: .9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Петровский парк': {
+                            code: 'ru-msk-metro-dinamo',
+                            anchor: 'from',
+                            dist: 0.21 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Динамо::Тверская-Динамо::Замоскворецкая',
+                            label: {},
+                        },
+                        'ЦСКА': {
+                            code: 'ru-msk-metro-tsska',
+                            anchor: '',
+                            dist: 0.23 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Хорошёвская': {
+                            code: 'ru-msk-metro-polejaevskaya',
+                            anchor: '',
+                            dist: 0.19 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Полежаевская::Улица 1905 года-Полежаевская::Таганско-Краспресненская',
+                            label: {},
+                        },
+                    }
+                },
+                'Шелепиха': {
+                    from: {
+                        anchor: 'to::Петровский парк-Хорошёвская',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 0.135 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Шелепиха': {
+                            code: 'ru-msk-metro-shelepiha',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Шелепиха::МЦК',
+                        },
+                    },
+                },
+            },
+        };
+        $$.$nl_scheme_metro_data_solncevskaya = {
+            style: '#F3C95A',
+            segments: {
+                'Шелепиха-Парк Победы': {
+                    from: {
+                        anchor: 'to::Шелепиха::Солнцевская-Бирюзовая',
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 0.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Парк Победы': {
+                    from: {
+                        anchor: 'to::Шелепиха-Парк Победы',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: 0.55 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Парк Победы': {
+                            code: 'ru-msk-metro-park-pobedyi-park-pobedyi',
+                            anchor: 'from',
+                            dist: 0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Парк Победы::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Парк Победы',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 1.2 * $$.$nl_scheme_metro_data_mck_radius,
+                    },
+                    points: {
+                        'Минская': {
+                            code: 'ru-msk-metro-minskaya',
+                            anchor: 'from',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {}
+                        },
+                        'Ломоносовский проспект': {
+                            code: 'ru-msk-metro-lomonosovskiy-prospekt',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Ломоносовский<br>проспект',
+                            }
+                        },
+                        'Раменки': {
+                            code: 'ru-msk-metro-ramenki',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Мичуринский проспект': {
+                            code: 'ru-msk-metro-michurinskiy-prospekt',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Мичуринский<br>проспект',
+                            }
+                        },
+                        'Озерная': {
+                            code: 'ru-msk-metro-ochakovo',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Говорово': {
+                            code: 'ru-msk-metro-govorovo',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Солнцево': {
+                            code: 'ru-msk-metro-solntsevo',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Боровское шоссе': {
+                            code: 'ru-msk-metro-borovskoe-shosse',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Боровское<br>шоссе'
+                            }
+                        },
+                        'Новопеределкино': {
+                            code: 'ru-msk-metro-novoperedelkino',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Рассказовка': {
+                            code: 'ru-msk-metro-rasskazovka-uzel',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                    },
+                },
+            },
+        };
+        $$.$nl_scheme_metro_data_biruzovaya = {
+            style: '#87BDBC',
+            segments: {
+                'Деловой центр': {
+                    from: {
+                        anchor: 'to::Шелепиха::Солнцевская-Бирюзовая',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        link: 'to::Шелепиха::Солнцевская-Бирюзовая',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 1,
+                    },
+                    dist: 0.04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Деловой центр': {
+                            code: 'ru-msk-metro-vyistavochnaya-delovoy-tsentr',
+                            anchor: 'to',
+                            dist: 0,
+                            transit: 'Выставочная::Выставочная::Филевская',
+                            label: {
+                                text: 'Деловой<br>центр',
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//solncevskaya_biryuzovaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_nekrasovskaya = {
+            style: '#EFC0D0',
+            type: 'segments',
+            segments: {
+                'Косино': {
+                    from: {
+                        anchor: 'Лермонтовский проспект::Юг::Таганско-Краспресненская',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 0,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 0,
+                    },
+                    dist: 0.9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Косино': {
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Лермонтовский проспект::Юг::Таганско-Краспресненская',
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            }
+                        },
+                        'Улица Дмитриевского': {
+                            anchor: '',
+                            dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Улица<br>Дмитриевского',
+                            },
+                        },
+                        'Лухмановская': {
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Некрасовка': {
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//nekrasovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kahovskaya = {
+            style: '#64bebb',
+            type: 'segments',
+            segments: {
+                'Каширская-Варшавская': {
+                    from: {
+                        anchor: 'Каширская::Павелецкая-Домодедовская::Замоскворецкая',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 0,
+                        ofsHor: -1,
+                    },
+                    dist: 0.27 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Каширская': {
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Каширская::Павелецкая-Домодедовская::Замоскворецкая',
+                        },
+                        'Варшавская': {
+                            anchor: '',
+                            dist: 0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kahovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data = {
+            settings: {
+                scale_max: 3,
+                width: $$.$nl_scheme_metro_settings_width,
+                height: $$.$nl_scheme_metro_settings_height,
+                root: $$.$nl_scheme_metro_settings_root,
+                fontSize_label: $$.$nl_scheme_metro_settings_fontSize_label,
+                defaults: {
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                        ofsHor: (alignHor, alignVer) => alignHor == $$.$me_align.center ?
+                            0 :
+                            alignVer == $$.$me_align.center ?
+                                $$.$nl_scheme_metro_settings_default_label_ofsHor :
+                                -$$.$nl_scheme_metro_settings_circle_radius / 4,
+                        ofsVer: (alignHor, alignVer) => alignVer == $$.$me_align.center ?
+                            0 :
+                            alignHor == $$.$me_align.center ?
+                                $$.$nl_scheme_metro_settings_default_label_ofsVer :
+                                -$$.$nl_scheme_metro_settings_circle_radius / 4,
+                    },
+                },
+                circle_radius: $$.$nl_scheme_metro_settings_circle_radius,
+                circle_thick: $$.$nl_scheme_metro_settings_circle_thick,
+                thick_line: $$.$nl_scheme_metro_settings_thick_line,
+                thick_transit: $$.$nl_scheme_metro_settings_thick_transit,
+            },
+            'Кольцевая': $$.$nl_scheme_metro_data_kolcevaya,
+            'МЦК': $$.$nl_scheme_metro_data_mck,
+            'Сокольническая': $$.$nl_scheme_metro_data_sokolnicheskaya,
+            'Замоскворецкая': $$.$nl_scheme_metro_data_zamoskvoreckaya,
+            'Калужско-Рижская': $$.$nl_scheme_metro_data_kaluzhsko_rizhskaya,
+            'Таганско-Краспресненская': $$.$nl_scheme_metro_data_tagansko_kraspresnenskaya,
+            'Люблинско-Дмитровская': $$.$nl_scheme_metro_data_lyublinsko_dmitrovskaya,
+            'Арбатско-Покровская': $$.$nl_scheme_metro_data_arbatsko_pokrovskaya,
+            'Серпуховско-Тимирязевская': $$.$nl_scheme_metro_data_serpuhovsko_timiryazevskaya,
+            'Филевская': $$.$nl_scheme_metro_data_filevskaya,
+            'Калининская': $$.$nl_scheme_metro_data_kalininskaya,
+            'Солнцевская-Бирюзовая': $$.$nl_scheme_metro_data_solncevskaya_biryuzovaya,
+            'Солнцевская': $$.$nl_scheme_metro_data_solncevskaya,
+            'Бирюзовая': $$.$nl_scheme_metro_data_biruzovaya,
+            'Бутовская': $$.$nl_scheme_metro_data_butovskaya,
+            'Некрасовская': $$.$nl_scheme_metro_data_nekrasovskaya,
+            'Каховская': $$.$nl_scheme_metro_data_kahovskaya,
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//data.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro = {
+            base: $$.$nl_scheme_engine,
+            prop: {
+                data: () => $$.$nl_scheme_metro_data,
+                background_station: () => 'white',
+                background_station_selected: () => 'red',
+                background_station_will_select: () => '#F8CFD3',
+                background_station_will_deselect: () => '#3F88DE',
+                colorText_will_select: () => '#D5483E',
+                colorText_will_deselect: '.background_station_will_deselect',
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//metro.js.map
 ;
 "use strict";
 var $;
@@ -4952,53 +9477,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$me_cross = {
-            type: '$me_cross',
-            base: $$.$me_stylesheet,
-            prop: {
-                size: $$.$me_atom2_prop_abstract(),
-                thick: $$.$me_atom2_prop_abstract(),
-                color: $$.$me_atom2_prop_abstract(),
-                opacity: () => 1,
-                opacityHover: () => 1,
-                '#width': '.size',
-                '#height': '.size',
-                styleSheetName: () => 'me_cross',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
-        .${className}:before {
-          transform: rotate(45deg);
-        }
-        .${className}:after {
-          transform: rotate(-45deg);
-        }
-      `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
-        .${className} {
-          opacity: ${opacity};
-        }
-        .${className}:hover {
-          opacity: ${opacityHover};
-        }
-        .${className}:before, .${className}:after {
-          position: absolute;
-          left: ${(size - thick) / 2}px;
-          content: '';
-          height: ${size}px;
-          width: ${thick}px;
-          background-color: ${color};
-        }
-      `),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//cross.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$nl_icon_phoneemail = {
             type: '$nl_icon_phoneemail',
             base: $$.$me_svg,
@@ -5232,6 +9710,8 @@ var $;
 })($ || ($ = {}));
 //eyeOpen.js.map
 ;
+
+;
 "use strict";
 var $;
 (function ($) {
@@ -5257,6 +9737,8 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //eyeClose.js.map
+;
+
 ;
 "use strict";
 var $;
@@ -5430,7 +9912,7 @@ var $;
             elem: {
                 tab: $$.$me_atom2_prop({ keys: ['.tab_ids'], masters: ['.selected', '.def'] }, ({ key: [id], masters: [selected, def] }) => !def[id].condition(selected) ? null :
                     {
-                        prop: Object.assign(Object.assign({}, def[id].prop), { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
+                        prop: Object.assign({}, def[id].prop, { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
                         event: {
                             clickOrTap: () => {
                                 $$.a('<.selected', id);
@@ -5578,11 +10060,11 @@ var $;
                             null :
                             {
                                 base: $$.$nl_logo_icon,
-                                prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': () => 56 }),
+                                prop: Object.assign({}, logo_props, { '#ofsVer': () => 56 }),
                             }),
                         logo_word: () => ({
                             base: $$.$nl_logo_word,
-                            prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
+                            prop: Object.assign({}, logo_props, { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
                                     ['.#ofsVer', '.#height'].map(s => '<@logo_icon' + s)), ({ len, masters: [ofsVer, height] }) => !len ? 56 : ofsVer + height + 15) }),
                         }),
                         tabs: () => ({
@@ -5790,24 +10272,566 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_panel = {
+            style: {
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                borderRadius: () => '2px',
+                boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_main_workspace = {
-            prop: {},
+            prop: {
+                sections: () => ({
+                    promo: {
+                        caption: '[ NEW! ]',
+                    },
+                    news: {
+                        caption: 'Новости',
+                    },
+                    orders: {
+                        caption: 'Заказы',
+                    },
+                    alpha: {
+                        caption: 'Альфа Банк',
+                    },
+                    absolut: {
+                        caption: 'Абсолют Банк',
+                    },
+                    face: {
+                        caption: 'Раскрытие лица',
+                    },
+                }),
+                section_ids: $$.$me_atom2_prop_keys(['.sections']),
+                selected: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.section_ids')[0],
+                    valid: (val) => val == $$.a('.sections')[val] ? val : null,
+                }),
+            },
             elem: {
-                label1: () => ({
+                promo: () => ({
+                    base: $$.$nl_panel,
                     prop: {
-                        '#height': () => null,
-                        '#width': () => null,
-                        '#ofsHor': '.pm',
-                        '#ofsVer': () => 50,
+                        '#ofsHor': '.em',
+                        '#ofsVer': () => 54,
+                        '#width': () => 619,
+                        '#height': () => 87,
                     },
-                    style: {
-                        fontSize: () => 16,
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                                color: () => '#e34741',
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('promo', sections).toUpperCase()),
+                            },
+                        }),
+                        more: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#ofsVer': '.em',
+                                '#ofsHor': '.em',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                fontSize: () => 12,
+                            },
+                            dom: {
+                                innerText: () => 'Подробнее'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        text: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': () => 43,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerHTML: () => '<b>СМА (Сравнительный Маркетинговый Анализ)</b> квартир в Москве и МО за 3 минуты в формате PDF. Анализ квартиры по 375 параметрам: БТИ, Росреестр, жкх, банки и т.д.',
+                            },
+                        }),
                     },
-                    dom: {
-                        innerText: () => 'Главная страница',
+                }),
+                news: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
+                        '#width': () => 619,
+                        '#height': () => 300,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('news', sections).toUpperCase()),
+                            },
+                        }),
+                        more: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#ofsVer': '.em',
+                                '#ofsHor': '.em',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                fontSize: () => 12,
+                            },
+                            dom: {
+                                innerText: () => 'Посмотреть все новости'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        news1: () => ({
+                            base: news_item,
+                            prop: {
+                                '#ofsHor': '.em',
+                                '#ofsVer': () => 46,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                caption: () => 'Функционал Объявлений только от Собственников',
+                                imageUrl: () => 'https://baza-winner.ru/img/news/thumbnail/sob.jpg',
+                                text: () => 'Вы можете искать собственников очень просто на всех площадках по недвижимости в один клик, всего лишь поставьте галочку "Только от собственников" на форме фильтров.',
+                                url: () => 'https://alpha0.baza-winner.ru/item?guid=139',
+                                date: () => '11.06.2019',
+                            }
+                        }),
+                        news2: () => ({
+                            base: news_item,
+                            prop: {
+                                '#ofsHor': '.em',
+                                '#ofsVer': $$.$me_atom2_prop(['<@news1.#ofsVer', '<@news1.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + 100 + ofs2),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                caption: () => '27 мая в Москве пройдет конференция, организованная ГРМ и Райффайзен банком.',
+                                imageUrl: () => 'http://baza-winner.ru/img/news/thumbnail/conferense.png',
+                                text: () => 'Ипотечные продукты, налоги, связанные с приобретением недвижимости, и практические вопросы о риэлторской деятельности.',
+                                url: () => 'https://alpha0.baza-winner.ru/item?guid=137',
+                                date: () => '15.05.2019',
+                            }
+                        })
+                    },
+                }),
+                orders: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em', '<@news.#height',], ({ masters: [ofs, height, ofs2, height2] }) => ofs + height + ofs2 + height2 + ofs2),
+                        '#width': () => 619,
+                        '#height': () => 135,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('orders', sections).toUpperCase()),
+                            },
+                        }),
+                        more: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#ofsVer': '.em',
+                                '#ofsHor': '.em',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                fontSize: () => 12,
+                            },
+                            dom: {
+                                innerText: () => 'Посмотреть все заказы'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                    },
+                }),
+                alpha: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsVer': () => 54,
+                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
+                        '#width': () => 179,
+                        '#height': () => 142,
+                    },
+                    elem: {
+                        svg: () => ({
+                            prop: {
+                                '#ofsVer': () => 12,
+                                '#ofsHor': () => 19,
+                            },
+                            dom: {
+                                innerHTML: () => `
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="78" height="17" viewBox="0 0 78 17">
+                  <defs>
+                      <path id="a" d="M0 15.91h76.666V.083H0z"/>
+                  </defs>
+                  <g fill="none" fill-rule="evenodd">
+                      <path fill="#EF3124" d="M74.762 4.09l-2.656 2.8v-2.8h-1.922v7.07h1.922V8.185l2.843 2.977h2.483l-3.497-3.706 3.243-3.366zM67.011 6.727h-2.714V4.089h-1.965v7.072h1.965V8.372h2.714v2.789h1.965V4.089h-1.965z"/>
+                      <g transform="translate(.724 .554)">
+                          <path fill="#EF3124" d="M11.24 7.19c-.045 1.392-.224 1.67-1 1.67v1.75h.29c1.935 0 2.4-1.007 2.472-3.247l.078-2.478h1.815v5.725h1.893V3.15H11.37l-.131 4.04zM21.348 8.967h-1.222V7.072h1.222c.657 0 1.052.291 1.052.914 0 .676-.381.98-1.052.98m.145-3.55h-1.367V3.148h-1.893v7.46h3.286c2.064 0 2.8-1.35 2.8-2.623 0-1.643-1.025-2.57-2.826-2.57M30.485 8.98V4.766c1.051.146 1.709.94 1.709 2.107 0 1.166-.658 1.961-1.71 2.107zm-1.893 0c-1.052-.146-1.71-.941-1.71-2.107 0-1.166.658-1.961 1.71-2.107V8.98zm1.893-6.003V.207h-1.893v2.77c-2.17.185-3.629 1.736-3.629 3.896 0 2.173 1.46 3.724 3.629 3.91v2.809h1.893v-2.81c2.169-.172 3.628-1.736 3.628-3.91 0-2.172-1.46-3.723-3.628-3.895zM39.319 7.827c0 .861-.605 1.352-1.394 1.352-.683 0-1.222-.252-1.222-.994 0-.73.591-.848 1.104-.848h1.512v.49zm1.893.49V5.813c0-1.829-1.157-2.982-3.102-2.982-2.012 0-3.077 1.22-3.169 2.491h1.92c.065-.278.355-.755 1.249-.755.736 0 1.209.345 1.209 1.246h-1.88c-1.683 0-2.682.888-2.682 2.372 0 1.55 1.093 2.61 2.669 2.61 1.155 0 1.797-.55 2.077-.967.25.504.802.782 1.525.782h.657V8.887c-.342 0-.473-.159-.473-.57zM49.231 8.728h-2.024V6.025h2.024c1.052 0 1.643.49 1.643 1.351 0 .888-.591 1.352-1.643 1.352m.092-4.519h-2.116V2.102h4.903V.207h-6.888V10.61h4.101c2.274 0 3.576-1.14 3.576-3.234 0-1.974-1.302-3.167-3.576-3.167M58.25 7.827c0 .861-.605 1.352-1.394 1.352-.684 0-1.223-.252-1.223-.994 0-.73.592-.848 1.104-.848h1.512v.49zm1.892.49V5.813c0-1.829-1.157-2.982-3.102-2.982-2.011 0-3.076 1.22-3.168 2.491h1.919c.066-.278.355-.755 1.249-.755.736 0 1.21.345 1.21 1.246h-1.88c-1.683 0-2.682.888-2.682 2.372 0 1.55 1.093 2.61 2.668 2.61 1.156 0 1.797-.55 2.077-.967.25.504.802.782 1.525.782h.658V8.887c-.342 0-.474-.159-.474-.57z"/>
+                          <mask id="b" fill="#fff">
+                              <use xlink:href="#a"/>
+                          </mask>
+                          <path fill="#EF3124" d="M0 15.91h10.123v-2.12H0zM3.615 6.674l1.42-4.254h.052l1.341 4.254H3.615zm3.286-5.04C6.613.768 6.28.083 5.141.083 4 .082 3.645.764 3.341 1.635L.21 10.61h2.077l.723-2.134h3.997l.67 2.134h2.209L6.9 1.635z" mask="url(#b)"/>
+                      </g>
+                  </g>
+              </svg>
+            `
+                            },
+                        }),
+                        title1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 41,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerText: () => 'Публикация в Альфа Банк',
+                            },
+                        }),
+                        title2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 59,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerText: () => 'Дисконт на % ставку',
+                            },
+                        }),
+                        title3: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 76,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerText: () => 'Поток заявок от клиентов',
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 140,
+                                '#height': () => 24,
+                                '#ofsVer': () => 101,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Стать партнером',
+                                target: () => '<',
+                                fontSize: () => 12,
+                            },
+                            style: {
+                                background: () => '#ef3124',
+                                borderRadius: () => '4px',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+                absolut: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<@alpha.#ofsVer', '<@alpha.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
+                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
+                        '#width': () => 179,
+                        '#height': () => 121,
+                    },
+                    elem: {
+                        svg: () => ({
+                            prop: {
+                                '#ofsVer': () => 12,
+                                '#ofsHor': () => 19,
+                            },
+                            dom: {
+                                innerHTML: () => `
+              <svg xmlns="http://www.w3.org/2000/svg" width="92" height="19" viewBox="0 0 92 19">
+                  <g fill="none" fill-rule="evenodd">
+                      <path fill="#E15D29" d="M3.314 12.527l1.826 1.787v-4.068c0-.79-.448-1.758-1.014-2.302L2.321 6.177v4.07c0 .78.45 1.757.993 2.28zm6.054 5.854l-3.18-3.045c-.63-.606-1.724-1.022-2.627-1.022H.912l3.175 3.041a3.793 3.793 0 0 0 2.536 1.026h2.745zM5.14 6.248c0-.881.415-1.813 1.067-2.44L9.367.753v2.55c0 .867-.431 1.92-1.062 2.527L5.14 8.889v-2.64z"/>
+                      <path fill="#595A59" d="M53.229 12.5c0 .328-.27.59-.608.59l-1.765.003a.598.598 0 0 1-.608-.587v-2.352c0-.323.274-.585.608-.585l1.765-.005c.338 0 .608.262.608.585V12.5zm-.302-4.113l-2.32.006c-1.003 0-1.821.79-1.821 1.761v.412h-1.274V8.393h-1.518v5.875h1.518v-2.527h1.274v.765c0 .97.818 1.762 1.821 1.762l2.32-.005c1 0 1.82-.792 1.82-1.762v-2.352c0-.97-.82-1.762-1.82-1.762zm-12.278.006h3.867v5.875H43V9.57l-2.049-.001a.596.596 0 0 0-.606.585v2.352c0 .97-.817 1.762-1.822 1.762h-.487v-1.175h.184a.597.597 0 0 0 .606-.587v-2.352c0-.97.817-1.761 1.823-1.761zM12.324 11.33l1.387-3.76 1.42 3.76h-2.807zm.485-5.289l-3.441 8.227h1.872l.65-1.762h3.685l.668 1.762h1.81L14.61 6.041h-1.8zm42.492 2.352h5.357v1.176h-1.921v4.699h-1.515V9.569H55.3V8.393zm-32.359 4.113a.598.598 0 0 1-.607.587h-1.82a.596.596 0 0 1-.608-.587V10.153a.597.597 0 0 1 .607-.584h1.821c.334 0 .607.262.607.585v2.352zm-.303-4.113h-1.671c-.395 0-.76.123-1.06.33v-.92c0-.323.271-.585.606-.585h3.217V6.041H20.21c-1.003 0-1.82.791-1.82 1.762v4.703c0 .97.816 1.762 1.82 1.762h2.429c1.004 0 1.82-.792 1.82-1.762v-2.352c0-.97-.816-1.761-1.82-1.761zm13.281 4.113a.598.598 0 0 1-.607.587h-1.82a.597.597 0 0 1-.608-.587v-2.352c0-.323.272-.585.608-.585h1.82c.333 0 .607.262.607.585v2.352zm-.305-4.113h-2.428c-1.002 0-1.82.79-1.82 1.761v2.352c0 .97.818 1.762 1.82 1.762h2.428c1.006 0 1.823-.792 1.823-1.762v-2.352c0-.97-.817-1.761-1.823-1.761zm-8.642 1.761v2.352c0 .326.27.587.606.587h2.999v1.175h-3.304c-1.002 0-1.82-.792-1.82-1.762v-2.352c0-.97.818-1.761 1.82-1.761h3.304v1.176h-2.999a.596.596 0 0 0-.606.585zm41.336 1.696c0 .686-.575 1.243-1.284 1.243h-2.322v-3.02h2.322c.709 0 1.284.555 1.284 1.243v.534zm-.792-2.955h-2.814V7.217h4.674V6.04h-6.19v8.227h4.33c1.38 0 2.5-1.082 2.5-2.418v-.534c0-1.335-1.12-2.421-2.5-2.421zm20.107 2.846h-.553v2.527h-1.52V8.393h1.52v2.173h.555l2.006-2.173h1.707l-2.56 2.766 2.733 3.109h-1.9l-1.988-2.527zm-12.23 1.352h-2.43a.598.598 0 0 1-.61-.587v-.062c0-.326.272-.591.61-.591h2.43v1.24zm-.307-4.7h-3.822v1.176h3.518a.6.6 0 0 1 .611.585v.524h-2.736c-1.002 0-1.82.791-1.82 1.766v.062c0 .97.818 1.762 1.82 1.762h4.249v-4.114c0-.97-.816-1.761-1.82-1.761zm7.614 0h1.518v5.875H82.7v-2.527h-2.973v2.527h-1.52V8.393h1.52v2.173h2.973V8.393z"/>
+                  </g>
+              </svg>
+            `
+                            },
+                        }),
+                        title1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 42,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerHTML: () => 'Дисконт 1% на ипотечную ставку',
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 140,
+                                '#height': () => 24,
+                                '#ofsVer': () => 80,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Стать партнером',
+                                target: () => '<',
+                                fontSize: () => 12,
+                            },
+                            style: {
+                                background: () => '#ff6600',
+                                borderRadius: () => '4px',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+                face: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<@alpha.#ofsVer', '<@alpha.#height', '.em', '<@absolut.#height',], ({ masters: [ofs, height, ofs2, height2] }) => ofs + height + ofs2 + height2 + ofs2),
+                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
+                        '#width': () => 179,
+                        '#height': () => 161,
+                    },
+                    elem: {
+                        title1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 14,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 12,
+                                fontWeight: () => 700,
+                            },
+                            dom: {
+                                innerText: () => 'Уважаемый клиент!',
+                            },
+                        }),
+                        title2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 36,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerHTML: () => 'Для публикации в "зелёной зоне" Вам необходимо раскрыть своё лицо',
+                            },
+                        }),
+                        title3: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 83,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                                fontStyle: () => 'italic',
+                            },
+                            dom: {
+                                innerHTML: () => 'Публикация в "зелёной зоне" бесплатна',
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 140,
+                                '#height': () => 24,
+                                '#ofsVer': () => 121,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Раскрыть лицо',
+                                target: () => '<',
+                                fontSize: () => 12,
+                            },
+                            style: {
+                                borderRadius: () => '4px',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
                     },
                 }),
             },
+        };
+        const news_item = {
+            prop: {
+                '#height': () => 100,
+                caption: $$.$me_atom2_prop_abstract(),
+                imageUrl: $$.$me_atom2_prop_abstract(),
+                text: $$.$me_atom2_prop_abstract(),
+                url: $$.$me_atom2_prop_abstract(),
+                date: $$.$me_atom2_prop_abstract(),
+            },
+            elem: {
+                image: () => ({
+                    node: 'img',
+                    prop: {
+                        '#width': () => 130,
+                        '#height': () => 97,
+                        '#ofsHor': () => 0,
+                        '#ofsVer': () => 0,
+                    },
+                    attr: {
+                        src: '<.imageUrl',
+                    },
+                }),
+                title: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsVer': '<@icon1.#ofsVer',
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                    },
+                    style: {
+                        fontFamily: () => 'system-ui',
+                        fontSize: () => 12,
+                        fontWeight: () => 500,
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    },
+                }),
+                text: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': $$.$me_atom2_prop(['<.#width', '<@image.#width', '.em'], ({ masters: [width, img_width, ofs] }) => width - img_width - ofs),
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer', '<@title.#height'], ({ masters: [ofs, height] }) => ofs + height + 10),
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                    },
+                    style: {
+                        fontFamily: () => 'system-ui',
+                        fontSize: () => 12,
+                        fontWeight: () => 400,
+                    },
+                    dom: {
+                        innerText: '<.text',
+                    },
+                }),
+                more: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                        '#cursor': () => 'pointer',
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        fontSize: () => 12,
+                    },
+                    dom: {
+                        innerText: () => 'Подробнее'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log('link');
+                            return true;
+                        },
+                    },
+                }),
+                date: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
+                        '#alignHor': () => $$.$me_align.right,
+                        fontSize: () => 10,
+                    },
+                    dom: {
+                        innerText: '<.date'
+                    },
+                    style: {
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#6a6c74' : '#d0d0d0'),
+                    },
+                }),
+            }
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -5856,22 +10880,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //tabs.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_panel = {
-            style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
-                borderRadius: () => '2px',
-                boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
 ;
 "use strict";
 var $;
@@ -6204,16 +11212,16 @@ var $;
     (function ($$) {
         $$.$me_panel = {
             type: '$me_panel',
-            prop: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
+            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
                 'borderRadiusLeftTop', 'borderRadiusRightTop',
                 'borderRadiusLeftBottom', 'borderRadiusRightBottom',
-            ])), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground'])), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
                 ['paddingHor', ['paddingLeft', 'paddingRight']],
                 ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ])), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
                 ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
                 ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ])), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
                 ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
                 ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
             ])),
@@ -6305,13 +11313,13 @@ var $;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign(Object.assign(Object.assign(Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer'])), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer'])), { _text_n_ctxLeft: $$.$me_atom2_prop([
+            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
                     '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
                 ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
                     const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
                     return result;
-                }) }), $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
                 '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
                 '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
             })),
@@ -6908,7 +11916,7 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign(Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
+            prop: Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
                     keys: ['.curtain'],
                     masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
                         if (curtain == 'top') {
@@ -6941,7 +11949,7 @@ var $;
                 }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')), row_i_min: () => 0, row_i_max: () => -1 }, $$.$me_atom2_prop_same_def(() => 0, [
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
-            ])), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
+            ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
                         const key = +row_i;
@@ -8159,6 +13167,379 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_scheme_mo = {
+            dispatch(dispatch_name, dispatch_arg) {
+                if (dispatch_name == 'close_scheme') {
+                    console.log('eeeeeeeeee');
+                    $$.a('.isShown', false);
+                    return true;
+                }
+            },
+            prop: {
+                isShown: () => true,
+                '#width': '/.#viewportWidth',
+                '#height': '/.#viewportHeight',
+                '#ofsHor': () => 0,
+                '#ofsVer': () => 0,
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+            },
+            style: {
+                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
+                border: () => '1px solid red',
+            },
+            elem: {
+                cross: () => ({
+                    base: $$.$me_cross,
+                    prop: {
+                        size: () => 24,
+                        thick: () => 3,
+                        '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer'], $$.$me_atom2_prop_compute_fn_sum(2)),
+                        '#alignHor': () => $$.$me_align.right,
+                        color: '/.colorText',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 900),
+                        '#cursor': () => 'pointer',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log('zzz');
+                            $$.a.dispatch('<<', 'close_scheme');
+                            return true;
+                        },
+                    },
+                }),
+                svg: () => ({
+                    prop: {
+                        '#ofsVer': () => 40,
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log('zzz');
+                            $$.a.dispatch('<', 'close_scheme');
+                            return true;
+                        },
+                    },
+                    dom: {
+                        innerHTML: () => `
+<svg id="scheme" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="100%" height="100%" viewBox="0 0 25220 23850">
+    <style>
+      .all {
+        stroke: var(--bw-geo-scheme-mo-border-color, lightgray);
+        stroke-width: 150;
+        stroke-linejoin: bevel;
+        fill: none;
+      }
+      .county text {
+        font-family: var(--bw-theme-primary-font-family);
+        font-size: calc(var(--bw-theme-primary-font-size) * 29);
+        fill: gray;
+        stroke: none;
+        letter-spacing: .1;
+        -webkit-user-select: none;
+        cursor: pointer;
+      }
+      .county.go text { font-size: 360px; fill:#000; }
+      .county path {
+        fill: white;
+        stroke: #ccc0a3;
+        stroke-width: 20;
+        stroke-linejoin:bevel;
+        cursor: pointer;
+      }
+      .county:hover text {
+        fill: var(--bw-theme-primary-text-color);
+      }
+      .county:hover path {
+        fill: #ffe6e6;
+      }
+      .county.selected text {
+        fill: var(--bw-theme-primary-text-color)
+      }
+      .county.selected path {
+        fill: #ff8282;
+      }
+      .county.will-be-deselected:hover text {
+        fill: var(--bw-theme-primary-text-color);
+      }
+      .county.will-be-deselected:hover path {
+        fill: #94c0e6
+      }
+
+      .town text {font-family:arial,sans-serif;font-size:300px;-webkit-user-select:none;cursor:pointer;fill:#0b0080!important}
+      .town circle {fill:#FFFFFF;stroke:#000000;stroke-width:26px;cursor:pointer}
+      .town.selected circle, .town.small.selected circle {fill:#777777}
+
+    </style>
+    <path class="all" d="m12780 1l-135 175-135-45-20 90-505 196-80 231 245 160-215 70 85 211-185 120-225 446-115-211-500 155-40 155-280-110-170 240-45-5-80-195 35-30h35l25-120-145 15-20 120-185 10-45-95-320 110 25 70-190 60 535 496-100 55 10 100-140 45 170 135-25 80-205 95 115 221-70 120 135 115-270 431-50-35-75-50-30 110-500-85 90-151-410-95-70-120-35 90-395-170 55 190-800 456 75 236-275-196-105 166-240-5-5 241-470-15-65-115-365 336-345 105-105 211-160-25v20 90l-470-115-100 291-120-35-50 456-130-5-10-160 70-30-120-146-460-25-25 65-415-15-35-125-105 50-35-75 135-50-235-35v-55l-65-10-180 145-170-5-15-205-70 25-165-201 40-120-175-30 20-90-160 55-35-206h-90l-390 411h-140l-115-75 60-65-85-105h-175l-30 120 160 145-135 5-60 406 315-10 80-145 95 35 40 15-130 266-70-90-40 446 120 70-180 60 135 196-115 5 180 246-215 170-265-85-15 50-455 130 45 190 195 100-75 100 70 60-330 286 100 100-165 90 25 186 160-25 110 100-125 90 40 50-75 186-115-65-60 125-40 90-165-65 30 135-110 191-110-20-270 476 275 306 35 185 125-65-105 135 175 266 20 130 215 291-35 155 235 40 15 65 30 135-55 50 90 226-180-45-20 115 85 246 80 55-90 296 125 50 25 211 165 65 40 326-135 10 25 130-115 45-25-100-215 20-25 241 275 226-175 90 55 146-45 75 30 45-145 75-10 135 120 85-50 150 130 65-165 141 40 165-100 30 20 346-80 181-95 15 235 200-75 95 135 211 195 25 15 75 25 141 75 5 95 85 65-30 190 75 85-70 245-35-70-85 190-70 125 70 90-150-60-60 50-145 280 15 140 100 230-125 50 105 130-155 255 336 125-5-30 120 145 105 205-50 60-85 85 15 75 166 140-110 100 35 85 170 155 50-20-60 110-70 5 105 310 85 80 241 95 45 165-190 355 40 80 191 230-156-70-30 75-165 130-125-25-50 60-246 175 50 15-95-15-30-50-140 85 10 35-165 130-80 80 145 125-20-5-70 220-25h5l60 80 120-135-40-90 285-145 50-115 120 45-90 110 95 135 30 40-110 25 30 155-65 95 115 160 145-140 240 160 320-65 165 231-30 130 110 120-60 145 115 30 10 5 215-226-70-80 420-105 147-298 321-142-266-63 5-197-321-381-238-226-45-128-10-113-75-45 44-89-78-25-33-91-54-65 8-206 57 13 25-374 546 3 34 103 141 53 30 327 109 78 179-148 97-7 12 70 198 100 224 36-268-262 223-25-88-126 93-101-63-106 30-309-56-175-125-248 67-56 82 60 11-100 208 44 61-128 94-36 43 19 26 22 117-132-32-71 190-77 200 38 57-146 48 43 48-24 4-103 126 8 25-85 58 71 69-88 24 65 49-42-113-212-189 208-115-34 72-99 45 55 1-98 137-140-83-218-4-376-118 136-18-19-57 32-33-18 52-69-95-77-35-159h146l-15 40 71 17 126 52 61-152-43 19 3-44 73-184-133 81-116-47-33-251 198-112 8 122 94 6 41-168-115-41-2-32-29-73-38-48 17-165 11-88-153-51-27-39 116-23-6-32-82-81 60-60 185 83 72-69 123 43-126 95 40 114-83 31-24 73 44 102 60 188 96 21 77-29 115-5 337-233-73-287 86-46-45-54 217-43-65 98 57 28-53 87 3 199 118 9 319 124 231 6 702 616 9 164 23 570 212-39-8 49-91 46 21 121 201-16 35-43 143 98 107 107-91 25 14 57-12 52 69 26-15 151-204-45-45-102 49-53-126-115-123 70-105-29 63 118-31 129-99-69 22 273-338 381-380 266-168 71-333-43-5 126-54 352 61 186-128 112-55 122-88-10 37 123-124 78 45 146-198-74 14-198-175-60-45-107-179 201-118-57 4 248 213 33 14 109 158 25 64 359-124-23-164 107 77 88-154 160 63 193-170-15 8 89 55 22 60 103-56 403-246 121-607-33 27-135-371 172 19 606-115 28-6 96-240 34 5 50-215 25-5 296 105-20 105 45 15 90 105-20-45 175 45 145-200 55 90 115-10 95 85 85 35-15 165 236-95 80 210 211-15 60-70-25 55 100 20 100 115 130-80 110-60 140 35 45-40 80 40 30-45 90 185 150 100-15 65 75 100-65 100 45-80 105 185 75 5-130 5-75 120 105 50-80 110 110 15-140 75-15 25 135 80-50 105 35 150-40 10 55 40-10 80 170 75-25 75 130-30 115 90 35-20 60 175 20 60 181-25 65-25 50 5 85 90 50 25-130 280 50 280 215 65-65 120 10 220-231-35-50 15-140 85-10 10-135h-60l-5-161 80-45-80-145-95-50 560-95 235-75 130-5 110 85 95 20 5 70 70 55-50 281 185 110-15 45 140 115 20 256-95-10 15 95 240 155 200-70 105 286 155-125 215 10 25 150 190 145 165-145 165 251 140-55 35 30 160 140 155-130h205l75 175 180 371-300 201 10 175-100-55 75 155-165-70-200 145 135 240-70 296 160 90 50 130 100 10 65 105 30 55-100 65 170 160 215-5-110 471 55 431 565 160 65 130 90 45 260-125 30-155-85-20 35-521 335-120-25-105 225 10 80-175 180 216 15-176 5-25 340-145-55-286-115 10-130 10-190-171-225 35-50-346 90-50-40-150 75-105 200-35-30-110-230 60-25-180 195-90-85-130 100-35-35-100-25-100 130-150 60 120 395-180 50 201 100 85 175-321 335 25 95-110 120 165 45-140 100 20 45-161 135 196 250-25 110-316-135-80 55-65-35-160 40-166 295-40 10 80 190 60-50-95 220-175-295-40 90-80-15-90 145-85-30-50 95-195 75-150 130-100-135-161 320-291-5-336 310-331 25-130h405l25-60-85-151 125 80 20-296 60 10 160 15 105 170 405-10-20-226 245 221 275-947-140-25-55-95-50-95-285 210h-170l355-667 10-15 750-190 225 70 305-356 505-180 125-376 110-55-5-10-135-160 140-110-130-451-155-176 45-386 200 35 10-356v-5l-120-45-30-195-570 25-20-516 45 15 95 35 60-236-220-271 55-180-190-261-95-10-210-316-100 30-250-371 130-351-105-291-400-35-90 100-5-135-285-5-100 251-80 10 20 211-190 20-130-156-225 120-360 15 5 391h-170l-90-25 10-246-225 5 35-70-335 125-20 5-180-35-15-276-160-271 240-215-60-50-335 216-750-85-375-531 150-216-35-60-75 170-145-75v-90l195-30-185-70-335 165-260-125-285 286-125-211-420-371-160-60-315 60-160 45-140-215 235-135-15-10-140-60 10-286-195-60-55-150-50-165 15-166-90-75 30-246-120-226 145-301-345 85-75-190-160-165 15-110-80-85 95-100-20-20 85-85 40-210-135-70 90-341-100-105 220-40-40-160-320-55 155-341-70-180-285 40 20-221-225-115 230-200-240 15-105-110 60-135 385-286-20-180-165-100 90-200-125-85-75-491 90-206-110-210 35-186-315-251v261l-180-85h-365l-120 90-195-10-30 100-80-10 15-150h-285l-70-857-295-195-165 100-140-266-130 30-45-75-135 25-72-200h-160l25-161-255-95z m-3957 14317l25 9-15 37 48 16-30 65-19-8-9 7-5 24-22 18-26-26 13-24 12 5 18-27 6-51-8-10 11-34z"/>
+    <g bw:code="ru-mo-taldomskiy-r-n" class="county"><path d="m10505 1885l170-240 280 110 40-156 500-155 115 211 225-447 185-120-85-210 215-71-245-160 80-231 505-195 20-90 135 45 135-176 255 96-25 160h160l75 196 135-26 45 76 130-30 140 265 165-100 295 196 70 857h285l-15 150 80 10-20 85-160 156 110 250-175 166-200-231-310 160-145 16-210 215-230-40-250 140-25 196 195 296-110 200-270 160-255 391-275-80-185-145-30-120-715 255-135-431-745-947-305-221 275-160 35-151 90-15z"/><path d="m10080 1584l45 96 185-10 20-121 145-15-25 121h-35l-35 30 80 195 45 5 25 110-90 15-35 151-275 160-536-496 190-60-25-70z"/><text x="10600" y="2420">Талдомский</text></g>
+    <g bw:code="ru-mo-sergievo-posadskiy-r-n" class="county"><path d="m13235 2627l230 40 210-215 145-16 310-160 200 231 175-166-110-250 160-156 20-85 30-100 196 10 120-90h365l180 85v-261l315 251-35 185 110 211-90 205 75 491 125 86-90 200 165 100 20 181-385 286-60 135 105 110 240-15-230 201 225 115-20 221 285-41 70 181-155 341 320 55 40 160-220 40 100 106-90 340 135 71-40 210-85 85-1115 968h-215l-40-45-486 50-75-75-45-161-120 65-500-285-385 65-85 35-5-130 85-46-50-300-240-25 220-126-120-310 140-131-15-165 210-316-100-195 100-201 170-145-145-246-155-40 30-75-85-121 20-150-70-195-60-20 20-116-135-110 110-200-195-296 25-196z"/><text x="13600" y="3300">Сергиево-Посадский</text></g>
+    <g bw:code="ru-mo-dmitrovskiy-r-n" class="county"><path d="m9344 4963l155-30-110-86 35-160-285-276 205-200 95-196 255-5 140-115-60-95-180-55 30-111 75 51 50 35 271-431-136-116 71-120-116-221 206-95 25-80-171-135 141-45-10-101 100-55 305 221 745 947 135 431 715-255 30 120 185 145 275 80 255-391 270-160 135 110-20 116 60 20 70 195-20 150 85 121-30 75 155 40 145 246-170 145-100 201 100 195-210 316 15 165-140 131 120 310-220 126 240 25 50 300-85 46-95-25-175 220-230 216 85 165-65 241-180 10-290-251-230-30-260 95 35 105-60 15 90 121-45 160 75 55-120 151-20 115-45-10-240 296-75-45-90-86-35 50-110-60 20 101-320-76-45 45-190-250 10-166 170-85-145-175-100 15-65-346 205-321-75-110-90-45-125-246-450 30-15-135 135-140-70-146-231-85-5-105-370-421v-86l-20-145 60-60-80-10z"/><text x="9800" y="5320">Дмитровский</text></g>
+    <g bw:code="ru-mo-klinskiy-r-n" class="county"><path d="m5469 4908v-91-20l160 25 105-210 345-105 365-336 65 115 470 15 5-240 240 5 105-166 275 196-75-236 800-456-55-191 395 171 35-90 70 120 410 95-90 151 500 85 180 55 60 95-140 115-255 5-95 196-205 200 285 276-35 160 110 86-155 30 5 75 80 10-60 60 20 145-130 16 105 250-265 5 230 171-20 115-235-100-230 50v150l-180-10 30 150-115 146-15 250-260 31-35 70-280 105 30 140-70 86 55 40-125 110 185 150-130 341-25-80-85 25-70-65-70 50 80 55-40 90-245-90 55 216-135-20-45 75-185-65-430 130-140-90-80 115-530 15-70-421 125-401-440-236 25-180-290 10-170-311 210-35-185-215 85-141h-221l-130-255-200-191 50-456 120 35 100-291z"/><text x="5600" y="6000">Клинский</text></g>
+    <g bw:code="ru-mo-lotoshinskiy-r-n" class="county"><path d="m1638 5945l115-5-135-195 180-60-120-71 40-446 70 91 130-266-40-15-95-35-80 145-315 10 60-406 135-5-160-145 30-121h175l85 106-60 65 115 75h140l390-411h90l35 206 160-56-20 91 175 30-40 120 165 200 70-25 15 206 170 5 180-145 65 10v55l235 35-135 50 35 75 105-50 35 125 415 15 25-65 460 25 120 146-70 30 10 160 130 5 200 191-195 30-15 556-275-65-70 220 75 191-440 75-25 115-560-55-595 256 30 336-170 90-40-90 65-96-140-50-120 131-160-251-325 50-40-60 95-185-20-31-105 21-125-46 115-115-160-130-100 30 10 30-85 50-180-225-5-76-45-75 15-50 265 85 215-170z"/><text x="1400" y="6020">Лотошинский</text></g>
+    <g bw:code="ru-mo-shahovskoy-r-n" class="county"><path d="m878 7735l125-91-110-100-160 25-25-185 165-90-100-101 330-285-70-61 75-100-195-100-45-191 455-130 45 75 5 76 180 225 85-50-10-30 100-30 160 130-115 115 125 46 105-21 20 31-95 185 40 60 325-50 160 251 120-131 140 50-65 96 40 90 170-90 65 135-160 110-155 502h325l-145 155 75 316 195 65-35 261-160 140 80 205-390 361 115 301-215 191-265-36-65 211h-130l-80 85-220 45-85 191-175-30-75 50-135-60 45-191-310-15-15-65-235-40 35-156-215-290-20-131-175-265 105-136-125 66-36-186-275-306 270-476 111 20 110-190-30-136 165 66 40-91 60-125 115 65 75-185z"/><text x="300" y="9000">Шаховской</text></g>
+    <g bw:code="ru-mo-mojayskiy-r-n" class="county"><path d="m1433 10562l175 30 85-191 220-45 80-85h130l65-211 265 36-70 160 190 386-245 180 250-35 10 106 490-41 70 171 125 35 45-176 185-70 110-5-15 231 145 100 390-160 300 235-85 176 200-40-45 175 170 80-70 141 155 25 65 346 140-126 191 271 115-90 365 631-80 111-245-26 75 201-376 205 70 86-45 95-215 30-355 336-50 296 85-146 125 40-80 346-300 115-110-115-375 80-20 336-95 10 125 286-60 85-205 50-145-105 30-120-125 5-255-336-130 155-50-105-230 125-140-100-280-15-50 145 60 61-90 150-125-70-190 70 70 85-245 35-85 70-190-75-65 30-95-85-75-5-25-140-15-75-195-26-135-210 75-95-235-201 95-15 80-180-20-346 100-30-40-166 165-140-130-65 50-151-120-85 10-135 145-75-30-45 45-76-55-145 175-90-275-226 25-240 215-20 25 100 115-45-25-131 135-10-40-325-165-66-25-210-125-50 90-296-80-55-85-246 20-115 180 45-90-225 55-51-30-135 310 15-45 191 135 60z"/><text x="1500" y="13020">Можайский</text></g>
+    <g bw:code="ru-mo-ruzskiy-r-n" class="county"><path d="m3593 10336l140 291 140-421 325-80 35-106 520-60 55-326 90 331 85-20-10-250 356-256-231-75 176-106-95-150 360-225-15-101-185-75 75-165 440 60-25-105 85 10 35 376 145-86-40-165 390 56-35 139h55l60 256-15 160 150-10 300 487-340 110 130 105-130 150-130-5 15 281 165-80 20 150 110 71 20-91 90 40 140 156-75 50 45 195-65 131 280 391-120 95-15 271 170 145-260 100-225 246-410 70-150 140 55 131-90 100 205 65 160 196-5 210 155 201-285 100 15 291-170-41-350 131-60-181-285 201-100-181-356-20-80-170 45-95-70-86 376-205-75-201 245 26 80-111-365-631-115 90-191-271-140 126-65-346-155-25 70-141-170-80 45-175-200 40 85-176-300-235-390 160-145-100 15-231-110 5 115-90-50-85-255-130z"/><text x="4700" y="11000">Рузский</text></g>
+    <g bw:code="ru-mo-naro-fominskiy-r-n" class="county"><path d="m9778 12031l-109 80-265 50-155 155 10-115-470 60-105 145-315 25 5 180-205 171-440 75v95l-240-125-65 125-40-145-215-15-15 261-345-361-255 241-5 211 155 200-285 100 15 291-170-40-350 130-60-180-285 200-100-180-355-20-80-171-215 30-355 336-50 296 85-146 125 40-80 346-300 115-110-115-375 80-20 336-95 10 125 286 85 15 75 166 140-110 100 35 85 171 155 50-20-60 110-70 5 105 310 85 80 241 95 45 165-190 355 40 80 191 230-155-70-30 75-165 130-125-25-50 60-246 175 50 15-95-15-30-50-140 85 10 35-165 130-80 80 145 125-20-5-70 220-25h5l60 80 120-135-40-90 285-145 50-115 120 45-90 110 95 135 30 40-110 25 30 155-65 95 115 160 145-140 240 160 320-65 165 231-30 130 110 120-60 145 115 30 10 5 215-226-70-80 420-105 120-276 335-161-230-55 1-217-110-77-229-290-245-238-31-125-4-105-82-36 46-94-91-23-20-109-69-50 13-213 43 4 30-372 560 7 36 118 151 34 11 328 126 73 85-68 75-68 79-5 33 76 215 87 211 48-272-258 219-36-85-133 85-95-56-107 22-340-38-145-126-225z"/><text x="4600" y="14180">Наро-Фоминский</text></g>
+    <g bw:code="ru-mo-odintsovskiy-r-n" class="county"><path d="m6189 12672l90-100-55-130 150-140 410-70 225-246 260-100-170-145 15-271 120-95-280-391 65-130-45-196 75-50-140-155 120-145 275 125 5-191 115 30 225-326 430 40 95 110 380-35 120 175 235-70 151 257 70 76-30 94-111 25-113 54 19 124 109-34 48-97 30 12-18 106 164 7 151 113 61-47 66 60 122 24 39-84 22 9 41 26 137-24 10-42 57-50-171-137-77 92 186 22 13 36-202-13-74 37-119-46 37-60c11 9-125-29-186-49l1-52-203-104 571 81 16 11 201 170 43-30 135 10 105 95 185-196 265 100v-186l195-55 50 25 35-40 35 25 125-160-5 371 82 248-141 151 9 101-52-85-73 122 133 44 191-223 58 99 40 110-40 30-30-50-65 85-74-111-6 116-65-5-65-5-20 115-25 35-55-65-65 165-200-50-180 80 30 85-120 125-30-40-5 20-35-30-90 40-60 135-210-45-15 95-85-60-160 155-55-211-275 65 100 75-25 35-95-40-50 105 135 20-155 155 10-115-470 60-105 145-315 25 5 180-205 170-440 75v95l-240-125-65 125-40-145-215-15-15 261-345-361-255 241-160-196z"/><path d="m9439 12040l-100-75 275-65 55 211-265 50-135-20 50-106 95 40z"/><text x="7500" y="11180">Одинцовский</text></g>
+    <g bw:code="ru-mo-volokolamskiy-r-n" class="county"><path d="m2863 9038l160-140 35-261-195-65-75-316 145-155h-325l155-502 160-110-65-135-30-336 595-256 560 55 25-115 440-75-75-191 70-220 275 65 15-556 195-30 130 255h221l-85 141 185 215-210 35 170 311 290-10-25 180 440 236-125 401 70 421-115 105-125-190-175 80 30 321 115 80 5 130 65-30 40 121 25 105-440-60-75 165 185 75 15 101-360 225 95 150-176 106 231 75-356 256 10 250-85 20-90-331-55 326-520 60-35 106-325 80-140 421-140-291-280 171 255 130 50 85-115 90-185 70-45 176-125-35-70-171-490 41-10-106-250 35 245-180-190-386 70-160 215-191-115-301 390-361z"/><text x="3000" y="7500">Волоколамский</text></g>
+    <g bw:code="ru-mo-istrinskiy-r-n" class="county"><path d="m5604 8196l-30-321 175-80 125 190 115-105 530-15 80-115 140 90 430-130 185 65 45-75 135 20-55-216 245 90 40-90-80-55 70-50 70 65 36 85 184 141 160-26 250 396v126l755 145 85 296 290-80-25 371 130 30 65 200 75-20-55 110 105-50 86 126-91 45 86 105 145 45 30 160-165 216 95 110-40 171-111 15-20 180-240 120 75 81-20 20-305 5-335-151-160-270-235 70-120-176-380 36-95-111-430-40-225 326-115-30-5 190-275-125-120 145-90-40-20 91-110-71-20-150-165 80-15-281 130 5 130-150-130-105 340-110-300-487-150 10 15-160 230 5v-281l-90-15-30-110-90-45-60 80 10 60-30 50h-55l35-140-390-55 40 165-145 86-35-376-85-10-40-121-65 30-5-130z"/><path d="m6634 8682l30 110 90 15v281l-230-5-60-256 30-50-10-60 60-80z"/><text x="6700" y="9000">Истринский</text></g>
+    <g bw:code="ru-mo-solnechnogorskiy-r-n" class="county"><path d="m7879 7028l125-110-55-40 70-86-30-140 280-105 35-70 260-31 15-250 115-146-30-150 180 10v-150l230-50 235 100 20-115-230-171 265-5-105-250 130-16v86l370 421 5 105 231 85 70 146-135 140 15 135 450-30 125 246 90 45 75 110-205 321 65 346 100-15 145 175-170 85-10 166 190 250 45-45 320 76-20-101 110 60 35-50 90 86 10 65-90 55 10 120 65 30-55 70 160 46-5 85h-75v-30l-55-15-40 90-80-5-40 65-125 105-60 25-120-70-180 80-5-65h-120l15-170h-60l40-45-350-246-135 80-60-75-111 25 131 216-70 45 40 160-30 75 200 15 165 121-40-211 65-100 130 40 15 80-110 30 85 221 55-166 105 81-75 15 45 95 160-15-5 95 45-5-10-135 80 40-55 175-160-95-70 115 20 86 45 25-45 80 65 55-170-30v70l-115-20 75-60-130-15-235-161-155 76-86-126-105 50 55-110-75 20-65-200-130-30 25-371-290 80-85-296-755-145v-126l-250-396-160 26-185-141-35-85 85-25 25 80 130-341z"/><text x="7200" y="7500">Солнечногорский</text></g>
+    <g bw:code="ru-mo-schelkovskiy-r-n" class="county"><path d="m13825 9294l-75-26 70-75-95-125 115-75 5-65h120l5 45 45 5 15-60-50-81-65-5 25-50 80 5 25 40 35-20 15-150-30-15-90-110 50-10 95 70 100-10-70-211 145-110-75-90 220 10 140-141 110 146 76-75 125 10 65 120 70-226-135-190 195-45 95-176 255-235 85-5 145-131 45-130 735-616 75 190 345-85-145 301 120 225-30 246 90 75-15 165 50 166-160 95 115 5 65 120-110 45-130-105-100 50 15-150-70-60-75 70-20-25 20-130-215-66 115 86-65 50 115 85 15 80-155-65 30 95-120-10-90 15 135 115-75-5-135 181-490-145-20 180 205 40 15 221-145 80-30-115-135 100 110 150-145-15 25 206-160 5-10 50 130 95-10 100 95 231-5 170-155-15 15-80-70-85-75 5-10 215-65 5-80-70-35 151 115 10 185 55 30-50 40 35-75 100 15 135-300 45-100-105-15 80-181-30-155 60-75-135-190-150-125 80-85-65 25-25-10-81-155-5-135-115 75-40 30-205-45-51z"/><text x="15600" y="7600">Щёлковский</text></g>
+    <g bw:code="ru-mo-krasnoarmeysk-gor-okrug" class="county"><path d="m14725 7705l-110-146 75-110 146 95 75-100-181-135 146-86-15-50 65-45 35 25 215-175 5-5 1115-968 20 20-95 101 80 85-15 110 160 166-735 616-45 130-145 131-85 5-255 235-95 176-195 45h-60l45-151-45-30z"/><text x="15200" y="6750">Красноармейск</text></g>
+    <g bw:code="ru-mo-pushkinskiy-r-n" class="county"><path d="m13130 6467l95 25 5 130 85-35 385-65 500 285 120-65 45 161 75 75 486-50 40 45h215l-5 5-215 175-35-25-65 45 15 50-146 86 181 135-75 100-146-95-75 110 110 146 106-61 45 30-45 151h60l135 190-70 226-65-120-125-10-76 75-110-146-140 141-220-10 75 90-145 110 70 211-100 10-95-70-50 10 90 110-90 25-145-130h-130l-85 165 5 45 50 50 60 10 5-50 110 100-40 41-265-26-50 36-75-31-35 31 25 60h-80v15l-5 10-120-151-65-30-45-85 30-85 50 5-50-75 15-15 50 10 40-75h-10l-25-36 30-15-10-5 10-10 10 5 10-20-5-30v-5l50-35-565-486 25-35-115-65 65-311 90-20 5-95-45-20 65-241-85-165 230-216z"/><path d="m13620 8747l-5-45 85-165h130l145 130 90-25 30 15-15 150-35 20-25-40-80-5-25 50-70 25-110-100-5 50-60-10z"/><text x="12600" y="7300">Пушкинский</text></g>
+    <g bw:code="ru-mo-shaturskiy-r-n" class="county"><path d="m21312 11975l185-431 335-491-180-331h170l-5-391 360-15 225-120 130 155 190-20-20-210 80-10 100-251 285 5 5 135 90-100 400 35 105 291-130 351 250 371 100-30 210 315 95 10 191 261-55 180 220 271-60 236-95-35-45-15 20 516 570-25 30 195 120 45v5l-10 356-200-35-45 386 155 176 130 451-140 110 135 160 5 10-110 56-125 376-505 180-306 356-225-70-750 190-10 15-355 667h170l285-211 50 96 55 95 140 25-275 947-245-220 20 225-405 10-105-170-160-15 125-321 100 20 180-135-85-211 125-260 135-171-240-180 15-121-100-55-150-416-300 20-85 55-150-60-15-160-315 15-90-161 120-115-75-95v-341l100-5 210-190-55-121 135-25-35-240 190-20-5-156 185-5 5-265-140-106-40-210 90-60-1075-15-85-91 50-190-80-45-100-371 250 30 295-246z"/><text x="22300" y="14480">Шатурский</text></g>
+    <g bw:code="ru-mo-egorevskiy-r-n" class="county"><path d="m19371 13344l-100-206 85-70 45-211 466 20 60 96 145-96 30-255 430 45 475-60 80 45-50 190 85 91 1075 15-90 60 40 210 140 106-5 265-185 5 5 156-190 20 35 240-135 25 55 121-210 190-100 5v341l75 95-120 115 90 161 315-15 15 160 150 60 85-55 300-20 150 416 100 55-15 121 240 180-135 171-125 260 85 211-180 135-100-20-125 321-60-10-20 295-125-80-315-265 5-291-155-5 5-150-210-437-640-15-280-25-225-105-95 130-220-55 30-140-225-55-115-381-671 235-195-441 265-210-245 50-135-120-45-161 135-135-235-55 210-70 110-186-180-40 40-261-120-250 170 10 230-136-5-365z"/><text x="19300" y="14000">Егорьевский</text></g>
+    <g bw:code="ru-mo-luhovitskiy-r-n" class="county"><path d="m18986 17484l25-206-320-356 55-215 320 271 440 105 106-241-116-120 371-476 515 210 465-371 640 15 210 437-5 150 155 5-5 291 315 265 85 151-25 60h-405l-25 130-310 331 5 336-320 291 135 160-130 100-75 151-95 195 30 50-145 85 15 91-90 80 295 40-220 175 50 96-190-61-10-80-295 40-40 166-75 70-140-55 125-30 140-291-210 15-30-80 120-65-40-311-105 50-165-150-80-201-300 105-181-230-595-30-145-261-215 105 80-270-300 40-30-100-130-116 90-70-170-10 115-216-70-170-60-431 140 5 315 366z"/><text x="18500" y="18000">Луховицкий</text></g>
+    <g bw:code="ru-mo-zarayskiy-r-n" class="county"><path d="m18071 18932l-95-421 255 15 5-225-235-130 250-25 30 100 300-40-80 270 215-105 145 261 595 30 181 230 300-105 80 201 165 150 105-50 40 311-120 65 30 80 210-15-140 291-125 30 140 55 75-70 35 160-55 65 135 80-110 316-250 25-135-195-45 160-100-20-45 141-120-166-95 110-336-25-175 321-100-85-50-201-395 181-60-120-130 150 25 100-305 85-25-260-305-236-235 75-85-125-265 95-175-175 180-351-215-130-60-286 615-556 340 165 5-276z"/><text x="17500" y="20000">Зарайский</text></g>
+    <g bw:code="ru-mo-serebryano-prudskiy-r-n" class="county"><path d="m16191 22000l70-296-135-240 200-146 165 71-75-156 100 55-10-175 300-201-180-371 250-70 30-145 90-35 175 175 265-95 85 125 235-75 305 236 25 260 305-85 35 100-100 36 85 130-195 90 25 181 230-61 30 111-200 35-75 105 40 150-90 50 50 346 225-35 190 171 130-10 115-10 55 285-340 146-5 25-15 175-180-215-80 175-225-10 25 105-335 121-35 521 85 20-30 155-260 126-90-45-65-131-565-160-55-431 110-471-215 5-170-161 100-65-30-55-65-105-100-10-50-131z"/><text x="16700" y="22020">Серебряно-Прудский</text></g>
+    <g bw:code="ru-mo-stupinskiy-r-n" class="county"><path d="m12905 16627l-95-306-10-190-10-146 55-120 285 115-10 65 280 146 50-111-65-150 130-20 15-95 125 140 140-35 140-100-55-206-85 40-40-185 70-105-80-51 55-160 175 80-75 70 115 176 320-251 140 25 190-180 110-30 21-115 125-66 235 30 250-60 50 50 190-55-10 181 75 55 295-151 230 26 60 225 140 15 85 50 15 96-35 140-155-40-25 175 95 25 120 186-15 120-150-45-190 230 110 101 50-116 75 91-135 185 100-15 25 145 90-50-25 226-70-40-105 185 75 60-60 231-140 40-30 100-240-15-50 246-110 15 55 361 400 155-10 206-240 70-165 220-135-90-110 95-225-115-215 75-80 146-266 215-185-120-180-35-265 20-95-20-110-85-130 5-40-216-425-180-145-296 115-160-165-51 30-215-235-30 35-156-215-85-25-195 255-55-440-316z"/><text x="13300" y="17000">Ступинский</text></g>
+    <g bw:code="ru-mo-kashirskiy-r-n" class="county"><path d="m15016 18627l80-146 215-75 225 115 110-95 135 90 95 36 220-81 360 40-95 151 190 381-120 120 325 5-105 346 250 10 60 286 215 130-180 351-90 35-30 145-250 70-75-175h-205l-155 130-160-140-35-30-140 55-165-251-165 146-190-146-25-150-215-10-155 125-105-285-201 70-240-156-15-95 95 10-20-255-140-116 15-45-185-110 50-281-70-55-5-70 265-20 180 35 185 120z"/><text x="14100" y="19600">Каширский</text></g>
+    <g bw:code="ru-mo-ozerskiy-r-n" class="county"><path d="m15796 17865l-55-361 110-15 50-246 240 15 30-100 140-40 130 155 305-15 330 141 105-60 105 225 255 45-100 146 400-21 185 101 60-271 70 170-115 216 170 10-90 70 130 116-250 25 235 130-5 225-255-15 95 421-210-75-5 276-340-165-615 556-250-10 105-346-325-5 120-120-190-381 95-151-360-40-220 81-95-36 165-220 240-70 10-206z"/><text x="16000" y="18500">Озерский</text></g>
+    <g bw:code="ru-mo-kolomenskiy-r-n" class="county"><path d="m16471 16682l25-226-90 50-25-145-100 15 135-185-75-91-50 116-110-101 190-230 150 45 15-120-120-186-95-25 25-175 155 40 35-140 110-6-15-70 325 126-65-116 110-50 185 141 330-236 65 105 510-35 135-200 395 120 115-135 135 120 245-50-265 210 195 441 671-235 115 381 225 55-30 140 220 55 95-130 225 105 280 25-465 371-515-210-371 476 116 120-106 241-440-105-320-271 5-150-295 85-295-301-135 5-135-205-175-36 25 126-70 60 270 662 280-241 75 220 175 86 40-171 180 75 320 356-25 206-505 20-315-366-140-5 60 431-60 271-185-101-400 21 100-146-255-45-105-225-105 60-330-141-305 15-130-155 60-231-75-60 105-185z"/><path d="m17891 16141l135 205 135-5 295 301 295-85-5 150-55 215-180-75-40 171-175-86-75-220-280 241-270-662 70-60-25-126z"/><text x="16500" y="16180">Коломенский</text></g>
+    <g bw:code="ru-mo-orehovo-zuevskiy-r-n" class="county"><path d="m17161 12020l230-100 355 15 90-40 315 40 180-266-50-45 125 5 60-40-5-150-250-231 95-20 85-215-215-111 15-140 120-20-15-316h-95v-115l-85-20-125-251 195-70-10-115 125-10 5-30 180 5-50-70 105-36-55-130 40-35 50-50-160-236 285-285 260 125 335-165 185 70-195 30v90l145 75 75-170 35 60-150 215 376 532 750 85 335-216 60 51-240 215 160 271 15 275 180 36 20-5 335-126-35 70 225-5-10 246 90 25 180 331-335 491-185 431 140 45-295 246-250-30 100 371-475 60-430-45-30 255-145 96-60-96-466-20-45 211-85 70 100 206-325-25 5 365-230 136-170-10-50-5 20-126-395-35-60-461-240 55-165-125 130-160v-211l-440 125 25-155-115-110 75-126-120-115 30-40 100 75 25-115z"/><text x="17450" y="12400">Орехово-Зуевский</text></g>
+    <g bw:code="ru-mo-pavlovo-posadskiy-r-n" class="county">
+      <path d="m16761 10968l150-81-220-240-10-50 210-10-10-50 35-171-5-185 445-171-15-140 105-85-55-221 95-396 150-60-270-135 30-331 315-60 160 60 420 371 125 210 160 236-50 50-155-205-220-61-165 5 15 386-45 10 15 136 335-5-5 30-125 10 10 115-195 70 125 251 85 20v115h95l15 316-120 20-15 140 215 111-85 215-95 20 250 231 5 150-60 40-125-5 50 45-180 266-315-40-90 40-355-15-50-60-85 15-135 60-60-336-400-150-10-60 30-10v-321h150z"/>
+      <text x="17700" y="9000">Павлово-Посадский</text>
+    </g>
+    <g bw:code="ru-mo-voskresenskiy-r-n" class="county"><path d="m16831 14436l-270-220 135-236 110-15-40-185-350 75-10-196-125-95 15-165-250-111 95-145 10-225 280 60 90-436 255-176 540-5 120 115-75 126 115 110-25 155 440-125v211l-130 160 165 125 240-55 60 461 395 35-20 126 50 5 120 250-40 261 180 40-110 186-210 70 235 55-135 135 45 161-115 135-395-120-135 200-510 35-65-105-330 236-185-141-110 50 65 116-325-126 15 70-110 6-15-96-85-50 250-150-5-276 135-135z"/><text x="16800" y="14620">Воскресенский</text></g>
+    <g bw:code="ru-mo-ramenskiy-r-n" class="county"><path d="m14045 12897l-100-175-45 50-30-205 65-161 145 45-10-120 55-35 115 5-30-100-50-10v-121l-75-70 115-75 15-80-80 15-120-80 45-80 185 120 140-25-10-106 105-75-20-90 65 10 65-100 50 5 40-110-110-106 10-70 75-10v-25l146-80 75 70 145-15 250 85-5 171 90-10 145-86 135 20v76h190l55-66 305-70 90-75 95 115 220 61 60 75 10 60 400 150 60 336 135-60 85-15 50 60-230 100 310 261-25 115-100-75-30 40-540 5-255 176-90 436-280-60-10 225-95 145 250 111-15 165 125 95 10 196 350-75 40 185-110 15-135 236 270 220-15 181-135 135 5 276-250 150-140-15-60-225-230-26-295 151-75-55 10-181-190 55-50-50-250 60-235-30-125 66-25-136 65-115-91-10 15-105-125-61-45 116-195 40 15-90-105-25-105-126 55-55 40 50 50-100 80 20 105-140-60-146-135-120-65 55-110-306-80-50-45 60-160-135 185-115-110-361-155 55-110-271 65 30 50 61 90-86 70 111z"/><text x="14500" y="14100">Раменский</text></g>
+    <g bw:code="ru-mo-lyuberetskiy-r-n" class="county">
+      <path d="m13555 11213l-5-5 30-25-65-65 25-20 75 65 80-90 35-5c-2 20 38-15 47-1 14 21 10 23 20 51 4 11 24-26 31-11 5 10 18 37 19 59 1 21 39-26 41-23l-70 105 17 48 6 46 220 42-2-170-83-48 83-27-81-72 111 9-20-36 33-19-55 1-8-37-55-5 11-48 35-5 110 70 55 100 135-80 30 60 220 75-10 70 110 105-40 110-50-5-65 100-65-10 20 90-105 75 10 105-140 25-185-120-45 80 120 80 80-15-15 80-115 75 75 70v120l50 10 30 100-115-5-80-50-110 35-40-45-100-301-175 50 50-135-75-110 25-35-20-20 150 10v-85l-55-140-145-120 25-120-20-15z"/><path d="m13470 11659l130 25 20 21-25 35 75 110-50 135-25 40-80-35 80-40-90-100-125 5-50 60-85-15-5-80-20-20 65-65 130-166 45 30z"/><path d="m13550 11349l145 120 55 140v85l-150-10-130-25-10-60-45-30 40-40-10-160-35-131z"/>
+      <text x="12000" y="11320">Люберецкий</text>
+    </g>
+    <g bw:code="ru-mo-serpuhovskiy-r-n" class="county"><path d="m10820 16872l225-155 240 100 85-175 100 100 300 100 45 381 235-155-20 235 290-220 220 5 105 110 95 20 215 85-35 156 235 30-30 215 165 51-115 160 145 296 425 180 40 216-235 75-560 95 95 50 80 146-80 45 5 160h60l-10 135-85 10-15 141 35 50-220 230-120-10-65 66-280-216-280-50-25 130-90-50-5-85 25-50 25-65-60-181-175-20 20-60-90-35 30-115-75-131-75 25-80-170-40 10-10-55-150 40-105-35-80 50-25-135-75 15-15 140-110-110-50 80-120-105-5 75-5 130-185-75 80-105-100-45-100 65-65-75 100-61-30-40 40-105 95-55-95-115 10-101-315 31-20-76 80-110-115-130-20-101-55-100 70 25 15-60-211-210 96-81-166-235-35 15-85-85 10-96-90-115 200-55 506 120 55 136 140-276z"/><path d="m10580 18331l-95 55-40 105 30 40-100 61-100 15-185-151 45-90-40-30 40-80-35-45 60-141 20 76 315-31-10 101z"/><text x="9600" y="18300">Серпуховский</text></g>
+    <g bw:code="ru-mo-chehovskiy-r-n" class="county"><path d="m10070 15218l375-195-30 140 580 35 625-275 205-251 160 286 110-141 85 126 50-236 145 50-10-246 195 46 65 50-160 235 40 81 95-46 115 206-165 40 145 406-250 80 130 65-215 271 80 211 50-46 310 21 10 190 95 306-375 25 440 316-255 55 25 195-95-20-105-110-220-5-290 220 20-235-235 155-45-381-300-100-100-100-85 175-240-100-225 155-265-160-140 276-55-136-506-120-45-145 45-176-105 20-15-90-105-45-105 20 5-296 215-25-5-50 226-15-15-95 165-40z"/><text x="9800" y="16500">Чеховский</text></g>
+    <g bw:code="ru-mo-podolskiy-r-n" class="county"><path d="m11215 13324l15-165 80 50 114-149 117-58 31 147 185 68-56 94 30 97 183 48-190-45-115 216 60 30 110-40 200 150-35 80 150-35-10-90 145 35 55-60-100-221 120-75-95-65 70-65-105-40-45-115 10-90 35-75 110 30 30-196 230 45 215-135 70 206-145 291-150 75 15 85-155 246 90 75-160 35-35 150 80 100 325 70 15 346 75 170-60 50-85-110-80 75-195-45 10 246-145-50-50 236-85-125-110 140-160-286-205 251-360 162 60-410 34-18-71-94-75 4 8-65-10-55 40 17 58 34 33-33 54 5 26-42-16-56-99-113 84-57 9-60 92-44-82-68 80-100 36 5 40-32-4 41 25 37 43-50 57 55-68-416-147-21-8-88-51-29-190-16-5-91z"/><path d="m12175 13228l105 40-70 66 95 65-120 75 100 220-55 61-145-35 10 90-150 35 35-80-200-151-110 40-60-30 115-215 190 45 25-35-45-111 110-80-55-110 95-5 45-130 45 25 5 15-10 90z"/><path d="m12140 13960l115 130-15 36-55-21-145 81-110-45-25 135-150-40 55-35-105-55 20-111-50-20 15-55 90 55 25-105 95 110 30-120 75-30z"/><text x="9800" y="14480">Подольский</text></g>
+    <g bw:code="ru-mo-myitischinskiy-r-n" class="county"><path d="m11775 8296l-95-80 75-35 20-95 135-91 10-35-120 10-5 40-50-15-5-140 20-115 120-151-75-55 45-160-90-121 60-15-35-105 260-95 230 30 290 251 180-10 45 20-5 95-90 20-65 311 115 65-25 35 565 486-50 35v5l-35 20 10 20-25 30 5 5 25 36h10l-40 75-50-10-15 15 50 75-50-5-30 85 45 85 65 30 120 151v15l-60 55-65 180 15 96 230-45 105 70-105 160-180 15 5 45-135 10v136l-370-331-75-10-50-5h-135l-335-131-120 10-15 5 30-40-5-165 25-15 15-5 10-45-30-20v-65l65 5-5-51-30-25-155 41 20 85h-35l-25-101-35-5 65-85-55-75 20-75-150-130-165 105-15-65-100 30 5-85 305-56 20-50z"/><path d="m11745 7995l50 15 5-40 120-10-10 35-135 91-20 95-75 35 95 80 30 80-20 50-305 56-160-46 55-70-65-30-10-120 90-55-10-65 75 45 240-296 45 10z"/><text x="10500" y="8220">Мытищинский</text></g>
+    <g bw:code="ru-mo-leninskiy-r-n" class="county"><path d="m12265 12897l-25-105-60-70-30-15 20-135 30-201 80-35-45-115 345 40 120-40 360-261 160-160 20 20 5 80 85 15 50-60 125-5 90 100-80 40 80 35v81l115 155 75 20 45 65 105 60-65 161 30 205 45-50 100 175-85 76-70-111-90 86-50-61v-80l-105-55-30-95-130 195-110-125 25 256-320-86-40 101-210-101-70-205-215 135-230-45-30 196-110-30-35 75-5-15v-15l20-80 35 25z"/><path d="m13935 12281l110-35 80 50-55 35 10 120-145-45-105-60-45-65-75-20-115-155v-81l25-40 175-50 100 301z"/><text x="11800" y="12550">Ленинский</text></g>
+    <g bw:code="ru-mo-krasnogorskiy-r-n" class="county"><path d="m9654 10481l240-120 20-180 110-15 40-170-95-110 165-216-30-160-145-45-85-105 90-45 155-75 235 160 130 15-75 60 115 20v-70l170 30-65-55 45-80 60 60 30-65 65 175 125 105 45-120 60 40 60-20 35 75h115l35 35-40 40-30 100-80 15-20-30 15-30-5-70-65 20-30-10-105 90 15 35-40 90 80 5-45 25 20 35 10 75 45 45v-60l30 65 80-80 90 10-57 145-13 31 5-15-35-20-20 45h-95l-80 45-155-2 39 150 103 80-17 43-50 25-195 55v186l-265-100-185 196-105-95-135-10-35 43-182-144-42-50 20-20z"/><text x="9400" y="10100" style="display:none">Красногорский</text></g>
+    <g bw:code="ru-mo-himki-gor-okrug" class="county go"><path d="m10695 8747l5 65 180-80 120 70 69-34 39-38 62-53 57-69 73-6 42-75 57 4-12 67 126 22 19 29 58 4-6 122-10 90 75-70 45 20-60 140 65 105-40 241 100 20 15 55-175 125h-125l-95 60-80-30-50-191-45-5-10-110 65-5-25-75 65-10-25-110 120-115-90-35-55 45-180-70-25 20 15 20-25 20-30-25-35 30 65 95-40 30-20-30-50 40 65 75 35-45 115 75-55 75 30 25-40 125 60 35-15 75-60 20-60-40-45 120-125-105-65-175-30 65-60-60-45-25-20-85 70-115 160 95 55-175-80-40 10 135-45 5 5-95-160 15-45-95 75-15-105-80-55 165-85-221 110-30 55-10h120z"/><path d="m11590 8602l165-105 150 130-20 75 55 75-65 85 35 5 25 101-70 25 75 290-40 6-125 90-15-55-100-20 40-241-65-105 60-141-45-20-75 70 10-90-65-30 5-20 15-35 50 5-5-40z"/><text x="10700" y="9300">Химки</text></g>
+    <g bw:code="ru-mo-noginskiy-r-n" class="county"><path d="m15006 10055l300-45-15-135 75-100-40-35-10-156 155 15 5-170-95-231 10-100-130-95 10-50 160-5-25-206 145 15-110-150 135-100 30 115 145-80 55 115h180l85-100 150 40 5-151 270 20 20-280-195-50 205-196 60 65-100-165 75-70 70 60-15 150 100-50 130 105 110-45-65-120-115-5 160-95 55 150 195 60-10 286 140 60 15 10-235 135 140 216 160-45-30 331 270 135-150 60-95 396 55 221-105 85 15 140-445 171 5 185-35 171-90-306-130-50 25-65-125-91-245 55 25 41-205 235 45 231 220-10 80 105 125-30 10-55h65l10 50 220 240-150 81 70 90h-150v321l-30 10-60-75-220-61-95-115-90 75-305 70-55 66h-190v-76l-135-20-145 86-90 10 5-171-250-85 20-80-185-20-85-196-56 10-20-55 80-45 161 75 45-75-175-95-5-80-271-76 75-150-50-246 155-60 181 30 15-80z"/><path d="m14996 9725l35-151 80 70 65-5 10-215 75-5 70 85-15 80 10 156-30 50-185-55z"/><text x="15000" y="9700">Ногинский</text></g>
+    <g bw:code="ru-mo-elektrostal-gor-okrug" class="county go"><path d="m16401 10577l-220 10-45-231 205-235-25-41 245-55 125 91-25 65 130 50 90 306 10 50-210 10h-65l-10 55-125 30z"/><text x="15800" y="10500">Электросталь</text></g>
+    <g bw:code="ru-mo-elektrogorsk-gor-okrug" class="county go"><path d="m17986 9248l165-5 220 61 155 205-40 35 55 130-105 36 50 70-180-5-335 5-15-136 45-10z"/><text x="17700" y="9620">Электрогорск</text></g>
+    <g bw:code="ru-mo-chernogolovka-gor-okrug" class="county go"><path d="m16041 8246l135-181 75 5-135-115 90-15 120 10-30-95 155 65-15-80-115-85 65-50-115-86 215 66-20 130 20 25 100 165-60-65-205 196 195 50-20 280-270-20-5 151-150-40-85 100h-180l-55-115-15-221-205-40 20-180z"/><text x="16100" y="8420">Черноголовка</text></g>
+    <g bw:code="ru-mo-korolev-gor-okrug" class="county go"><path d="m13440 9294l-230 45-15-95 65-180 60-55 5-25v-15h80l-25-60 35-30 75 30 50-35 265 25 40-40 70-25 65 5 50 80-15 60-45-5-5-45h-120l-5 65-115 75 95 125-70 75 75 25 40-25 45 50-30 206-75 40-35-30-330 120-85 5-90-75-5-45 180-15 105-160z"/><text x="13100" y="9380">Королёв</text></g>
+    <g bw:code="ru-mo-domodedovo-gor-okrug" class="county">
+      <path d="m12710 14371l-15-346-325-70-80-100 35-151 160-35-90-75 155-245-15-86 150-75 145-291 210 101 40-101 320 86-25-256 110 125 130-195 30 95 105 55v80l-65-30 110 271 155-55 110 361-185 115 160 135 45-60 80 50 110 306 65-55 135 120 60 146-105 140-80-20-50 100-40-50-55 55 105 126 105 25-15 90 195-40 45-116 125 61-15 105 91 10-65 115 25 136-21 115-110 30-190 180-140-25-320 251-115-176 75-70-175-80-55 160 80 51-70 105 40 185 85-40 55 206-140 100-140 35-125-140-15 95-130 20 65 150-50 111-280-146 10-65-285-115-55 120 10 146-310-21-50 46-80-211 215-271-130-65 250-80-145-406 165-40-115-206-95 46-40-81 160-235-65-50 80-76 85 111 60-50z"/>
+      <text x="13500" y="15000" text-anchor="middle">Домодедовский ГО</text>
+    </g>
+    <g bw:code="ru-mo-balashiha-gor-okrug" class="county go"><path d="m13265 9584l90 75 85-5 330-120 35 30 135 115 155 5 10 80-25 25 85 65 125-80 190 150 75 135 50 246-75 150 270 75 5 80 12 7 12 4 157 81-50 78-162-72-78 43 20 55 55-10 85 196 185 20-20 80-145 15-75-70-145 80v25l-75 10-220-75-30-60-135 80-55-100-110-70-35 5-150-80-35 50-200 15-20-95-5-25 100-25h15l-15-90 5-65-25-10-20-55 40-15-10-35-90-35 5-75-120 45-8-179-5-114 4-12 143-84 15-40 35 41 74 10-8 53-64-10-77 89-71-34-50-9-27-144-300-276v-135z"/><text x="12800" y="10100">Балашиха</text></g>
+
+
+    <g class="town" bw:code="ru-mo-klin-g"><circle r="200" cx="6500" cy="5200"/><text x="6800" y="5300">Клин</text></g>
+    <g class="town" bw:code="ru-mo-taldom-g"><circle r="200" cx="12000" cy="1700"/><text x="12300" y="1800">Талдом</text></g>
+    <g class="town" bw:code="ru-mo-solnechnogorsk-g"><circle r="200" cx="9000" cy="6500"/><text x="9300" y="6600">Солнечногорск</text></g>
+    <g class="town" bw:code="ru-mo-dmitrov-g"><circle r="200" cx="11000" cy="4500"/><text x="11300" y="4600">Дмитров</text></g>
+    <g class="town" bw:code="ru-mo-sergiev-posad-g"><circle r="200" cx="14700" cy="5400"/><text x="15000" y="5500">Сергиев Посад</text></g>
+    <g class="town" bw:code="ru-mo-lotoshino-pos"><circle r="200" cx="2000" cy="5300"/><text x="2300" y="5400">Лотошино</text></g>
+    <g class="town" bw:code="ru-mo-volokolamsk-g"><circle r="200" cx="3500" cy="8200"/><text x="3800" y="8300">Волоколамск</text></g>
+    <g class="town" bw:code="ru-mo-shahovskaya-pos"><circle r="200" cx="1000" cy="8200"/><text x="1300" y="8300">Шаховская</text></g>
+    <g class="town" bw:code="ru-mo-istra-g"><circle r="200" cx="7500" cy="9600"/><text x="7800" y="9700">Истра</text></g>
+    <g class="town" bw:code="ru-mo-ruza-g"><circle r="200" cx="5300" cy="11500"/><text x="5600" y="11600">Руза</text></g>
+    <g class="town" bw:code="ru-mo-mojaysk-g"><circle r="200" cx="2000" cy="13500"/><text x="2300" y="13600">Можайск</text></g>
+    <g class="town" bw:code="ru-mo-naro-fominsk-g"><circle r="200" cx="5300" cy="15000"/><text x="5600" y="15100">Наро-Фоминск</text></g>
+    <g class="town" bw:code="ru-mo-chehov-g"><circle r="200" cx="11100" cy="15700"/><text x="11400" y="15800">Чехов</text></g>
+    <g class="town" bw:code="ru-mo-serpuhov-g"><circle r="200" cx="10500" cy="17500"/><text x="10800" y="17600">Серпухов</text></g>
+    <g class="town" bw:code="ru-mo-odintsovo-g" transform="translate(11000,11100)"><circle r="200"/><text text-anchor="middle" x="0" y="450">Одинцово</text></g>
+    <g class="town" bw:code="ru-mo-krasnogorsk-g"><circle r="200" cx="10800" cy="10200"/><text x="11100" y="10300">Красногорск</text></g>
+    <g class="town" bw:code="ru-mo-vidnoe-g"><circle r="200" cx="13000" cy="12800"/><text x="13300" y="12900">Видное</text></g>
+    <g class="town" bw:code="ru-mo-stupino-g"><circle r="200" cx="14200" cy="17500"/><text x="14500" y="17600">Ступино</text></g>
+    <g class="town" bw:code="ru-mo-kashira-g"><circle r="200" cx="15000" cy="20000"/><text x="15300" y="20100">Кашира</text></g>
+    <g class="town" bw:code="ru-mo-ozeryi-g"><circle r="200" cx="16700" cy="18000"/><text x="17000" y="18100">Озеры</text></g>
+    <g class="town" bw:code="ru-mo-zaraysk-g"><circle r="200" cx="19000" cy="20300"/><text x="19300" y="20400">Зарайск</text></g>
+    <g class="town" bw:code="ru-mo-luhovitsyi-g"><circle r="200" cx="20000" cy="18400"/><text x="20300" y="18500">Луховицы</text></g>
+    <g class="town" bw:code="ru-mo-kolomna-g"><circle r="200" cx="18000" cy="16600"/><text x="18300" y="16700">Коломна</text></g>
+    <g class="town" bw:code="ru-mo-voskresensk-g"><circle r="200" cx="17000" cy="14000"/><text x="17300" y="14100">Воскресенск</text></g>
+    <g class="town" bw:code="ru-mo-ramenskoe-g"><circle r="200" cx="15200" cy="13000"/><text x="15500" y="13100">Раменское</text></g>
+    <g class="town" bw:code="ru-mo-egorevsk-g"><circle r="200" cx="20000" cy="15000"/><text x="20300" y="15100">Егорьевск</text></g>
+    <g class="town" bw:code="ru-mo-shatura-g"><circle r="200" cx="23000" cy="13000"/><text x="23300" y="13100">Шатура</text></g>
+    <g class="town" bw:code="ru-mo-roshal-g"><circle r="200" cx="22500" cy="12000"/><text x="22800" y="12100">Рошаль</text></g>
+    <g class="town" bw:code="ru-mo-orehovo-zuevo-g"><circle r="200" cx="19000" cy="10400"/><text x="19300" y="10500">Орехово-Зуево</text></g>
+    <g class="town" bw:code="ru-mo-likino-dulevo-gor-okrug"><circle r="200" cx="18900" cy="11000"/><text x="19200" y="11100">Ликино-Дулёво</text></g>
+    <g class="town" bw:code="ru-mo-noginsk-g"><circle r="200" cx="16000" cy="10000"/><text x="16300" y="10100">Ногинск</text></g>
+    <g class="town" bw:code="ru-mo-schelkovo-g"><circle r="200" cx="14700" cy="9000"/><text x="15000" y="9100">Щелково</text></g>
+    <g class="town" bw:code="ru-mo-pushkino-g"><circle r="200" cx="13300" cy="7600"/><text x="13600" y="7700">Пушкино</text></g>
+    <g class="town" bw:code="ru-mo-serebryanyie-prudyi-pos"><circle r="200" cx="17500" cy="22700"/><text x="17800" y="22800">Серебряные Пруды</text></g>
+    <g class="town" bw:code="ru-mo-domodedovo-g" transform="translate(13500,14300)"><circle r="200"/><text x="300" y="100">Домодедово</text></g>
+    <g class="town" bw:code="ru-mo-podolsk-g" transform="translate(12000,13800)"><circle r="200"/><text x="300" y="100">Подольск</text></g>
+    <g class="town" bw:code="ru-mo-pavlovskiy-posad-g" transform="translate(17700,10000)"><circle r="200"/><text x="300" y="100">Павловский Посад</text></g>
+    <g class="town" bw:code="ru-mo-myitischi-g" transform="translate(12600,9300)"><circle r="200"/><text x="0" y="450" text-anchor="middle">Мытищи</text></g>
+    <g class="town" bw:code="ru-mo-lyubertsyi-g" transform="translate(13700,11550)"><circle r="200"/><text text-anchor="end" x="-300" y="100" text-anchor="middle">Люберцы</text></g>
+
+    <g class="town small" bw:code="ru-mo-kurovskoe-g"><circle r="130" cx="18800" cy="11600"/><text x="19000" y="11700">Куровское</text></g>
+    <g class="town small" bw:code="ru-mo-zvenigorod-g"><circle r="130" cx="9000" cy="10700"/><text x="9200" y="10800">Звенигород</text></g>
+    <g class="town small" bw:code="ru-mo-kubinka-g"><circle r="130" cx="7500" cy="12400"/><text x="7700" y="12500">Кубинка</text></g>
+    <g class="town small" bw:code="ru-mo-golitsyino-g"><circle r="130" cx="8000" cy="11700"/><text x="8200" y="11800">Голицыно</text></g>
+    <g class="town small" bw:code="ru-mo-krasnoznamensk-g"><circle r="130" cx="9500" cy="12000"/><text x="9700" y="12100">Краснознаменск</text></g>
+    <g class="town small" bw:code="ru-mo-aprelevka-g"><circle r="130" cx="9700" cy="12400"/><text x="9900" y="12500">Апрелевка</text></g>
+    <g class="town small" bw:code="ru-mo-vyisokovsk-g"><circle r="130" cx="6000" cy="6300"/><text x="6200" y="6400">Высоковск</text></g>
+    <g class="town small" bw:code="ru-mo-dedovsk-g"><circle r="130" cx="9400" cy="9500"/><text x="9600" y="9600">Дедовск</text></g>
+    <g class="town small" bw:code="ru-mo-nahabino-pgt"><circle r="130" cx="10300" cy="9800"/><text x="10500" y="9900">Нахабино</text></g>
+    <g class="town small" bw:code="ru-mo-dolgoprudnyiy-gor-okrug"><circle r="130" cx="11800" cy="8900"/><text x="12000" y="9000">Долгопрудный</text></g>
+    <g class="town small" bw:code="ru-mo-lobnya-gor-okrug"><circle r="130" cx="11700" cy="8500"/><text x="11900" y="8600">Лобня</text></g>
+    <g class="town small" bw:code="ru-mo-yahroma-g"><circle r="130" cx="11000" cy="5700"/><text x="11200" y="5800">Яхрома</text></g>
+    <g class="town small" bw:code="ru-mo-dubna-g"><circle r="130" cx="10000" cy="1800"/><text x="10200" y="1900">Дубна</text></g>
+    <g class="town small" bw:code="ru-mo-krasnozavodsk-g"><circle r="130" cx="15000" cy="4500"/><text x="15200" y="4600">Краснозаводск</text></g>
+    <g class="town small" bw:code="ru-mo-fryazino-g"><circle r="130" cx="15000" cy="8500"/><text x="15200" y="8600">Фрязино</text></g>
+    <g class="town small" bw:code="ru-mo-reutov-g"><circle r="130" cx="13500" cy="10400"/><text x="13700" y="10500">Реутов</text></g>
+    <g class="town small" bw:code="ru-mo-balashiha-mkr-jeleznodorojnyiy"><circle r="130" cx="13900" cy="10700"/><text x="14100" y="10800">Железнодорожный</text></g>
+    <g class="town small" bw:code="ru-mo-elektrougli-g"><circle r="130" cx="15600" cy="11000"/><text x="15800" y="11100">Электроугли</text></g>
+    <g class="town small" bw:code="ru-mo-dzerjinskiy-gor-okrug" transform="translate(13400,11820)"><circle r="130"/><text text-anchor="end" x="-200" y="65">Дзержинский</text></g>
+    <g class="town small" bw:code="ru-mo-lyitkarino-gor-okrug" transform="translate(13800,12100)"><circle r="130"/><text text-anchor="end" x="-200" y="65">Лыткарино</text></g>
+    <g class="town small" bw:code="ru-mo-malahovka-pos"><circle r="130" cx="14300" cy="11500"/><text x="14550" y="11500">Малаховка</text></g>
+    <g class="town small" bw:code="ru-mo-jukovskiy-gor-okrug"><circle r="130" cx="14800" cy="12600"/><text x="15000" y="12700">Жуковский</text></g>
+    <g class="town small" bw:code="ru-mo-bronnitsyi-gor-okrug"><circle r="130" cx="15200" cy="13500"/><text x="15400" y="13600">Бронницы</text></g>
+    <g class="town small" bw:code="ru-mo-hotkovo-g" transform="translate(14400,6000)"><circle r="130"/><text x="200" y="85">Хотьково</text></g>
+    <g class="town small" bw:code="ru-mo-puschino-g" transform="translate(10800,17850)"><circle r="130"/><text x="200" y="85">Пущино</text></g>
+  </svg>`
+                    }
+                })
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//mo.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_selector = {
+            prop: {
+                '#height': () => 30,
+                items: () => ({
+                    metro: {
+                        icon: 'assets/icons-8-marker.png',
+                        caption: 'Метро',
+                    },
+                    railway: {
+                        icon: 'assets/icons-8-marker.png',
+                        caption: 'Ж/Д',
+                    },
+                    msk: {
+                        icon: 'assets/icons-8-marker.png',
+                        caption: 'Районы',
+                    },
+                    mo: {
+                        icon: 'assets/icons-8-marker.png',
+                        caption: 'Подмосковье',
+                    },
+                    map: {
+                        icon: 'assets/icons-8-marker.png',
+                        caption: 'Карта',
+                    },
+                }),
+                icon_width: () => 12,
+                icon_height: () => 18,
+                icon_margin_right: () => 8,
+                item_space: () => 20,
+                fontSize: () => 14,
+                item_ids: $$.$me_atom2_prop_keys(['.items']),
+                item: $$.$me_atom2_prop({ keys: ['.item_ids'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
+                item_width: $$.$me_atom2_prop({
+                    keys: ['.item_ids'],
+                    masters: $$.$me_atom2_prop_masters([], ({ key: [id] }) => [`@tab[${id}].#width`]),
+                }, $$.$me_atom2_prop_compute_fn_sum(), ({ key: [id], val }) => console.log(id, val)),
+                item_left: $$.$me_atom2_prop({
+                    keys: ['.item_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.item_ids'], ({ key: [id], masters: [item_ids] }) => {
+                        const idx = item_ids.indexOf(id);
+                        if (!idx)
+                            return [];
+                        id = item_ids[idx - 1];
+                        return [`.item_left[${id}]`, `.item_width[${id}]`, '.item_space'];
+                    }),
+                }, $$.$me_atom2_prop_compute_fn_sum()),
+            },
+            elem: {
+                separator: $$.$me_atom2_prop({ keys: ['.item_ids'], masters: ['.item_ids'] }, ({ key: [id], masters: [item_ids] }) => !item_ids.indexOf(id) ? null : {
+                    prop: {
+                        colorText: () => '#9699a1',
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#ofsHor': $$.$me_atom2_prop([`<.item_left[${id}]`, '<.item_space'], ({ masters: [left, space] }) => left - (Math.round(space / 2)) - 2),
+                        fontSize: $$.$me_atom2_prop([`<.fontSize`], ({ masters: [size] }) => size + 2),
+                    },
+                    dom: {
+                        innerText: () => '/',
+                    },
+                }),
+                tab: $$.$me_atom2_prop({ keys: ['.item_ids'] }, ({ key: [id] }) => ({
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'close_scheme') {
+                            console.log('eeeeeeeeee');
+                            $$.a('.isShown', false);
+                            return true;
+                        }
+                    },
+                    prop: {
+                        id: () => id,
+                        isShown: () => false,
+                        '#ofsHor': `<.item_left[${id}]`,
+                        '#height': '<.#height',
+                        '#width': $$.$me_atom2_prop(['@icon.#width', '@text.#width', '<.icon_margin_right'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#cursor': () => 'pointer',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    elem: {
+                        icon: () => ({
+                            node: 'img',
+                            prop: {
+                                '#width': '<<.icon_width',
+                                '#height': '<<.icon_height',
+                                '#ofsHor': () => 0,
+                                '#alignVer': () => $$.$me_align.center,
+                            },
+                            attr: {
+                                src: $$.$me_atom2_prop(['<<.items'], ({ masters: [items] }) => items[id].icon),
+                            },
+                            style: {
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                            },
+                        }),
+                        text: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#alignVer': () => $$.$me_align.center,
+                                '#alignHor': () => $$.$me_align.right,
+                                fontSize: '<<.fontSize',
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.items'], ({ masters: [items] }) => $$.$me_option_caption_text(id, items)),
+                            },
+                            style: {
+                                whiteSpace: () => 'nowrap',
+                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : 'white'),
+                            }
+                        }),
+                        scheme: $$.$me_atom2_prop(['.isShown', '.id'], ({ masters: [isShown, id] }) => (!isShown) ? null : {
+                            base: $$.$nl_scheme_mo,
+                            prop: {
+                                isShown: $$.$me_atom2_prop_bind('<.isShown'),
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log('clicked on ', $$.a('.id'));
+                            $$.a.update('.isShown', val => !val);
+                            return true;
+                        },
+                    },
+                })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//selector.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_plus = {
             base: $$.$me_stylesheet,
             prop: {
@@ -8849,10 +14230,43 @@ var $;
                             },
                             ОтСтанции: {
                                 row: () => 3,
-                                label: () => 'От станции',
-                                label_width: () => 90,
+                                label: $$.$me_atom2_prop(['<<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only' ? 'От станции' : 'От метро'),
+                                label_width: $$.$me_atom2_prop(['<<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only' ? 90 : 70),
                                 type: 'picker',
                                 options: () => $$.$nl_search_panel_param_options['ОтСтанции'],
+                                col_count: $$.$me_atom2_prop(['<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only' ? 1 : 3),
+                                col: $$.$me_atom2_prop(['<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only' ? 0 : 1),
+                                col_span: $$.$me_atom2_prop(['<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only' ? 1 : 2),
+                            },
+                            СхемаМетро: {
+                                hidden: $$.$me_atom2_prop(['<<.order'], ({ masters: [order] }) => order.params['Область'] == 'only'),
+                                row: () => 3,
+                                type: 'button',
+                                caption: () => 'Схема метро',
+                                target: () => '',
+                                cmd: () => 'open',
+                                dispatch: (dispatch_name, dispatch_arg) => {
+                                    const id = 'СхемаМетро';
+                                    if (dispatch_arg == 'open') {
+                                        const order = $$.a('<<.order');
+                                        $$.a.dispatch('/@app@scheme_metro', 'open', {
+                                            src: $$.a.curr.name(),
+                                            val: order && order.params[id]
+                                        });
+                                        return true;
+                                    }
+                                    else if (dispatch_name == 'close') {
+                                        const order = $$.a('<<.order');
+                                        if (!order.params)
+                                            order.params = {};
+                                        order.params[id] = dispatch_arg;
+                                        return true;
+                                    }
+                                    return false;
+                                },
+                                col_count: () => 3,
+                                col_span: () => 1,
+                                col: () => 0,
                             },
                         },
                     },
@@ -9456,7 +14870,7 @@ var $;
                             if (def.type == 'select') {
                                 return {
                                     base: $$.$nl_select,
-                                    prop: Object.assign(Object.assign({}, prop_common(def)), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
+                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -9468,7 +14882,7 @@ var $;
                             else if (def.type == 'address') {
                                 return {
                                     base: input_with_button,
-                                    prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
+                                    prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
                                 };
                             }
                             else if (def.type == 'picker' || def.type == 'pickermulti') {
@@ -9509,7 +14923,7 @@ var $;
                             else if (def.type == 'diap') {
                                 return {
                                     base: diap,
-                                    prop: Object.assign(Object.assign({}, prop_common(def)), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
+                                    prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -9554,7 +14968,7 @@ var $;
                             }
                             else if (def.type == 'include_exclude') {
                                 return {
-                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    prop: Object.assign({}, prop_common(def, { ofsVer: -5 }), { '#height': () => row_height + (row_height + row_space) * 2 }),
                                     elem: {
                                         label: () => ({
                                             prop: {
@@ -9585,6 +14999,19 @@ var $;
                                             },
                                         }),
                                     },
+                                };
+                            }
+                            else if (def.type == 'selector') {
+                                return {
+                                    base: $$.$nl_scheme_selector,
+                                    prop: Object.assign({}, prop_common(def)),
+                                };
+                            }
+                            else if (def.type == 'button') {
+                                return {
+                                    base: $$.$nl_button,
+                                    prop: Object.assign({}, prop_common(def), { target: def.target, cmd: def.cmd, caption: def.caption }),
+                                    dispatch: def.dispatch,
                                 };
                             }
                             else {
@@ -11299,7 +16726,7 @@ var $;
                     control: {
                         cell: () => ({
                             base: $$.$me_panel,
-                            prop: Object.assign(Object.assign({}, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
+                            prop: Object.assign({}, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
                         }),
                     },
                 }),
@@ -11317,7 +16744,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
@@ -11807,7 +17234,7 @@ var $;
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign(Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
+                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
                                 }),
                             },
                         }),
@@ -11827,7 +17254,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
+                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
@@ -12158,7 +17585,7 @@ var $;
             base: $$.$nl_search_panel,
             dispatch: (dispatch_name, dispatch_arg) => {
                 if (dispatch_name == 'get_recs') {
-                    $$.a('.dataWorker').postMessage(Object.assign(Object.assign({}, dispatch_arg), { cmd: 'recs', tag: $$.a('.provider_tag') }));
+                    $$.a('.dataWorker').postMessage(Object.assign({}, dispatch_arg, { cmd: 'recs', tag: $$.a('.provider_tag') }));
                     return true;
                 }
                 else if (dispatch_name == 'recs') {
@@ -12459,6 +17886,9 @@ var $;
                 }),
                 offerCount: () => 1200,
                 objCount: () => 800,
+            },
+            style: {
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
             },
             elem: {
                 tabs: () => ({
@@ -13406,6 +18836,231 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_select_elem = {
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                colorBorder: $$.$me_atom2_prop_abstract(),
+                colorBorderSelected: $$.$me_atom2_prop_abstract(),
+                colorText: $$.$me_atom2_prop_abstract(),
+                colorTextSelected: $$.$me_atom2_prop_abstract(),
+                colorBackground: $$.$me_atom2_prop_abstract(),
+                colorBackgroundSelected: $$.$me_atom2_prop_abstract(),
+                borderRadius: $$.$me_atom2_prop_abstract(),
+                borderWidth: $$.$me_atom2_prop_abstract(),
+                '#width': $$.$me_atom2_prop_abstract(),
+                '#height': $$.$me_atom2_prop_abstract(),
+                option_width_min: $$.$me_atom2_prop_abstract(),
+                fontFamily: $$.$me_atom2_prop_abstract(),
+                fontWeight: $$.$me_atom2_prop_abstract(),
+                fontWeightSelected: $$.$me_atom2_prop_abstract(),
+                fontSize: $$.$me_atom2_prop_abstract(),
+                no_adjust: () => false,
+                itemAlignHor: () => $$.$me_align.center,
+                itemAlignVer: () => $$.$me_align.center,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                _option_width: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [option_ids] }) => {
+                    const result = ['.no_adjust', '.option_ids', '.options', '.value', '.#width', '.option_width_min'];
+                    for (const id of option_ids)
+                        result.push(`^option[${id}]._textWidth`, `^option[${id}].paddingLeft`, `^option[${id}].paddingRight`);
+                    return result;
+                }), ({ masters, prev }) => {
+                    const [no_adjust, option_ids, options, value, width_total, option_width_min] = masters;
+                    if (no_adjust && prev)
+                        return prev;
+                    const masters_base = 6;
+                    const width = {};
+                    let width_sum = 0;
+                    let width_excess_base = 0;
+                    const ids = [];
+                    let w;
+                    for (let i = 0; i < option_ids.length; i++) {
+                        const id = option_ids[i];
+                        const caption = $$.$me_option_caption(id, options, value);
+                        const isSpecifiedWidth = typeof caption != 'string' &&
+                            caption &&
+                            typeof caption.width == 'number';
+                        const w = width[id] =
+                            isSpecifiedWidth ?
+                                caption.width :
+                                Math.max(option_width_min, masters[masters_base + i * 3] + masters[masters_base + 1 + i * 3] + masters[masters_base + 2 + i * 3]);
+                        width_sum += w;
+                        if (!isSpecifiedWidth) {
+                            width_excess_base += w;
+                            ids.push(id);
+                        }
+                    }
+                    const width_excess = width_total - width_sum;
+                    for (const id of ids)
+                        width[id] *= (1 + width_excess / width_excess_base);
+                    return width;
+                }),
+                option_width: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['._option_width'] }, ({ key: [id], masters: [width] }) => width[id]),
+                option_left: $$.$me_atom2_prop({
+                    keys: ['.option_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.option_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        const result = [];
+                        if (!idx)
+                            return result;
+                        for (let i = 0; i < idx; i++)
+                            result.push(`.option_width[${ids[i]}]`);
+                        return result;
+                    }),
+                }, $$.$me_atom2_prop_compute_fn_sum()),
+                idx_selected: $$.$me_atom2_prop(['.option_ids', '.value'], ({ masters: [ids, id] }) => typeof id == 'string' ? [ids.indexOf(id)].filter(idx => ~idx) :
+                    id instanceof Set ? [...id].map((id) => ids.indexOf(id)).filter(idx => ~idx) :
+                        []),
+            },
+            event: {},
+            elem: {
+                option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                    prop: {
+                        id: () => id,
+                        fontSize: '<.fontSize',
+                        fontWeight: $$.$me_atom2_prop(['.isSelected', '<.fontWeightSelected', '<.fontWeight'], ({ masters: [isSelected, fontWeightSelected, fontWeight] }) => isSelected ? fontWeightSelected : fontWeight),
+                        fontFamily: '<.fontFamily',
+                        isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set ? value.has(id) : value == id),
+                        '#width': $$.$me_atom2_prop(['<.option_ids', '<.#width'], ({ masters: [ids, w] }) => Math.round(w / ids.length)),
+                        '#height': '<.#height',
+                        '#ofsHor': $$.$me_atom2_prop(['<.option_ids', '.#width'], ({ masters: [ids, w] }) => ids.indexOf(id) * w),
+                        idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
+                        borderLeft: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
+                            const idx = option_ids.indexOf(id);
+                            const result = ~idx_selected.indexOf(idx) ?
+                                (~idx_selected.indexOf(idx - 1) ? { width: borderWidth, color: 'transparent' } : { width: borderWidth, color: colorBorderSelected }) :
+                                !idx ? { width: borderWidth, color: colorBorder } :
+                                    !idx ? { width: borderWidth, color: colorBorder } : { width: borderWidth, color: 'transparent' };
+                            return result;
+                        }),
+                        borderRight: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
+                            const idx = option_ids.indexOf(id);
+                            const result = ~idx_selected.indexOf(idx) ? { width: borderWidth, color: colorBorderSelected } :
+                                idx == option_ids.length - 1 || !~idx_selected.indexOf(idx + 1) ? { width: borderWidth, color: colorBorder } :
+                                    { width: borderWidth, color: 'transparent' };
+                            return result;
+                        }),
+                        colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#alignHor': '<<.itemAlignHor',
+                                '#alignVer': '<<.itemAlignVer',
+                                fontSize: '<.fontSize',
+                            },
+                            dom: {
+                                innerHTML: $$.$me_atom2_prop(['<<.options', '<<.value'], ({ masters: [options, value] }) => $$.$me_option_caption_text(id, options, value)),
+                            },
+                            style: {
+                                textAlign: $$.$me_atom2_prop(['<<.itemAlignHor'], ({ masters: [align] }) => {
+                                    var res = 'left';
+                                    if (align == $$.$me_align.center) {
+                                        res = 'center';
+                                    }
+                                    else if (align == $$.$me_align.right) {
+                                        res = 'right';
+                                    }
+                                    return res;
+                                }),
+                            }
+                        }),
+                    },
+                    style: {
+                        overflow: () => 'hidden',
+                        borderStyle: () => 'solid',
+                        borderWidth: $$.$me_atom2_prop(['<.borderWidth'], ({ masters: [w] }) => w || 0),
+                        borderLeftWidth: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.width || 0),
+                        borderLeftColor: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.color || 'transparent'),
+                        borderRightWidth: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.width || 0),
+                        borderRightColor: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.color || 'transparent'),
+                        borderColor: $$.$me_atom2_prop(['.isSelected', '<.colorBorder', '<.colorBorderSelected'], ({ masters: [isSelected, colorBorder, colorBorderSelected] }) => isSelected ? colorBorderSelected : colorBorder),
+                        borderTopLeftRadius: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
+                        borderBottomLeftRadius: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
+                        borderTopRightRadius: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
+                        borderBottomRightRadius: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
+                        backgroundColor: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected', '<.colorBackground'], ({ masters: [isSelected, colorBackgroundSelected, colorBackground] }) => isSelected ? colorBackgroundSelected : colorBackground),
+                    },
+                    prop_non_render: {
+                        '#cursor': $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set || value != id ? 'pointer' : null),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            let value = $$.a('<.value');
+                            if (typeof value == 'string' && value == id)
+                                return false;
+                            if (value instanceof Set) {
+                                if (value.has(id)) {
+                                    value.delete(id);
+                                }
+                                else {
+                                    value.add(id);
+                                }
+                            }
+                            else
+                                value = id;
+                            $$.a('<.value', value, true);
+                            return true;
+                        },
+                    },
+                })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_select_elem = {
+            base: $$.$me_select_elem,
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
+                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#bdc3d1' :
+                    '#d8dce3'),
+                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#008ecf' :
+                    '#008ecf'),
+                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    'white' :
+                    '#878f9b'),
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                    '#f0f1f4' :
+                    '#747B89'),
+                borderRadius: () => 4,
+                borderWidth: () => 1,
+                paddingHor: () => 0,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                '#width': () => 440,
+                '#height': () => 32,
+                option_width_min: () => 40,
+                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$me_theme.light ?
+                    '#0070a4' :
+                    colorText),
+                colorTextSelected: '/.colorText',
+                fontFamily: '/.fontFamily',
+                fontWeight: '/.fontWeight',
+                fontWeightSelected: '.fontWeight',
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_subscription_workspace = {
             prop: {
                 sections: () => ({
@@ -13686,7 +19341,7 @@ var $;
                             },
                         }),
                         period: () => ({
-                            base: $$.$nl_select,
+                            base: $$.$nl_select_elem,
                             prop: {
                                 '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.leftControlOfs'], ({ masters: [width, ofs, leftOfs] }) => width - ofs - leftOfs),
                                 '#height': () => 24,
@@ -13733,19 +19388,20 @@ var $;
                             },
                         }),
                         segment: () => ({
-                            base: $$.$nl_select,
+                            base: $$.$nl_select_elem,
                             prop: {
                                 '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.leftControlOfs'], ({ masters: [width, ofs, leftOfs] }) => width - ofs - leftOfs),
                                 '#height': () => 64,
                                 '#ofsHor': '<.leftControlOfs',
                                 '#ofsVer': () => 204,
                                 'fontSize': () => 14,
+                                '#alignHor': () => $$.$me_align.left,
                                 options: () => ({
-                                    seg1: { caption: 'Жилая\nМосковская область 1250 ₽', width: 100 },
-                                    seg2: { caption: 'Жилая\nМосква и область 2500 ₽' },
-                                    seg3: { caption: 'Загородная\nМосква и область 2500 ₽' },
-                                    seg4: { caption: 'Коммерческая\nМосква и область 2500 ₽' },
-                                    seg5: { caption: 'Все разделы\nМосква и область 6250 ₽' },
+                                    seg1: { caption: 'Жилая<br>Московская область<br>1250 ₽', width: 100 },
+                                    seg2: { caption: 'Жилая<br>Москва и область<br>2500 ₽' },
+                                    seg3: { caption: 'Загородная<br>Москва и область<br>2500 ₽' },
+                                    seg4: { caption: 'Коммерческая<br>Москва и область<br>2500 ₽' },
+                                    seg5: { caption: 'Все разделы<br>Москва и область<br>6250 ₽' },
                                 }),
                             },
                         }),
@@ -13761,6 +19417,8 @@ var $;
                             elem: {
                                 label_1: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': '.pm',
                                         '#ofsVer': () => 38,
                                     },
@@ -13773,6 +19431,8 @@ var $;
                                 }),
                                 label_2: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': '.pm',
                                         '#ofsVer': () => 69,
                                         fontSize: () => 14,
@@ -13783,6 +19443,8 @@ var $;
                                 }),
                                 label_3: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': () => 305,
                                         '#ofsVer': () => 25,
                                     },
@@ -13799,6 +19461,7 @@ var $;
                                     prop: {
                                         boxSize: () => 14,
                                         '#height': () => 32,
+                                        '#width': () => 360,
                                         '#ofsVer': () => 62,
                                         '#ofsHor': () => 305,
                                         caption: () => 'Автоматически продлить подписку на следующий',
@@ -13808,6 +19471,8 @@ var $;
                                 }),
                                 label_4: () => ({
                                     prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
                                         '#ofsHor': () => 328,
                                         '#ofsVer': () => 90,
                                         fontSize: () => 14,
@@ -14115,15 +19780,14 @@ var $;
                     },
                     style: {
                         margin: () => 0,
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
-                    prop: Object.assign(Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
+                    prop: Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
                         default: () => false,
                         valid: (val) => typeof val == 'boolean' ?
                             val :
                             null,
-                    }), ['isShownLoginForm', 'isShownLoginMenu'])), { login: $$.$me_atom2_prop_store({
+                    }), ['isShownLoginForm', 'isShownLoginMenu']), { login: $$.$me_atom2_prop_store({
                             default: () => '',
                             valid: (val) => typeof val == 'string' ?
                                 val.trim() :
@@ -14134,10 +19798,40 @@ var $;
                             valid: (val) => typeof val == 'boolean' ?
                                 val :
                                 null,
-                        }), '#order': () => ['menu', 'workspace', 'login', 'tapEffect'] }),
+                        }), showSchemeMetro: () => false, '#order': $$.$me_atom2_prop(['.showSchemeMetro'], ({ masters: [showSchemeMetro] }) => !showSchemeMetro ?
+                            ['scheme_metro', 'menu', 'workspace', 'login', 'tapEffect'] :
+                            ['menu', 'workspace', 'login', 'scheme_metro', 'tapEffect']) }),
                     elem: {
                         menu: () => menu,
                         workspace: () => workspace,
+                        scheme_metro: () => ({
+                            base: $$.$nl_scheme_metro,
+                            prop: {
+                                '#zIndex': $$.$me_atom2_prop(['<.showSchemeMetro'], ({ masters: [showSchemeMetro] }) => !showSchemeMetro ? -10 : 10),
+                                scale: '.scale_initial',
+                                ofsHor: '.ofsHor_initial',
+                                ofsVer: '.ofsVer_initial',
+                                selected: () => new Map(),
+                                src: () => '',
+                            },
+                            dispatch: (dispatch_name, dispatch_arg) => {
+                                if (dispatch_name == 'open') {
+                                    $$.a('<.showSchemeMetro', true);
+                                    $$.a('.scale', $$.a('.scale_initial'));
+                                    $$.a('.ofsHor', $$.a('.ofsHor_initial'));
+                                    $$.a('.ofsVer', $$.a('.ofsVer_initial'));
+                                    $$.a('.src', dispatch_arg.src);
+                                    $$.a('.selected', dispatch_arg.val);
+                                    return true;
+                                }
+                                else if (dispatch_name == 'close') {
+                                    $$.a('<.showSchemeMetro', false);
+                                    $$.a.dispatch($$.a('.src'), 'close', $$.a('.selected'));
+                                    return true;
+                                }
+                                return false;
+                            },
+                        }),
                         login: $$.$me_atom2_prop(['.isShownLoginForm'], ({ masters: [isShownLoginForm] }) => !isShownLoginForm ? null : {
                             base: $$.$nl_login,
                             prop: {
