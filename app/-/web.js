@@ -7359,152 +7359,218 @@ var $;
                                     ctx.textBaseline = 'bottom';
                                     for (const id in labels) {
                                         const label = labels[id];
-                                        if (label.alignHor == $$.$me_align.left &&
-                                            label.alignVer == $$.$me_align.center &&
-                                            !~label.text.indexOf('<')) {
+                                        if (!~label.text.indexOf('<')) {
                                             const ctxWidth = ctx.measureText(label.text).width;
                                             const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio,
-                                                ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: 'rgba(255,255,255,.5)',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio + .5 * ctxFontSize);
+                                            if (label.alignHor == $$.$me_align.left &&
+                                                label.alignVer == $$.$me_align.center) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio,
+                                                    ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio + .5 * ctxFontSize);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.left &&
+                                                label.alignVer == $$.$me_align.bottom) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio,
+                                                    ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.left &&
+                                                label.alignVer == $$.$me_align.top) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio,
+                                                    ctxTop: label.ofsVer * pixelRatio,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio + ctxFontSize);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right &&
+                                                label.alignVer == $$.$me_align.center) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
+                                                    ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio + .5 * ctxFontSize);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right &&
+                                                label.alignVer == $$.$me_align.bottom) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
+                                                    ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right &&
+                                                label.alignVer == $$.$me_align.top) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
+                                                    ctxTop: label.ofsVer * pixelRatio,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio + ctxFontSize);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.center &&
+                                                label.alignVer == $$.$me_align.center) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
+                                                    ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio + .5 * ctxFontSize);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.center &&
+                                                label.alignVer == $$.$me_align.bottom) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
+                                                    ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio);
+                                            }
+                                            else if (label.alignHor == $$.$me_align.center &&
+                                                label.alignVer == $$.$me_align.top) {
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
+                                                    ctxTop: label.ofsVer * pixelRatio,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio + ctxFontSize);
+                                            }
+                                            else {
+                                                console.error('что ты такое???');
+                                            }
                                         }
-                                        else if (label.alignHor == $$.$me_align.left &&
-                                            label.alignVer == $$.$me_align.bottom &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio,
-                                                ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: 'rgba(255,255,255,.5)',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio);
-                                        }
-                                        else if (label.alignHor == $$.$me_align.left &&
-                                            label.alignVer == $$.$me_align.top &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio,
-                                                ctxTop: label.ofsVer * pixelRatio,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: 'rgba(255,255,255,.5)',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio + ctxFontSize);
-                                        }
-                                        else if (label.alignHor == $$.$me_align.right &&
-                                            label.alignVer == $$.$me_align.center &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
-                                                ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: 'rgba(255,255,255,.5)',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio + .5 * ctxFontSize);
-                                        }
-                                        else if (label.alignHor == $$.$me_align.right &&
-                                            label.alignVer == $$.$me_align.bottom &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
-                                                ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: 'yellow',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio);
-                                        }
-                                        else if (label.alignHor == $$.$me_align.right &&
-                                            label.alignVer == $$.$me_align.top &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
-                                                ctxTop: label.ofsVer * pixelRatio,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: 'yellow',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio + ctxFontSize);
-                                        }
-                                        else if (label.alignHor == $$.$me_align.center &&
-                                            label.alignVer == $$.$me_align.center &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
-                                                ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: '#feb278',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio + .5 * ctxFontSize);
-                                        }
-                                        else if (label.alignHor == $$.$me_align.center &&
-                                            label.alignVer == $$.$me_align.bottom &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
-                                                ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: '#feb278',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio);
-                                        }
-                                        else if (label.alignHor == $$.$me_align.center &&
-                                            label.alignVer == $$.$me_align.top &&
-                                            !~label.text.indexOf('<')) {
-                                            const ctxWidth = ctx.measureText(label.text).width;
-                                            const ctxHeight = ctxFontSize;
-                                            $$.$me_atom2_ctx_rect({
-                                                ctx,
-                                                ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
-                                                ctxTop: label.ofsVer * pixelRatio,
-                                                ctxWidth,
-                                                ctxHeight,
-                                                fillStyle: '#feb278',
-                                            });
-                                            ctx.fillStyle = $$.a('<<.colorText');
-                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio + ctxFontSize);
-                                        }
-                                        else if (!~label.text.indexOf('<')) {
-                                            console.log(label.text, label.alignHor, label.alignVer);
+                                        else if (label.text.indexOf('<')) {
+                                            const lines = label.text.split('<br>');
+                                            const linesCount = lines.length;
+                                            var ctxWidth = 0;
+                                            var ctxHeight = 0;
+                                            for (const i in lines) {
+                                                const line = lines[i];
+                                                let w = ctx.measureText(line).width;
+                                                let h = ctxFontSize;
+                                                if (w > ctxWidth)
+                                                    ctxWidth = w;
+                                                ctxHeight = ctxHeight + h;
+                                            }
+                                            if (label.alignHor == $$.$me_align.left &&
+                                                label.alignVer == $$.$me_align.center) {
+                                                let ofsV = label.ofsVer * pixelRatio - .5 * ctxHeight;
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio,
+                                                    ctxTop: ofsV,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                for (const i in lines) {
+                                                    const line = lines[i];
+                                                    ofsV += ctxFontSize;
+                                                    ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.left &&
+                                                label.alignVer == $$.$me_align.bottom) {
+                                                let ofsV = label.ofsVer * pixelRatio - ctxHeight;
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio,
+                                                    ctxTop: ofsV,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                for (const i in lines) {
+                                                    const line = lines[i];
+                                                    ofsV += ctxFontSize;
+                                                    ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.left &&
+                                                label.alignVer == $$.$me_align.top) {
+                                                let ofsV = label.ofsVer * pixelRatio;
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio,
+                                                    ctxTop: ofsV,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                for (const i in lines) {
+                                                    const line = lines[i];
+                                                    ofsV += ctxFontSize;
+                                                    ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right &&
+                                                label.alignVer == $$.$me_align.center) {
+                                                let ofsV = label.ofsVer * pixelRatio - .5 * ctxHeight;
+                                                $$.$me_atom2_ctx_rect({
+                                                    ctx,
+                                                    ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
+                                                    ctxTop: ofsV,
+                                                    ctxWidth,
+                                                    ctxHeight,
+                                                    fillStyle: 'rgba(255,255,255,.5)',
+                                                });
+                                                ctx.fillStyle = $$.a('<<.colorText');
+                                                for (const i in lines) {
+                                                    const line = lines[i];
+                                                    ofsV += ctxFontSize;
+                                                    let w = ctx.measureText(line).width;
+                                                    ctx.fillText(line, label.ofsHor - w * pixelRatio, ofsV);
+                                                }
+                                            }
+                                            else {
+                                            }
                                         }
                                     }
                                 };
@@ -11364,7 +11430,7 @@ var $;
                     const root = !~idx ?
                         window.location.pathname :
                         window.location.pathname.slice(0, idx);
-                    worker = new Worker(window.location.origin + root + '/scheme-metro-worker/-/web.js');
+                    worker = new Worker(window.location.origin + root + '/scheme_metro_worker/-/web.js');
                     worker.postMessage({ some: 'thing' });
                     return null;
                 }, ({ val }) => console.log(val)),
