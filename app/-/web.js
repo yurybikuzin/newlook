@@ -4496,7 +4496,7 @@ var $;
             return $$.$me_atom2_event_process('touchstart', event);
         };
         let touchAccu;
-        const touchAccu_threshold = 30;
+        const touchAccu_threshold = 44;
         const touchmove = (event) => {
             event.preventDefault();
             if (event.touches.length == 1) {
@@ -4792,28 +4792,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let $nl_scheme_style_type_enum;
-        (function ($nl_scheme_style_type_enum) {
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["solid"] = 0] = "solid";
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dashed"] = 1] = "dashed";
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dotted"] = 2] = "dotted";
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["double"] = 3] = "double";
-        })($nl_scheme_style_type_enum = $$.$nl_scheme_style_type_enum || ($$.$nl_scheme_style_type_enum = {}));
-        let $nl_scheme_will_action_enum;
-        (function ($nl_scheme_will_action_enum) {
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
-        })($nl_scheme_will_action_enum = $$.$nl_scheme_will_action_enum || ($$.$nl_scheme_will_action_enum = {}));
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//scheme.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$me_stylesheet = {
             prop: {
                 styleSheetName: $$.$me_atom2_prop_abstract(),
@@ -4893,4250 +4871,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //stylesheet.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_cross = {
-            type: '$me_cross',
-            base: $$.$me_stylesheet,
-            prop: {
-                size: $$.$me_atom2_prop_abstract(),
-                thick: $$.$me_atom2_prop_abstract(),
-                color: $$.$me_atom2_prop_abstract(),
-                opacity: () => 1,
-                opacityHover: () => 1,
-                '#width': '.size',
-                '#height': '.size',
-                styleSheetName: () => 'me_cross',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
-        .${className}:before {
-          transform: rotate(45deg);
-        }
-        .${className}:after {
-          transform: rotate(-45deg);
-        }
-      `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
-        .${className} {
-          opacity: ${opacity};
-        }
-        .${className}:hover {
-          opacity: ${opacityHover};
-        }
-        .${className}:before, .${className}:after {
-          position: absolute;
-          left: ${(size - thick) / 2}px;
-          content: '';
-          height: ${size}px;
-          width: ${thick}px;
-          background-color: ${color};
-        }
-      `),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//cross.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        let $nl_scheme_will_action_enum;
-        (function ($nl_scheme_will_action_enum) {
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
-        })($nl_scheme_will_action_enum || ($nl_scheme_will_action_enum = {}));
-        $$.$nl_scheme_engine = {
-            style: {
-                userSelect: () => 'none',
-                overflow: () => 'hidden',
-                background: () => 'white',
-            },
-            dispatch(dispatch_name, dispatch_arg) {
-                if (dispatch_name == 'lassoShow') {
-                    const { clientX, clientY } = dispatch_arg;
-                    const clientRect = $$.a('@container.#clientRect');
-                    const x = clientX - clientRect.left;
-                    const y = clientY - clientRect.top;
-                    const point = { x, y };
-                    $$.a('.isLasso', true);
-                    $$.a('.lassoStart', point);
-                    $$.a('.lassoEnd', point);
-                    return true;
-                }
-                else if (dispatch_name == 'lassoMove') {
-                    const { mode, clientX, clientY } = dispatch_arg;
-                    if (mode == $$.$me_atom2_wheel_synth_mode.end) {
-                        $$.a.dispatch('', 'lassoHide');
-                    }
-                    else {
-                        const clientRect = $$.a('@container.#clientRect');
-                        const x = clientX - clientRect.left;
-                        const y = clientY - clientRect.top;
-                        $$.a('.lassoEnd', { x, y });
-                        const lassoStart = $$.a('.lassoStart');
-                        const rect = {
-                            left: Math.min(x, lassoStart.x),
-                            top: Math.min(y, lassoStart.y),
-                            right: Math.max(x, lassoStart.x),
-                            bottom: Math.max(y, lassoStart.y),
-                        };
-                        const points = $$.a('.points');
-                        const selected = $$.a('.selected');
-                        const codes = $$.a('.will_codes');
-                        codes.clear();
-                        let will_action = $nl_scheme_will_action_enum.deselect;
-                        for (const point_id in points) {
-                            const point_def = points[point_id];
-                            if (point_def.type != 'circle')
-                                continue;
-                            if (!point_def.visible)
-                                continue;
-                            if (!$$.$me_point_in_rect(point_def.x, point_def.y, rect))
-                                continue;
-                            codes.add(point_def.code);
-                            if (!selected.has(point_def.code))
-                                will_action = $nl_scheme_will_action_enum.select;
-                        }
-                        $$.a('.will_codes', codes, true);
-                        $$.a('.will_action', will_action);
-                    }
-                    return true;
-                }
-                else if (dispatch_name == 'lassoHide') {
-                    const will_action = $$.a('.will_action');
-                    $$.a.update('.selected', val => {
-                        for (const code of $$.a('.will_codes')) {
-                            if (will_action == $nl_scheme_will_action_enum.select) {
-                                val.set(code, null);
-                            }
-                            else {
-                                val.delete(code);
-                            }
-                        }
-                        return val;
-                    }, true);
-                    $$.a('.will_action', $nl_scheme_will_action_enum.none);
-                    $$.a('.isLasso', false);
-                    return true;
-                }
-                else if (dispatch_name == 'codeTapped') {
-                    const code = dispatch_arg;
-                    $$.a.update('.selected', val => {
-                        if (val.has(code)) {
-                            val.delete(code);
-                        }
-                        else {
-                            val.set(code, null);
-                        }
-                        return val;
-                    }, true);
-                    return true;
-                }
-                else if (dispatch_name == 'close') {
-                    return true;
-                }
-                return false;
-            },
-            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32, ofsHor_initial: () => 32, scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial, ({ val }) => console.warn({ val })), scale: $$.$me_atom2_prop_store({
-                    default: () => $$.a('.scale_initial'),
-                    valid: (val) => typeof val == 'number' ? val : null,
-                }), ofsHor: $$.$me_atom2_prop_store({
-                    default: () => $$.a('.ofsHor_initial'),
-                    valid: (val) => typeof val == 'number' ? val : null,
-                }), ofsVer: $$.$me_atom2_prop_store({
-                    default: () => $$.a('.ofsVer_initial'),
-                    valid: (val) => typeof val == 'number' ? val : null,
-                }), will_action: () => $nl_scheme_will_action_enum.none, will_codes: () => new Set(), isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'circle', 'label', 'cross', 'lasso'], labels: $$.$me_atom2_prop([], () => null), label_ids: $$.$me_atom2_prop_keys(['.labels']), label_ofsHor: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsHor), label_ofsVer: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsVer), label_hidden: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => !labels[id].visible), selected: $$.$me_atom2_prop_store({
-                    default: () => new Map(),
-                    valid: val => {
-                        const isMap = val instanceof Map;
-                        const result = isMap ? val : new Map();
-                        return result;
-                    },
-                    toJSON: val => [...val].map(([id]) => id),
-                    fromJSON: val => !Array.isArray(val) ?
-                        new Map() :
-                        new Map(val.map(id => [id, null])),
-                }), thick_transit: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.thick_transit), thick_line: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.thick_line), radius_station: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.circle_radius), thick_station: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.circle_thick), label_ofsHor_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.ofsHor), label_ofsVer_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.ofsVer), label_alignHor_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.alignHor), label_alignVer_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.alignVer), fontSize_label: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.fontSize_label), points: $$.$me_atom2_prop([], () => null), point_ids: $$.$me_atom2_prop_keys(['.points']), point_x: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points',] }, ({ key: [id], masters: [points] }) => points[id].x), point_y: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].y), point_color: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].color), point_hidden: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => !points[id].visible), demo_border: () => '' }),
-            elem: {
-                label: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => ({
-                    prop: {
-                        '#width': () => 0,
-                        '#height': () => 0,
-                        '#ofsHor': `<.label_ofsHor[${id}]`,
-                        '#ofsVer': `<.label_ofsVer[${id}]`,
-                        '#hidden': `<.label_hidden[${id}]`,
-                    },
-                    elem: {
-                        text: () => ({
-                            dom: {
-                                innerHTML: () => labels[id].text,
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a.dispatch('<<', 'codeTapped', labels[id].code);
-                                    return true;
-                                },
-                            },
-                            style: Object.assign({}, (!labels[id].lineHeight ? {} : { lineHeight: () => labels[id].lineHeight }), (!labels[id].textAlign ? {} : { textAlign: () => labels[id].textAlign }), (!labels[id].whiteSpace ? {} : { whiteSpace: () => labels[id].whiteSpace }), { background: () => 'rgba(255,255,255,.5)' }),
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => null,
-                                '#alignHor': () => labels[id].alignHor,
-                                '#alignVer': () => labels[id].alignVer,
-                                fontSize: $$.$me_atom2_prop(['<<@container^scheme._scale', '<<.fontSize_label'], ({ masters: [scale, fontSize] }) => fontSize * scale),
-                                '#cursor': () => 'pointer',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                colorText: $$.$me_atom2_prop([
-                                    '<<.will_action',
-                                    '<<.will_codes',
-                                    '<<.colorText_will_select',
-                                    '<<.colorText_will_deselect',
-                                    '/.colorText',
-                                ], ({ masters: [will_action, will_codes, colorText_will_select, colorText_will_deselect, colorText] }) => {
-                                    const code = labels[id].code;
-                                    const result = will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
-                                        colorText_will_select :
-                                        will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
-                                            colorText_will_deselect :
-                                            colorText;
-                                    return result;
-                                }),
-                            },
-                        }),
-                    },
-                })),
-                circle: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].type != 'circle' ? null : {
-                    prop: Object.assign({}, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['<@container^scheme._scale', '<.radius_station'], ({ masters: [scale, radius] }) => 2 * radius * scale), ['#width', '#height']), { '#ofsHor': $$.$me_atom2_prop([`<.point_x[${id}]`, '.#width'], ({ masters: [x, width] }) => x - width / 2), '#ofsVer': $$.$me_atom2_prop([`<.point_y[${id}]`, '.#height'], ({ masters: [x, width] }) => x - width / 2), '#hidden': `<.point_hidden[${id}]`, '#cursor': () => 'pointer', '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
-                    style: {
-                        border: $$.$me_atom2_prop([`<@container^scheme._scale`, '<.thick_station', `<.point_color[${id}]`], ({ masters: [scale, thick, color] }) => `${scale * thick}px solid ${color}`),
-                        borderRadius: () => '50%',
-                        boxSizing: () => 'border-box',
-                        background: $$.$me_atom2_prop([
-                            '<.will_action',
-                            '<.will_codes',
-                            '<.background_station_will_select',
-                            '<.background_station_will_deselect',
-                            '<.selected',
-                            '<.background_station',
-                            '<.background_station_selected',
-                        ], ({ masters: [will_action, will_codes, background_station_will_select, background_station_will_deselect, selected, background, background_selected,] }) => {
-                            const code = points[id].code;
-                            const result = will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
-                                background_station_will_deselect :
-                                selected.has(code) ?
-                                    background_selected :
-                                    will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
-                                        background_station_will_select :
-                                        background;
-                            return result;
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a.dispatch('<', 'codeTapped', points[id].code);
-                            return true;
-                        },
-                    },
-                }),
-                cross: () => ({
-                    base: $$.$me_cross,
-                    prop: {
-                        size: () => 24,
-                        thick: () => 3,
-                        '#ofsVer': () => 8,
-                        '#ofsHor': () => 16,
-                        '#alignHor': () => $$.$me_align.right,
-                        color: '/.colorText',
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
-                        '#cursor': () => 'pointer',
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a.dispatch('<', 'close');
-                            return true;
-                        },
-                    },
-                }),
-                lasso: $$.$me_atom2_prop(['.isLasso'], ({ masters: [isLasso] }) => !isLasso ? null : {
-                    prop: {
-                        '#ofsHor': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.x, lassoEnd.x)),
-                        '#ofsVer': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.y, lassoEnd.y)),
-                        '#width': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.x - lassoEnd.x)),
-                        '#height': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.y - lassoEnd.y)),
-                    },
-                    style: {
-                        border: () => '1px dashed red',
-                    },
-                }),
-                container: () => ({
-                    prop: {
-                        '#width': '<.#width',
-                        '#height': '<.#height',
-                    },
-                    control: {
-                        scheme: () => ({
-                            event: {
-                                pinchFini: p => {
-                                    console.warn('pinchFini', p.event);
-                                    $$.a('<<.scale', $$.a('._scale'));
-                                    return false;
-                                },
-                                pinch: p => {
-                                    handle_pinch($$.a('<<.scale') * p.event.scale, p.event.center, '._scale');
-                                    return false;
-                                },
-                                wheelDragInit: p => {
-                                    $$.a.dispatch('<<', 'lassoShow', p.event.last);
-                                    return false;
-                                },
-                                wheelDragFini: p => {
-                                    $$.a.dispatch('<<', 'lassoHide');
-                                    return false;
-                                },
-                                wheelDrag: p => {
-                                    const { clientX, clientY } = p.event.last;
-                                    $$.a.dispatch('<<', 'lassoMove', {
-                                        clientX, clientY,
-                                        mode: p.event.mode,
-                                    });
-                                    return true;
-                                },
-                                wheelTouchInit: p => {
-                                    if (p.event.last.touches.length == 1) {
-                                        $$.a.dispatch('<<', 'lassoShow', p.event.last.touches[0]);
-                                    }
-                                    return false;
-                                },
-                                wheelTouch: p => {
-                                    if (p.event.start.touches.length > 1) {
-                                        handle_move(p.event._deltaX, p.event._deltaY);
-                                    }
-                                    else {
-                                        const { clientX, clientY } = p.event.last.touches[0];
-                                        $$.a.dispatch('<<', 'lassoMove', {
-                                            clientX, clientY,
-                                            mode: p.event.mode,
-                                        });
-                                    }
-                                    return true;
-                                },
-                                wheelTouchFini: p => {
-                                    if (p.event.start.touches.length == 1) {
-                                        $$.a.dispatch('<<', 'lassoHide');
-                                    }
-                                    return false;
-                                },
-                                wheel: p => {
-                                    if (!p.event.ctrlKey) {
-                                        handle_move(p.event._deltaX, p.event._deltaY);
-                                    }
-                                    else {
-                                        const clientRect = $$.a('.#clientRect');
-                                        const x = p.event.clientX - clientRect.left;
-                                        const y = p.event.clientY - clientRect.top;
-                                        handle_pinch($$.a('<<.scale') - p.event.deltaY * 0.002, { x, y });
-                                    }
-                                    return true;
-                                },
-                                clickOrTap: (p) => {
-                                    return true;
-                                },
-                            },
-                            prop: {
-                                _scale: '<<.scale',
-                                ofsHor: '<<.ofsHor',
-                                ofsVer: '<<.ofsVer',
-                                width: $$.$me_atom2_prop(['<<.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
-                                height: $$.$me_atom2_prop(['<<.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
-                            },
-                            render: p => {
-                                const { ctx, pixelRatio } = p;
-                                const ctxFontSize = $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-                                const demo_border = $$.a('<<.demo_border');
-                                if (demo_border) {
-                                    $$.$me_atom2_ctx_rect({
-                                        ctx,
-                                        ctxTop: pixelRatio * $$.a('<<.ofsVer'),
-                                        ctxLeft: pixelRatio * $$.a('<<.ofsHor'),
-                                        ctxWidth: pixelRatio * $$.a('.width'),
-                                        ctxHeight: pixelRatio * $$.a('.height'),
-                                        stroke: { ctxWidth: pixelRatio, style: demo_border },
-                                    });
-                                }
-                                const scale = $$.a('._scale');
-                                const thick_transit = $$.a('<<.thick_transit') * scale;
-                                const thick_line = $$.a('<<.thick_line') * scale;
-                                const radius_station = $$.a('<<.radius_station') * scale;
-                                const labels = $$.a('<<.labels') || {};
-                                for (const label_id in labels) {
-                                    labels[label_id].visible = false;
-                                }
-                                const points = $$.a('<<.points') || {};
-                                for (const point_id in points) {
-                                    points[point_id].visible = false;
-                                }
-                                const lines = {};
-                                const main = () => {
-                                    const items = $$.a('<<.data');
-                                    for (const item_id in items) {
-                                        const item_def = items[item_id];
-                                        if (item_id == 'settings') {
-                                            points['root'] = {
-                                                x: item_def.root.x * scale + $$.a('<<.ofsHor'),
-                                                y: item_def.root.y * scale + $$.a('<<.ofsVer'),
-                                            };
-                                        }
-                                        else if (~Object.keys(segment_helper).indexOf(item_def.type)) {
-                                            segment(item_def, item_def, [item_id]);
-                                        }
-                                        else if (item_def.type == null || item_def.type == 'segments') {
-                                            segments(item_def, item_def, [item_id]);
-                                        }
-                                        else
-                                            $$.$me_throw('unsupported item_def.type', item_def.type);
-                                    }
-                                    $$.a('<<.points', points, true);
-                                    $$.a('<<.labels', labels, true);
-                                };
-                                const segments = (line_def, group_def, id_items) => {
-                                    for (const segment_id in group_def.segments) {
-                                        const segment_def = group_def.segments[segment_id];
-                                        segment(line_def, segment_def, id_items.concat(segment_id));
-                                    }
-                                };
-                                const segment = (line_def, segment_def, id_items) => {
-                                    const fn = segment_helper[segment_def.type || 'line'];
-                                    if (!fn) {
-                                        $$.$me_throw('unsupported segment_def.type', segment_def.type);
-                                    }
-                                    else {
-                                        fn(line_def, segment_def, (tail) => id_items.concat(!tail ? [] : tail).reverse().join('::'));
-                                    }
-                                };
-                                const segment_helper = {
-                                    circle: (line_def, segment_def, id) => {
-                                        const p = prepare_point(['center'], id, segment_def, points, scale);
-                                        if (!p.center)
-                                            anchored_point(id, segment_def, 'center', points, scale);
-                                        line_def.ctxCenterX = p.center.x * pixelRatio;
-                                        line_def.ctxCenterY = p.center.y * pixelRatio;
-                                        line_def.ctxRadius = line_def.radius * scale * pixelRatio;
-                                        const type = styleType(line_def.style);
-                                        if (type == $$.$nl_scheme_style_type_enum.solid) {
-                                            $$.$me_atom2_ctx_circle({
-                                                ctx,
-                                                ctxCenterX: line_def.ctxCenterX,
-                                                ctxCenterY: line_def.ctxCenterY,
-                                                ctxRadius: line_def.ctxRadius + (thick_line * pixelRatio) / 2,
-                                                stroke: { ctxWidth: thick_line * pixelRatio, style: styleColor(line_def.style) },
-                                            });
-                                        }
-                                        else if (type == $$.$nl_scheme_style_type_enum.double) {
-                                            const thickStyle = (line_def.style.thickStyle || thick_line) * scale;
-                                            const thickLine = (line_def.style.thickLine || pixelRatio) * scale;
-                                            $$.$me_atom2_ctx_circle({
-                                                ctx,
-                                                ctxCenterX: line_def.ctxCenterX,
-                                                ctxCenterY: line_def.ctxCenterY,
-                                                ctxRadius: line_def.ctxRadius + thickLine / 2 - thickStyle / 2,
-                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
-                                            });
-                                            $$.$me_atom2_ctx_circle({
-                                                ctx,
-                                                ctxCenterX: line_def.ctxCenterX,
-                                                ctxCenterY: line_def.ctxCenterY,
-                                                ctxRadius: line_def.ctxRadius + thickLine / 2 + thickStyle / 2,
-                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
-                                            });
-                                        }
-                                        else {
-                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$nl_scheme_style_type_enum[type]}`, line_def);
-                                        }
-                                        const retCircle = {
-                                            centerX: line_def.ctxCenterX / pixelRatio,
-                                            centerY: line_def.ctxCenterY / pixelRatio,
-                                            radius: line_def.ctxRadius / pixelRatio,
-                                        };
-                                        for (const point_id in line_def.points) {
-                                            const point_def = line_def.points[point_id];
-                                            const point = anchored_point(id, line_def.points, point_id, points, scale, (req, result) => {
-                                                if (req == 'type')
-                                                    return 'circle';
-                                                if (req == 'circle')
-                                                    return retCircle;
-                                                return anchored_point_provider(req, result, {
-                                                    point_id,
-                                                    point_def,
-                                                    line_def,
-                                                    id,
-                                                });
-                                            });
-                                        }
-                                    },
-                                    line: (line_def, segment_def, id) => {
-                                        const props = ['through'];
-                                        for (const prop of ['from', 'to'])
-                                            if (segment_def.hasOwnProperty(prop) && (typeof segment_def[prop] == 'string' ||
-                                                segment_def[prop].hasOwnProperty('anchor')))
-                                                props.push(prop);
-                                        const p = prepare_point(props, id, segment_def, points, scale);
-                                        if (p.from && p.to && p.through) {
-                                            $$.$me_throw('.through is not expected whilst .from and .to are set');
-                                        }
-                                        else if (!p.to) {
-                                            if (!(p.from && p.through && segment_def.dist))
-                                                $$.$me_throw(id() + ': .from, .through and .dist must be set whilst .to is absent');
-                                            let to = $$.$me_vector_transform({ from: p.from, to: p.through }, segment_def.dist * scale).to;
-                                            points[id(['to'])] = p.to = to;
-                                        }
-                                        else if (!p.from) {
-                                            if (!(p.to && p.through) && segment_def.dist)
-                                                $$.$me_throw('.to, .through and .dist must be set whilst .from is absent');
-                                            const dx = p.through.x - p.to.x;
-                                            const dy = p.through.y - p.to.y;
-                                            const len = Math.hypot(dx, dy);
-                                            const dist = segment_def.dist;
-                                            points[id(['from'])] = p.from = $$.$me_vector_transform({ from: p.to, to: p.through }, -segment_def.dist * scale).to;
-                                        }
-                                        const line = lines[id()] = { from: p.from, to: p.to };
-                                        ctx.beginPath();
-                                        ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
-                                        ctx.lineTo(p.to.x * pixelRatio, p.to.y * pixelRatio);
-                                        ctx.closePath();
-                                        ctx.strokeStyle = styleColor(line_def.style);
-                                        ctx.lineWidth = thick_line * pixelRatio;
-                                        ctx.stroke();
-                                        for (const link_prop of ['from', 'to']) {
-                                            const link = !segment_def[link_prop] ?
-                                                null :
-                                                segment_def[link_prop].hasOwnProperty('link') ?
-                                                    segment_def[link_prop].link :
-                                                    segment_def[link_prop].hasOwnProperty('anchor') &&
-                                                        (() => {
-                                                            const splitted = segment_def[link_prop].anchor.split('::');
-                                                            return splitted.length == 2 && (splitted[0] == 'from' || splitted[0] == 'to');
-                                                        })() ?
-                                                        segment_def[link_prop].anchor :
-                                                        null;
-                                            if (!link)
-                                                continue;
-                                            const point_id = get_point_id(link, points, id, () => `${id}.${link_prop}.link`);
-                                            const [line_link_prop, line_link_id] = point_id.startsWith('to::') ? [point_id.slice(0, 2), point_id.slice(4)] :
-                                                point_id.startsWith('from::') ? [point_id.slice(0, 4), point_id.slice(6)] :
-                                                    $$.$me_throw(`${id()}.${link_prop}.link'${link}': must start with 'to::' or '::from'`);
-                                            let line_link = lines[line_link_id];
-                                            if (!line_link)
-                                                $$.$me_throw(`${id()}.${link_prop}.link'${link}': lines['${line_link_id}'] not found`);
-                                            line_link = line_link_prop == 'from' ? line_link : $$.$me_vector_revert(line_link);
-                                            const intersection_result = intersection(line, line_link);
-                                            ctx.beginPath();
-                                            ctx.moveTo(line_link.from.x * pixelRatio, line_link.from.y * pixelRatio);
-                                            if (intersection_result && (intersection_result.gamma <= 0 && (link_prop == 'from' ?
-                                                intersection_result.lambda <= 1 :
-                                                intersection_result.lambda >= 0))) {
-                                                ctx.quadraticCurveTo(intersection_result.point.x * pixelRatio, intersection_result.point.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
-                                            }
-                                            else {
-                                                const dist = -Math.hypot(line_link.from.x - line.from.x, line_link.from.y - line.from.y) / 2;
-                                                const control_point = $$.$me_vector_transform(line_link, dist).to;
-                                                const control_point2 = $$.$me_vector_transform(line, dist).to;
-                                                ctx.bezierCurveTo(control_point.x * pixelRatio, control_point.y * pixelRatio, control_point2.x * pixelRatio, control_point2.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
-                                            }
-                                            ctx.strokeStyle = styleColor(line_def.style);
-                                            ctx.lineWidth = thick_line * pixelRatio;
-                                            ctx.stroke();
-                                        }
-                                        let point_def_prev;
-                                        let point_id_prev;
-                                        for (const point_id in segment_def.points) {
-                                            const point_def = segment_def.points[point_id];
-                                            if (point_def.anchor === '' && point_id_prev) {
-                                                point_def.anchor = point_id_prev;
-                                            }
-                                            if (point_def.dist === null && point_def_prev) {
-                                                point_def.dist = point_def_prev.dist;
-                                            }
-                                            point_def_prev = point_def;
-                                            point_id_prev = point_id;
-                                            const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
-                                                if (req == 'type')
-                                                    return 'line';
-                                                if (req == 'line')
-                                                    return p;
-                                                return anchored_point_provider(req, result, {
-                                                    point_id,
-                                                    point_def,
-                                                    line_def,
-                                                    id,
-                                                });
-                                            });
-                                        }
-                                    },
-                                };
-                                function intersection(v, v2) {
-                                    const a = v.from.x;
-                                    const b = v.from.y;
-                                    const c = v.to.x;
-                                    const d = v.to.y;
-                                    const p = v2.from.x;
-                                    const q = v2.from.y;
-                                    const r = v2.to.x;
-                                    const s = v2.to.y;
-                                    var det, gamma, lambda;
-                                    det = (c - a) * (s - q) - (r - p) * (d - b);
-                                    if (det === 0) {
-                                        return null;
-                                    }
-                                    else {
-                                        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
-                                        gamma = 1 - ((b - d) * (r - a) + (c - a) * (s - b)) / det;
-                                        const result = {
-                                            lambda,
-                                            gamma,
-                                            point: {
-                                                x: (1 - lambda) * v.from.x + lambda * v.to.x,
-                                                y: (1 - lambda) * v.from.y + lambda * v.to.y,
-                                            },
-                                        };
-                                        return result;
-                                    }
-                                }
-                                const anchored_point_provider = (req, result, p) => {
-                                    if (req == 'props') {
-                                        const type = p.point_def.type || 'circle';
-                                        return type != 'circle' ? { type } : {
-                                            type,
-                                            visible: true,
-                                            color: styleColor(p.line_def.style),
-                                            code: p.point_def.code,
-                                        };
-                                    }
-                                    if (req == 'label') {
-                                        return {
-                                            labels,
-                                            radius_station,
-                                        };
-                                    }
-                                    if (req == 'transit') {
-                                        const anchors = typeof p.point_def.transit == 'string' ?
-                                            [p.point_def.transit] :
-                                            Array.isArray(p.point_def.transit) ?
-                                                p.point_def.transit :
-                                                $$.$me_throw('unsupported .transit', p.point_def.transit);
-                                        for (const anchor of anchors) {
-                                            const point_to = points[anchor];
-                                            if (!point_to)
-                                                $$.$me_throw(`${p.id([p.point_id])}.transit refers to unknown points['${anchor}']`, points);
-                                            if (point_to.type != 'circle')
-                                                $$.$me_throw(`${p.id([p.point_id])}.transit'${anchor}' must refer to point with .type'circle', not`, point_to);
-                                            const dx = point_to.x - result.x;
-                                            const dy = point_to.y - result.y;
-                                            const len = Math.hypot(dx, dy);
-                                            const gradient_from = $$.$me_vector_transform({ from: result, to: point_to }, radius_station);
-                                            const gradient_to = $$.$me_vector_transform({ from: point_to, to: result }, radius_station);
-                                            const gradient = ctx.createLinearGradient(gradient_from.to.x * pixelRatio, gradient_from.to.y * pixelRatio, gradient_to.to.x * pixelRatio, gradient_to.to.y * pixelRatio);
-                                            gradient.addColorStop(0, styleColor(p.line_def.style));
-                                            gradient.addColorStop(1, point_to.color);
-                                            ctx.beginPath();
-                                            ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
-                                            ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
-                                            ctx.strokeStyle = gradient;
-                                            ctx.lineWidth = thick_transit * pixelRatio;
-                                            ctx.stroke();
-                                        }
-                                        return true;
-                                    }
-                                };
-                                const prepare_point = (prop_names, id, segment_def, points, scale, type) => {
-                                    const result = {};
-                                    for (const prop_name in segment_def) {
-                                        if (!~prop_names.indexOf(prop_name))
-                                            continue;
-                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale, !type ? null : (req, result) => {
-                                            if (req == 'type')
-                                                return type;
-                                        });
-                                    }
-                                    return result;
-                                };
-                                main();
-                                return true;
-                            },
-                        }),
-                    },
-                }),
-            },
-        };
-        function styleType(style) {
-            const result = typeof style == 'string' ?
-                $$.$nl_scheme_style_type_enum.solid :
-                style.type || $$.$nl_scheme_style_type_enum.solid;
-            return result;
-        }
-        function styleColor(style) {
-            const result = typeof style == 'string' ?
-                style :
-                style.color;
-            return result;
-        }
-        function add_label(id, src, point_id, labels, scale, centerX, centerY, radius_station) {
-            const point_def = src[point_id];
-            if (!point_def.label)
-                return;
-            const alignHor = point_def.label.alignHor != null ?
-                point_def.label.alignHor :
-                $$.a('<<.label_alignHor_default');
-            const alignVer = point_def.label.alignVer != null ?
-                point_def.label.alignVer :
-                $$.a('<<.label_alignVer_default');
-            const ofsHor = point_def.label.ofsHor != null ?
-                point_def.label.ofsHor : (() => {
-                const ofsHor = $$.a('<<.label_ofsHor_default');
-                if (typeof ofsHor == 'number')
-                    return ofsHor;
-                if (typeof ofsHor == 'function')
-                    return ofsHor(alignHor, alignVer);
-                return 0;
-            })();
-            const ofsVer = point_def.label.ofsVer != null ?
-                point_def.label.ofsVer : (() => {
-                const ofsVer = $$.a('<<.label_ofsVer_default');
-                if (typeof ofsVer == 'number')
-                    return ofsVer;
-                if (typeof ofsVer == 'function')
-                    return ofsVer(alignHor, alignVer);
-                return 0;
-            })();
-            const result = labels[id([point_id])] = {
-                text: point_def.label.text || point_id,
-                ofsHor: alignHor == $$.$me_align.left ?
-                    centerX + radius_station + ofsHor * scale :
-                    alignHor == $$.$me_align.right ?
-                        centerX - radius_station - ofsHor * scale :
-                        centerX + ofsHor * scale,
-                ofsVer: alignVer == $$.$me_align.top ?
-                    centerY + radius_station + ofsVer * scale :
-                    alignVer == $$.$me_align.bottom ?
-                        centerY - radius_station - ofsVer * scale :
-                        centerY + ofsVer * scale,
-                code: point_def.code,
-                alignHor,
-                alignVer,
-                visible: true,
-                textAlign: point_def.label.textAlign,
-                whiteSpace: point_def.label.whiteSpace || 'pre',
-                lineHeight: point_def.label.lineHeight || '1.0',
-            };
-        }
-        function get_point_id(point_id, points, id, err) {
-            let result = point_id;
-            if (!points[point_id]) {
-                const splitted_point_id = point_id.split('::');
-                const splitted_id = id().split('::');
-                const point_id_extended = splitted_point_id.concat(splitted_id.slice(splitted_point_id.length - 1)).join('::');
-                if (point_id_extended == point_id) {
-                    $$.$me_throw(`points['${point_id}'] not found for ${err()}`, points);
-                }
-                result = point_id_extended;
-                if (!points[point_id_extended]) {
-                    $$.$me_throw(`nor points['${point_id}'] neither points['${point_id_extended}'] found for ${err()}`, points);
-                }
-            }
-            return result;
-        }
-        function anchored_point(id, src, prop_name, points, scale, provider) {
-            let result;
-            if (!src[prop_name])
-                $$.$me_throw(`${id()}: .${prop_name} expected due to .type'${src.type}' `);
-            const arg = src[prop_name];
-            let point_id = typeof arg == 'string' ?
-                arg :
-                arg.anchor;
-            const parent_type = provider && provider('type', result) || '';
-            if (parent_type == 'circle') {
-                if (point_id)
-                    $$.$me_throw(`${id([prop_name])}.anchor is not expected`, src);
-            }
-            else if (!point_id) {
-                $$.$me_throw(`${id([prop_name])}.anchor expected`, src);
-            }
-            else {
-                result = points[get_point_id(point_id, points, id, () => `${id([prop_name])}.anchor`)];
-            }
-            const props = provider && provider('props', result) || {};
-            if (typeof arg == 'string') {
-                result = Object.assign({}, props, { x: result.x, y: result.y });
-            }
-            else if (parent_type == 'circle') {
-                const angle = arg.angle;
-                if (angle == null)
-                    $$.$me_throw(`${id([prop_name])}.angle is expected`);
-                const ret = provider('circle', result);
-                if (ret == null ||
-                    typeof ret.centerX != 'number' ||
-                    typeof ret.centerY != 'number' ||
-                    typeof ret.radius != 'number' ||
-                    false)
-                    $$.$me_throw(`provider('circle') expected to return {centerX: number, centerY: number, radius: number}, not`, ret);
-                const { centerX, centerY, radius } = ret;
-                result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
-            }
-            else if (parent_type == 'line') {
-                const dist = arg.dist;
-                if (dist == null)
-                    $$.$me_throw(`${id([prop_name])}.dist is expected`);
-                const ret = provider('line', result);
-                if (ret == null ||
-                    !ret.from ||
-                    typeof ret.from.x != 'number' ||
-                    typeof ret.from.y != 'number' ||
-                    !ret.to ||
-                    typeof ret.to.x != 'number' ||
-                    typeof ret.to.y != 'number' ||
-                    false)
-                    $$.$me_throw(`${id()}: provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
-                result = Object.assign({}, props, $$.$me_vector_transform(ret, dist * scale, result).to);
-            }
-            else {
-                if (!result)
-                    $$.$me_throw(`${id([prop_name])}`);
-                result = Object.assign({}, props, { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
-            }
-            if (typeof arg != 'string' && arg.label) {
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.label`);
-                const ret = provider('label', result);
-                if (ret == null ||
-                    !ret.labels ||
-                    typeof ret.radius_station != 'number' ||
-                    false)
-                    $$.$me_throw(`provider('label') expected to return {labels: any, radius_station: number}, not`, ret);
-                const { labels, radius_station } = ret;
-                add_label(id, src, prop_name, labels, scale, result.x, result.y, radius_station);
-            }
-            if (typeof arg != 'string' && arg.transit) {
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.transit`);
-                const ret = provider('transit', result);
-                if (ret !== true)
-                    $$.$me_throw(`provider('transit') expected to return true, not`, ret);
-            }
-            points[id([prop_name])] = result;
-            return result;
-        }
-        function handle_pinch(scale_new, pinch_center, prop_name = '<<.scale') {
-            handle_helper(p => {
-                const width = p.width;
-                const height = p.height;
-                const scale = $$.a(prop_name);
-                p.width = width / scale * scale_new;
-                p.height = height / scale * scale_new;
-                const width_netto = p.width_upper - 2 * p.padding_Hor;
-                const height_netto = p.height_upper - 2 * p.padding_Ver;
-                p.scale =
-                    Math.min(Math.max(scale_new, Math.min(width_netto / width * scale, height_netto / height * scale)), $$.a('<<.scale_max'));
-                if (pinch_center.x < p.ofsHor) {
-                    pinch_center.x = p.ofsHor;
-                }
-                else if (pinch_center.x > p.ofsHor + width) {
-                    pinch_center.x = p.ofsHor + width;
-                }
-                $$.a(prop_name, p.scale);
-                p.width = $$.a('<<.width_initial') * p.scale;
-                p.height = $$.a('<<.height_initial') * p.scale;
-                p.ofsHor = pinch_center.x - (pinch_center.x - p.ofsHor) * p.scale / scale;
-                p.ofsVer = pinch_center.y - (pinch_center.y - p.ofsVer) * p.scale / scale;
-            });
-        }
-        function handle_move(deltaX, deltaY) {
-            handle_helper(p => {
-                p.ofsHor -= deltaX;
-                p.ofsVer -= deltaY;
-            });
-        }
-        function handle_helper(fn) {
-            const width_upper = $$.a('<.#width');
-            const height_upper = $$.a('<.#height');
-            const padding_Hor = $$.a('<<.ofsHor_initial');
-            const padding_Ver = $$.a('<<.ofsVer_initial');
-            const p = {
-                ofsHor: $$.a('<<.ofsHor'),
-                ofsVer: $$.a('<<.ofsVer'),
-                width: $$.a('.width'),
-                height: $$.a('.height'),
-                scale: $$.a('<<.scale'),
-                width_upper,
-                height_upper,
-                padding_Hor,
-                padding_Ver,
-            };
-            fn(p);
-            const ofsHor_max = Math.max($$.a('<<.ofsHor_initial'), (p.width_upper - p.width) / 2);
-            const ofsHor_min = p.width_upper >= p.width ?
-                (p.width_upper - p.width) / 2 :
-                p.width_upper - $$.a('<<.ofsHor_initial') - p.width;
-            const ofsVer_max = Math.max($$.a('<<.ofsVer_initial'), (p.height_upper - p.height) / 2);
-            const ofsVer_min = p.height_upper >= p.height ?
-                (p.height_upper - p.height) / 2 :
-                p.height_upper - $$.a('<<.ofsVer_initial') - p.height;
-            p.ofsHor = Math.round(Math.min(ofsHor_max, Math.max(ofsHor_min, p.ofsHor)));
-            p.ofsVer = Math.round(Math.min(ofsVer_max, Math.max(ofsVer_min, p.ofsVer)));
-            $$.a('<<.ofsHor', p.ofsHor);
-            $$.a('<<.ofsVer', p.ofsVer);
-            console.log(p.ofsHor, p.ofsVer);
-        }
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//engine.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_settings_width = 2700;
-        $$.$nl_scheme_metro_settings_height = 3100;
-        $$.$nl_scheme_metro_settings_circle_radius = 16;
-        $$.$nl_scheme_metro_settings_root = {
-            x: 1450,
-            y: 1220,
-        };
-        $$.$nl_scheme_metro_settings_kolcevaya_radius = 500;
-        $$.$nl_scheme_metro_settings_fontSize_label = 26;
-        $$.$nl_scheme_metro_settings_default_label_ofsHor = $$.$nl_scheme_metro_settings_fontSize_label / 4;
-        $$.$nl_scheme_metro_settings_default_label_ofsVer = $$.$nl_scheme_metro_settings_default_label_ofsHor;
-        $$.$nl_scheme_metro_settings_circle_thick = 8;
-        $$.$nl_scheme_metro_settings_thick_line = 10;
-        $$.$nl_scheme_metro_settings_thick_transit = 12;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//settings.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_kolcevaya_radius = $$.$nl_scheme_metro_settings_kolcevaya_radius;
-        $$.$nl_scheme_metro_data_kolcevaya = {
-            type: 'circle',
-            radius: $$.$nl_scheme_metro_data_kolcevaya_radius,
-            center: 'root',
-            style: '#835342',
-            points: {
-                'Курская': {
-                    angle: -17,
-                    code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
-                    label: {
-                        alignVer: $$.$me_align.top,
-                        ofsHor: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                },
-                'Таганская': {
-                    angle: 21,
-                    code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Павелецкая': {
-                    angle: 56,
-                    code: 'ru-msk-metro-paveletskaya-paveletskaya',
-                    label: {},
-                },
-                'Добрынинская': {
-                    angle: 93,
-                    code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
-                    label: {
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Октябрьская': {
-                    angle: 125.5,
-                    code: 'ru-msk-metro-oktyabrskaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Парк культуры': {
-                    angle: 154,
-                    code: 'ru-msk-metro-park-kulturyi',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Киевская': {
-                    angle: 174.5,
-                    code: 'ru-msk-metro-kievskaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                    },
-                },
-                'Краснопресненская': {
-                    angle: 193,
-                    code: 'ru-msk-metro-krasnopresnenskaya-barrikadnaya',
-                    label: {
-                        text: 'Красно-<br>пресненская',
-                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                },
-                'Белорусская': {
-                    angle: 225,
-                    code: 'ru-msk-metro-belorusskaya-belorusskaya',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Новослободская': {
-                    angle: 256,
-                    code: 'ru-msk-metro-novoslobodskaya-mendeleevskaya',
-                    label: {
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Проспект Мира': {
-                    angle: 296.2,
-                    code: 'ru-msk-metro-prospekt-mira',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Комсомольская': {
-                    angle: 320.85,
-                    code: 'ru-msk-metro-komsomolskaya',
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//kolcevaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_arbatsko_pokrovskaya = {
-            style: '#2E6BA1',
-            type: 'segments',
-            segments: {
-                'Пл. Революции': {
-                    from: {
-                        anchor: 'Театральная::Театральная::Замоскворецкая',
-                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Пл. Революции': {
-                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
-                            anchor: 'from',
-                            dist: $$.$nl_scheme_metro_settings_circle_radius,
-                            transit: 'Театральная::Театральная::Замоскворецкая',
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                    },
-                },
-                'Курская': {
-                    from: {
-                        anchor: 'Курская::Кольцевая',
-                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: -1,
-                    },
-                    dist: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    to: {
-                        link: 'to::Пл. Революции',
-                    },
-                    points: {
-                        'Курская': {
-                            code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            transit: [
-                                'Курская::Кольцевая',
-                                'Чкаловская::Чкаловская-Римская::Люблинско-Дмитровская',
-                            ],
-                        },
-                    },
-                },
-                'Бауманская-Партизанская': {
-                    from: 'from::Курская',
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: 1,
-                    },
-                    dist: .81 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Партизанская': {
-                            code: 'ru-msk-metro-partizanskaya',
-                            anchor: 'to',
-                            dist: 0,
-                            label: {},
-                            transit: 'Измайлово::МЦК',
-                        },
-                    },
-                },
-                'Измайловская-Щёлковская': {
-                    from: {
-                        anchor: 'to::Бауманская-Партизанская',
-                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -4 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Измайловская': {
-                            code: 'ru-msk-metro-izmaylovskaya',
-                            anchor: 'from',
-                            dist: .4 / 3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Первомайская': {
-                            code: 'ru-msk-metro-pervomayskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Щёлковская': {
-                            code: 'ru-msk-metro-schelkovskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    },
-                },
-                'Арбатская-Славянский бульвар': {
-                    from: 'from::Пл. Революции',
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -2.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Арбатская': {
-                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
-                            color: '',
-                            anchor: 'from',
-                            dist: 0.385 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                alignHor: $$.$me_align.center,
-                                ofsHor: $$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                        },
-                        'Смоленская': {
-                            code: 'ru-msk-metro-smolenskaya',
-                            anchor: 'from',
-                            dist: 0.82 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                alignHor: $$.$me_align.center,
-                            },
-                        },
-                        'Киевская': {
-                            code: 'ru-msk-metro-kievskaya',
-                            anchor: 'from',
-                            dist: 1.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Киевская::Кольцевая',
-                        },
-                        'Парк Победы': {
-                            code: 'ru-msk-metro-park-pobedyi-park-pobedyi',
-                            anchor: '',
-                            dist: 0.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                ofsHor: .5 * $$.$nl_scheme_metro_settings_circle_thick,
-                            },
-                        },
-                        'Славянский бульвар': {
-                            code: 'ru-msk-metro-slavyanskiy-bulvar',
-                            anchor: '',
-                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                text: 'Славянский<br>бульвар',
-                                textAlign: 'center',
-                                alignVer: $$.$me_align.bottom,
-                                alignHor: $$.$me_align.center,
-                            },
-                        },
-                    },
-                },
-                'Кунцевская-Пятницкое-Шоссе': {
-                    from: {
-                        anchor: 'to::Арбатская-Славянский бульвар',
-                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -2.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Кунцевская': {
-                            code: 'ru-msk-metro-kuntsevskaya-kuntsevskaya',
-                            anchor: 'from',
-                            dist: 0.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                        'Молодёжная': {
-                            code: 'ru-msk-metro-molodejnaya',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Крылатское': {
-                            code: 'ru-msk-metro-kryilatskoe',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Строгино': {
-                            code: 'ru-msk-metro-strogino',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Мякинино': {
-                            code: 'ru-msk-metro-myakinino',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Волоколамская': {
-                            code: 'ru-msk-metro-volokolamskaya',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Митино': {
-                            code: 'ru-msk-metro-mitino',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Пятницкое шоссе': {
-                            code: 'ru-msk-metro-pyatnitskoe-shosse',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    }
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//arbatsko_pokrovskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_bolshaya_kolcevaya = {
-            style: '#51AFA6',
-            segments: {
-                'Савёловская': {
-                    from: {
-                        anchor: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
-                        ofsVer: 12,
-                        ofsHor: -15,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -40,
-                    },
-                    points: {
-                        'Савёловская': {
-                            anchor: 'from',
-                            transit: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
-                        },
-                    },
-                },
-                'Петровский парк-ЦСКА': {
-                    from: {
-                        anchor: 'to::Савёловская',
-                        ofsHor: -20,
-                        ofsVer: 5,
-                    },
-                    through: {
-                        anchor: 'Динамо::Динамо-Тверская::Замоскворецкая',
-                        ofsVer: -20,
-                    },
-                    dist: 210,
-                    points: {
-                        'Петровский парк': {
-                            anchor: 'through',
-                            transit: 'Динамо::Динамо-Тверская::Замоскворецкая',
-                        },
-                        'ЦСКА': {
-                            anchor: 'Петровский парк',
-                            dist: 60,
-                            label: {
-                                alignHor: $$.$me_align.center,
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                    },
-                },
-                'Хорошёвская': {
-                    from: {
-                        anchor: 'to::Петровский парк-ЦСКА',
-                        ofsHor: -40,
-                        ofsVer: 20,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -60,
-                    },
-                    points: {
-                        'Хорошёвская': {
-                            anchor: 'from',
-                            dist: 20,
-                            transit: [
-                                'Полежаевская::Полежаевская-Улица 1905 года::Таганско-Краспресненская',
-                                'Хорошёво::МЦК',
-                            ],
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//bolshaya_kolcevaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_butovskaya = {
-            type: 'segments',
-            style: '#BFDDE9',
-            segments: {
-                'Улица Старокачаловская': {
-                    from: {
-                        anchor: 'Бульвар Дмитрия Донского::Серпуховская-Бульвар-Дмитрия-Донского::Серпуховско-Тимирязевская',
-                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -0.0001 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: 0.00001,
-                    },
-                    dist: $$.$nl_scheme_metro_settings_circle_radius,
-                    points: {
-                        'Улица<br>Старокачаловская': {
-                            code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
-                            anchor: 'from',
-                            transit: 'Бульвар Дмитрия Донского::Серпуховская-Бульвар-Дмитрия-Донского::Серпуховско-Тимирязевская',
-                            dist: 0.001,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                                textAlign: 'right',
-                            },
-                        },
-                    },
-                },
-                'Лесопарковая-Битцевский парк': {
-                    from: {
-                        anchor: 'from::Улица Старокачаловская',
-                        ofsVer: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -0.42 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Лесопарковая': {
-                            code: 'ru-msk-metro-lesoparkovaya',
-                            anchor: 'from',
-                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.center,
-                            },
-                        },
-                        'Битцевский<br>парк': {
-                            code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
-                            anchor: '',
-                            dist: 0.245 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Новоясеневская::Новоясеневская::Калужско-Рижская',
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                                textAlign: 'right',
-                            },
-                        },
-                    },
-                },
-                'Улица Скобелевская-Бунинская аллея': {
-                    from: {
-                        anchor: 'to::Улица Старокачаловская',
-                        ofsVer: 0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -$$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Улица Скобелевская': {
-                            code: 'ru-msk-metro-ulitsa-skobelevskaya',
-                            anchor: 'from',
-                            dist: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                text: 'Улица<br>Скобелевская',
-                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                        'Бульвар Адмирала Ушакова': {
-                            code: 'ru-msk-metro-bulvar-admirala-ushakova',
-                            anchor: '',
-                            dist: 0.29 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                text: 'Бульвар<br>Адмирала<br>Ушакова',
-                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                        'Улица Горчакова': {
-                            code: 'ru-msk-metro-ulitsa-gorchakova',
-                            anchor: '',
-                            dist: 0.29 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                text: 'Улица<br>Горчакова',
-                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                        'Бунинская аллея': {
-                            code: 'ru-msk-metro-buninskaya-alleya',
-                            anchor: '',
-                            dist: 0.29 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                text: 'Бунинская<br>аллея',
-                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//butovskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_mck_radius = 1.67 * $$.$nl_scheme_metro_data_kolcevaya_radius;
-        $$.$nl_scheme_metro_data_mck = {
-            type: 'circle',
-            radius: $$.$nl_scheme_metro_data_mck_radius,
-            center: 'center::Кольцевая',
-            style: {
-                type: $$.$nl_scheme_style_type_enum.double,
-                color: '#D57352',
-                thickLine: 2,
-                thickStyle: 10,
-            },
-            points: {
-                'Верхние котлы': {
-                    angle: 89,
-                    code: 'ru-msk-metro-verhnie-kotlyi',
-                    label: {
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Крымская': {
-                    angle: 107,
-                    code: 'ru-msk-metro-kryimskaya',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Площадь<br>Гагарина': {
-                    angle: 120,
-                    code: 'ru-msk-metro-leninskiy-prospekt',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Лужники': {
-                    angle: 141.2,
-                    code: 'ru-msk-metro-sportivnaya',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.center,
-                        ofsHor: 2,
-                    },
-                },
-                'Кутузовская': {
-                    angle: 164.6,
-                    code: 'ru-msk-metro-kutuzovskaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                    },
-                },
-                'Деловой центр МЦК': {
-                    angle: 185.5,
-                    code: 'ru-msk-metro-mejdunarodnaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        text: 'Деловой<br>центр МЦК',
-                        ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
-                        textAlign: 'right',
-                    },
-                },
-                'Шелепиха': {
-                    angle: 194,
-                    code: 'ru-msk-metro-shelepiha',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -1.9 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                },
-                'Хорошёво': {
-                    angle: 201.5,
-                    code: 'ru-msk-metro-polejaevskaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                    },
-                },
-                'Зорге': {
-                    angle: 210,
-                    code: 'ru-msk-metro-zorge',
-                    label: {},
-                },
-                'Панфиловская': {
-                    angle: 214,
-                    code: 'ru-msk-metro-oktyabrskoe-pole',
-                    label: {
-                        alignVer: $$.$me_align.bottom,
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
-                    },
-                },
-                'Стрешнево': {
-                    angle: 221,
-                    code: 'ru-msk-metro-streshnevo',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Балтийская': {
-                    angle: 228,
-                    code: 'ru-msk-metro-voykovskaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.center,
-                    },
-                },
-                'Коптево': {
-                    angle: 241,
-                    code: 'ru-msk-metro-koptevo',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Лихоборы': {
-                    angle: 248,
-                    code: 'ru-msk-metro-lihoboryi',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Окружная': {
-                    angle: 255,
-                    code: 'ru-msk-metro-okrujnaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Владыкино': {
-                    angle: 270.5,
-                    code: 'ru-msk-metro-vladyikino',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.bottom,
-                        ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
-                    },
-                },
-                'Ботанический сад': {
-                    angle: -67,
-                    code: 'ru-msk-metro-botanicheskiy-sad',
-                },
-                'Ростокино': {
-                    angle: -63.5,
-                    code: 'ru-msk-metro-belokamennaya',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Белокаменная': {
-                    angle: -60,
-                    code: 'ru-msk-metro-belokamennaya',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.bottom,
-                    },
-                },
-                'Бульвар Рокоссовского': {
-                    angle: -56.9,
-                    code: 'ru-msk-metro-bulvar-rokossovskogo',
-                },
-                'Локомотив': {
-                    angle: -46.7,
-                    code: 'ru-msk-metro-cherkizovskaya',
-                    label: {},
-                },
-                'Измайлово': {
-                    angle: -23.5,
-                    code: 'ru-msk-metro-partizanskaya',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.center,
-                    },
-                },
-                'Соколиная гора': {
-                    angle: -18.8,
-                    code: 'ru-msk-metro-sokolinaya-gora',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.center,
-                        text: 'Соколиная<br>гора',
-                    },
-                },
-                'Шоссе Энтузиастов': {
-                    angle: -4,
-                    code: 'ru-msk-metro-shosse-entuziastov',
-                    label: {
-                        alignVer: $$.$me_align.bottom,
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: .5 * $$.$nl_scheme_metro_settings_default_label_ofsVer,
-                    },
-                },
-                'Андроновка': {
-                    angle: 5,
-                    code: 'ru-msk-metro-andronovka',
-                    label: {},
-                },
-                'Нижегородская': {
-                    angle: 10,
-                    code: 'ru-msk-metro-nijegorodskaya',
-                    label: {},
-                },
-                'Новохохловская': {
-                    angle: 17,
-                    code: 'ru-msk-metro-novohohlovskaya',
-                    label: {
-                        alignVer: $$.$me_align.top,
-                    },
-                },
-                'Угрешская': {
-                    angle: 32.7,
-                    code: 'ru-msk-metro-ugreshskaya',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.top,
-                        ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                },
-                'Дубровка': {
-                    angle: 51,
-                    code: 'ru-msk-metro-dubrovka',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        ofsVer: 0.85 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                },
-                'Автозаводская': {
-                    angle: 68,
-                    code: 'ru-msk-metro-avtozavodskaya',
-                    label: {
-                        alignHor: $$.$me_align.left,
-                    },
-                },
-                'ЗИЛ': {
-                    angle: 77,
-                    code: 'ru-msk-metro-zil',
-                    label: {
-                        alignHor: $$.$me_align.right,
-                        alignVer: $$.$me_align.bottom,
-                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -0.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//mck.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_sokolnicheskaya = {
-            style: '#CE4135',
-            type: 'segments',
-            segments: {
-                'Охотный ряд-Сокольники': {
-                    type: 'line',
-                    from: {
-                        anchor: 'root',
-                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: .5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: 1,
-                        ofsVer: -1,
-                    },
-                    dist: 1.34 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Охотный ряд': {
-                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
-                            anchor: 'from',
-                            label: {
-                                alignHor: $$.$me_align.right,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                            dist: 0,
-                        },
-                        'Лубянка': {
-                            code: 'ru-msk-metro-kuznetskiy-most-lubyanka',
-                            anchor: 'from',
-                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                        },
-                        'Чистые пруды': {
-                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
-                            anchor: 'from',
-                            dist: .67 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Красные ворота': {
-                            code: 'ru-msk-metro-krasnyie-vorota',
-                            anchor: 'from',
-                            dist: .85 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                text: 'Красные<br>ворота',
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Комсомольская': {
-                            code: 'ru-msk-metro-komsomolskaya',
-                            anchor: 'from',
-                            dist: 1.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Комсомольская::Кольцевая',
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Красносельская': {
-                            code: 'ru-msk-metro-krasnoselskaya',
-                            anchor: 'to',
-                            dist: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Сокольники': {
-                            code: 'ru-msk-metro-sokolniki',
-                            anchor: 'to',
-                            dist: 0,
-                            label: {},
-                        },
-                    },
-                },
-                'Преображенская площадь-Бульвар Рокоссовского': {
-                    from: {
-                        anchor: 'to::Охотный ряд-Сокольники',
-                        ofsHor: 0.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Преображенская площадь': {
-                            code: 'ru-msk-metro-preobrajenskaya-ploschad',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {
-                                text: 'Преображенская<br>площадь',
-                            },
-                        },
-                        'Черкизовская': {
-                            code: 'ru-msk-metro-cherkizovskaya',
-                            anchor: 'from',
-                            dist: .135 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                            transit: 'Локомотив::МЦК',
-                        },
-                        'Бульвар Рокоссовского': {
-                            code: 'ru-msk-metro-bulvar-rokossovskogo',
-                            anchor: 'from',
-                            dist: .315 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.center,
-                                alignVer: $$.$me_align.bottom,
-                                ofsHor: 3 * $$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                            transit: 'Бульвар Рокоссовского::МЦК',
-                        },
-                    },
-                },
-                'Охотный ряд-Библиотека им.Ленина': {
-                    type: 'line',
-                    from: {
-                        anchor: 'from::Охотный ряд-Сокольники',
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: 1,
-                    },
-                    dist: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.5,
-                    points: {
-                        'Библиотека им.Ленина': {
-                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
-                            anchor: 'to',
-                            dist: 0,
-                            label: {
-                                text: 'Библиотека<br>им.Ленина',
-                                ofsVer: $$.$nl_scheme_metro_settings_circle_radius / 2,
-                            },
-                        },
-                    },
-                },
-                'Кропоткинская': {
-                    from: {
-                        anchor: 'to::Охотный ряд-Библиотека им.Ленина',
-                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Кропоткинская': {
-                            code: 'ru-msk-metro-kropotkinskaya',
-                            anchor: 'from',
-                            dist: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.center,
-                                alignVer: $$.$me_align.top,
-                                ofsVer: 0,
-                            },
-                        },
-                    },
-                },
-                'Парк культуры-Спортивная': {
-                    from: {
-                        anchor: 'Парк культуры::Кольцевая',
-                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
-                        link: 'to::Кропоткинская',
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: -1,
-                    },
-                    dist: .67 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Парк культуры': {
-                            code: 'ru-msk-metro-park-kulturyi',
-                            anchor: 'from',
-                            dist: 0,
-                            transit: 'Парк культуры::Кольцевая',
-                        },
-                        'Фрунзенская': {
-                            code: 'ru-msk-metro-frunzenskaya',
-                            anchor: 'from',
-                            dist: .57 / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Спортивная': {
-                            code: 'ru-msk-metro-sportivnaya',
-                            anchor: 'from',
-                            dist: .57 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Лужники::МЦК',
-                            label: {},
-                        },
-                    },
-                },
-                'Юг': {
-                    from: {
-                        anchor: 'to::Парк культуры-Спортивная',
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: 1.1 * $$.$nl_scheme_metro_data_mck_radius,
-                    },
-                    points: {
-                        'Воробьевы горы': {
-                            code: 'ru-msk-metro-vorobevyi-goryi',
-                            anchor: 'from',
-                            dist: .1 * $$.$nl_scheme_metro_data_mck_radius,
-                            label: {
-                                text: 'Воробьевы<br>горы',
-                            },
-                        },
-                        'Университет': {
-                            code: 'ru-msk-metro-universitet',
-                            anchor: 'from',
-                            dist: .2 * $$.$nl_scheme_metro_data_mck_radius,
-                            label: {},
-                        },
-                        'Проспект Вернадского': {
-                            code: 'ru-msk-metro-prospekt-vernadskogo',
-                            anchor: 'from',
-                            dist: .37 * $$.$nl_scheme_metro_data_mck_radius,
-                            label: {
-                                text: 'Проспект<br>Вернадского',
-                            },
-                        },
-                        'Юго-Западная': {
-                            code: 'ru-msk-metro-yugo-zapadnaya',
-                            anchor: '',
-                            dist: (1.1 - .37) / 8 * $$.$nl_scheme_metro_data_mck_radius,
-                            label: {},
-                        },
-                        'Тропарево': {
-                            code: 'ru-msk-metro-troparevo',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Румянцево': {
-                            code: 'ru-msk-metro-rumyantsevo',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Саларьево': {
-                            code: 'ru-msk-metro-salarevo',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Филатов луг': {
-                            code: 'ru-msk-metro-filatov-lug',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Прокшино': {
-                            code: 'ru-msk-metro-prokshino',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Ольховая': {
-                            code: 'ru-msk-metro-olkhovaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Коммунарка': {
-                            code: 'ru-msk-metro-kommunarka',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//sokolnicheskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_zamoskvoreckaya = {
-            style: '#64A667',
-            type: 'segments',
-            segments: {
-                'Театральная': {
-                    from: {
-                        anchor: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
-                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    points: {
-                        'Театральная': {
-                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
-                            anchor: 'from',
-                            dist: $$.$nl_scheme_metro_settings_circle_radius,
-                            transit: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                            },
-                        },
-                    },
-                },
-                'Новокузнецкая': {
-                    from: {
-                        anchor: 'to::Театральная',
-                        ofsHor: 5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: 1,
-                    },
-                    dist: .26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Новокузнецкая': {
-                            code: 'ru-msk-metro-novokuznetskaya-tretyakovskaya',
-                            anchor: 'to',
-                            dist: 0,
-                            label: {
-                                text: 'Ново-<br>кузнецкая',
-                            }
-                        },
-                    },
-                },
-                'Павелецкая-Домодедовская': {
-                    from: {
-                        anchor: 'to::Новокузнецкая',
-                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 6 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: 2.43 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Павелецкая': {
-                            code: 'ru-msk-metro-paveletskaya-paveletskaya',
-                            anchor: 'from',
-                            dist: 0.34 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Павелецкая::Кольцевая',
-                        },
-                        'Автозаводская': {
-                            code: 'ru-msk-metro-avtozavodskaya',
-                            anchor: 'from',
-                            dist: 0.85 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Автозаводская::МЦК',
-                            label: {},
-                        },
-                        'Технопарк': {
-                            code: 'ru-msk-metro-tehnopark',
-                            anchor: 'from',
-                            dist: 1.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Коломенская': {
-                            code: 'ru-msk-metro-kolomenskaya',
-                            anchor: '',
-                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Каширская': {
-                            code: 'ru-msk-metro-kashirskaya',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Кантемировская': {
-                            code: 'ru-msk-metro-kantemirovskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Царицыно': {
-                            code: 'ru-msk-metro-tsaritsyino',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Орехово': {
-                            code: 'ru-msk-metro-orehovo',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Домодедовская': {
-                            code: 'ru-msk-metro-domodedovskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    },
-                },
-                'Красногвардейская-Алма-Атинская': {
-                    from: {
-                        anchor: 'to::Павелецкая-Домодедовская',
-                        dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsHor: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: 0.9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Красногвардейская': {
-                            code: 'ru-msk-metro-zyablikovo-krasnogvardeyskaya',
-                            anchor: 'from',
-                            dist: 0.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
-                            },
-                        },
-                        'Алма-Атинская': {
-                            code: 'ru-msk-metro-alma-atinskaya',
-                            anchor: '',
-                            dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
-                            },
-                        },
-                    },
-                },
-                'Тверская-Динамо': {
-                    from: {
-                        anchor: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
-                        ofsHor: -2.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
-                        link: 'from::Театральная',
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: -1,
-                    },
-                    dist: 1.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Тверская': {
-                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
-                            anchor: 'from',
-                            dist: .38 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                        'Маяковская': {
-                            code: 'ru-msk-metro-mayakovskaya',
-                            anchor: 'from',
-                            dist: .7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Белорусская': {
-                            code: 'ru-msk-metro-belorusskaya-belorusskaya',
-                            anchor: 'from',
-                            dist: 0.9325 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Белорусская::Кольцевая',
-                        },
-                        'Динамо': {
-                            code: 'ru-msk-metro-dinamo',
-                            anchor: 'from',
-                            dist: 1.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    },
-                },
-                'Аэропорт-Ховрино': {
-                    from: {
-                        anchor: 'to::Тверская-Динамо',
-                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -1.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Аэропорт': {
-                            code: 'ru-msk-metro-aeroport',
-                            anchor: 'from',
-                            dist: .08 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Сокол': {
-                            code: 'ru-msk-metro-sokol',
-                            anchor: '',
-                            dist: .09 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Войковская': {
-                            code: 'ru-msk-metro-voykovskaya',
-                            anchor: '',
-                            dist: .24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                            transit: 'Балтийская::МЦК',
-                        },
-                        'Водный стадион': {
-                            code: 'ru-msk-metro-vodnyiy-stadion',
-                            anchor: '',
-                            dist: .365 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Речной вокзал': {
-                            code: 'ru-msk-metro-rechnoy-vokzal',
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Беломорская': {
-                            code: 'ru-msk-metro-belomorskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Ховрино': {
-                            code: 'ru-msk-metro-hovrino',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    }
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//zamoskvoreckaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_kaluzhsko_rizhskaya = {
-            style: '#D48550',
-            type: 'segments',
-            segments: {
-                'Тургеневская': {
-                    from: {
-                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
-                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: -1,
-                    },
-                    dist: .1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Тургеневская': {
-                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                            transit: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
-                        },
-                    },
-                },
-                'Сухаревская': {
-                    from: {
-                        anchor: 'to::Тургеневская',
-                        ofsHor: -0.6 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: 0,
-                    },
-                    dist: .30 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Сухаревская': {
-                            code: 'ru-msk-metro-suharevskaya',
-                            anchor: 'from',
-                            dist: .17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.left,
-                            },
-                        },
-                    },
-                },
-                'Проспект Мира': {
-                    from: {
-                        anchor: 'to::Сухаревская',
-                        ofsHor: 0.6 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: 1,
-                    },
-                    dist: .30 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Проспект Мира': {
-                            code: 'ru-msk-metro-prospekt-mira',
-                            anchor: 'from',
-                            dist: .14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Проспект Мира::Кольцевая',
-                        },
-                    },
-                },
-                'Рижская-Медведково': {
-                    from: {
-                        anchor: 'to::Проспект Мира',
-                        ofsHor: 0.6 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: 0,
-                    },
-                    dist: 1.26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Рижская': {
-                            code: 'ru-msk-metro-rijskaya',
-                            anchor: 'from',
-                            dist: .03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {}
-                        },
-                        'Алексеевская': {
-                            code: 'ru-msk-metro-alekseevskaya',
-                            anchor: '',
-                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'ВДНХ': {
-                            code: 'ru-msk-metro-vdnh',
-                            anchor: '',
-                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Ботанический сад': {
-                            code: 'ru-msk-metro-botanicheskiy-sad',
-                            anchor: '',
-                            dist: .18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Ботанический сад::МЦК',
-                            label: {},
-                        },
-                        'Свиблово': {
-                            code: 'ru-msk-metro-sviblovo',
-                            anchor: '',
-                            dist: .34 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Бабушкинская': {
-                            code: 'ru-msk-metro-babushkinskaya',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Медведково': {
-                            code: 'ru-msk-metro-medvedkovo',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    },
-                },
-                'Китай-город': {
-                    from: {
-                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
-                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
-                        link: 'from::Тургеневская',
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Китай-город': {
-                            code: 'ru-msk-metro-kitay-gorod',
-                            anchor: 'from',
-                            dist: .24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.center,
-                                ofsHor: -$$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                        },
-                    },
-                },
-                'Третьяковская': {
-                    through: {
-                        anchor: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
-                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    from: {
-                        anchor: 'through',
-                        ofsVer: -1,
-                        ofsHor: 1,
-                        link: 'to::Китай-город',
-                    },
-                    dist: .25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Третьяковская': {
-                            code: 'ru-msk-metro-novokuznetskaya-tretyakovskaya',
-                            anchor: 'through',
-                            dist: 0,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
-                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                            transit: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
-                        },
-                    },
-                },
-                'Около-Третьяковской': {
-                    from: {
-                        anchor: 'to::Третьяковская',
-                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                },
-                'Октябрьская-Шаболовская': {
-                    from: {
-                        anchor: 'to::Около-Третьяковской',
-                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: -1,
-                    },
-                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Октябрьская': {
-                            code: 'ru-msk-metro-oktyabrskaya',
-                            anchor: 'from',
-                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Октябрьская::Кольцевая',
-                        },
-                        'Шаболовская': {
-                            code: 'ru-msk-metro-shabolovskaya',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    }
-                },
-                'Ленинский-проспект-Ясенево': {
-                    from: {
-                        anchor: 'to::Октябрьская-Шаболовская',
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: 0,
-                    },
-                    dist: 1.65 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Ленинский проспект': {
-                            code: 'ru-msk-metro-leninskiy-prospekt',
-                            anchor: 'from',
-                            dist: 0.24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Площадь<br>Гагарина::МЦК',
-                            label: {
-                                text: 'Ленинский<br>проспект',
-                            },
-                        },
-                        'Академическая': {
-                            code: 'ru-msk-metro-akademicheskaya',
-                            anchor: '',
-                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Профсоюзная': {
-                            code: 'ru-msk-metro-profsoyuznaya',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Новые Черёмушки': {
-                            code: 'ru-msk-metro-novyie-cheremushki',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Калужская': {
-                            code: 'ru-msk-metro-kalujskaya',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Беляево': {
-                            code: 'ru-msk-metro-belyaevo',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Коньково': {
-                            code: 'ru-msk-metro-konkovo',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Тёплый стан': {
-                            code: 'ru-msk-metro-teplyiy-stan',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Ясенево': {
-                            code: 'ru-msk-metro-yasenevo',
-                            anchor: '',
-                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    }
-                },
-                'Новоясеневская': {
-                    from: {
-                        anchor: 'to::Ленинский-проспект-Ясенево',
-                        dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: 5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsHor: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: 0.02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Новоясеневская': {
-                            code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {},
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//kaluzhsko_rizhskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_tagansko_kraspresnenskaya = {
-            style: '#774980',
-            type: 'segments',
-            segments: {
-                'Баррикадная-Кузнецкий мост': {
-                    through: {
-                        anchor: 'Тверская::Тверская-Динамо::Замоскворецкая',
-                        ofsHor: 1.75 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -2.75 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    from: {
-                        anchor: 'through',
-                        ofsHor: -.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    dist: 1.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Баррикадная': {
-                            code: 'ru-msk-metro-krasnopresnenskaya-barrikadnaya',
-                            anchor: 'from',
-                            dist: .06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Краснопресненская::Кольцевая',
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
-                            },
-                        },
-                        'Пушкинская': {
-                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
-                            anchor: 'through',
-                            dist: 0,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                alignHor: $$.$me_align.center,
-                            },
-                            transit: 'Тверская::Тверская-Динамо::Замоскворецкая',
-                        },
-                        'Кузнецкий мост': {
-                            code: 'ru-msk-metro-kuznetskiy-most-lubyanka',
-                            anchor: 'from',
-                            dist: 1.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.center,
-                                alignVer: $$.$me_align.bottom,
-                            },
-                            transit: 'Лубянка::Охотный ряд-Сокольники::Сокольническая',
-                        },
-                    },
-                },
-                'Улица 1905 года-Полежаевская': {
-                    from: {
-                        anchor: 'from::Баррикадная-Кузнецкий мост',
-                        ofsHor: -.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: -1,
-                    },
-                    dist: .63 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Улица 1905 года': {
-                            code: 'ru-msk-metro-ulitsa-1905-goda',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: .2 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                        'Беговая': {
-                            code: 'ru-msk-metro-begovaya',
-                            anchor: 'from',
-                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                        'Полежаевская': {
-                            code: 'ru-msk-metro-polejaevskaya',
-                            anchor: 'from',
-                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    },
-                },
-                'Север': {
-                    from: {
-                        anchor: 'to::Улица 1905 года-Полежаевская',
-                        ofsHor: -.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -1.26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Октябрьское Поле': {
-                            code: 'ru-msk-metro-oktyabrskoe-pole',
-                            anchor: 'from',
-                            dist: 0,
-                            transit: 'Панфиловская::МЦК',
-                            label: {
-                                alignHor: $$.$me_align.right,
-                                text: 'Октябрьское<br>Поле',
-                                textAlign: 'right',
-                                ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                        },
-                        'Щукинская': {
-                            code: 'ru-msk-metro-schukinskaya',
-                            anchor: 'from',
-                            dist: .44 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Спартак': {
-                            code: 'ru-msk-metro-spartak',
-                            anchor: '',
-                            dist: (1.26 - .44) / 4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Тушинская': {
-                            code: 'ru-msk-metro-tushinskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Сходненская': {
-                            code: 'ru-msk-metro-shodnenskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Планерная': {
-                            code: 'ru-msk-metro-planernaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    },
-                },
-                'Китай-город-Текстильщики': {
-                    through: {
-                        anchor: 'Китай-город::Китай-город::Калужско-Рижская',
-                        ofsHor: 3 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    from: {
-                        link: 'to::Баррикадная-Кузнецкий мост',
-                        anchor: 'through',
-                        ofsVer: -4 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsHor: -4 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    dist: 1.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Китай-город': {
-                            code: 'ru-msk-metro-kitay-gorod',
-                            anchor: 'through',
-                            dist: 0,
-                            transit: 'Китай-город::Китай-город::Калужско-Рижская',
-                        },
-                        'Таганская': {
-                            code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
-                            anchor: 'through',
-                            dist: .57 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Таганская::Кольцевая',
-                        },
-                        'Пролетарская': {
-                            code: 'ru-msk-metro-proletarskaya-krestyanskaya-zastava',
-                            anchor: 'through',
-                            dist: 1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Волгоградский проспект': {
-                            code: 'ru-msk-metro-volgogradskiy-prospekt',
-                            anchor: 'through',
-                            dist: 1.14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Угрешская::МЦК',
-                            label: {},
-                        },
-                        'Текстильщики': {
-                            code: 'ru-msk-metro-tekstilschiki',
-                            anchor: 'through',
-                            dist: 1.41 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                            },
-                        },
-                    },
-                },
-                'Юг': {
-                    from: {
-                        anchor: 'to::Китай-город-Текстильщики',
-                        ofsHor: 0.08 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: .8 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Кузьминки': {
-                            code: 'ru-msk-metro-kuzminki',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {},
-                        },
-                        'Рязанский проспект': {
-                            code: 'ru-msk-metro-ryazanskiy-prospekt',
-                            anchor: '',
-                            dist: .8 / 5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                text: 'Рязанский<br>проспект',
-                            },
-                        },
-                        'Выхино': {
-                            code: 'ru-msk-metro-vyihino',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Лермонтовский проспект': {
-                            code: 'ru-msk-metro-lermontovskiy-prospekt',
-                            anchor: '',
-                            dist: null,
-                            label: {
-                                text: 'Лермонтовский<br>проспект',
-                            },
-                        },
-                        'Жулебино': {
-                            code: 'ru-msk-metro-julebino',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Котельники': {
-                            code: 'ru-msk-metro-kotelniki',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//tagansko_kraspresnenskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_lyublinsko_dmitrovskaya = {
-            style: '#B4CC5E',
-            type: 'segments',
-            segments: {
-                'Сретенский бульвар': {
-                    from: {
-                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
-                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -.27 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Сретенский бульвар': {
-                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                alignHor: $$.$me_align.center,
-                                text: 'Сретенский<br>бульвар',
-                                textAlign: 'center',
-                            },
-                            transit: [
-                                'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
-                                'Тургеневская::Тургеневская::Калужско-Рижская',
-                            ],
-                        },
-                    },
-                },
-                'Сретенский бульвар-Трубная': {
-                    from: {
-                        anchor: 'to::Сретенский бульвар',
-                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: -1,
-                    },
-                    dist: 0.02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                },
-                'Трубная-Бутырская': {
-                    from: {
-                        anchor: 'to::Сретенский бульвар-Трубная',
-                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -.6 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Трубная': {
-                            code: 'ru-msk-metro-tsvetnoy-bulvar-trubnaya',
-                            anchor: 'from',
-                            dist: .02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Достоевская': {
-                            code: 'ru-msk-metro-dostoevskaya',
-                            anchor: 'from',
-                            dist: .33 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Марьина Роща': {
-                            code: 'ru-msk-metro-marina-roscha',
-                            anchor: '',
-                            dist: .11 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Бутырская': {
-                            code: 'ru-msk-metro-butyirskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    },
-                },
-                'Фонвизинская-Окружная': {
-                    from: {
-                        anchor: 'to::Трубная-Бутырская',
-                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: -1,
-                    },
-                    dist: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Фонвизинская': {
-                            code: 'ru-msk-metro-fonvizinskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {},
-                        },
-                        'Петровско-Разумовская': {
-                            code: 'ru-msk-metro-petrovsko-razumovskaya',
-                            anchor: 'from',
-                            dist: 0.14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                ofsVer: -.3 * $$.$nl_scheme_metro_settings_fontSize_label,
-                                ofsHor: .4 * $$.$nl_scheme_metro_settings_default_label_ofsHor,
-                            },
-                        },
-                        'Окружная': {
-                            code: 'ru-msk-metro-okrujnaya',
-                            anchor: 'to',
-                            dist: 0,
-                            transit: 'Окружная::МЦК',
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
-                            },
-                        },
-                    },
-                },
-                'Лихоборы-Селигерская': {
-                    from: {
-                        anchor: 'to::Фонвизинская-Окружная',
-                        ofsHor: -0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: 0,
-                        ofsVer: -1,
-                    },
-                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Верхние<br>Лихоборы': {
-                            code: 'ru-msk-metro-verhnie-lihoboryi',
-                            anchor: 'from',
-                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Селигерская': {
-                            code: 'ru-msk-metro-seligerskaya',
-                            anchor: '',
-                            dist: .20 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    }
-                },
-                'Чкаловская-Римская': {
-                    from: {
-                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
-                        ofsHor: 5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        link: 'from::Сретенский бульвар',
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: 1,
-                    },
-                    dist: .795 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Чкаловская': {
-                            code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
-                            anchor: 'from',
-                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Курская::Кольцевая',
-                        },
-                        'Римская': {
-                            code: 'ru-msk-metro-ploschad-ilicha-rimskaya',
-                            anchor: 'to',
-                            dist: 0,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                                alignVer: $$.$me_align.top,
-                                ofsHor: -.35 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                    },
-                },
-                'Римская-Крестьянская Застава': {
-                    from: {
-                        anchor: 'to::Чкаловская-Римская',
-                        ofsHor: 3 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 6 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: .1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                },
-                'Крестьянская Застава': {
-                    through: {
-                        anchor: 'Пролетарская::Китай-город-Текстильщики::Таганско-Краспресненская',
-                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    from: {
-                        anchor: 'through',
-                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        link: 'to::Римская-Крестьянская Застава',
-                    },
-                    dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Крестьянская Застава': {
-                            code: 'ru-msk-metro-proletarskaya-krestyanskaya-zastava',
-                            anchor: 'through',
-                            dist: 0,
-                            transit: 'Пролетарская::Китай-город-Текстильщики::Таганско-Краспресненская',
-                            label: {
-                                text: 'Крестьянская<br>Застава',
-                                textAlign: 'right',
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: 0.2 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                    },
-                },
-                'Юг': {
-                    from: {
-                        anchor: 'to::Крестьянская Застава',
-                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: 1.3 * $$.$nl_scheme_metro_data_mck_radius,
-                    },
-                    points: {
-                        'Дубровка': {
-                            code: 'ru-msk-metro-dubrovka',
-                            anchor: 'from',
-                            dist: .22 * $$.$nl_scheme_metro_data_mck_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                            transit: 'Дубровка::МЦК',
-                        },
-                        'Кожуховская': {
-                            code: 'ru-msk-metro-kojuhovskaya',
-                            anchor: 'from',
-                            dist: .42 * $$.$nl_scheme_metro_data_mck_radius,
-                            label: {},
-                        },
-                        'Печатники': {
-                            code: 'ru-msk-metro-pechatniki',
-                            anchor: '',
-                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Волжская': {
-                            code: 'ru-msk-metro-voljskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Люблино': {
-                            code: 'ru-msk-metro-lyublino',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Братиславская': {
-                            code: 'ru-msk-metro-bratislavskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Марьино': {
-                            code: 'ru-msk-metro-marino',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Борисово': {
-                            code: 'ru-msk-metro-borisovo',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Шипиловская': {
-                            code: 'ru-msk-metro-shipilovskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                        'Зябликово': {
-                            code: 'ru-msk-metro-zyablikovo-krasnogvardeyskaya',
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                            transit: 'Красногвардейская::Красногвардейская-Алма-Атинская::Замоскворецкая',
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//lyublinsko_dmitrovskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_serpuhovsko_timiryazevskaya = {
-            style: '#ABAEB9',
-            type: 'segments',
-            segments: {
-                'Боровицкая': {
-                    from: {
-                        anchor: 'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
-                        ofsHor: -0.165 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Боровицкая': {
-                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            transit: [
-                                'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
-                                'Арбатская::Арбатская-Славянский бульвар::Арбатско-Покровская',
-                            ],
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                    },
-                },
-                'Чеховская': {
-                    from: {
-                        anchor: 'Тверская::Тверская-Динамо::Замоскворецкая',
-                        ofsHor: 3.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: 1,
-                    },
-                    dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Чеховская': {
-                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {},
-                            transit: [
-                                'Тверская::Тверская-Динамо::Замоскворецкая',
-                                'Пушкинская::Баррикадная-Кузнецкий мост::Таганско-Краспресненская',
-                            ],
-                        },
-                    },
-                },
-                'Чеховская-Цветной бульвар': {
-                    from: {
-                        anchor: 'to::Чеховская',
-                        ofsHor: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -0.19 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                },
-                'Цветной бульвар-Менделеевская': {
-                    from: {
-                        anchor: 'to::Чеховская-Цветной бульвар',
-                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: -1,
-                    },
-                    dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Цветной бульвар': {
-                            code: 'ru-msk-metro-tsvetnoy-bulvar-trubnaya',
-                            anchor: 'from',
-                            dist: .04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                                ofsVer: $$.$nl_scheme_metro_settings_fontSize_label,
-                                textAlign: 'right',
-                                text: 'Цветной<br>бульвар',
-                            },
-                            transit: 'Трубная::Трубная-Бутырская::Люблинско-Дмитровская',
-                        },
-                        'Менделеевская': {
-                            code: 'ru-msk-metro-novoslobodskaya-mendeleevskaya',
-                            anchor: 'from',
-                            dist: .31 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.center,
-                                alignVer: $$.$me_align.top,
-                            },
-                            transit: 'Новослободская::Кольцевая',
-                        },
-                    },
-                },
-                'Савёловская': {
-                    from: {
-                        anchor: 'to::Цветной бульвар-Менделеевская',
-                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -.21 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Савёловская': {
-                            code: 'ru-msk-metro-savelovskaya',
-                            anchor: 'from',
-                            dist: .04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    },
-                },
-                'Дмитровская-Владыкино': {
-                    from: {
-                        anchor: 'to::Савёловская',
-                        ofsHor: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: 1,
-                    },
-                    dist: .355 / 2 * 3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Дмитровская': {
-                            code: 'ru-msk-metro-dmitrovskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Тимирязевская': {
-                            code: 'ru-msk-metro-timiryazevskaya',
-                            anchor: 'from',
-                            dist: .355 / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.right,
-                                ofsHor: -1 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                        'Петровско-Разумовская': {
-                            code: 'ru-msk-metro-petrovsko-razumovskaya',
-                            anchor: 'from',
-                            dist: .355 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Петровско-Разумовская::Фонвизинская-Окружная::Люблинско-Дмитровская',
-                        },
-                        'Владыкино': {
-                            code: 'ru-msk-metro-vladyikino',
-                            anchor: 'to',
-                            dist: 0,
-                            transit: 'Владыкино::МЦК',
-                        },
-                    },
-                },
-                'Отрадное-Алтуфьево': {
-                    from: {
-                        anchor: 'to::Дмитровская-Владыкино',
-                        ofsHor: 0,
-                        ofsVer: 0,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -.64 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Отрадное': {
-                            code: 'ru-msk-metro-otradnoe',
-                            anchor: 'from',
-                            dist: .237 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Бибирево': {
-                            code: 'ru-msk-metro-bibirevo',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Алтуфьево': {
-                            code: 'ru-msk-metro-altufevo',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    },
-                },
-                'Чеховская-Боровицкая': {
-                    from: {
-                        anchor: 'from::Чеховская',
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: 1,
-                    },
-                    to: {
-                        link: 'to::Боровицкая',
-                    },
-                    dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                },
-                'Боровицкая-Полянка': {
-                    from: {
-                        anchor: 'from::Боровицкая',
-                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: 1,
-                        ofsVer: 1,
-                    },
-                    dist: 0.45 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Полянка': {
-                            code: 'ru-msk-metro-polyanka',
-                            anchor: 'from',
-                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                    }
-                },
-                'Серпуховская-Бульвар-Дмитрия-Донского': {
-                    from: {
-                        anchor: 'to::Боровицкая-Полянка',
-                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsHor: 0.3 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: 0,
-                        ofsVer: 1,
-                    },
-                    dist: 2.54 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Серпуховскaя': {
-                            code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
-                            anchor: 'from',
-                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Добрынинская::Кольцевая',
-                            label: {},
-                        },
-                        'Тульская': {
-                            code: 'ru-msk-metro-tulskaya',
-                            anchor: 'Серпуховскaя',
-                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Нагатинская': {
-                            code: 'ru-msk-metro-nagatinskaya',
-                            anchor: 'Тульская',
-                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Верхние котлы::МЦК',
-                            label: {},
-                        },
-                        'Нагорная': {
-                            code: 'ru-msk-metro-nagornaya',
-                            anchor: 'Нагатинская',
-                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Нахимовский проспект': {
-                            code: 'ru-msk-metro-nahimovskiy-prospekt',
-                            anchor: 'Нагорная',
-                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                text: 'Нахимовский<br>проспект',
-                            },
-                        },
-                        'Севастопольская': {
-                            code: 'ru-msk-metro-kahovskaya-sevastopolskaya',
-                            anchor: '',
-                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Чертановская': {
-                            code: 'ru-msk-metro-chertanovskaya',
-                            anchor: '',
-                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Южная': {
-                            code: 'ru-msk-metro-yujnaya',
-                            anchor: '',
-                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Пражская': {
-                            code: 'ru-msk-metro-prajskaya',
-                            anchor: '',
-                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Улица Академика Янгеля': {
-                            code: 'ru-msk-metro-ulitsa-akademika-yangelya',
-                            anchor: '',
-                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                text: 'Улица Академика<br>Янгеля',
-                            },
-                        },
-                        'Аннино': {
-                            code: 'ru-msk-metro-annino',
-                            anchor: '',
-                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Бульвар Дмитрия Донского': {
-                            code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
-                            anchor: '',
-                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                text: 'Бульвар<br>Дмитрия Донского',
-                            },
-                        },
-                    }
-                },
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//serpuhovsko_timiryazevskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_filevskaya = {
-            style: '#459BCF',
-            type: 'segments',
-            segments: {
-                'Александровский сад-Арбатская': {
-                    from: {
-                        anchor: 'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
-                        ofsHor: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.11,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: -1,
-                        ofsHor: -1,
-                    },
-                    dist: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.27,
-                    points: {
-                        'Александровский сад': {
-                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            label: {},
-                            transit: [
-                                'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
-                                'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
-                                'Арбатская::Арбатская-Славянский бульвар::Арбатско-Покровская',
-                            ],
-                        },
-                        'Арбатская': {
-                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
-                            anchor: 'to',
-                            dist: 0,
-                            label: {
-                                color: '#459BCF',
-                                alignVer: $$.$me_align.bottom,
-                            },
-                        },
-                    },
-                },
-                'Смоленская-Киевская': {
-                    from: {
-                        anchor: 'to::Александровский сад-Арбатская',
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -.45 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Смоленская': {
-                            code: 'ru-msk-metro-smolenskaya',
-                            color: '#459BCF',
-                            anchor: 'from',
-                            dist: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                alignHor: $$.$me_align.center,
-                            },
-                        },
-                        'Киевская': {
-                            code: 'ru-msk-metro-kievskaya',
-                            anchor: 'from',
-                            dist: 0.358 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: [
-                                'Киевская::Кольцевая',
-                                'Киевская::Арбатская-Славянский бульвар::Арбатско-Покровская',
-                            ],
-                        },
-                    },
-                },
-                'Выставочная': {
-                    from: {
-                        anchor: 'to::Смоленская-Киевская',
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: -1,
-                    },
-                    dist: .18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Выставочная': {
-                            code: 'ru-msk-metro-vyistavochnaya-delovoy-tsentr',
-                            anchor: 'from',
-                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                    },
-                },
-                'Международная': {
-                    from: {
-                        anchor: 'to::Выставочная',
-                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Международная': {
-                            code: 'ru-msk-metro-mejdunarodnaya',
-                            anchor: 'to',
-                            dist: 0,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                                alignVer: $$.$me_align.bottom,
-                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
-                                ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                            transit: 'Деловой центр МЦК::МЦК',
-                        },
-                    },
-                },
-                'Студенческая': {
-                    from: {
-                        anchor: 'to::Смоленская-Киевская',
-                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: 1,
-                    },
-                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Студенческая': {
-                            code: 'ru-msk-metro-studencheskaya',
-                            anchor: 'from',
-                            label: {},
-                            dist: .33 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        },
-                    },
-                },
-                'Кутузовская': {
-                    from: {
-                        anchor: 'to::Студенческая',
-                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -.65 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Кутузовская': {
-                            code: 'ru-msk-metro-kutuzovskaya',
-                            anchor: 'from',
-                            dist: 0,
-                            transit: 'Кутузовская::МЦК',
-                        },
-                    },
-                },
-                'Фили-Кунцевская': {
-                    from: {
-                        anchor: 'to::Кутузовская',
-                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: -0.82 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Фили': {
-                            code: 'ru-msk-metro-fili',
-                            anchor: 'from',
-                            dist: .03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                        'Багратионовская': {
-                            code: 'ru-msk-metro-bagrationovskaya',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                        'Филёвский парк': {
-                            code: 'ru-msk-metro-filevskiy-park',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                        'Пионерская': {
-                            code: 'ru-msk-metro-pionerskaya',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            },
-                        },
-                        'Кунцевская': {
-                            code: 'ru-msk-metro-kuntsevskaya-kuntsevskaya',
-                            anchor: '',
-                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Кунцевская::Кунцевская-Пятницкое-Шоссе::Арбатско-Покровская',
-                        },
-                    },
-                },
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//filevskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_kalininskaya = {
-            style: '#F1C959',
-            type: 'segments',
-            segments: {
-                'Третьяковская': {
-                    from: {
-                        anchor: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
-                        ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: .48 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Третьяковская': {
-                            anchor: 'from',
-                            dist: 0,
-                            transit: [
-                                'Новокузнецкая::Новокузнецкая::Замоскворецкая',
-                                'Третьяковская::Третьяковская::Калужско-Рижская',
-                            ],
-                        },
-                    },
-                },
-                'Марксистская-Новокосино': {
-                    from: {
-                        anchor: 'Таганская::Китай-город-Текстильщики::Таганско-Краспресненская',
-                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
-                        link: 'to::Третьяковская',
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: 1,
-                        ofsVer: -1,
-                    },
-                    dist: 1.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Марксистская': {
-                            anchor: 'from',
-                            dist: 0,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                                alignHor: $$.$me_align.center,
-                                ofsHor: 2 * $$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                            transit: [
-                                'Таганская::Кольцевая',
-                                'Таганская::Китай-город-Текстильщики::Таганско-Краспресненская',
-                            ],
-                        },
-                        'Площадь Ильича': {
-                            anchor: 'from',
-                            dist: .43 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Римская::Чкаловская-Римская::Люблинско-Дмитровская',
-                            label: {
-                                text: 'Площадь<br>Ильича',
-                                ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
-                            },
-                        },
-                        'Авиамоторная': {
-                            anchor: 'from',
-                            dist: (.43 + .83) / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Шоссе Энтузиастов': {
-                            anchor: 'from',
-                            dist: .83 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Шоссе Энтузиастов::МЦК',
-                        },
-                        'Перово': {
-                            anchor: 'from',
-                            dist: (2 * .83 - (.43 + .83) / 2) * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Новогиреево': {
-                            anchor: '',
-                            dist: (1.4 - (2 * .83 - (.43 + .83) / 2)) / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                        'Новокосино': {
-                            anchor: '',
-                            dist: null,
-                            label: {
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//kalininskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_solncevskaya_biryuzovaya = {
-            style: '#bdc38b',
-            segments: {
-                'Савёловская': {
-                    from: {
-                        anchor: 'Савёловская::Савёловская::Серпуховско-Тимирязевская',
-                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsHor: -.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Савёловская': {
-                            code: 'ru-msk-metro-savelovskaya',
-                            anchor: 'from',
-                            transit: 'Савёловская::Савёловская::Серпуховско-Тимирязевская',
-                            dist: 0,
-                        },
-                    },
-                },
-                'Петровский парк-Хорошёвская': {
-                    from: {
-                        anchor: 'to::Савёловская',
-                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: 1,
-                    },
-                    dist: .9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Петровский парк': {
-                            code: 'ru-msk-metro-dinamo',
-                            anchor: 'from',
-                            dist: 0.21 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Динамо::Тверская-Динамо::Замоскворецкая',
-                            label: {},
-                        },
-                        'ЦСКА': {
-                            code: 'ru-msk-metro-tsska',
-                            anchor: '',
-                            dist: 0.23 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Хорошёвская': {
-                            code: 'ru-msk-metro-polejaevskaya',
-                            anchor: '',
-                            dist: 0.19 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Полежаевская::Улица 1905 года-Полежаевская::Таганско-Краспресненская',
-                            label: {},
-                        },
-                    }
-                },
-                'Шелепиха': {
-                    from: {
-                        anchor: 'to::Петровский парк-Хорошёвская',
-                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: 0.135 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    points: {
-                        'Шелепиха': {
-                            code: 'ru-msk-metro-shelepiha',
-                            anchor: 'from',
-                            dist: 0,
-                            transit: 'Шелепиха::МЦК',
-                        },
-                    },
-                },
-            },
-        };
-        $$.$nl_scheme_metro_data_solncevskaya = {
-            style: '#F3C95A',
-            segments: {
-                'Шелепиха-Парк Победы': {
-                    from: {
-                        anchor: 'to::Шелепиха::Солнцевская-Бирюзовая',
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: 0.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                },
-                'Парк Победы': {
-                    from: {
-                        anchor: 'to::Шелепиха-Парк Победы',
-                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsHor: -1,
-                        ofsVer: 1,
-                    },
-                    dist: 0.55 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Парк Победы': {
-                            code: 'ru-msk-metro-park-pobedyi-park-pobedyi',
-                            anchor: 'from',
-                            dist: 0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            transit: 'Парк Победы::Арбатская-Славянский бульвар::Арбатско-Покровская',
-                        },
-                    },
-                },
-                'Юг': {
-                    from: {
-                        anchor: 'to::Парк Победы',
-                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    },
-                    to: {
-                        anchor: 'from',
-                        ofsVer: 1.2 * $$.$nl_scheme_metro_data_mck_radius,
-                    },
-                    points: {
-                        'Минская': {
-                            code: 'ru-msk-metro-minskaya',
-                            anchor: 'from',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {}
-                        },
-                        'Ломоносовский проспект': {
-                            code: 'ru-msk-metro-lomonosovskiy-prospekt',
-                            anchor: '',
-                            dist: null,
-                            label: {
-                                text: 'Ломоносовский<br>проспект',
-                            }
-                        },
-                        'Раменки': {
-                            code: 'ru-msk-metro-ramenki',
-                            anchor: '',
-                            dist: null,
-                            label: {}
-                        },
-                        'Мичуринский проспект': {
-                            code: 'ru-msk-metro-michurinskiy-prospekt',
-                            anchor: '',
-                            dist: null,
-                            label: {
-                                text: 'Мичуринский<br>проспект',
-                            }
-                        },
-                        'Озерная': {
-                            code: 'ru-msk-metro-ochakovo',
-                            anchor: '',
-                            dist: null,
-                            label: {}
-                        },
-                        'Говорово': {
-                            code: 'ru-msk-metro-govorovo',
-                            anchor: '',
-                            dist: null,
-                            label: {}
-                        },
-                        'Солнцево': {
-                            code: 'ru-msk-metro-solntsevo',
-                            anchor: '',
-                            dist: null,
-                            label: {}
-                        },
-                        'Боровское шоссе': {
-                            code: 'ru-msk-metro-borovskoe-shosse',
-                            anchor: '',
-                            dist: null,
-                            label: {
-                                text: 'Боровское<br>шоссе'
-                            }
-                        },
-                        'Новопеределкино': {
-                            code: 'ru-msk-metro-novoperedelkino',
-                            anchor: '',
-                            dist: null,
-                            label: {}
-                        },
-                        'Рассказовка': {
-                            code: 'ru-msk-metro-rasskazovka-uzel',
-                            anchor: '',
-                            dist: null,
-                            label: {}
-                        },
-                    },
-                },
-            },
-        };
-        $$.$nl_scheme_metro_data_biruzovaya = {
-            style: '#87BDBC',
-            segments: {
-                'Деловой центр': {
-                    from: {
-                        anchor: 'to::Шелепиха::Солнцевская-Бирюзовая',
-                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        ofsHor: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                        link: 'to::Шелепиха::Солнцевская-Бирюзовая',
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: 1,
-                    },
-                    dist: 0.04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Деловой центр': {
-                            code: 'ru-msk-metro-vyistavochnaya-delovoy-tsentr',
-                            anchor: 'to',
-                            dist: 0,
-                            transit: 'Выставочная::Выставочная::Филевская',
-                            label: {
-                                text: 'Деловой<br>центр',
-                                alignHor: $$.$me_align.center,
-                                alignVer: $$.$me_align.top,
-                            },
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//solncevskaya_biryuzovaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_nekrasovskaya = {
-            style: '#EFC0D0',
-            type: 'segments',
-            segments: {
-                'Косино': {
-                    from: {
-                        anchor: 'Лермонтовский проспект::Юг::Таганско-Краспресненская',
-                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 0,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 1,
-                        ofsHor: 0,
-                    },
-                    dist: 0.9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Косино': {
-                            anchor: 'from',
-                            dist: 0,
-                            transit: 'Лермонтовский проспект::Юг::Таганско-Краспресненская',
-                            label: {
-                                alignHor: $$.$me_align.right,
-                            }
-                        },
-                        'Улица Дмитриевского': {
-                            anchor: '',
-                            dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                text: 'Улица<br>Дмитриевского',
-                            },
-                        },
-                        'Лухмановская': {
-                            anchor: '',
-                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {},
-                        },
-                        'Некрасовка': {
-                            anchor: '',
-                            dist: null,
-                            label: {},
-                        },
-                    },
-                },
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//nekrasovskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data_kahovskaya = {
-            style: '#64bebb',
-            type: 'segments',
-            segments: {
-                'Каширская-Варшавская': {
-                    from: {
-                        anchor: 'Каширская::Павелецкая-Домодедовская::Замоскворецкая',
-                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
-                        ofsVer: 2 * $$.$nl_scheme_metro_settings_circle_radius,
-                    },
-                    through: {
-                        anchor: 'from',
-                        ofsVer: 0,
-                        ofsHor: -1,
-                    },
-                    dist: 0.27 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                    points: {
-                        'Каширская': {
-                            anchor: 'from',
-                            dist: 0,
-                            transit: 'Каширская::Павелецкая-Домодедовская::Замоскворецкая',
-                        },
-                        'Варшавская': {
-                            anchor: '',
-                            dist: 0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
-                            label: {
-                                alignVer: $$.$me_align.bottom,
-                                alignHor: $$.$me_align.center,
-                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
-                            },
-                        },
-                    },
-                },
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//kahovskaya.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_data = {
-            settings: {
-                scale_max: 3,
-                width: $$.$nl_scheme_metro_settings_width,
-                height: $$.$nl_scheme_metro_settings_height,
-                root: $$.$nl_scheme_metro_settings_root,
-                fontSize_label: $$.$nl_scheme_metro_settings_fontSize_label,
-                defaults: {
-                    label: {
-                        alignHor: $$.$me_align.left,
-                        alignVer: $$.$me_align.center,
-                        ofsHor: (alignHor, alignVer) => alignHor == $$.$me_align.center ?
-                            0 :
-                            alignVer == $$.$me_align.center ?
-                                $$.$nl_scheme_metro_settings_default_label_ofsHor :
-                                -$$.$nl_scheme_metro_settings_circle_radius / 4,
-                        ofsVer: (alignHor, alignVer) => alignVer == $$.$me_align.center ?
-                            0 :
-                            alignHor == $$.$me_align.center ?
-                                $$.$nl_scheme_metro_settings_default_label_ofsVer :
-                                -$$.$nl_scheme_metro_settings_circle_radius / 4,
-                    },
-                },
-                circle_radius: $$.$nl_scheme_metro_settings_circle_radius,
-                circle_thick: $$.$nl_scheme_metro_settings_circle_thick,
-                thick_line: $$.$nl_scheme_metro_settings_thick_line,
-                thick_transit: $$.$nl_scheme_metro_settings_thick_transit,
-            },
-            'Кольцевая': $$.$nl_scheme_metro_data_kolcevaya,
-            'МЦК': $$.$nl_scheme_metro_data_mck,
-            'Сокольническая': $$.$nl_scheme_metro_data_sokolnicheskaya,
-            'Замоскворецкая': $$.$nl_scheme_metro_data_zamoskvoreckaya,
-            'Калужско-Рижская': $$.$nl_scheme_metro_data_kaluzhsko_rizhskaya,
-            'Таганско-Краспресненская': $$.$nl_scheme_metro_data_tagansko_kraspresnenskaya,
-            'Люблинско-Дмитровская': $$.$nl_scheme_metro_data_lyublinsko_dmitrovskaya,
-            'Арбатско-Покровская': $$.$nl_scheme_metro_data_arbatsko_pokrovskaya,
-            'Серпуховско-Тимирязевская': $$.$nl_scheme_metro_data_serpuhovsko_timiryazevskaya,
-            'Филевская': $$.$nl_scheme_metro_data_filevskaya,
-            'Калининская': $$.$nl_scheme_metro_data_kalininskaya,
-            'Солнцевская-Бирюзовая': $$.$nl_scheme_metro_data_solncevskaya_biryuzovaya,
-            'Солнцевская': $$.$nl_scheme_metro_data_solncevskaya,
-            'Бирюзовая': $$.$nl_scheme_metro_data_biruzovaya,
-            'Бутовская': $$.$nl_scheme_metro_data_butovskaya,
-            'Некрасовская': $$.$nl_scheme_metro_data_nekrasovskaya,
-            'Каховская': $$.$nl_scheme_metro_data_kahovskaya,
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//data.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro = {
-            base: $$.$nl_scheme_engine,
-            prop: {
-                data: () => $$.$nl_scheme_metro_data,
-                background_station: () => 'white',
-                background_station_selected: () => 'red',
-                background_station_will_select: () => '#F8CFD3',
-                background_station_will_deselect: () => '#3F88DE',
-                colorText_will_select: () => '#D5483E',
-                colorText_will_deselect: '.background_station_will_deselect',
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//metro.js.map
 ;
 "use strict";
 var $;
@@ -9471,6 +5205,53 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //back.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_cross = {
+            type: '$me_cross',
+            base: $$.$me_stylesheet,
+            prop: {
+                size: $$.$me_atom2_prop_abstract(),
+                thick: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+                opacity: () => 1,
+                opacityHover: () => 1,
+                '#width': '.size',
+                '#height': '.size',
+                styleSheetName: () => 'me_cross',
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
+        .${className}:before {
+          transform: rotate(45deg);
+        }
+        .${className}:after {
+          transform: rotate(-45deg);
+        }
+      `),
+                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
+        .${className} {
+          opacity: ${opacity};
+        }
+        .${className}:hover {
+          opacity: ${opacityHover};
+        }
+        .${className}:before, .${className}:after {
+          position: absolute;
+          left: ${(size - thick) / 2}px;
+          content: '';
+          height: ${size}px;
+          width: ${thick}px;
+          background-color: ${color};
+        }
+      `),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//cross.js.map
 ;
 "use strict";
 var $;
@@ -10386,6 +6167,52 @@ var $;
                         '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
                         '#width': () => 619,
                         '#height': () => 300,
+                        news_items: $$.$me_atom2_prop([], ({ atom }) => {
+                            console.log('atom', atom);
+                            const result = null;
+                            fetch('https://alpha0.baza-winner.ru/news/list.php?limit=2&category=W7', {
+                                method: 'get'
+                            })
+                                .then(response => response.json())
+                                .then(jsonData => {
+                                console.log(jsonData);
+                                atom.value(jsonData);
+                            })
+                                .catch(err => {
+                                console.error(err);
+                            });
+                            return result;
+                            return [
+                                {
+                                    title: "Функционал Объявлений только от Собственников",
+                                    link: "https://alpha0.baza-winner.ru/item?guid=139",
+                                    pubDate: "11.06.2019",
+                                    image: {
+                                        url: "http://baza-winner.ru/img/news/sob.jpg",
+                                        thumb: "http://baza-winner.ru/img/news/thumbnail/sob.jpg"
+                                    },
+                                    guid: "139",
+                                    description: "Вы можете искать собственников очень просто на всех площадках по недвижимости в один клик, всего лишь поставьте галочку \"Только от собственников\" на форме фильтров.",
+                                    content: "",
+                                    category: "W7"
+                                },
+                                {
+                                    title: "27 мая в Москве пройдет конференция, организованная ГРМ и Райффайзен банком.",
+                                    link: "https://alpha0.baza-winner.ru/item?guid=137",
+                                    pubDate: "15.05.2019",
+                                    image: {
+                                        url: "http://baza-winner.ru/img/news/conferense.png",
+                                        thumb: "http://baza-winner.ru/img/news/thumbnail/conferense.png"
+                                    },
+                                    guid: "137",
+                                    description: "Ипотечные продукты, налоги, связанные с приобретением недвижимости, и практические вопросы о риэлторской деятельности.",
+                                    content: "",
+                                    category: "W7"
+                                }
+                            ];
+                        }),
+                        news_item_ids: $$.$me_atom2_prop_keys(['.news_items']),
+                        news_item: $$.$me_atom2_prop({ keys: ['.news_item_ids'], masters: ['.news_items'] }, ({ key: [id], masters: [items] }) => items[id]),
                     },
                     elem: {
                         title: () => ({
@@ -10424,32 +6251,27 @@ var $;
                                 },
                             },
                         }),
-                        news1: () => ({
-                            base: news_item,
+                        news_cont: $$.$me_atom2_prop({ keys: ['.news_item_ids'] }, ({ key: [id] }) => ({
                             prop: {
-                                '#ofsHor': '.em',
+                                id: () => id,
                                 '#ofsVer': () => 46,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                caption: () => 'Функционал Объявлений только от Собственников',
-                                imageUrl: () => 'https://baza-winner.ru/img/news/thumbnail/sob.jpg',
-                                text: () => 'Вы можете искать собственников очень просто на всех площадках по недвижимости в один клик, всего лишь поставьте галочку "Только от собственников" на форме фильтров.',
-                                url: () => 'https://alpha0.baza-winner.ru/item?guid=139',
-                                date: () => '11.06.2019',
+                            },
+                            elem: {
+                                item: () => ({
+                                    base: news_item,
+                                    prop: {
+                                        '#ofsHor': '.em',
+                                        '#width': $$.$me_atom2_prop(['<<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                        '#ofsVer': $$.$me_atom2_prop(['<<.news_item_ids', '<.id', '.em'], ({ masters: [ids, id, ofs] }) => Math.round(ids.indexOf(id)) * (100 + ofs)),
+                                        caption: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].title),
+                                        imageUrl: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].image.thumb),
+                                        text: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].description),
+                                        url: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].link),
+                                        date: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].pubDate),
+                                    }
+                                }),
                             }
-                        }),
-                        news2: () => ({
-                            base: news_item,
-                            prop: {
-                                '#ofsHor': '.em',
-                                '#ofsVer': $$.$me_atom2_prop(['<@news1.#ofsVer', '<@news1.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + 100 + ofs2),
-                                '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                caption: () => '27 мая в Москве пройдет конференция, организованная ГРМ и Райффайзен банком.',
-                                imageUrl: () => 'http://baza-winner.ru/img/news/thumbnail/conferense.png',
-                                text: () => 'Ипотечные продукты, налоги, связанные с приобретением недвижимости, и практические вопросы о риэлторской деятельности.',
-                                url: () => 'https://alpha0.baza-winner.ru/item?guid=137',
-                                date: () => '15.05.2019',
-                            }
-                        })
+                        })),
                     },
                 }),
                 orders: () => ({
@@ -11204,6 +7026,4354 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $nl_scheme_style_type_enum;
+        (function ($nl_scheme_style_type_enum) {
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["solid"] = 0] = "solid";
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dashed"] = 1] = "dashed";
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dotted"] = 2] = "dotted";
+            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["double"] = 3] = "double";
+        })($nl_scheme_style_type_enum = $$.$nl_scheme_style_type_enum || ($$.$nl_scheme_style_type_enum = {}));
+        let $nl_scheme_will_action_enum;
+        (function ($nl_scheme_will_action_enum) {
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
+        })($nl_scheme_will_action_enum = $$.$nl_scheme_will_action_enum || ($$.$nl_scheme_will_action_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//scheme.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $nl_scheme_will_action_enum;
+        (function ($nl_scheme_will_action_enum) {
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
+        })($nl_scheme_will_action_enum || ($nl_scheme_will_action_enum = {}));
+        $$.$nl_scheme_engine = {
+            style: {
+                userSelect: () => 'none',
+                overflow: () => 'hidden',
+                background: () => 'white',
+            },
+            dispatch(dispatch_name, dispatch_arg) {
+                if (dispatch_name == 'lassoShow') {
+                    const { clientX, clientY } = dispatch_arg;
+                    const clientRect = $$.a('@container.#clientRect');
+                    const x = clientX - clientRect.left;
+                    const y = clientY - clientRect.top;
+                    const point = { x, y };
+                    $$.a('.isLasso', true);
+                    $$.a('.lassoStart', point);
+                    $$.a('.lassoEnd', point);
+                    return true;
+                }
+                else if (dispatch_name == 'lassoMove') {
+                    const { mode, clientX, clientY } = dispatch_arg;
+                    if (mode == $$.$me_atom2_wheel_synth_mode.end) {
+                        $$.a.dispatch('', 'lassoHide');
+                    }
+                    else {
+                        const clientRect = $$.a('@container.#clientRect');
+                        const x = clientX - clientRect.left;
+                        const y = clientY - clientRect.top;
+                        $$.a('.lassoEnd', { x, y });
+                        const lassoStart = $$.a('.lassoStart');
+                        const rect = {
+                            left: Math.min(x, lassoStart.x),
+                            top: Math.min(y, lassoStart.y),
+                            right: Math.max(x, lassoStart.x),
+                            bottom: Math.max(y, lassoStart.y),
+                        };
+                        const points = $$.a('.points');
+                        const selected = $$.a('.selected');
+                        const codes = $$.a('.will_codes');
+                        codes.clear();
+                        let will_action = $nl_scheme_will_action_enum.deselect;
+                        for (const point_id in points) {
+                            const point_def = points[point_id];
+                            if (point_def.type != 'circle')
+                                continue;
+                            if (!point_def.visible)
+                                continue;
+                            if (!$$.$me_point_in_rect(point_def.x, point_def.y, rect))
+                                continue;
+                            codes.add(point_def.code);
+                            if (!selected.has(point_def.code))
+                                will_action = $nl_scheme_will_action_enum.select;
+                        }
+                        $$.a('.will_codes', codes, true);
+                        $$.a('.will_action', will_action);
+                    }
+                    return true;
+                }
+                else if (dispatch_name == 'lassoHide') {
+                    const will_action = $$.a('.will_action');
+                    $$.a.update('.selected', val => {
+                        for (const code of $$.a('.will_codes')) {
+                            if (will_action == $nl_scheme_will_action_enum.select) {
+                                val.set(code, null);
+                            }
+                            else {
+                                val.delete(code);
+                            }
+                        }
+                        return val;
+                    }, true);
+                    $$.a('.will_action', $nl_scheme_will_action_enum.none);
+                    $$.a('.isLasso', false);
+                    return true;
+                }
+                else if (dispatch_name == 'codeTapped') {
+                    const code = dispatch_arg;
+                    $$.a.update('.selected', val => {
+                        if (val.has(code)) {
+                            val.delete(code);
+                        }
+                        else {
+                            val.set(code, null);
+                        }
+                        return val;
+                    }, true);
+                    return true;
+                }
+                else if (dispatch_name == 'close') {
+                    return true;
+                }
+                return false;
+            },
+            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32, ofsHor_initial: () => 32, scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial), scale: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.scale_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsHor: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.ofsHor_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsVer: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.ofsVer_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), will_action: () => $nl_scheme_will_action_enum.none, will_codes: () => new Set(), isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'circle', 'label', 'cross', 'lasso'], labels: $$.$me_atom2_prop([], () => null), label_ids: $$.$me_atom2_prop_keys(['.labels']), label_ofsHor: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsHor), label_ofsVer: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsVer), label_hidden: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => !labels[id].visible), selected: $$.$me_atom2_prop_store({
+                    default: () => new Map(),
+                    valid: val => {
+                        const isMap = val instanceof Map;
+                        const result = isMap ? val : new Map();
+                        return result;
+                    },
+                    toJSON: val => [...val].map(([id]) => id),
+                    fromJSON: val => !Array.isArray(val) ?
+                        new Map() :
+                        new Map(val.map(id => [id, null])),
+                }), thick_transit: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.thick_transit), thick_line: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.thick_line), radius_station: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.circle_radius), thick_station: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.circle_thick), label_ofsHor_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.ofsHor), label_ofsVer_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.ofsVer), label_alignHor_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.alignHor), label_alignVer_default: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.defaults.label.alignVer), fontSize_label: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.fontSize_label), points: $$.$me_atom2_prop([], () => null), point_ids: $$.$me_atom2_prop_keys(['.points']), point_x: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points',] }, ({ key: [id], masters: [points] }) => points[id].x), point_y: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].y), point_color: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].color), point_hidden: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => !points[id].visible), demo_border: () => '' }),
+            elem: {
+                cross: () => ({
+                    base: $$.$me_cross,
+                    prop: {
+                        size: () => 24,
+                        thick: () => 3,
+                        '#ofsVer': () => 8,
+                        '#ofsHor': () => 16,
+                        '#alignHor': () => $$.$me_align.right,
+                        color: '/.colorText',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a.dispatch('<', 'close');
+                            return true;
+                        },
+                    },
+                }),
+                lasso: $$.$me_atom2_prop(['.isLasso'], ({ masters: [isLasso] }) => !isLasso ? null : {
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.x, lassoEnd.x)),
+                        '#ofsVer': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.y, lassoEnd.y)),
+                        '#width': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.x - lassoEnd.x)),
+                        '#height': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.y - lassoEnd.y)),
+                    },
+                    style: {
+                        border: () => '1px dashed red',
+                    },
+                }),
+                container: () => ({
+                    prop: {
+                        '#width': '<.#width',
+                        '#height': '<.#height',
+                    },
+                    control: {
+                        scheme: () => ({
+                            event: {
+                                pinchFini: p => {
+                                    console.warn('pinchFini', p.event);
+                                    $$.a('<<.scale', $$.a('._scale'));
+                                    return false;
+                                },
+                                pinch: p => {
+                                    handle_pinch($$.a('<<.scale') * p.event.scale, p.event.center, '._scale');
+                                    return false;
+                                },
+                                wheelDragInit: p => {
+                                    $$.a.dispatch('<<', 'lassoShow', p.event.last);
+                                    return false;
+                                },
+                                wheelDragFini: p => {
+                                    $$.a.dispatch('<<', 'lassoHide');
+                                    return false;
+                                },
+                                wheelDrag: p => {
+                                    if (p.event.last && p.event.last.ctrlKey) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const { clientX, clientY } = p.event.last;
+                                        $$.a.dispatch('<<', 'lassoMove', {
+                                            clientX, clientY,
+                                            mode: p.event.mode,
+                                        });
+                                    }
+                                    return true;
+                                },
+                                wheelTouchInit: p => {
+                                    if (p.event.last.touches.length == 1) {
+                                        $$.a.dispatch('<<', 'lassoShow', p.event.last.touches[0]);
+                                    }
+                                    return false;
+                                },
+                                wheelTouch: p => {
+                                    if (p.event.start.touches.length > 1) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const { clientX, clientY } = p.event.last.touches[0];
+                                        $$.a.dispatch('<<', 'lassoMove', {
+                                            clientX, clientY,
+                                            mode: p.event.mode,
+                                        });
+                                    }
+                                    return true;
+                                },
+                                wheelTouchFini: p => {
+                                    if (p.event.start.touches.length == 1) {
+                                        $$.a.dispatch('<<', 'lassoHide');
+                                    }
+                                    return false;
+                                },
+                                wheel: p => {
+                                    if (!p.event.ctrlKey) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const clientRect = $$.a('.#clientRect');
+                                        const x = p.event.clientX - clientRect.left;
+                                        const y = p.event.clientY - clientRect.top;
+                                        handle_pinch($$.a('<<.scale') - p.event.deltaY * 0.002, { x, y });
+                                    }
+                                    return true;
+                                },
+                                clickOrTap: (p) => {
+                                    return true;
+                                },
+                            },
+                            prop: {
+                                _scale: '<<.scale',
+                                ofsHor: '<<.ofsHor',
+                                ofsVer: '<<.ofsVer',
+                                width: $$.$me_atom2_prop(['<<.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                                height: $$.$me_atom2_prop(['<<.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                            },
+                            render: p => {
+                                const { ctx, pixelRatio } = p;
+                                const demo_border = $$.a('<<.demo_border');
+                                if (demo_border) {
+                                    $$.$me_atom2_ctx_rect({
+                                        ctx,
+                                        ctxTop: pixelRatio * $$.a('<<.ofsVer'),
+                                        ctxLeft: pixelRatio * $$.a('<<.ofsHor'),
+                                        ctxWidth: pixelRatio * $$.a('.width'),
+                                        ctxHeight: pixelRatio * $$.a('.height'),
+                                        stroke: { ctxWidth: pixelRatio, style: demo_border },
+                                    });
+                                }
+                                const scale = $$.a('._scale');
+                                const thick_transit = $$.a('<<.thick_transit') * scale;
+                                const thick_line = $$.a('<<.thick_line') * scale;
+                                const radius_station = $$.a('<<.radius_station') * scale;
+                                const labels = $$.a('<<.labels') || {};
+                                for (const label_id in labels) {
+                                    labels[label_id].visible = false;
+                                }
+                                const points = $$.a('<<.points') || {};
+                                for (const point_id in points) {
+                                    points[point_id].visible = false;
+                                }
+                                const lines = {};
+                                const main = () => {
+                                    const items = $$.a('<<.data');
+                                    for (const item_id in items) {
+                                        const item_def = items[item_id];
+                                        if (item_id == 'settings') {
+                                            points['root'] = {
+                                                x: item_def.root.x * scale + $$.a('<<.ofsHor'),
+                                                y: item_def.root.y * scale + $$.a('<<.ofsVer'),
+                                            };
+                                        }
+                                        else if (~Object.keys(segment_helper).indexOf(item_def.type)) {
+                                            segment(item_def, item_def, [item_id]);
+                                        }
+                                        else if (item_def.type == null || item_def.type == 'segments') {
+                                            segments(item_def, item_def, [item_id]);
+                                        }
+                                        else
+                                            $$.$me_throw('unsupported item_def.type', item_def.type);
+                                    }
+                                    const radius_station = $$.a('<<.radius_station') * scale;
+                                    const thick_station = $$.a('<<.thick_station') * scale;
+                                    for (const id in points) {
+                                        const point = points[id];
+                                        if (point.type != 'circle')
+                                            continue;
+                                        $$.$me_atom2_ctx_circle({
+                                            ctx,
+                                            ctxRadius: radius_station * pixelRatio,
+                                            ctxCenterX: point.x * pixelRatio,
+                                            ctxCenterY: point.y * pixelRatio,
+                                            stroke: {
+                                                ctxWidth: thick_station * pixelRatio,
+                                                style: point.color,
+                                            },
+                                            fillStyle: 'white',
+                                        });
+                                    }
+                                    const ctxFontSize = $$.a('<<.fontSize_label') * pixelRatio * scale;
+                                    ctx.font = $$.a('<<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<<.fontFamily');
+                                    ctx.textAlign = 'left';
+                                    ctx.textBaseline = 'bottom';
+                                    for (const id in labels) {
+                                        const label = labels[id];
+                                        if (label.alignHor == $$.$me_align.left &&
+                                            label.alignVer == $$.$me_align.center &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio,
+                                                ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: 'rgba(255,255,255,.5)',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio + .5 * ctxFontSize);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.left &&
+                                            label.alignVer == $$.$me_align.bottom &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio,
+                                                ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: 'rgba(255,255,255,.5)',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.left &&
+                                            label.alignVer == $$.$me_align.top &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio,
+                                                ctxTop: label.ofsVer * pixelRatio,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: 'rgba(255,255,255,.5)',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio, label.ofsVer * pixelRatio + ctxFontSize);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.right &&
+                                            label.alignVer == $$.$me_align.center &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
+                                                ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: 'rgba(255,255,255,.5)',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio + .5 * ctxFontSize);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.right &&
+                                            label.alignVer == $$.$me_align.bottom &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
+                                                ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: 'yellow',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.right &&
+                                            label.alignVer == $$.$me_align.top &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio - ctxWidth,
+                                                ctxTop: label.ofsVer * pixelRatio,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: 'yellow',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - ctxWidth, label.ofsVer * pixelRatio + ctxFontSize);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.center &&
+                                            label.alignVer == $$.$me_align.center &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
+                                                ctxTop: label.ofsVer * pixelRatio - .5 * ctxFontSize,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: '#feb278',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio + .5 * ctxFontSize);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.center &&
+                                            label.alignVer == $$.$me_align.bottom &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
+                                                ctxTop: label.ofsVer * pixelRatio - ctxFontSize,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: '#feb278',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio);
+                                        }
+                                        else if (label.alignHor == $$.$me_align.center &&
+                                            label.alignVer == $$.$me_align.top &&
+                                            !~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            $$.$me_atom2_ctx_rect({
+                                                ctx,
+                                                ctxLeft: label.ofsHor * pixelRatio - .5 * ctxWidth,
+                                                ctxTop: label.ofsVer * pixelRatio,
+                                                ctxWidth,
+                                                ctxHeight,
+                                                fillStyle: '#feb278',
+                                            });
+                                            ctx.fillStyle = $$.a('<<.colorText');
+                                            ctx.fillText(label.text, label.ofsHor * pixelRatio - .5 * ctxWidth, label.ofsVer * pixelRatio + ctxFontSize);
+                                        }
+                                        else if (!~label.text.indexOf('<')) {
+                                            console.log(label.text, label.alignHor, label.alignVer);
+                                        }
+                                    }
+                                };
+                                const segments = (line_def, group_def, id_items) => {
+                                    for (const segment_id in group_def.segments) {
+                                        const segment_def = group_def.segments[segment_id];
+                                        segment(line_def, segment_def, id_items.concat(segment_id));
+                                    }
+                                };
+                                const segment = (line_def, segment_def, id_items) => {
+                                    const fn = segment_helper[segment_def.type || 'line'];
+                                    if (!fn) {
+                                        $$.$me_throw('unsupported segment_def.type', segment_def.type);
+                                    }
+                                    else {
+                                        fn(line_def, segment_def, (tail) => id_items.concat(!tail ? [] : tail).reverse().join('::'));
+                                    }
+                                };
+                                const segment_helper = {
+                                    circle: (line_def, segment_def, id) => {
+                                        const p = prepare_point(['center'], id, segment_def, points, scale);
+                                        if (!p.center)
+                                            anchored_point(id, segment_def, 'center', points, scale);
+                                        line_def.ctxCenterX = p.center.x * pixelRatio;
+                                        line_def.ctxCenterY = p.center.y * pixelRatio;
+                                        line_def.ctxRadius = line_def.radius * scale * pixelRatio;
+                                        const type = styleType(line_def.style);
+                                        if (type == $$.$nl_scheme_style_type_enum.solid) {
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + (thick_line * pixelRatio) / 2,
+                                                stroke: { ctxWidth: thick_line * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                        }
+                                        else if (type == $$.$nl_scheme_style_type_enum.double) {
+                                            const thickStyle = (line_def.style.thickStyle || thick_line) * scale;
+                                            const thickLine = (line_def.style.thickLine || pixelRatio) * scale;
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + thickLine / 2 - thickStyle / 2,
+                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + thickLine / 2 + thickStyle / 2,
+                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                        }
+                                        else {
+                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$nl_scheme_style_type_enum[type]}`, line_def);
+                                        }
+                                        const retCircle = {
+                                            centerX: line_def.ctxCenterX / pixelRatio,
+                                            centerY: line_def.ctxCenterY / pixelRatio,
+                                            radius: line_def.ctxRadius / pixelRatio,
+                                        };
+                                        for (const point_id in line_def.points) {
+                                            const point_def = line_def.points[point_id];
+                                            const point = anchored_point(id, line_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'circle';
+                                                if (req == 'circle')
+                                                    return retCircle;
+                                                return anchored_point_provider(req, result, {
+                                                    point_id,
+                                                    point_def,
+                                                    line_def,
+                                                    id,
+                                                });
+                                            });
+                                        }
+                                    },
+                                    line: (line_def, segment_def, id) => {
+                                        const props = ['through'];
+                                        for (const prop of ['from', 'to'])
+                                            if (segment_def.hasOwnProperty(prop) && (typeof segment_def[prop] == 'string' ||
+                                                segment_def[prop].hasOwnProperty('anchor')))
+                                                props.push(prop);
+                                        const p = prepare_point(props, id, segment_def, points, scale);
+                                        if (p.from && p.to && p.through) {
+                                            $$.$me_throw('.through is not expected whilst .from and .to are set');
+                                        }
+                                        else if (!p.to) {
+                                            if (!(p.from && p.through && segment_def.dist))
+                                                $$.$me_throw(id() + ': .from, .through and .dist must be set whilst .to is absent');
+                                            let to = $$.$me_vector_transform({ from: p.from, to: p.through }, segment_def.dist * scale).to;
+                                            points[id(['to'])] = p.to = to;
+                                        }
+                                        else if (!p.from) {
+                                            if (!(p.to && p.through) && segment_def.dist)
+                                                $$.$me_throw('.to, .through and .dist must be set whilst .from is absent');
+                                            const dx = p.through.x - p.to.x;
+                                            const dy = p.through.y - p.to.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const dist = segment_def.dist;
+                                            points[id(['from'])] = p.from = $$.$me_vector_transform({ from: p.to, to: p.through }, -segment_def.dist * scale).to;
+                                        }
+                                        const line = lines[id()] = { from: p.from, to: p.to };
+                                        ctx.beginPath();
+                                        ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
+                                        ctx.lineTo(p.to.x * pixelRatio, p.to.y * pixelRatio);
+                                        ctx.closePath();
+                                        ctx.strokeStyle = styleColor(line_def.style);
+                                        ctx.lineWidth = thick_line * pixelRatio;
+                                        ctx.stroke();
+                                        for (const link_prop of ['from', 'to']) {
+                                            const link = !segment_def[link_prop] ?
+                                                null :
+                                                segment_def[link_prop].hasOwnProperty('link') ?
+                                                    segment_def[link_prop].link :
+                                                    segment_def[link_prop].hasOwnProperty('anchor') &&
+                                                        (() => {
+                                                            const splitted = segment_def[link_prop].anchor.split('::');
+                                                            return splitted.length == 2 && (splitted[0] == 'from' || splitted[0] == 'to');
+                                                        })() ?
+                                                        segment_def[link_prop].anchor :
+                                                        null;
+                                            if (!link)
+                                                continue;
+                                            const point_id = get_point_id(link, points, id, () => `${id}.${link_prop}.link`);
+                                            const [line_link_prop, line_link_id] = point_id.startsWith('to::') ? [point_id.slice(0, 2), point_id.slice(4)] :
+                                                point_id.startsWith('from::') ? [point_id.slice(0, 4), point_id.slice(6)] :
+                                                    $$.$me_throw(`${id()}.${link_prop}.link'${link}': must start with 'to::' or '::from'`);
+                                            let line_link = lines[line_link_id];
+                                            if (!line_link)
+                                                $$.$me_throw(`${id()}.${link_prop}.link'${link}': lines['${line_link_id}'] not found`);
+                                            line_link = line_link_prop == 'from' ? line_link : $$.$me_vector_revert(line_link);
+                                            const intersection_result = intersection(line, line_link);
+                                            ctx.beginPath();
+                                            ctx.moveTo(line_link.from.x * pixelRatio, line_link.from.y * pixelRatio);
+                                            if (intersection_result && (intersection_result.gamma <= 0 && (link_prop == 'from' ?
+                                                intersection_result.lambda <= 1 :
+                                                intersection_result.lambda >= 0))) {
+                                                ctx.quadraticCurveTo(intersection_result.point.x * pixelRatio, intersection_result.point.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            else {
+                                                const dist = -Math.hypot(line_link.from.x - line.from.x, line_link.from.y - line.from.y) / 2;
+                                                const control_point = $$.$me_vector_transform(line_link, dist).to;
+                                                const control_point2 = $$.$me_vector_transform(line, dist).to;
+                                                ctx.bezierCurveTo(control_point.x * pixelRatio, control_point.y * pixelRatio, control_point2.x * pixelRatio, control_point2.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            ctx.strokeStyle = styleColor(line_def.style);
+                                            ctx.lineWidth = thick_line * pixelRatio;
+                                            ctx.stroke();
+                                        }
+                                        let point_def_prev;
+                                        let point_id_prev;
+                                        for (const point_id in segment_def.points) {
+                                            const point_def = segment_def.points[point_id];
+                                            if (point_def.anchor === '' && point_id_prev) {
+                                                point_def.anchor = point_id_prev;
+                                            }
+                                            if (point_def.dist === null && point_def_prev) {
+                                                point_def.dist = point_def_prev.dist;
+                                            }
+                                            point_def_prev = point_def;
+                                            point_id_prev = point_id;
+                                            const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'line';
+                                                if (req == 'line')
+                                                    return p;
+                                                return anchored_point_provider(req, result, {
+                                                    point_id,
+                                                    point_def,
+                                                    line_def,
+                                                    id,
+                                                });
+                                            });
+                                        }
+                                    },
+                                };
+                                function intersection(v, v2) {
+                                    const a = v.from.x;
+                                    const b = v.from.y;
+                                    const c = v.to.x;
+                                    const d = v.to.y;
+                                    const p = v2.from.x;
+                                    const q = v2.from.y;
+                                    const r = v2.to.x;
+                                    const s = v2.to.y;
+                                    var det, gamma, lambda;
+                                    det = (c - a) * (s - q) - (r - p) * (d - b);
+                                    if (det === 0) {
+                                        return null;
+                                    }
+                                    else {
+                                        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+                                        gamma = 1 - ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+                                        const result = {
+                                            lambda,
+                                            gamma,
+                                            point: {
+                                                x: (1 - lambda) * v.from.x + lambda * v.to.x,
+                                                y: (1 - lambda) * v.from.y + lambda * v.to.y,
+                                            },
+                                        };
+                                        return result;
+                                    }
+                                }
+                                const anchored_point_provider = (req, result, p) => {
+                                    if (req == 'props') {
+                                        const type = p.point_def.type || 'circle';
+                                        return type != 'circle' ? { type } : {
+                                            type,
+                                            visible: true,
+                                            color: styleColor(p.line_def.style),
+                                            code: p.point_def.code,
+                                        };
+                                    }
+                                    if (req == 'label') {
+                                        return {
+                                            labels,
+                                            radius_station,
+                                        };
+                                    }
+                                    if (req == 'transit') {
+                                        const anchors = typeof p.point_def.transit == 'string' ?
+                                            [p.point_def.transit] :
+                                            Array.isArray(p.point_def.transit) ?
+                                                p.point_def.transit :
+                                                $$.$me_throw('unsupported .transit', p.point_def.transit);
+                                        for (const anchor of anchors) {
+                                            const point_to = points[anchor];
+                                            if (!point_to)
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit refers to unknown points['${anchor}']`, points);
+                                            if (point_to.type != 'circle')
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit'${anchor}' must refer to point with .type'circle', not`, point_to);
+                                            const dx = point_to.x - result.x;
+                                            const dy = point_to.y - result.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const gradient_from = $$.$me_vector_transform({ from: result, to: point_to }, radius_station);
+                                            const gradient_to = $$.$me_vector_transform({ from: point_to, to: result }, radius_station);
+                                            const gradient = ctx.createLinearGradient(gradient_from.to.x * pixelRatio, gradient_from.to.y * pixelRatio, gradient_to.to.x * pixelRatio, gradient_to.to.y * pixelRatio);
+                                            gradient.addColorStop(0, styleColor(p.line_def.style));
+                                            gradient.addColorStop(1, point_to.color);
+                                            ctx.beginPath();
+                                            ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
+                                            ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
+                                            ctx.strokeStyle = gradient;
+                                            ctx.lineWidth = thick_transit * pixelRatio;
+                                            ctx.stroke();
+                                        }
+                                        return true;
+                                    }
+                                };
+                                const prepare_point = (prop_names, id, segment_def, points, scale, type) => {
+                                    const result = {};
+                                    for (const prop_name in segment_def) {
+                                        if (!~prop_names.indexOf(prop_name))
+                                            continue;
+                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale, !type ? null : (req, result) => {
+                                            if (req == 'type')
+                                                return type;
+                                        });
+                                    }
+                                    return result;
+                                };
+                                main();
+                                return true;
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        function styleType(style) {
+            const result = typeof style == 'string' ?
+                $$.$nl_scheme_style_type_enum.solid :
+                style.type || $$.$nl_scheme_style_type_enum.solid;
+            return result;
+        }
+        function styleColor(style) {
+            const result = typeof style == 'string' ?
+                style :
+                style.color;
+            return result;
+        }
+        function add_label(id, src, point_id, labels, scale, centerX, centerY, radius_station) {
+            const point_def = src[point_id];
+            if (!point_def.label)
+                return;
+            const alignHor = point_def.label.alignHor != null ?
+                point_def.label.alignHor :
+                $$.a('<<.label_alignHor_default');
+            const alignVer = point_def.label.alignVer != null ?
+                point_def.label.alignVer :
+                $$.a('<<.label_alignVer_default');
+            const ofsHor = point_def.label.ofsHor != null ?
+                point_def.label.ofsHor : (() => {
+                const ofsHor = $$.a('<<.label_ofsHor_default');
+                if (typeof ofsHor == 'number')
+                    return ofsHor;
+                if (typeof ofsHor == 'function')
+                    return ofsHor(alignHor, alignVer);
+                return 0;
+            })();
+            const ofsVer = point_def.label.ofsVer != null ?
+                point_def.label.ofsVer : (() => {
+                const ofsVer = $$.a('<<.label_ofsVer_default');
+                if (typeof ofsVer == 'number')
+                    return ofsVer;
+                if (typeof ofsVer == 'function')
+                    return ofsVer(alignHor, alignVer);
+                return 0;
+            })();
+            const result = labels[id([point_id])] = {
+                text: point_def.label.text || point_id,
+                ofsHor: alignHor == $$.$me_align.left ?
+                    centerX + radius_station + ofsHor * scale :
+                    alignHor == $$.$me_align.right ?
+                        centerX - radius_station - ofsHor * scale :
+                        centerX + ofsHor * scale,
+                ofsVer: alignVer == $$.$me_align.top ?
+                    centerY + radius_station + ofsVer * scale :
+                    alignVer == $$.$me_align.bottom ?
+                        centerY - radius_station - ofsVer * scale :
+                        centerY + ofsVer * scale,
+                code: point_def.code,
+                alignHor,
+                alignVer,
+                visible: true,
+                textAlign: point_def.label.textAlign,
+                whiteSpace: point_def.label.whiteSpace || 'pre',
+                lineHeight: point_def.label.lineHeight || '1.0',
+            };
+        }
+        function get_point_id(point_id, points, id, err) {
+            let result = point_id;
+            if (!points[point_id]) {
+                const splitted_point_id = point_id.split('::');
+                const splitted_id = id().split('::');
+                const point_id_extended = splitted_point_id.concat(splitted_id.slice(splitted_point_id.length - 1)).join('::');
+                if (point_id_extended == point_id) {
+                    $$.$me_throw(`points['${point_id}'] not found for ${err()}`, points);
+                }
+                result = point_id_extended;
+                if (!points[point_id_extended]) {
+                    $$.$me_throw(`nor points['${point_id}'] neither points['${point_id_extended}'] found for ${err()}`, points);
+                }
+            }
+            return result;
+        }
+        function anchored_point(id, src, prop_name, points, scale, provider) {
+            let result;
+            if (!src[prop_name])
+                $$.$me_throw(`${id()}: .${prop_name} expected due to .type'${src.type}' `);
+            const arg = src[prop_name];
+            let point_id = typeof arg == 'string' ?
+                arg :
+                arg.anchor;
+            const parent_type = provider && provider('type', result) || '';
+            if (parent_type == 'circle') {
+                if (point_id)
+                    $$.$me_throw(`${id([prop_name])}.anchor is not expected`, src);
+            }
+            else if (!point_id) {
+                $$.$me_throw(`${id([prop_name])}.anchor expected`, src);
+            }
+            else {
+                result = points[get_point_id(point_id, points, id, () => `${id([prop_name])}.anchor`)];
+            }
+            const props = provider && provider('props', result) || {};
+            if (typeof arg == 'string') {
+                result = Object.assign({}, props, { x: result.x, y: result.y });
+            }
+            else if (parent_type == 'circle') {
+                const angle = arg.angle;
+                if (angle == null)
+                    $$.$me_throw(`${id([prop_name])}.angle is expected`);
+                const ret = provider('circle', result);
+                if (ret == null ||
+                    typeof ret.centerX != 'number' ||
+                    typeof ret.centerY != 'number' ||
+                    typeof ret.radius != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('circle') expected to return {centerX: number, centerY: number, radius: number}, not`, ret);
+                const { centerX, centerY, radius } = ret;
+                result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
+            }
+            else if (parent_type == 'line') {
+                const dist = arg.dist;
+                if (dist == null)
+                    $$.$me_throw(`${id([prop_name])}.dist is expected`);
+                const ret = provider('line', result);
+                if (ret == null ||
+                    !ret.from ||
+                    typeof ret.from.x != 'number' ||
+                    typeof ret.from.y != 'number' ||
+                    !ret.to ||
+                    typeof ret.to.x != 'number' ||
+                    typeof ret.to.y != 'number' ||
+                    false)
+                    $$.$me_throw(`${id()}: provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
+                result = Object.assign({}, props, $$.$me_vector_transform(ret, dist * scale, result).to);
+            }
+            else {
+                if (!result)
+                    $$.$me_throw(`${id([prop_name])}`);
+                result = Object.assign({}, props, { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
+            }
+            if (typeof arg != 'string' && arg.label) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.label`);
+                const ret = provider('label', result);
+                if (ret == null ||
+                    !ret.labels ||
+                    typeof ret.radius_station != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('label') expected to return {labels: any, radius_station: number}, not`, ret);
+                const { labels, radius_station } = ret;
+                add_label(id, src, prop_name, labels, scale, result.x, result.y, radius_station);
+            }
+            if (typeof arg != 'string' && arg.transit) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.transit`);
+                const ret = provider('transit', result);
+                if (ret !== true)
+                    $$.$me_throw(`provider('transit') expected to return true, not`, ret);
+            }
+            points[id([prop_name])] = result;
+            return result;
+        }
+        function handle_pinch(scale_new, pinch_center, prop_name = '<<.scale') {
+            handle_helper(p => {
+                const width = p.width;
+                const height = p.height;
+                const scale = $$.a(prop_name);
+                p.width = width / scale * scale_new;
+                p.height = height / scale * scale_new;
+                const width_netto = p.width_upper - 2 * p.padding_Hor;
+                const height_netto = p.height_upper - 2 * p.padding_Ver;
+                p.scale =
+                    Math.min(Math.max(scale_new, Math.min(width_netto / width * scale, height_netto / height * scale)), $$.a('<<.scale_max'));
+                if (pinch_center.x < p.ofsHor) {
+                    pinch_center.x = p.ofsHor;
+                }
+                else if (pinch_center.x > p.ofsHor + width) {
+                    pinch_center.x = p.ofsHor + width;
+                }
+                $$.a(prop_name, p.scale);
+                p.width = $$.a('<<.width_initial') * p.scale;
+                p.height = $$.a('<<.height_initial') * p.scale;
+                p.ofsHor = pinch_center.x - (pinch_center.x - p.ofsHor) * p.scale / scale;
+                p.ofsVer = pinch_center.y - (pinch_center.y - p.ofsVer) * p.scale / scale;
+            });
+        }
+        function handle_move(deltaX, deltaY) {
+            handle_helper(p => {
+                p.ofsHor -= deltaX;
+                p.ofsVer -= deltaY;
+            });
+        }
+        function handle_helper(fn) {
+            const width_upper = $$.a('<.#width');
+            const height_upper = $$.a('<.#height');
+            const padding_Hor = $$.a('<<.ofsHor_initial');
+            const padding_Ver = $$.a('<<.ofsVer_initial');
+            const p = {
+                ofsHor: $$.a('<<.ofsHor'),
+                ofsVer: $$.a('<<.ofsVer'),
+                width: $$.a('.width'),
+                height: $$.a('.height'),
+                scale: $$.a('<<.scale'),
+                width_upper,
+                height_upper,
+                padding_Hor,
+                padding_Ver,
+            };
+            fn(p);
+            const ofsHor_max = Math.max($$.a('<<.ofsHor_initial'), (p.width_upper - p.width) / 2);
+            const ofsHor_min = p.width_upper >= p.width ?
+                (p.width_upper - p.width) / 2 :
+                p.width_upper - $$.a('<<.ofsHor_initial') - p.width;
+            const ofsVer_max = Math.max($$.a('<<.ofsVer_initial'), (p.height_upper - p.height) / 2);
+            const ofsVer_min = p.height_upper >= p.height ?
+                (p.height_upper - p.height) / 2 :
+                p.height_upper - $$.a('<<.ofsVer_initial') - p.height;
+            p.ofsHor = Math.round(Math.min(ofsHor_max, Math.max(ofsHor_min, p.ofsHor)));
+            p.ofsVer = Math.round(Math.min(ofsVer_max, Math.max(ofsVer_min, p.ofsVer)));
+            $$.a('<<.ofsHor', p.ofsHor);
+            $$.a('<<.ofsVer', p.ofsVer);
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//engine.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_settings_width = 2700;
+        $$.$nl_scheme_metro_settings_height = 3100;
+        $$.$nl_scheme_metro_settings_circle_radius = 16;
+        $$.$nl_scheme_metro_settings_root = {
+            x: 1450,
+            y: 1220,
+        };
+        $$.$nl_scheme_metro_settings_kolcevaya_radius = 500;
+        $$.$nl_scheme_metro_settings_fontSize_label = 26;
+        $$.$nl_scheme_metro_settings_default_label_ofsHor = $$.$nl_scheme_metro_settings_fontSize_label / 4;
+        $$.$nl_scheme_metro_settings_default_label_ofsVer = $$.$nl_scheme_metro_settings_default_label_ofsHor;
+        $$.$nl_scheme_metro_settings_circle_thick = 8;
+        $$.$nl_scheme_metro_settings_thick_line = 10;
+        $$.$nl_scheme_metro_settings_thick_transit = 12;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//settings.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kolcevaya_radius = $$.$nl_scheme_metro_settings_kolcevaya_radius;
+        $$.$nl_scheme_metro_data_kolcevaya = {
+            type: 'circle',
+            radius: $$.$nl_scheme_metro_data_kolcevaya_radius,
+            center: 'root',
+            code: 'ru-msk-liniya-metro-koltsevaya',
+            style: '#835342',
+            points: {
+                'Курская': {
+                    angle: -17,
+                    code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                        ofsHor: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Таганская': {
+                    angle: 21,
+                    code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Павелецкая': {
+                    angle: 56,
+                    code: 'ru-msk-metro-paveletskaya-paveletskaya',
+                    label: {},
+                },
+                'Добрынинская': {
+                    angle: 93,
+                    code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Октябрьская': {
+                    angle: 125.5,
+                    code: 'ru-msk-metro-oktyabrskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Парк культуры': {
+                    angle: 154,
+                    code: 'ru-msk-metro-park-kulturyi',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Киевская': {
+                    angle: 174.5,
+                    code: 'ru-msk-metro-kievskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                    },
+                },
+                'Краснопресненская': {
+                    angle: 193,
+                    code: 'ru-msk-metro-krasnopresnenskaya-barrikadnaya',
+                    label: {
+                        text: 'Красно-<br>пресненская',
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Белорусская': {
+                    angle: 225,
+                    code: 'ru-msk-metro-belorusskaya-belorusskaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Новослободская': {
+                    angle: 256,
+                    code: 'ru-msk-metro-novoslobodskaya-mendeleevskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Проспект Мира': {
+                    angle: 296.2,
+                    code: 'ru-msk-metro-prospekt-mira',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Комсомольская': {
+                    angle: 320.85,
+                    code: 'ru-msk-metro-komsomolskaya',
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kolcevaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_arbatsko_pokrovskaya = {
+            style: '#2E6BA1',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-arbatsko-pokrovskaya',
+            segments: {
+                'Пл. Революции': {
+                    from: {
+                        anchor: 'Театральная::Театральная::Замоскворецкая',
+                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Пл. Революции': {
+                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
+                            anchor: 'from',
+                            dist: $$.$nl_scheme_metro_settings_circle_radius,
+                            transit: 'Театральная::Театральная::Замоскворецкая',
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+                'Курская': {
+                    from: {
+                        anchor: 'Курская::Кольцевая',
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: -1,
+                    },
+                    dist: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    to: {
+                        link: 'to::Пл. Революции',
+                    },
+                    points: {
+                        'Курская': {
+                            code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: [
+                                'Курская::Кольцевая',
+                                'Чкаловская::Чкаловская-Римская::Люблинско-Дмитровская',
+                            ],
+                        },
+                    },
+                },
+                'Бауманская-Партизанская': {
+                    from: 'from::Курская',
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .81 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Партизанская': {
+                            code: 'ru-msk-metro-partizanskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {},
+                            transit: 'Измайлово::МЦК',
+                        },
+                    },
+                },
+                'Измайловская-Щёлковская': {
+                    from: {
+                        anchor: 'to::Бауманская-Партизанская',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Измайловская': {
+                            code: 'ru-msk-metro-izmaylovskaya',
+                            anchor: 'from',
+                            dist: .4 / 3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Первомайская': {
+                            code: 'ru-msk-metro-pervomayskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Щёлковская': {
+                            code: 'ru-msk-metro-schelkovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Арбатская-Славянский бульвар': {
+                    from: 'from::Пл. Революции',
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -2.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Арбатская': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            color: '',
+                            anchor: 'from',
+                            dist: 0.385 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                                ofsHor: $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Смоленская': {
+                            code: 'ru-msk-metro-smolenskaya',
+                            anchor: 'from',
+                            dist: 0.82 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                        'Киевская': {
+                            code: 'ru-msk-metro-kievskaya',
+                            anchor: 'from',
+                            dist: 1.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Киевская::Кольцевая',
+                        },
+                        'Парк Победы': {
+                            code: 'ru-msk-metro-park-pobedyi-park-pobedyi',
+                            anchor: '',
+                            dist: 0.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: .5 * $$.$nl_scheme_metro_settings_circle_thick,
+                            },
+                        },
+                        'Славянский бульвар': {
+                            code: 'ru-msk-metro-slavyanskiy-bulvar',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Славянский<br>бульвар',
+                                textAlign: 'center',
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                    },
+                },
+                'Кунцевская-Пятницкое-Шоссе': {
+                    from: {
+                        anchor: 'to::Арбатская-Славянский бульвар',
+                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -2.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кунцевская': {
+                            code: 'ru-msk-metro-kuntsevskaya-kuntsevskaya',
+                            anchor: 'from',
+                            dist: 0.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Молодёжная': {
+                            code: 'ru-msk-metro-molodejnaya',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Крылатское': {
+                            code: 'ru-msk-metro-kryilatskoe',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Строгино': {
+                            code: 'ru-msk-metro-strogino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Мякинино': {
+                            code: 'ru-msk-metro-myakinino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Волоколамская': {
+                            code: 'ru-msk-metro-volokolamskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Митино': {
+                            code: 'ru-msk-metro-mitino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Пятницкое шоссе': {
+                            code: 'ru-msk-metro-pyatnitskoe-shosse',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    }
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//arbatsko_pokrovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_bolshaya_kolcevaya = {
+            style: '#51AFA6',
+            code: 'ru-msk-liniya-metro-tretiy-peresadochnyiy-kontur',
+            segments: {
+                'Савёловская': {
+                    from: {
+                        anchor: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
+                        ofsVer: 12,
+                        ofsHor: -15,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -40,
+                    },
+                    points: {
+                        'Савёловская': {
+                            anchor: 'from',
+                            transit: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
+                        },
+                    },
+                },
+                'Петровский парк-ЦСКА': {
+                    from: {
+                        anchor: 'to::Савёловская',
+                        ofsHor: -20,
+                        ofsVer: 5,
+                    },
+                    through: {
+                        anchor: 'Динамо::Динамо-Тверская::Замоскворецкая',
+                        ofsVer: -20,
+                    },
+                    dist: 210,
+                    points: {
+                        'Петровский парк': {
+                            anchor: 'through',
+                            transit: 'Динамо::Динамо-Тверская::Замоскворецкая',
+                        },
+                        'ЦСКА': {
+                            anchor: 'Петровский парк',
+                            dist: 60,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+                'Хорошёвская': {
+                    from: {
+                        anchor: 'to::Петровский парк-ЦСКА',
+                        ofsHor: -40,
+                        ofsVer: 20,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -60,
+                    },
+                    points: {
+                        'Хорошёвская': {
+                            anchor: 'from',
+                            dist: 20,
+                            transit: [
+                                'Полежаевская::Полежаевская-Улица 1905 года::Таганско-Краспресненская',
+                                'Хорошёво::МЦК',
+                            ],
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//bolshaya_kolcevaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_butovskaya = {
+            type: 'segments',
+            style: '#BFDDE9',
+            code: 'ru-msk-liniya-metro-butovskaya',
+            segments: {
+                'Улица Старокачаловская': {
+                    from: {
+                        anchor: 'Бульвар Дмитрия Донского::Серпуховская-Бульвар-Дмитрия-Донского::Серпуховско-Тимирязевская',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.0001 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 0.00001,
+                    },
+                    dist: $$.$nl_scheme_metro_settings_circle_radius,
+                    points: {
+                        'Улица<br>Старокачаловская': {
+                            code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
+                            anchor: 'from',
+                            transit: 'Бульвар Дмитрия Донского::Серпуховская-Бульвар-Дмитрия-Донского::Серпуховско-Тимирязевская',
+                            dist: 0.001,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                textAlign: 'right',
+                            },
+                        },
+                    },
+                },
+                'Лесопарковая-Битцевский парк': {
+                    from: {
+                        anchor: 'from::Улица Старокачаловская',
+                        ofsVer: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -0.42 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Лесопарковая': {
+                            code: 'ru-msk-metro-lesoparkovaya',
+                            anchor: 'from',
+                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                        'Битцевский<br>парк': {
+                            code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
+                            anchor: '',
+                            dist: 0.245 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Новоясеневская::Новоясеневская::Калужско-Рижская',
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                textAlign: 'right',
+                            },
+                        },
+                    },
+                },
+                'Улица Скобелевская-Бунинская аллея': {
+                    from: {
+                        anchor: 'to::Улица Старокачаловская',
+                        ofsVer: 0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -$$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Улица Скобелевская': {
+                            code: 'ru-msk-metro-ulitsa-skobelevskaya',
+                            anchor: 'from',
+                            dist: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Улица<br>Скобелевская',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Бульвар Адмирала Ушакова': {
+                            code: 'ru-msk-metro-bulvar-admirala-ushakova',
+                            anchor: '',
+                            dist: 0.29 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Бульвар<br>Адмирала<br>Ушакова',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Улица Горчакова': {
+                            code: 'ru-msk-metro-ulitsa-gorchakova',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Улица<br>Горчакова',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Бунинская аллея': {
+                            code: 'ru-msk-metro-buninskaya-alleya',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                text: 'Бунинская<br>аллея',
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//butovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_mck_radius = 1.67 * $$.$nl_scheme_metro_data_kolcevaya_radius;
+        $$.$nl_scheme_metro_data_mck = {
+            type: 'circle',
+            radius: $$.$nl_scheme_metro_data_mck_radius,
+            center: 'center::Кольцевая',
+            code: 'ru-msk-liniya-metro-moskovskoe-tsentralnoe-koltso',
+            style: {
+                type: $$.$nl_scheme_style_type_enum.double,
+                color: '#D57352',
+                thickLine: 2,
+                thickStyle: 10,
+            },
+            points: {
+                'Верхние котлы': {
+                    angle: 89,
+                    code: 'ru-msk-metro-verhnie-kotlyi',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Крымская': {
+                    angle: 107,
+                    code: 'ru-msk-metro-kryimskaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Площадь<br>Гагарина': {
+                    angle: 120,
+                    code: 'ru-msk-metro-leninskiy-prospekt',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Лужники': {
+                    angle: 141.2,
+                    code: 'ru-msk-metro-sportivnaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                        ofsHor: 2,
+                    },
+                },
+                'Кутузовская': {
+                    angle: 164.6,
+                    code: 'ru-msk-metro-kutuzovskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                    },
+                },
+                'Деловой центр МЦК': {
+                    angle: 185.5,
+                    code: 'ru-msk-metro-mejdunarodnaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        text: 'Деловой<br>центр МЦК',
+                        ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
+                        textAlign: 'right',
+                    },
+                },
+                'Шелепиха': {
+                    angle: 194,
+                    code: 'ru-msk-metro-shelepiha',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -1.9 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Хорошёво': {
+                    angle: 201.5,
+                    code: 'ru-msk-metro-polejaevskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                    },
+                },
+                'Зорге': {
+                    angle: 210,
+                    code: 'ru-msk-metro-zorge',
+                    label: {},
+                },
+                'Панфиловская': {
+                    angle: 214,
+                    code: 'ru-msk-metro-oktyabrskoe-pole',
+                    label: {
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                    },
+                },
+                'Стрешнево': {
+                    angle: 221,
+                    code: 'ru-msk-metro-streshnevo',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Балтийская': {
+                    angle: 228,
+                    code: 'ru-msk-metro-voykovskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.center,
+                    },
+                },
+                'Коптево': {
+                    angle: 241,
+                    code: 'ru-msk-metro-koptevo',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Лихоборы': {
+                    angle: 248,
+                    code: 'ru-msk-metro-lihoboryi',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Окружная': {
+                    angle: 258,
+                    code: 'ru-msk-metro-okrujnaya',
+                },
+                'Владыкино': {
+                    angle: 270.5,
+                    code: 'ru-msk-metro-vladyikino',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                    },
+                },
+                'Ботанический сад': {
+                    angle: -74,
+                    code: 'ru-msk-metro-botanicheskiy-sad',
+                },
+                'Ростокино': {
+                    angle: -67,
+                    code: 'ru-msk-metro-belokamennaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Белокаменная': {
+                    angle: -60.5,
+                    code: 'ru-msk-metro-belokamennaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.bottom,
+                    },
+                },
+                'Бульвар Рокоссовского': {
+                    angle: -54.7,
+                    code: 'ru-msk-metro-bulvar-rokossovskogo',
+                },
+                'Локомотив': {
+                    angle: -47.3,
+                    code: 'ru-msk-metro-cherkizovskaya',
+                    label: {},
+                },
+                'Измайлово': {
+                    angle: -23.5,
+                    code: 'ru-msk-metro-partizanskaya',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                    },
+                },
+                'Соколиная гора': {
+                    angle: -18.8,
+                    code: 'ru-msk-metro-sokolinaya-gora',
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                        text: 'Соколиная<br>гора',
+                    },
+                },
+                'Шоссе Энтузиастов': {
+                    angle: -4,
+                    code: 'ru-msk-metro-shosse-entuziastov',
+                    label: {
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .5 * $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                    },
+                },
+                'Андроновка': {
+                    angle: 5,
+                    code: 'ru-msk-metro-andronovka',
+                    label: {},
+                },
+                'Нижегородская': {
+                    angle: 10,
+                    code: 'ru-msk-metro-nijegorodskaya',
+                    label: {},
+                },
+                'Новохохловская': {
+                    angle: 17,
+                    code: 'ru-msk-metro-novohohlovskaya',
+                    label: {
+                        alignVer: $$.$me_align.top,
+                    },
+                },
+                'Угрешская': {
+                    angle: 32.7,
+                    code: 'ru-msk-metro-ugreshskaya',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.top,
+                        ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+                'Дубровка': {
+                    angle: 51,
+                    code: 'ru-msk-metro-dubrovka',
+                },
+                'Автозаводская': {
+                    angle: 69.8,
+                    code: 'ru-msk-metro-avtozavodskaya',
+                },
+                'ЗИЛ': {
+                    angle: 77,
+                    code: 'ru-msk-metro-zil',
+                    label: {
+                        alignHor: $$.$me_align.right,
+                        alignVer: $$.$me_align.bottom,
+                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//mck.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_sokolnicheskaya = {
+            style: '#CE4135',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-sokolnicheskaya',
+            segments: {
+                'Охотный ряд-Сокольники': {
+                    type: 'line',
+                    from: {
+                        anchor: 'root',
+                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: .5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 1,
+                        ofsVer: -1,
+                    },
+                    dist: 1.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Охотный ряд': {
+                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
+                            anchor: 'from',
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                            dist: 0,
+                        },
+                        'Лубянка': {
+                            code: 'ru-msk-metro-kuznetskiy-most-lubyanka',
+                            anchor: 'from',
+                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Чистые пруды': {
+                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
+                            anchor: 'from',
+                            dist: .67 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Красные ворота': {
+                            code: 'ru-msk-metro-krasnyie-vorota',
+                            anchor: 'from',
+                            dist: .85 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Красные<br>ворота',
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Комсомольская': {
+                            code: 'ru-msk-metro-komsomolskaya',
+                            anchor: 'from',
+                            dist: 1.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Комсомольская::Кольцевая',
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Красносельская': {
+                            code: 'ru-msk-metro-krasnoselskaya',
+                            anchor: 'to',
+                            dist: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Сокольники': {
+                            code: 'ru-msk-metro-sokolniki',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {},
+                        },
+                    },
+                },
+                'Преображенская площадь-Бульвар Рокоссовского': {
+                    from: {
+                        anchor: 'to::Охотный ряд-Сокольники',
+                        ofsHor: 0.02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Преображенская площадь': {
+                            code: 'ru-msk-metro-preobrajenskaya-ploschad',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                text: 'Преображенская<br>площадь',
+                            },
+                        },
+                        'Черкизовская': {
+                            code: 'ru-msk-metro-cherkizovskaya',
+                            anchor: 'from',
+                            dist: .10 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                            transit: 'Локомотив::МЦК',
+                        },
+                        'Бульвар Рокоссовского': {
+                            code: 'ru-msk-metro-bulvar-rokossovskogo',
+                            anchor: 'from',
+                            dist: .238 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: 3 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                            transit: 'Бульвар Рокоссовского::МЦК',
+                        },
+                    },
+                },
+                'Охотный ряд-Библиотека им.Ленина': {
+                    type: 'line',
+                    from: {
+                        anchor: 'from::Охотный ряд-Сокольники',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.5,
+                    points: {
+                        'Библиотека им.Ленина': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                text: 'Библиотека<br>им.Ленина',
+                                ofsVer: $$.$nl_scheme_metro_settings_circle_radius / 2,
+                            },
+                        },
+                    },
+                },
+                'Кропоткинская': {
+                    from: {
+                        anchor: 'to::Охотный ряд-Библиотека им.Ленина',
+                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кропоткинская': {
+                            code: 'ru-msk-metro-kropotkinskaya',
+                            anchor: 'from',
+                            dist: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                                ofsVer: 0,
+                            },
+                        },
+                    },
+                },
+                'Парк культуры-Спортивная': {
+                    from: {
+                        anchor: 'Парк культуры::Кольцевая',
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'to::Кропоткинская',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: -1,
+                    },
+                    dist: .67 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Парк культуры': {
+                            code: 'ru-msk-metro-park-kulturyi',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Парк культуры::Кольцевая',
+                        },
+                        'Фрунзенская': {
+                            code: 'ru-msk-metro-frunzenskaya',
+                            anchor: 'from',
+                            dist: .57 / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Спортивная': {
+                            code: 'ru-msk-metro-sportivnaya',
+                            anchor: 'from',
+                            dist: .57 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Лужники::МЦК',
+                            label: {},
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Парк культуры-Спортивная',
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 1.1 * $$.$nl_scheme_metro_data_mck_radius,
+                    },
+                    points: {
+                        'Воробьевы горы': {
+                            code: 'ru-msk-metro-vorobevyi-goryi',
+                            anchor: 'from',
+                            dist: .1 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {
+                                text: 'Воробьевы<br>горы',
+                            },
+                        },
+                        'Университет': {
+                            code: 'ru-msk-metro-universitet',
+                            anchor: 'from',
+                            dist: .2 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {},
+                        },
+                        'Проспект Вернадского': {
+                            code: 'ru-msk-metro-prospekt-vernadskogo',
+                            anchor: 'from',
+                            dist: .37 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {
+                                text: 'Проспект<br>Вернадского',
+                            },
+                        },
+                        'Юго-Западная': {
+                            code: 'ru-msk-metro-yugo-zapadnaya',
+                            anchor: '',
+                            dist: (1.1 - .37) / 8 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {},
+                        },
+                        'Тропарево': {
+                            code: 'ru-msk-metro-troparevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Румянцево': {
+                            code: 'ru-msk-metro-rumyantsevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Саларьево': {
+                            code: 'ru-msk-metro-salarevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Филатов луг': {
+                            code: 'ru-msk-metro-filatov-lug',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Прокшино': {
+                            code: 'ru-msk-metro-prokshino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Ольховая': {
+                            code: 'ru-msk-metro-olkhovaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Коммунарка': {
+                            code: 'ru-msk-metro-kommunarka',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//sokolnicheskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_zamoskvoreckaya = {
+            style: '#64A667',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-zamoskvoretskaya',
+            segments: {
+                'Театральная': {
+                    from: {
+                        anchor: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
+                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    points: {
+                        'Театральная': {
+                            code: 'ru-msk-metro-ohotnyiy-ryad-teatralnaya-ploschad-revolyutsii',
+                            anchor: 'from',
+                            dist: $$.$nl_scheme_metro_settings_circle_radius,
+                            transit: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                            },
+                        },
+                    },
+                },
+                'Новокузнецкая': {
+                    from: {
+                        anchor: 'to::Театральная',
+                        ofsHor: 5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 1,
+                    },
+                    dist: .26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Новокузнецкая': {
+                            code: 'ru-msk-metro-novokuznetskaya-tretyakovskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                text: 'Ново-<br>кузнецкая',
+                            }
+                        },
+                    },
+                },
+                'Павелецкая-Домодедовская': {
+                    from: {
+                        anchor: 'to::Новокузнецкая',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 6 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 2.43 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Павелецкая': {
+                            code: 'ru-msk-metro-paveletskaya-paveletskaya',
+                            anchor: 'from',
+                            dist: 0.34 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Павелецкая::Кольцевая',
+                        },
+                        'Автозаводская': {
+                            code: 'ru-msk-metro-avtozavodskaya',
+                            anchor: 'from',
+                            dist: 0.94 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Автозаводская::МЦК',
+                            label: {
+                                ofsVer: -0.3 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Технопарк': {
+                            code: 'ru-msk-metro-tehnopark',
+                            anchor: 'from',
+                            dist: 1.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Коломенская': {
+                            code: 'ru-msk-metro-kolomenskaya',
+                            anchor: '',
+                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Каширская': {
+                            code: 'ru-msk-metro-kashirskaya',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Кантемировская': {
+                            code: 'ru-msk-metro-kantemirovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Царицыно': {
+                            code: 'ru-msk-metro-tsaritsyino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Орехово': {
+                            code: 'ru-msk-metro-orehovo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Домодедовская': {
+                            code: 'ru-msk-metro-domodedovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Красногвардейская-Алма-Атинская': {
+                    from: {
+                        anchor: 'to::Павелецкая-Домодедовская',
+                        dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: 0.9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Красногвардейская': {
+                            code: 'ru-msk-metro-zyablikovo-krasnogvardeyskaya',
+                            anchor: 'from',
+                            dist: 0.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                        'Алма-Атинская': {
+                            code: 'ru-msk-metro-alma-atinskaya',
+                            anchor: '',
+                            dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                    },
+                },
+                'Тверская-Динамо': {
+                    from: {
+                        anchor: 'Охотный ряд::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: -2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'from::Театральная',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: -1,
+                    },
+                    dist: 1.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Тверская': {
+                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
+                            anchor: 'from',
+                            dist: .38 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Маяковская': {
+                            code: 'ru-msk-metro-mayakovskaya',
+                            anchor: 'from',
+                            dist: .7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Белорусская': {
+                            code: 'ru-msk-metro-belorusskaya-belorusskaya',
+                            anchor: 'from',
+                            dist: 0.9325 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Белорусская::Кольцевая',
+                        },
+                        'Динамо': {
+                            code: 'ru-msk-metro-dinamo',
+                            anchor: 'from',
+                            dist: 1.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Аэропорт-Ховрино': {
+                    from: {
+                        anchor: 'to::Тверская-Динамо',
+                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -1.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Аэропорт': {
+                            code: 'ru-msk-metro-aeroport',
+                            anchor: 'from',
+                            dist: .08 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Сокол': {
+                            code: 'ru-msk-metro-sokol',
+                            anchor: '',
+                            dist: .09 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Войковская': {
+                            code: 'ru-msk-metro-voykovskaya',
+                            anchor: '',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                            transit: 'Балтийская::МЦК',
+                        },
+                        'Водный стадион': {
+                            code: 'ru-msk-metro-vodnyiy-stadion',
+                            anchor: '',
+                            dist: .45 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Речной вокзал': {
+                            code: 'ru-msk-metro-rechnoy-vokzal',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Беломорская': {
+                            code: 'ru-msk-metro-belomorskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Ховрино': {
+                            code: 'ru-msk-metro-hovrino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    }
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//zamoskvoreckaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kaluzhsko_rizhskaya = {
+            style: '#D48550',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-kalujsko-rijskaya',
+            segments: {
+                'Тургеневская': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Тургеневская': {
+                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                            transit: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        },
+                    },
+                },
+                'Сухаревская': {
+                    from: {
+                        anchor: 'to::Тургеневская',
+                        ofsHor: -0.6 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 0,
+                    },
+                    dist: .30 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Сухаревская': {
+                            code: 'ru-msk-metro-suharevskaya',
+                            anchor: 'from',
+                            dist: .17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.left,
+                            },
+                        },
+                    },
+                },
+                'Проспект Мира': {
+                    from: {
+                        anchor: 'to::Сухаревская',
+                        ofsHor: 0.6 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .23 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Проспект Мира': {
+                            code: 'ru-msk-metro-prospekt-mira',
+                            anchor: 'from',
+                            dist: .14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Проспект Мира::Кольцевая',
+                        },
+                    },
+                },
+                'Рижская-Медведково': {
+                    from: {
+                        anchor: 'to::Проспект Мира',
+                        ofsHor: 0.6 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -0.85 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 0,
+                    },
+                    dist: 1.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Рижская': {
+                            code: 'ru-msk-metro-rijskaya',
+                            anchor: 'from',
+                            dist: .03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {}
+                        },
+                        'Алексеевская': {
+                            code: 'ru-msk-metro-alekseevskaya',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'ВДНХ': {
+                            code: 'ru-msk-metro-vdnh',
+                            anchor: '',
+                            dist: .12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Ботанический сад': {
+                            code: 'ru-msk-metro-botanicheskiy-sad',
+                            anchor: '',
+                            dist: .235 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Ботанический сад::МЦК',
+                            label: {
+                                text: 'Ботанический<br>сад',
+                                ofsVer: -0.4 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Свиблово': {
+                            code: 'ru-msk-metro-sviblovo',
+                            anchor: '',
+                            dist: .315 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Бабушкинская': {
+                            code: 'ru-msk-metro-babushkinskaya',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Медведково': {
+                            code: 'ru-msk-metro-medvedkovo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Китай-город': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'from::Тургеневская',
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Китай-город': {
+                            code: 'ru-msk-metro-kitay-gorod',
+                            anchor: 'from',
+                            dist: .24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.center,
+                                ofsHor: -$$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                    },
+                },
+                'Третьяковская': {
+                    through: {
+                        anchor: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        anchor: 'through',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                        link: 'to::Китай-город',
+                    },
+                    dist: .25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Третьяковская': {
+                            code: 'ru-msk-metro-novokuznetskaya-tretyakovskaya',
+                            anchor: 'through',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                            transit: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                        },
+                    },
+                },
+                'Около-Третьяковской': {
+                    from: {
+                        anchor: 'to::Третьяковская',
+                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -0.22 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Октябрьская-Шаболовская': {
+                    from: {
+                        anchor: 'to::Около-Третьяковской',
+                        ofsHor: -0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: -1,
+                    },
+                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Октябрьская': {
+                            code: 'ru-msk-metro-oktyabrskaya',
+                            anchor: 'from',
+                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Октябрьская::Кольцевая',
+                        },
+                        'Шаболовская': {
+                            code: 'ru-msk-metro-shabolovskaya',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    }
+                },
+                'Ленинский-проспект-Ясенево': {
+                    from: {
+                        anchor: 'to::Октябрьская-Шаболовская',
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 0,
+                    },
+                    dist: 1.65 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Ленинский проспект': {
+                            code: 'ru-msk-metro-leninskiy-prospekt',
+                            anchor: 'from',
+                            dist: 0.24 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Площадь<br>Гагарина::МЦК',
+                            label: {
+                                text: 'Ленинский<br>проспект',
+                            },
+                        },
+                        'Академическая': {
+                            code: 'ru-msk-metro-akademicheskaya',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Профсоюзная': {
+                            code: 'ru-msk-metro-profsoyuznaya',
+                            anchor: '',
+                            dist: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Новые Черёмушки': {
+                            code: 'ru-msk-metro-novyie-cheremushki',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Калужская': {
+                            code: 'ru-msk-metro-kalujskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Беляево': {
+                            code: 'ru-msk-metro-belyaevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Коньково': {
+                            code: 'ru-msk-metro-konkovo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Тёплый стан': {
+                            code: 'ru-msk-metro-teplyiy-stan',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Ясенево': {
+                            code: 'ru-msk-metro-yasenevo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    }
+                },
+                'Новоясеневская': {
+                    from: {
+                        anchor: 'to::Ленинский-проспект-Ясенево',
+                        dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: 2.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: 0.02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Новоясеневская': {
+                            code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kaluzhsko_rizhskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_tagansko_kraspresnenskaya = {
+            style: '#774980',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-tagansko-krasnopresnenskaya',
+            segments: {
+                'Баррикадная-Кузнецкий мост': {
+                    through: {
+                        anchor: 'Тверская::Тверская-Динамо::Замоскворецкая',
+                        ofsHor: 1.75 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2.75 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        anchor: 'through',
+                        ofsHor: -.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    dist: 1.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Баррикадная': {
+                            code: 'ru-msk-metro-krasnopresnenskaya-barrikadnaya',
+                            anchor: 'from',
+                            dist: .06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Краснопресненская::Кольцевая',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                        'Пушкинская': {
+                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
+                            anchor: 'through',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                            transit: 'Тверская::Тверская-Динамо::Замоскворецкая',
+                        },
+                        'Кузнецкий мост': {
+                            code: 'ru-msk-metro-kuznetskiy-most-lubyanka',
+                            anchor: 'from',
+                            dist: 1.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.bottom,
+                            },
+                            transit: 'Лубянка::Охотный ряд-Сокольники::Сокольническая',
+                        },
+                    },
+                },
+                'Улица 1905 года-Полежаевская': {
+                    from: {
+                        anchor: 'from::Баррикадная-Кузнецкий мост',
+                        ofsHor: -.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .63 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Улица 1905 года': {
+                            code: 'ru-msk-metro-ulitsa-1905-goda',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: .2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Беговая': {
+                            code: 'ru-msk-metro-begovaya',
+                            anchor: 'from',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Полежаевская': {
+                            code: 'ru-msk-metro-polejaevskaya',
+                            anchor: 'from',
+                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Север': {
+                    from: {
+                        anchor: 'to::Улица 1905 года-Полежаевская',
+                        ofsHor: -.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -1.26 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Октябрьское Поле': {
+                            code: 'ru-msk-metro-oktyabrskoe-pole',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Панфиловская::МЦК',
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                text: 'Октябрьское<br>Поле',
+                                textAlign: 'right',
+                                ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Щукинская': {
+                            code: 'ru-msk-metro-schukinskaya',
+                            anchor: 'from',
+                            dist: .44 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Спартак': {
+                            code: 'ru-msk-metro-spartak',
+                            anchor: '',
+                            dist: (1.26 - .44) / 4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Тушинская': {
+                            code: 'ru-msk-metro-tushinskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Сходненская': {
+                            code: 'ru-msk-metro-shodnenskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Планерная': {
+                            code: 'ru-msk-metro-planernaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Китай-город-Текстильщики': {
+                    through: {
+                        anchor: 'Китай-город::Китай-город::Калужско-Рижская',
+                        ofsHor: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        link: 'to::Баррикадная-Кузнецкий мост',
+                        anchor: 'through',
+                        ofsVer: -4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: -4 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    dist: 1.7 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Китай-город': {
+                            code: 'ru-msk-metro-kitay-gorod',
+                            anchor: 'through',
+                            dist: 0,
+                            transit: 'Китай-город::Китай-город::Калужско-Рижская',
+                        },
+                        'Таганская': {
+                            code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
+                            anchor: 'through',
+                            dist: .57 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Таганская::Кольцевая',
+                        },
+                        'Пролетарская': {
+                            code: 'ru-msk-metro-proletarskaya-krestyanskaya-zastava',
+                            anchor: 'through',
+                            dist: 1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Волгоградский проспект': {
+                            code: 'ru-msk-metro-volgogradskiy-prospekt',
+                            anchor: 'through',
+                            dist: 1.14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Текстильщики': {
+                            code: 'ru-msk-metro-tekstilschiki',
+                            anchor: 'through',
+                            dist: 1.41 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                            },
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Китай-город-Текстильщики',
+                        ofsHor: 0.08 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: .8 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кузьминки': {
+                            code: 'ru-msk-metro-kuzminki',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                        },
+                        'Рязанский проспект': {
+                            code: 'ru-msk-metro-ryazanskiy-prospekt',
+                            anchor: '',
+                            dist: .8 / 5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Рязанский<br>проспект',
+                            },
+                        },
+                        'Выхино': {
+                            code: 'ru-msk-metro-vyihino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Лермонтовский проспект': {
+                            code: 'ru-msk-metro-lermontovskiy-prospekt',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Лермонтовский<br>проспект',
+                            },
+                        },
+                        'Жулебино': {
+                            code: 'ru-msk-metro-julebino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Котельники': {
+                            code: 'ru-msk-metro-kotelniki',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//tagansko_kraspresnenskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_lyublinsko_dmitrovskaya = {
+            style: '#B4CC5E',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-lyublinsko-dmitrovskaya',
+            segments: {
+                'Сретенский бульвар': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.27 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Сретенский бульвар': {
+                            code: 'ru-msk-metro-chistyie-prudyi-sretenskiy-bulvar-turgenevskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                                text: 'Сретенский<br>бульвар',
+                                textAlign: 'center',
+                            },
+                            transit: [
+                                'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                                'Тургеневская::Тургеневская::Калужско-Рижская',
+                            ],
+                        },
+                    },
+                },
+                'Сретенский бульвар-Трубная': {
+                    from: {
+                        anchor: 'to::Сретенский бульвар',
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: 0.02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                },
+                'Трубная-Бутырская': {
+                    from: {
+                        anchor: 'to::Сретенский бульвар-Трубная',
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.6 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Трубная': {
+                            code: 'ru-msk-metro-tsvetnoy-bulvar-trubnaya',
+                            anchor: 'from',
+                            dist: .02 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Достоевская': {
+                            code: 'ru-msk-metro-dostoevskaya',
+                            anchor: 'from',
+                            dist: .33 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Марьина Роща': {
+                            code: 'ru-msk-metro-marina-roscha',
+                            anchor: '',
+                            dist: .11 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Бутырская': {
+                            code: 'ru-msk-metro-butyirskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+                'Фонвизинская-Окружная': {
+                    from: {
+                        anchor: 'to::Трубная-Бутырская',
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Фонвизинская': {
+                            code: 'ru-msk-metro-fonvizinskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                        },
+                        'Петровско-Разумовская': {
+                            code: 'ru-msk-metro-petrovsko-razumovskaya',
+                            anchor: 'from',
+                            dist: 0.14 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                text: 'Петровско-<br>Разумовская',
+                                ofsVer: -.8 * $$.$nl_scheme_metro_settings_fontSize_label,
+                                ofsHor: .5 * $$.$nl_scheme_metro_settings_default_label_ofsHor,
+                            },
+                        },
+                        'Окружная': {
+                            code: 'ru-msk-metro-okrujnaya',
+                            anchor: 'to',
+                            dist: 0,
+                            transit: 'Окружная::МЦК',
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: $$.$nl_scheme_metro_settings_default_label_ofsVer,
+                            },
+                        },
+                    },
+                },
+                'Лихоборы-Селигерская': {
+                    from: {
+                        anchor: 'to::Фонвизинская-Окружная',
+                        ofsHor: -0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 0,
+                        ofsVer: -1,
+                    },
+                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Верхние<br>Лихоборы': {
+                            code: 'ru-msk-metro-verhnie-lihoboryi',
+                            anchor: 'from',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Селигерская': {
+                            code: 'ru-msk-metro-seligerskaya',
+                            anchor: '',
+                            dist: .20 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    }
+                },
+                'Чкаловская-Римская': {
+                    from: {
+                        anchor: 'Чистые пруды::Охотный ряд-Сокольники::Сокольническая',
+                        ofsHor: 5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'from::Сретенский бульвар',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 1,
+                    },
+                    dist: .795 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Чкаловская': {
+                            code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
+                            anchor: 'from',
+                            dist: .3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Курская::Кольцевая',
+                        },
+                        'Римская': {
+                            code: 'ru-msk-metro-ploschad-ilicha-rimskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                alignVer: $$.$me_align.top,
+                                ofsHor: -.35 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+                'Римская-Крестьянская Застава': {
+                    from: {
+                        anchor: 'to::Чкаловская-Римская',
+                        ofsHor: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 6 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: .1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Крестьянская Застава': {
+                    through: {
+                        anchor: 'Пролетарская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    from: {
+                        anchor: 'through',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'to::Римская-Крестьянская Застава',
+                    },
+                    dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Крестьянская Застава': {
+                            code: 'ru-msk-metro-proletarskaya-krestyanskaya-zastava',
+                            anchor: 'through',
+                            dist: 0,
+                            transit: 'Пролетарская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                            label: {
+                                text: 'Крестьянская<br>Застава',
+                                textAlign: 'right',
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: 0.2 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Крестьянская Застава',
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 1.3 * $$.$nl_scheme_metro_data_mck_radius,
+                    },
+                    points: {
+                        'Дубровка': {
+                            code: 'ru-msk-metro-dubrovka',
+                            anchor: 'from',
+                            dist: .26 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                            transit: 'Дубровка::МЦК',
+                        },
+                        'Кожуховская': {
+                            code: 'ru-msk-metro-kojuhovskaya',
+                            anchor: 'from',
+                            dist: .42 * $$.$nl_scheme_metro_data_mck_radius,
+                            label: {},
+                        },
+                        'Печатники': {
+                            code: 'ru-msk-metro-pechatniki',
+                            anchor: '',
+                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Волжская': {
+                            code: 'ru-msk-metro-voljskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Люблино': {
+                            code: 'ru-msk-metro-lyublino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Братиславская': {
+                            code: 'ru-msk-metro-bratislavskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Марьино': {
+                            code: 'ru-msk-metro-marino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Борисово': {
+                            code: 'ru-msk-metro-borisovo',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Шипиловская': {
+                            code: 'ru-msk-metro-shipilovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Зябликово': {
+                            code: 'ru-msk-metro-zyablikovo-krasnogvardeyskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                            transit: 'Красногвардейская::Красногвардейская-Алма-Атинская::Замоскворецкая',
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//lyublinsko_dmitrovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_serpuhovsko_timiryazevskaya = {
+            style: '#ABAEB9',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-serpuhovsko-timiryazevskaya',
+            segments: {
+                'Боровицкая': {
+                    from: {
+                        anchor: 'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                        ofsHor: -0.165 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.1 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Боровицкая': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: [
+                                'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                                'Арбатская::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                            ],
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                    },
+                },
+                'Чеховская': {
+                    from: {
+                        anchor: 'Тверская::Тверская-Динамо::Замоскворецкая',
+                        ofsHor: 3.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Чеховская': {
+                            code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                            transit: [
+                                'Тверская::Тверская-Динамо::Замоскворецкая',
+                                'Пушкинская::Баррикадная-Кузнецкий мост::Таганско-Краспресненская',
+                            ],
+                        },
+                    },
+                },
+                'Чеховская-Цветной бульвар': {
+                    from: {
+                        anchor: 'to::Чеховская',
+                        ofsHor: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.19 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Цветной бульвар-Менделеевская': {
+                    from: {
+                        anchor: 'to::Чеховская-Цветной бульвар',
+                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Цветной бульвар': {
+                            code: 'ru-msk-metro-tsvetnoy-bulvar-trubnaya',
+                            anchor: 'from',
+                            dist: .04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                ofsVer: $$.$nl_scheme_metro_settings_fontSize_label,
+                                textAlign: 'right',
+                                text: 'Цветной<br>бульвар',
+                            },
+                            transit: 'Трубная::Трубная-Бутырская::Люблинско-Дмитровская',
+                        },
+                        'Менделеевская': {
+                            code: 'ru-msk-metro-novoslobodskaya-mendeleevskaya',
+                            anchor: 'from',
+                            dist: .31 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                            },
+                            transit: 'Новослободская::Кольцевая',
+                        },
+                    },
+                },
+                'Савёловская': {
+                    from: {
+                        anchor: 'to::Цветной бульвар-Менделеевская',
+                        ofsHor: -0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.21 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Савёловская': {
+                            code: 'ru-msk-metro-savelovskaya',
+                            anchor: 'from',
+                            dist: .04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Дмитровская-Владыкино': {
+                    from: {
+                        anchor: 'to::Савёловская',
+                        ofsHor: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: 1,
+                    },
+                    dist: .355 / 2 * 3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Дмитровская': {
+                            code: 'ru-msk-metro-dmitrovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Тимирязевская': {
+                            code: 'ru-msk-metro-timiryazevskaya',
+                            anchor: 'from',
+                            dist: .355 / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.right,
+                                ofsHor: -1 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                        'Петровско-Разумовская': {
+                            code: 'ru-msk-metro-petrovsko-razumovskaya',
+                            anchor: 'from',
+                            dist: .355 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Петровско-Разумовская::Фонвизинская-Окружная::Люблинско-Дмитровская',
+                        },
+                        'Владыкино': {
+                            code: 'ru-msk-metro-vladyikino',
+                            anchor: 'to',
+                            dist: 0,
+                            transit: 'Владыкино::МЦК',
+                        },
+                    },
+                },
+                'Отрадное-Алтуфьево': {
+                    from: {
+                        anchor: 'to::Дмитровская-Владыкино',
+                        ofsHor: 0,
+                        ofsVer: 0,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -.64 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Отрадное': {
+                            code: 'ru-msk-metro-otradnoe',
+                            anchor: 'from',
+                            dist: .237 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Бибирево': {
+                            code: 'ru-msk-metro-bibirevo',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Алтуфьево': {
+                            code: 'ru-msk-metro-altufevo',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Чеховская-Боровицкая': {
+                    from: {
+                        anchor: 'from::Чеховская',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    to: {
+                        link: 'to::Боровицкая',
+                    },
+                    dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                },
+                'Боровицкая-Полянка': {
+                    from: {
+                        anchor: 'from::Боровицкая',
+                        ofsVer: 4 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 1,
+                        ofsVer: 1,
+                    },
+                    dist: 0.45 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Полянка': {
+                            code: 'ru-msk-metro-polyanka',
+                            anchor: 'from',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    }
+                },
+                'Серпуховская-Бульвар-Дмитрия-Донского': {
+                    from: {
+                        anchor: 'to::Боровицкая-Полянка',
+                        ofsVer: $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsHor: 0.3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 0,
+                        ofsVer: 1,
+                    },
+                    dist: 2.54 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Серпуховскaя': {
+                            code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
+                            anchor: 'from',
+                            dist: 0.18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Добрынинская::Кольцевая',
+                            label: {},
+                        },
+                        'Тульская': {
+                            code: 'ru-msk-metro-tulskaya',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Нагатинская': {
+                            code: 'ru-msk-metro-nagatinskaya',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Нагорная': {
+                            code: 'ru-msk-metro-nagornaya',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Нахимовский проспект': {
+                            code: 'ru-msk-metro-nahimovskiy-prospekt',
+                            anchor: '',
+                            dist: 0.15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Нахимовский<br>проспект',
+                            },
+                        },
+                        'Севастопольская': {
+                            code: 'ru-msk-metro-kahovskaya-sevastopolskaya',
+                            anchor: '',
+                            dist: 0.3 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Чертановская': {
+                            code: 'ru-msk-metro-chertanovskaya',
+                            anchor: '',
+                            dist: 0.17 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Южная': {
+                            code: 'ru-msk-metro-yujnaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Пражская': {
+                            code: 'ru-msk-metro-prajskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Улица Академика Янгеля': {
+                            code: 'ru-msk-metro-ulitsa-akademika-yangelya',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Улица Академика<br>Янгеля',
+                            },
+                        },
+                        'Аннино': {
+                            code: 'ru-msk-metro-annino',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                        'Бульвар Дмитрия Донского': {
+                            code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Бульвар<br>Дмитрия Донского',
+                            },
+                        },
+                    }
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//serpuhovsko_timiryazevskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_filevskaya = {
+            style: '#459BCF',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-filvskaya',
+            segments: {
+                'Александровский сад-Арбатская': {
+                    from: {
+                        anchor: 'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
+                        ofsHor: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.11,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: -1,
+                        ofsHor: -1,
+                    },
+                    dist: $$.$nl_scheme_metro_data_kolcevaya_radius * 0.27,
+                    points: {
+                        'Александровский сад': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {},
+                            transit: [
+                                'Библиотека им.Ленина::Охотный ряд-Библиотека им.Ленина::Сокольническая',
+                                'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
+                                'Арбатская::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                            ],
+                        },
+                        'Арбатская': {
+                            code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                color: '#459BCF',
+                                alignVer: $$.$me_align.bottom,
+                            },
+                        },
+                    },
+                },
+                'Смоленская-Киевская': {
+                    from: {
+                        anchor: 'to::Александровский сад-Арбатская',
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.45 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Смоленская': {
+                            code: 'ru-msk-metro-smolenskaya',
+                            color: '#459BCF',
+                            anchor: 'from',
+                            dist: 0.03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                            },
+                        },
+                        'Киевская': {
+                            code: 'ru-msk-metro-kievskaya',
+                            anchor: 'from',
+                            dist: 0.358 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: [
+                                'Киевская::Кольцевая',
+                                'Киевская::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                            ],
+                        },
+                    },
+                },
+                'Выставочная': {
+                    from: {
+                        anchor: 'to::Смоленская-Киевская',
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: -1,
+                    },
+                    dist: .18 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Выставочная': {
+                            code: 'ru-msk-metro-vyistavochnaya-delovoy-tsentr',
+                            anchor: 'from',
+                            dist: .15 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                    },
+                },
+                'Международная': {
+                    from: {
+                        anchor: 'to::Выставочная',
+                        ofsVer: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.16 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Международная': {
+                            code: 'ru-msk-metro-mejdunarodnaya',
+                            anchor: 'to',
+                            dist: 0,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                                alignVer: $$.$me_align.bottom,
+                                ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                                ofsVer: .1 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                            transit: 'Деловой центр МЦК::МЦК',
+                        },
+                    },
+                },
+                'Студенческая': {
+                    from: {
+                        anchor: 'to::Смоленская-Киевская',
+                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: .35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Студенческая': {
+                            code: 'ru-msk-metro-studencheskaya',
+                            anchor: 'from',
+                            label: {},
+                            dist: .33 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        },
+                    },
+                },
+                'Кутузовская': {
+                    from: {
+                        anchor: 'to::Студенческая',
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.65 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Кутузовская': {
+                            code: 'ru-msk-metro-kutuzovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Кутузовская::МЦК',
+                        },
+                    },
+                },
+                'Фили-Кунцевская': {
+                    from: {
+                        anchor: 'to::Кутузовская',
+                        ofsHor: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -1.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: -0.82 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Фили': {
+                            code: 'ru-msk-metro-fili',
+                            anchor: 'from',
+                            dist: .03 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Багратионовская': {
+                            code: 'ru-msk-metro-bagrationovskaya',
+                            anchor: '',
+                            dist: .2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Филёвский парк': {
+                            code: 'ru-msk-metro-filevskiy-park',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Пионерская': {
+                            code: 'ru-msk-metro-pionerskaya',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            },
+                        },
+                        'Кунцевская': {
+                            code: 'ru-msk-metro-kuntsevskaya-kuntsevskaya',
+                            anchor: '',
+                            dist: null,
+                            transit: 'Кунцевская::Кунцевская-Пятницкое-Шоссе::Арбатско-Покровская',
+                        },
+                    },
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//filevskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kalininskaya = {
+            style: '#F1C959',
+            type: 'segments',
+            code: 'ru-msk-metro-kalininsko-solntsevskaya-liniya',
+            segments: {
+                'Третьяковская': {
+                    from: {
+                        anchor: 'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                        ofsHor: -$$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: .48 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Третьяковская': {
+                            code: 'ru-msk-metro-novokuznetskaya-tretyakovskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: [
+                                'Новокузнецкая::Новокузнецкая::Замоскворецкая',
+                                'Третьяковская::Третьяковская::Калужско-Рижская',
+                            ],
+                        },
+                    },
+                },
+                'Марксистская-Новокосино': {
+                    from: {
+                        anchor: 'Таганская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                        ofsVer: 3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        link: 'to::Третьяковская',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: 1,
+                        ofsVer: -1,
+                    },
+                    dist: 1.4 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Марксистская': {
+                            code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                                alignHor: $$.$me_align.center,
+                                ofsHor: 2 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                            transit: [
+                                'Таганская::Кольцевая',
+                                'Таганская::Китай-город-Текстильщики::Таганско-Краспресненская',
+                            ],
+                        },
+                        'Площадь Ильича': {
+                            code: 'ru-msk-metro-ploschad-ilicha-rimskaya',
+                            anchor: 'from',
+                            dist: .43 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Римская::Чкаловская-Римская::Люблинско-Дмитровская',
+                            label: {
+                                text: 'Площадь<br>Ильича',
+                                ofsVer: .5 * $$.$nl_scheme_metro_settings_fontSize_label,
+                            },
+                        },
+                        'Авиамоторная': {
+                            code: 'ru-msk-metro-aviamotornaya',
+                            anchor: 'from',
+                            dist: (.43 + .83) / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Шоссе Энтузиастов': {
+                            code: 'ru-msk-metro-shosse-entuziastov',
+                            anchor: 'from',
+                            dist: .83 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Шоссе Энтузиастов::МЦК',
+                        },
+                        'Перово': {
+                            code: 'ru-msk-metro-perovo',
+                            anchor: 'from',
+                            dist: (2 * .83 - (.43 + .83) / 2) * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Новогиреево': {
+                            code: 'ru-msk-metro-novogireevo',
+                            anchor: '',
+                            dist: (1.4 - (2 * .83 - (.43 + .83) / 2)) / 2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                        'Новокосино': {
+                            code: 'ru-msk-metro-novokosino',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kalininskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_solncevskaya_biryuzovaya = {
+            style: '#bdc38b',
+            code: ['ru-msk-metro-kalininsko-solntsevskaya-liniya', 'ru-msk-liniya-metro-tretiy-peresadochnyiy-kontur'],
+            segments: {
+                'Савёловская': {
+                    from: {
+                        anchor: 'Савёловская::Савёловская::Серпуховско-Тимирязевская',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: -2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsHor: -.35 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Савёловская': {
+                            code: 'ru-msk-metro-savelovskaya',
+                            anchor: 'from',
+                            transit: 'Савёловская::Савёловская::Серпуховско-Тимирязевская',
+                            dist: 0,
+                        },
+                    },
+                },
+                'Петровский парк-Хорошёвская': {
+                    from: {
+                        anchor: 'to::Савёловская',
+                        ofsVer: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: .9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Петровский парк': {
+                            code: 'ru-msk-metro-dinamo',
+                            anchor: 'from',
+                            dist: 0.21 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Динамо::Тверская-Динамо::Замоскворецкая',
+                            label: {},
+                        },
+                        'ЦСКА': {
+                            code: 'ru-msk-metro-tsska',
+                            anchor: '',
+                            dist: 0.23 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Хорошёвская': {
+                            code: 'ru-msk-metro-polejaevskaya',
+                            anchor: '',
+                            dist: 0.19 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Полежаевская::Улица 1905 года-Полежаевская::Таганско-Краспресненская',
+                            label: {},
+                        },
+                    }
+                },
+                'Шелепиха': {
+                    from: {
+                        anchor: 'to::Петровский парк-Хорошёвская',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 0.135 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    points: {
+                        'Шелепиха': {
+                            code: 'ru-msk-metro-shelepiha',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Шелепиха::МЦК',
+                        },
+                    },
+                },
+            },
+        };
+        $$.$nl_scheme_metro_data_solncevskaya = {
+            style: '#F3C95A',
+            code: 'ru-msk-metro-kalininsko-solntsevskaya-liniya',
+            segments: {
+                'Шелепиха-Парк Победы': {
+                    from: {
+                        anchor: 'to::Шелепиха::Солнцевская-Бирюзовая',
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 0.05 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                },
+                'Парк Победы': {
+                    from: {
+                        anchor: 'to::Шелепиха-Парк Победы',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsHor: -1,
+                        ofsVer: 1,
+                    },
+                    dist: 0.55 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Парк Победы': {
+                            code: 'ru-msk-metro-park-pobedyi-park-pobedyi',
+                            anchor: 'from',
+                            dist: 0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            transit: 'Парк Победы::Арбатская-Славянский бульвар::Арбатско-Покровская',
+                        },
+                    },
+                },
+                'Юг': {
+                    from: {
+                        anchor: 'to::Парк Победы',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: -0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    },
+                    to: {
+                        anchor: 'from',
+                        ofsVer: 1.2 * $$.$nl_scheme_metro_data_mck_radius,
+                    },
+                    points: {
+                        'Минская': {
+                            code: 'ru-msk-metro-minskaya',
+                            anchor: 'from',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {}
+                        },
+                        'Ломоносовский проспект': {
+                            code: 'ru-msk-metro-lomonosovskiy-prospekt',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Ломоносовский<br>проспект',
+                            }
+                        },
+                        'Раменки': {
+                            code: 'ru-msk-metro-ramenki',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Мичуринский проспект': {
+                            code: 'ru-msk-metro-michurinskiy-prospekt',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Мичуринский<br>проспект',
+                            }
+                        },
+                        'Озерная': {
+                            code: 'ru-msk-metro-ochakovo',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Говорово': {
+                            code: 'ru-msk-metro-govorovo',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Солнцево': {
+                            code: 'ru-msk-metro-solntsevo',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Боровское шоссе': {
+                            code: 'ru-msk-metro-borovskoe-shosse',
+                            anchor: '',
+                            dist: null,
+                            label: {
+                                text: 'Боровское<br>шоссе'
+                            }
+                        },
+                        'Новопеределкино': {
+                            code: 'ru-msk-metro-novoperedelkino',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                        'Рассказовка': {
+                            code: 'ru-msk-metro-rasskazovka-uzel',
+                            anchor: '',
+                            dist: null,
+                            label: {}
+                        },
+                    },
+                },
+            },
+        };
+        $$.$nl_scheme_metro_data_biruzovaya = {
+            style: '#87BDBC',
+            code: 'ru-msk-liniya-metro-tretiy-peresadochnyiy-kontur',
+            segments: {
+                'Деловой центр': {
+                    from: {
+                        anchor: 'to::Шелепиха::Солнцевская-Бирюзовая',
+                        ofsVer: 0.12 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        ofsHor: 0.06 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                        link: 'to::Шелепиха::Солнцевская-Бирюзовая',
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 1,
+                    },
+                    dist: 0.04 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Деловой центр': {
+                            code: 'ru-msk-metro-vyistavochnaya-delovoy-tsentr',
+                            anchor: 'to',
+                            dist: 0,
+                            transit: 'Выставочная::Выставочная::Филевская',
+                            label: {
+                                text: 'Деловой<br>центр',
+                                alignHor: $$.$me_align.center,
+                                alignVer: $$.$me_align.top,
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//solncevskaya_biryuzovaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_nekrasovskaya = {
+            style: '#EFC0D0',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-kojuhovskaya',
+            segments: {
+                'Косино': {
+                    from: {
+                        anchor: 'Лермонтовский проспект::Юг::Таганско-Краспресненская',
+                        ofsHor: -3 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 0,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 1,
+                        ofsHor: 0,
+                    },
+                    dist: 0.9 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Косино': {
+                            code: 'ru-msk-metro-lermontovskiy-prospekt',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Лермонтовский проспект::Юг::Таганско-Краспресненская',
+                            label: {
+                                alignHor: $$.$me_align.right,
+                            }
+                        },
+                        'Улица Дмитриевского': {
+                            code: 'ru-msk-metro-ulitsa-dmitrievskogo',
+                            anchor: '',
+                            dist: 0.5 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                text: 'Улица<br>Дмитриевского',
+                            },
+                        },
+                        'Лухмановская': {
+                            code: 'ru-msk-metro-luhmanovskaya',
+                            anchor: '',
+                            dist: 0.2 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {},
+                        },
+                        'Некрасовка': {
+                            code: 'ru-msk-metro-nekrasovka',
+                            anchor: '',
+                            dist: null,
+                            label: {},
+                        },
+                    },
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//nekrasovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data_kahovskaya = {
+            style: '#64bebb',
+            type: 'segments',
+            code: 'ru-msk-liniya-metro-kahovskaya',
+            segments: {
+                'Каширская-Варшавская': {
+                    from: {
+                        anchor: 'Каширская::Павелецкая-Домодедовская::Замоскворецкая',
+                        ofsHor: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                        ofsVer: 2 * $$.$nl_scheme_metro_settings_circle_radius,
+                    },
+                    through: {
+                        anchor: 'from',
+                        ofsVer: 0,
+                        ofsHor: -1,
+                    },
+                    dist: 0.27 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                    points: {
+                        'Каширская': {
+                            code: 'ru-msk-metro-kashirskaya',
+                            anchor: 'from',
+                            dist: 0,
+                            transit: 'Каширская::Павелецкая-Домодедовская::Замоскворецкая',
+                        },
+                        'Варшавская': {
+                            code: 'ru-msk-metro-varshavskaya',
+                            anchor: '',
+                            dist: 0.25 * $$.$nl_scheme_metro_data_kolcevaya_radius,
+                            label: {
+                                alignVer: $$.$me_align.bottom,
+                                alignHor: $$.$me_align.center,
+                                ofsVer: 0.5 * $$.$nl_scheme_metro_settings_circle_radius,
+                            },
+                        },
+                    },
+                },
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//kahovskaya.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_data = {
+            settings: {
+                scale_max: 3,
+                width: $$.$nl_scheme_metro_settings_width,
+                height: $$.$nl_scheme_metro_settings_height,
+                root: $$.$nl_scheme_metro_settings_root,
+                fontSize_label: $$.$nl_scheme_metro_settings_fontSize_label,
+                defaults: {
+                    label: {
+                        alignHor: $$.$me_align.left,
+                        alignVer: $$.$me_align.center,
+                        ofsHor: (alignHor, alignVer) => alignHor == $$.$me_align.center ?
+                            0 :
+                            alignVer == $$.$me_align.center ?
+                                $$.$nl_scheme_metro_settings_default_label_ofsHor :
+                                -$$.$nl_scheme_metro_settings_circle_radius / 4,
+                        ofsVer: (alignHor, alignVer) => alignVer == $$.$me_align.center ?
+                            0 :
+                            alignHor == $$.$me_align.center ?
+                                $$.$nl_scheme_metro_settings_default_label_ofsVer :
+                                -$$.$nl_scheme_metro_settings_circle_radius / 4,
+                    },
+                },
+                circle_radius: $$.$nl_scheme_metro_settings_circle_radius,
+                circle_thick: $$.$nl_scheme_metro_settings_circle_thick,
+                thick_line: $$.$nl_scheme_metro_settings_thick_line,
+                thick_transit: $$.$nl_scheme_metro_settings_thick_transit,
+            },
+            'Кольцевая': $$.$nl_scheme_metro_data_kolcevaya,
+            'МЦК': $$.$nl_scheme_metro_data_mck,
+            'Сокольническая': $$.$nl_scheme_metro_data_sokolnicheskaya,
+            'Замоскворецкая': $$.$nl_scheme_metro_data_zamoskvoreckaya,
+            'Калужско-Рижская': $$.$nl_scheme_metro_data_kaluzhsko_rizhskaya,
+            'Таганско-Краспресненская': $$.$nl_scheme_metro_data_tagansko_kraspresnenskaya,
+            'Люблинско-Дмитровская': $$.$nl_scheme_metro_data_lyublinsko_dmitrovskaya,
+            'Арбатско-Покровская': $$.$nl_scheme_metro_data_arbatsko_pokrovskaya,
+            'Серпуховско-Тимирязевская': $$.$nl_scheme_metro_data_serpuhovsko_timiryazevskaya,
+            'Филевская': $$.$nl_scheme_metro_data_filevskaya,
+            'Калининская': $$.$nl_scheme_metro_data_kalininskaya,
+            'Солнцевская-Бирюзовая': $$.$nl_scheme_metro_data_solncevskaya_biryuzovaya,
+            'Солнцевская': $$.$nl_scheme_metro_data_solncevskaya,
+            'Бирюзовая': $$.$nl_scheme_metro_data_biruzovaya,
+            'Бутовская': $$.$nl_scheme_metro_data_butovskaya,
+            'Некрасовская': $$.$nl_scheme_metro_data_nekrasovskaya,
+            'Каховская': $$.$nl_scheme_metro_data_kahovskaya,
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//data.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const base = window.location.href.slice(0, -window.location.search.length);
+        $$.$nl_scheme_metro = {
+            base: $$.$nl_scheme_engine,
+            prop: {
+                data: () => $$.$nl_scheme_metro_data,
+                background_station: () => 'white',
+                background_station_selected: () => 'red',
+                background_station_will_select: () => '#F8CFD3',
+                background_station_will_deselect: () => '#3F88DE',
+                colorText_will_select: () => '#D5483E',
+                colorText_will_deselect: '.background_station_will_deselect',
+                dataWorker: $$.$me_atom2_prop([], () => {
+                    const idx = window.location.pathname.indexOf('/', 1);
+                    const root = !~idx ?
+                        window.location.pathname :
+                        window.location.pathname.slice(0, idx);
+                    worker = new Worker(window.location.origin + root + '/scheme-metro-worker/-/web.js');
+                    worker.postMessage({ some: 'thing' });
+                    return null;
+                }, ({ val }) => console.log(val)),
+            },
+        };
+        let worker;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//metro.js.map
 ;
 "use strict";
 var $;
@@ -14030,6 +14200,7 @@ var $;
                 result[fld_name] = { caption };
             }
         }
+        let scheme_metro;
         $$.$nl_search_panel_param = {
             base: $$.$nl_search_panel,
             prop: {
@@ -14248,10 +14419,41 @@ var $;
                                 dispatch: (dispatch_name, dispatch_arg) => {
                                     const id = 'СхемаМетро';
                                     if (dispatch_arg == 'open') {
-                                        const order = $$.a('<<.order');
-                                        $$.a.dispatch('/@app@scheme_metro', 'open', {
-                                            src: $$.a.curr.name(),
-                                            val: order && order.params[id]
+                                        const atom_order = $$.a.get('<<.order');
+                                        const order = atom_order.value();
+                                        const value = order.params[id] || new Map();
+                                        const zIndex = $$.a('.#zIndex') + 1;
+                                        scheme_metro = new $$.$me_atom2_elem({
+                                            tail: 'me_dropdown' + id,
+                                            parent: $$.a.get('/@app'),
+                                            cnf: {
+                                                base: $$.$nl_scheme_metro,
+                                                prop: {
+                                                    scale: '.scale_initial',
+                                                    ofsHor: '.ofsHor_initial',
+                                                    ofsVer: '.ofsVer_initial',
+                                                    selected: () => value,
+                                                    src: () => '',
+                                                    '#zIndex': () => zIndex,
+                                                },
+                                                dispatch: (dispatch_name, dispatch_arg) => {
+                                                    if (dispatch_name == 'open') {
+                                                        $$.a('.scale', $$.a('.scale_initial'));
+                                                        $$.a('.ofsHor', $$.a('.ofsHor_initial'));
+                                                        $$.a('.ofsVer', $$.a('.ofsVer_initial'));
+                                                        $$.a('.src', dispatch_arg.src);
+                                                        $$.a('.selected', dispatch_arg.val);
+                                                        return true;
+                                                    }
+                                                    else if (dispatch_name == 'close') {
+                                                        order.params[id] = $$.a('.selected');
+                                                        atom_order.value(order);
+                                                        scheme_metro.destroy();
+                                                        return true;
+                                                    }
+                                                    return false;
+                                                },
+                                            },
                                         });
                                         return true;
                                     }
@@ -14810,7 +15012,6 @@ var $;
                     },
                     event: {
                         clickOrTap: () => {
-                            console.log(id, crumbs[id], $$.a.curr.name(), $$.a('<.tabs'));
                             let found;
                             if (id == 'Область') {
                                 found = 'Местоположение';
@@ -17887,9 +18088,6 @@ var $;
                 offerCount: () => 1200,
                 objCount: () => 800,
             },
-            style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
-            },
             elem: {
                 tabs: () => ({
                     base: $$.$nl_search_tabs,
@@ -19780,6 +19978,7 @@ var $;
                     },
                     style: {
                         margin: () => 0,
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
                     prop: Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
@@ -19798,40 +19997,10 @@ var $;
                             valid: (val) => typeof val == 'boolean' ?
                                 val :
                                 null,
-                        }), showSchemeMetro: () => false, '#order': $$.$me_atom2_prop(['.showSchemeMetro'], ({ masters: [showSchemeMetro] }) => !showSchemeMetro ?
-                            ['scheme_metro', 'menu', 'workspace', 'login', 'tapEffect'] :
-                            ['menu', 'workspace', 'login', 'scheme_metro', 'tapEffect']) }),
+                        }), '#order': () => ['menu', 'workspace', 'login', 'tapEffect'] }),
                     elem: {
                         menu: () => menu,
                         workspace: () => workspace,
-                        scheme_metro: () => ({
-                            base: $$.$nl_scheme_metro,
-                            prop: {
-                                '#zIndex': $$.$me_atom2_prop(['<.showSchemeMetro'], ({ masters: [showSchemeMetro] }) => !showSchemeMetro ? -10 : 10),
-                                scale: '.scale_initial',
-                                ofsHor: '.ofsHor_initial',
-                                ofsVer: '.ofsVer_initial',
-                                selected: () => new Map(),
-                                src: () => '',
-                            },
-                            dispatch: (dispatch_name, dispatch_arg) => {
-                                if (dispatch_name == 'open') {
-                                    $$.a('<.showSchemeMetro', true);
-                                    $$.a('.scale', $$.a('.scale_initial'));
-                                    $$.a('.ofsHor', $$.a('.ofsHor_initial'));
-                                    $$.a('.ofsVer', $$.a('.ofsVer_initial'));
-                                    $$.a('.src', dispatch_arg.src);
-                                    $$.a('.selected', dispatch_arg.val);
-                                    return true;
-                                }
-                                else if (dispatch_name == 'close') {
-                                    $$.a('<.showSchemeMetro', false);
-                                    $$.a.dispatch($$.a('.src'), 'close', $$.a('.selected'));
-                                    return true;
-                                }
-                                return false;
-                            },
-                        }),
                         login: $$.$me_atom2_prop(['.isShownLoginForm'], ({ masters: [isShownLoginForm] }) => !isShownLoginForm ? null : {
                             base: $$.$nl_login,
                             prop: {
