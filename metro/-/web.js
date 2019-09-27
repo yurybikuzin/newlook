@@ -2589,11 +2589,13 @@ var $;
                     },
                     dist: .35 * $$.$nl_metro_data_kolcevaya_radius,
                     points: {
-                        'Верхние<br>Лихоборы': {
+                        'Верхние Лихоборы': {
                             code: 'ru-msk-metro-verhnie-lihoboryi',
                             anchor: 'from',
                             dist: .15 * $$.$nl_metro_data_kolcevaya_radius,
-                            label: {},
+                            label: {
+                                text: 'Верхние<br>Лихоборы',
+                            },
                         },
                         'Селигерская': {
                             code: 'ru-msk-metro-seligerskaya',
