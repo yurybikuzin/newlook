@@ -281,7 +281,7 @@ var $;
         let dataPromiseResolve;
         let getItemPromiseResolve;
         let getItemPromiseReject;
-        const geoUrl = 'https://geo.baza-winner.ru/api/v2/spots.json?base_spot_code=ru-msk&type=SubwayStation&fields=guid,parents&parent_fields=title,type,code&parent_type_filter=SubwayLine%7CSubwaySuperStation&limit=1000';
+        const geoUrl = 'https://geo.baza-winner.ru/api/v2/spots.json?base_spot_code=ru-msk&type=SubwayStation&fields=guid,parents&parent_fields=text,type,code&parent_type_filter=SubwayLine%7CSubwaySuperStation&limit=1000';
         onmessage = function (event) {
             if (event.data.cmd == 'getItem') {
                 if (!event.data.data) {
@@ -447,11 +447,11 @@ var $;
                 else {
                     guid2point[point.guid] = {
                         station: {
-                            title: point_id,
+                            text: point_id,
                             code: point.code,
                         },
                         line: {
-                            title: line_id,
+                            text: line_id,
                             code: line.code,
                             color: styleColor(line.style),
                         },

@@ -8184,11 +8184,45 @@ var $;
                         if (!point)
                             console.warn(`unknown guid ${guid}`);
                         result.push({
-                            title: point.station.title,
+                            text: point.station.text,
                             color: point.line.color,
                         });
                     }
                     return result;
+                }),
+            },
+            elem: {
+                crumbs_panel: () => ({
+                    control: {
+                        canvas: () => ({
+                            prop: {
+                                crumbs: '<<.crumbs',
+                            },
+                            render: p => {
+                                const { ctx, pixelRatio } = p;
+                                const crumbs = $$.a('.crumbs');
+                                if (!crumbs)
+                                    return;
+                                let crumb_prev;
+                                const ofsHor = 16;
+                                const ofsVer = 16;
+                                const ctxFontSize = 16 * pixelRatio;
+                                const paddingLeft = 8;
+                                const paddingRight = 8;
+                                ctx.font = $$.a('<<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<<.fontFamily');
+                                ctx.textAlign = 'left';
+                                ctx.textBaseline = 'bottom';
+                                for (const crumb of crumbs) {
+                                    if (!crumb_prev) {
+                                        crumb.ctxLeft = ofsHor * pixelRatio;
+                                        crumb.ctxTop = ofsVer * pixelRatio;
+                                        crumb.ctxWidth = ctx.measureText(crumb.text).width;
+                                    }
+                                }
+                                console.log(crumbs);
+                            },
+                        }),
+                    },
                 }),
             },
         };
