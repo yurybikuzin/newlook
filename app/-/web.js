@@ -7481,6 +7481,7 @@ var $;
                                             }
                                         }
                                         else if (label.text.indexOf('<')) {
+                                            const ta = label.textAlign;
                                             const lines = label.text.split('<br>');
                                             const linesCount = lines.length;
                                             var ctxWidth = 0;
@@ -7508,7 +7509,16 @@ var $;
                                                 for (const i in lines) {
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
-                                                    ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                    let w = ctx.measureText(line).width;
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - .5 * w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                    }
                                                 }
                                             }
                                             else if (label.alignHor == $$.$me_align.left &&
@@ -7526,7 +7536,16 @@ var $;
                                                 for (const i in lines) {
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
-                                                    ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                    let w = ctx.measureText(line).width;
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - .5 * w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                    }
                                                 }
                                             }
                                             else if (label.alignHor == $$.$me_align.left &&
@@ -7544,11 +7563,21 @@ var $;
                                                 for (const i in lines) {
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
-                                                    ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                    let w = ctx.measureText(line).width;
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - .5 * w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                    }
                                                 }
                                             }
                                             else if (label.alignHor == $$.$me_align.right &&
                                                 label.alignVer == $$.$me_align.center) {
+                                                console.log(id);
                                                 let ofsV = label.ofsVer * pixelRatio - .5 * ctxHeight;
                                                 $$.$me_atom2_ctx_rect({
                                                     ctx,
@@ -7563,7 +7592,15 @@ var $;
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
                                                     let w = ctx.measureText(line).width;
-                                                    ctx.fillText(line, label.ofsHor - w * pixelRatio, ofsV);
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio, ofsV);
+                                                    }
                                                 }
                                             }
                                             else if (label.alignHor == $$.$me_align.right &&
@@ -7575,14 +7612,22 @@ var $;
                                                     ctxTop: ofsV,
                                                     ctxWidth,
                                                     ctxHeight,
-                                                    fillStyle: 'green',
+                                                    fillStyle: 'rgba(255,255,255,.5)',
                                                 });
                                                 ctx.fillStyle = $$.a('<<.colorText');
                                                 for (const i in lines) {
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
                                                     let w = ctx.measureText(line).width;
-                                                    ctx.fillText(line, label.ofsHor - w * pixelRatio, ofsV);
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - ctxWidth, ofsV);
+                                                    }
                                                 }
                                             }
                                             else if (label.alignHor == $$.$me_align.right &&
@@ -7601,7 +7646,15 @@ var $;
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
                                                     let w = ctx.measureText(line).width;
-                                                    ctx.fillText(line, label.ofsHor - w * pixelRatio, ofsV);
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - ctxWidth, ofsV);
+                                                    }
                                                 }
                                             }
                                             else if (label.alignHor == $$.$me_align.center &&
@@ -7623,7 +7676,15 @@ var $;
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
                                                     let w = ctx.measureText(line).width;
-                                                    ctx.fillText(line, label.ofsHor * pixelRatio - .5 * w, ofsV);
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - .5 * w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - .5 * ctxWidth, ofsV);
+                                                    }
                                                 }
                                             }
                                             else if (label.alignHor == $$.$me_align.center &&
@@ -7642,7 +7703,15 @@ var $;
                                                     const line = lines[i];
                                                     ofsV += ctxFontSize;
                                                     let w = ctx.measureText(line).width;
-                                                    ctx.fillText(line, label.ofsHor * pixelRatio - .5 * w, ofsV);
+                                                    if (ta == 'right') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - w, ofsV);
+                                                    }
+                                                    else if (ta == 'center') {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - .5 * w, ofsV);
+                                                    }
+                                                    else {
+                                                        ctx.fillText(line, label.ofsHor * pixelRatio - .5 * ctxWidth, ofsV);
+                                                    }
                                                 }
                                             }
                                             else {
