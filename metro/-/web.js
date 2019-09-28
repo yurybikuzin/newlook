@@ -281,7 +281,7 @@ var $;
         let dataPromiseResolve;
         let getItemPromiseResolve;
         let getItemPromiseReject;
-        const geoUrl = 'https://geo.baza-winner.ru/api/v2/spots.json?base_spot_code=ru-msk&type=SubwayStation&fields=guid,parents&parent_fields=text,type,code&parent_type_filter=SubwayLine%7CSubwaySuperStation&limit=1000';
+        const geoUrl = 'https://geo.baza-winner.ru/api/v2/spots.json?base_spot_code=ru-msk&type=SubwayStation&fields=guid,title,parents&parent_fields=text,type,code&parent_type_filter=SubwayLine%7CSubwaySuperStation&limit=1000';
         function encode(s) {
             return s.replace(/ru-msk-metro-/g, '$');
         }
@@ -317,8 +317,10 @@ var $;
                     .then(response => response.json())
                     .then(jsonData => {
                     const guids = {};
+                    const guid2spot = {};
                     for (const spot of jsonData.spots) {
                         const guid = spot.guid;
+                        guid2spot[guid] = spot;
                         let code_SubwayLine;
                         let code_SubwaySuperStation;
                         for (const parent of spot.parents) {
@@ -336,7 +338,22 @@ var $;
                         if (!guids[code_SubwayLine]) {
                             guids[code_SubwayLine] = {};
                         }
-                        guids[code_SubwayLine][code_SubwaySuperStation] = guid;
+                        const val = guids[code_SubwayLine][code_SubwaySuperStation];
+                        if (!val) {
+                            guids[code_SubwayLine][code_SubwaySuperStation] = guid;
+                        }
+                        else {
+                            if (typeof val == 'string')
+                                guids[code_SubwayLine][code_SubwaySuperStation] = {
+                                    [guid2spot[val].title]: val
+                                };
+                            if (guids[code_SubwayLine][code_SubwaySuperStation][spot.title]) {
+                                console.warn(`guids[${code_SubwayLine}][${code_SubwaySuperStation}][${spot.title}] already exists`);
+                            }
+                            else {
+                                guids[code_SubwayLine][code_SubwaySuperStation][spot.title] = guid;
+                            }
+                        }
                     }
                     postMessage({ cmd: 'setItem', data: encode(JSON.stringify(guids)) });
                     return guids;
@@ -436,7 +453,7 @@ var $;
                 for (const line_code of line_codes) {
                     if (!guids[line_code])
                         $$.$me_throw(`no line[.code == '${line_code}']`);
-                    const guid = guids[line_code][point.code];
+                    const guid = get_point_guid(guids, id_context_splitted, line_code, line_id, point, point_id);
                     if (point.guid && point.guid != guid) {
                         console.error(`guids[${line_code_prev}][${point.code}] != guids[${line_code}][${point.code}]`, guids);
                     }
@@ -465,6 +482,22 @@ var $;
                     code2guids[point.code].push(point.guid);
                 }
             }
+        }
+        function get_point_guid(guids, id_context_splitted, line_code, line_id, point, point_id) {
+            let result;
+            const val = guids[line_code][point.code];
+            if (typeof val == 'string') {
+                result = val;
+            }
+            else if (val) {
+                if (!point.title) {
+                    console.error(`${[point_id].concat(id_context_splitted).join('::')} requires .title to be set`);
+                }
+                else {
+                    result = guids[line_code][point.code][point.title];
+                }
+            }
+            return result;
         }
         function get_point_id(point_id, all_points, id_context_splitted, err) {
             let result = point_id;
@@ -3126,6 +3159,7 @@ var $;
                     dist: $$.$nl_metro_data_kolcevaya_radius * 0.27,
                     points: {
                         'Александровский сад': {
+                            title: 'Александровский Сад метро',
                             code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
                             anchor: 'from',
                             dist: 0,
@@ -3137,6 +3171,7 @@ var $;
                             ],
                         },
                         'Арбатская': {
+                            title: 'Арбатская метро',
                             code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
                             anchor: 'to',
                             dist: 0,
