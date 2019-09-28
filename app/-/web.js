@@ -1013,13 +1013,13 @@ var $;
                             console.error({ name }, e);
                         }
                 }
-                if (len)
-                    console.log(masters, prev, val);
                 return val;
             }, ({ val, atom }) => {
                 val = p.valid(val);
                 let need_remove = false;
                 const dflt = p.default();
+                if (atom.name().endsWith('.scale'))
+                    console.warn(atom.name(), val, dflt, p.default);
                 if (val == null) {
                     val = dflt;
                     need_remove = true;
@@ -7153,15 +7153,18 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32 + 32, ofsHor_initial: () => 32, ofsVer_max: '.ofsVer_initial', scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial), scale: $$.$me_atom2_prop_store({
+            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32 + 32, ofsHor_initial: () => 32, ofsVer_max: '.ofsVer_initial', scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial, ({ val }) => console.warn({ val })), scale: $$.$me_atom2_prop_store({
+                    condition: ['.scale_initial'],
                     default: () => $$.a('.scale_initial'),
                     valid: (val) => typeof val == 'number' ? val : null,
                 }), ofsHor: $$.$me_atom2_prop_store({
+                    condition: ['.ofsHor_initial'],
                     default: () => $$.a('.ofsHor_initial'),
                     valid: (val) => typeof val == 'number' ? val : null,
                 }), ofsVer: $$.$me_atom2_prop_store({
+                    condition: ['.ofsVer_initial'],
                     default: () => $$.a('.ofsVer_initial'),
-                    valid: (val) => typeof val == 'number' && val <= $$.a('.ofsVer_max') ? val : null,
+                    valid: (val) => typeof val == 'number' ? val : null,
                 }), will_action: () => $nl_scheme_will_action_enum.none, will_codes: () => new Set(), isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'lasso', 'cross'], labels: $$.$me_atom2_prop([], () => null), selected: $$.$me_atom2_prop_store({
                     default: () => new Map(),
                     valid: val => {
@@ -8203,7 +8206,7 @@ var $;
             const ofsHor_min = p.width_upper >= p.width ?
                 (p.width_upper - p.width) / 2 :
                 p.width_upper - $$.a('<<.ofsHor_initial') - p.width;
-            const ofsVer_max = Math.max($$.a('<<.ofsVer_max'), (p.height_upper - p.height) / 2);
+            const ofsVer_max = Math.max($$.a('<<.ofsVer_max'), (p.height_upper - p.height) / 2, $$.a('<<.ofsVer'));
             const ofsVer_min = p.height_upper >= p.height ?
                 (p.height_upper - p.height) / 2 :
                 p.height_upper - $$.a('<<.ofsVer_initial') - p.height;
@@ -8334,6 +8337,7 @@ var $;
                         canvas: () => ({
                             prop: {
                                 crumbs: '<<.crumbs',
+                                '#height': $$.$me_atom2_prop(['<.#height'], ({ masters: [height] }) => .25 * height),
                             },
                             render: p => {
                                 const { ctx, pixelRatio } = p;
@@ -8395,7 +8399,7 @@ var $;
                                     const ctxBottom = crumb_prev.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio;
                                     const gradient = ctx.createLinearGradient(0, 0, 0, ctxBottom);
                                     gradient.addColorStop(0, 'rgba(255,255,255,1)');
-                                    gradient.addColorStop(1 - (crumbSpaceVer + ofsHor) / ctxBottom, 'rgba(255,255,255,1)');
+                                    gradient.addColorStop(1 - (crumbSpaceVer + ofsHor) * pixelRatio / ctxBottom, 'rgba(255,255,255,1)');
                                     gradient.addColorStop(1, 'rgba(255,255,255,0)');
                                     ctx.fillStyle = gradient;
                                     ctx.fillRect(0, 0, $$.a('<<.#width') * pixelRatio, ctxBottom);
@@ -11530,7 +11534,7 @@ var $;
                                         const atom_order = $$.a.get('<<.order');
                                         const order = atom_order.value();
                                         const value = order.params[id] || new Map();
-                                        const zIndex = $$.a('.#zIndex') + 1;
+                                        const zIndex = $$.a('.#zIndex') + 20;
                                         scheme_metro = new $$.$me_atom2_elem({
                                             tail: 'me_dropdown' + id,
                                             parent: $$.a.get('/@app'),

@@ -282,6 +282,12 @@ var $;
         let getItemPromiseResolve;
         let getItemPromiseReject;
         const geoUrl = 'https://geo.baza-winner.ru/api/v2/spots.json?base_spot_code=ru-msk&type=SubwayStation&fields=guid,parents&parent_fields=text,type,code&parent_type_filter=SubwayLine%7CSubwaySuperStation&limit=1000';
+        function encode(s) {
+            return s.replace(/ru-msk-metro-/g, '$');
+        }
+        function decode(s) {
+            return s.replace(/\$/g, 'ru-msk-metro-');
+        }
         onmessage = function (event) {
             if (event.data.cmd == 'getItem') {
                 if (!event.data.data) {
@@ -289,8 +295,7 @@ var $;
                 }
                 else {
                     try {
-                        const data = JSON.parse(event.data.data.replace(/\$/g, 'ru-msk-metro-'));
-                        getItemPromiseResolve(data);
+                        getItemPromiseResolve(JSON.parse(decode(event.data.data)));
                     }
                     catch (err) {
                         getItemPromiseReject(err);
@@ -333,8 +338,7 @@ var $;
                         }
                         guids[code_SubwayLine][code_SubwaySuperStation] = guid;
                     }
-                    const s = JSON.stringify(guids).replace(/ru-msk-metro-/g, '$');
-                    postMessage({ cmd: 'setItem', data: s });
+                    postMessage({ cmd: 'setItem', data: encode(JSON.stringify(guids)) });
                     return guids;
                 })
                     .catch(err => {
