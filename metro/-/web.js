@@ -1206,7 +1206,7 @@ var $;
                 },
                 'Ростокино': {
                     angle: -67,
-                    code: 'ru-msk-metro-belokamennaya',
+                    code: 'ru-msk-metro-rostokino',
                     label: {
                         alignHor: $$.$me_align.left,
                         alignVer: $$.$me_align.bottom,
