@@ -364,7 +364,7 @@ var $;
                     return new Promise((resolve, reject) => {
                         postMessage({ cmd: 'getItem' });
                         getItemPromiseResolve = resolve;
-                        getItemPromiseReject: reject;
+                        getItemPromiseReject = reject;
                     });
                 })
                     .then((guids) => {
@@ -427,7 +427,7 @@ var $;
                     if (transits.length) {
                         let transit_point_prev;
                         for (let i = 0; i < transits.length; i++) {
-                            const transit_point = get_point_by_id(transits[i], all_points, id_context_splitted, () => id_context_splitted.concat(point_id).join('::'));
+                            const transit_point = get_point_by_id(transits[i], all_points, id_context_splitted, () => [point_id].concat(id_context_splitted).join('::'));
                             if (point.code && point.code != transit_point.code)
                                 $$.$me_throw(`${id}.code'${point.code}' differs from ${transits[i]}.code'${transit_point.code}'`);
                             if (transit_point_prev) {
@@ -466,6 +466,8 @@ var $;
                     console.error(`no guid provided for ${id}`, guids);
                 }
                 else {
+                    if (~point_id.indexOf('<'))
+                        console.error(`${[point_id].concat(id_context_splitted).join('::')} has '<' in id: use .label.text for this purpose`);
                     guid2point[point.guid] = {
                         station: {
                             text: point_id,
@@ -982,12 +984,13 @@ var $;
                     },
                     dist: $$.$nl_metro_settings_circle_radius,
                     points: {
-                        'Улица<br>Старокачаловская': {
+                        'Улица Старокачаловская': {
                             code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
                             anchor: 'from',
                             transit: 'Бульвар Дмитрия Донского::Серпуховская-Бульвар-Дмитрия-Донского::Серпуховско-Тимирязевская',
                             dist: 0.001,
                             label: {
+                                text: 'Улица Старокачаловская',
                                 alignHor: $$.$me_align.right,
                                 textAlign: 'right',
                             },
@@ -1014,12 +1017,13 @@ var $;
                                 alignHor: $$.$me_align.center,
                             },
                         },
-                        'Битцевский<br>парк': {
+                        'Битцевский парк': {
                             code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
                             anchor: '',
                             dist: 0.245 * $$.$nl_metro_data_kolcevaya_radius,
                             transit: 'Новоясеневская::Новоясеневская::Калужско-Рижская',
                             label: {
+                                text: 'Битцевский парк',
                                 alignVer: $$.$me_align.top,
                                 alignHor: $$.$me_align.right,
                                 textAlign: 'right',
@@ -1123,10 +1127,11 @@ var $;
                         alignVer: $$.$me_align.bottom,
                     },
                 },
-                'Площадь<br>Гагарина': {
+                'Площадь Гагарина': {
                     angle: 120,
                     code: 'ru-msk-metro-leninskiy-prospekt',
                     label: {
+                        text: 'Площадь<br>Гагарина',
                         alignHor: $$.$me_align.right,
                         alignVer: $$.$me_align.top,
                     },
@@ -2145,7 +2150,7 @@ var $;
                             code: 'ru-msk-metro-leninskiy-prospekt',
                             anchor: 'from',
                             dist: 0.24 * $$.$nl_metro_data_kolcevaya_radius,
-                            transit: 'Площадь<br>Гагарина::МЦК',
+                            transit: 'Площадь Гагарина::МЦК',
                             label: {
                                 text: 'Ленинский<br>проспект',
                             },

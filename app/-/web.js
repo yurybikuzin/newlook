@@ -941,6 +941,11 @@ var $;
         const compute_fn_diff = (p, initial) => p.masters.reduce((result, val, idx) => result + (!idx ? val : -val), initial === void 0 ? 0 : initial);
         $$.$me_atom2_prop_keys = (masters, strip_null = false) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]).filter((key) => !strip_null || masters[0][key] != null));
         $$.$me_atom2_prop_bind = (master) => $me_atom2_prop([master], null, ({ val }) => { $$.a(master, val, true); });
+        $$.$me_atom2_prop_either = (masters, ifTrue, ifFalse) => $me_atom2_prop(masters, ({ atom, prev, key, len, masters }) => !len ?
+            $$.$me_throw(`non empty masters must be specified for ${atom.name()}`) :
+            masters[0] ?
+                ifTrue({ atom, prev, key, len: len - 1, masters: masters.slice(1) }) :
+                ifFalse({ atom, prev, key, len: len - 1, masters: masters.slice(1) }));
         function $me_atom2_prop_same_def(prop_def, props) {
             const result = {};
             for (const prop of props)
@@ -7285,6 +7290,7 @@ var $;
                                     return true;
                                 },
                                 clickOrTap: (p) => {
+                                    console.log($$.a('.#zIndex'));
                                     console.log(p, $$.a('<<.points'));
                                     return true;
                                 },
@@ -8275,14 +8281,11 @@ var $;
             },
             elem: {
                 crumbs: () => ({
+                    prop: {
+                        '#height': $$.$me_atom2_prop(['<.#height'], ({ masters: [height] }) => .25 * height),
+                    },
                     control: {
                         canvas: () => ({
-                            prop: {
-                                crumbs: '<<.crumbs',
-                                '#height': $$.$me_atom2_prop(['<.#height'], ({ masters: [height] }) => .25 * height),
-                                crumb_height: () => 32,
-                                navFrom: () => 0,
-                            },
                             event: {
                                 mousemove: p => {
                                     const crumbs = $$.a('.crumbs');
@@ -8292,7 +8295,9 @@ var $;
                                     const ctxX = p.event.clientX * pixelRatio;
                                     const ctxY = p.event.clientY * pixelRatio;
                                     const ctxCrumbHeight = $$.a('.crumb_height') * pixelRatio;
-                                    for (const crumb of crumbs) {
+                                    const navFrom = $$.a('.navFrom');
+                                    for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
+                                        const crumb = crumbs[i];
                                         const rect = {
                                             left: crumb.ctxLeft,
                                             right: crumb.ctxLeft + crumb.ctxWidth,
@@ -8309,6 +8314,7 @@ var $;
                                 },
                                 clickOrTap: p => {
                                     const crumbs = $$.a('.crumbs');
+                                    console.log($$.a('.#zIndex'));
                                     if (!crumbs)
                                         return false;
                                     const pixelRatio = $$.a('/.#pixelRatio');
@@ -8319,7 +8325,9 @@ var $;
                                         p.event.start.clientY :
                                         p.event.start.touches[0].clientY);
                                     const ctxCrumbHeight = $$.a('.crumb_height') * pixelRatio;
-                                    for (const crumb of crumbs) {
+                                    const navFrom = $$.a('.navFrom');
+                                    for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
+                                        const crumb = crumbs[i];
                                         const rect = {
                                             left: crumb.ctxLeft,
                                             right: crumb.ctxLeft + crumb.ctxWidth,
@@ -8336,11 +8344,31 @@ var $;
                                                     return val;
                                                 }, true);
                                             }
+                                            console.log($$.a('.#zIndex'));
                                             return true;
                                         }
                                     }
+                                    console.warn($$.a('.#zIndex'));
                                     return false;
                                 },
+                            },
+                            prop: {
+                                crumbs: '<<.crumbs',
+                                isTouch: '/.#isTouch',
+                                crumb_height: $$.$me_atom2_prop_either(['.isTouch'], () => 32, () => 24),
+                                fontSize: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 14),
+                                crumbSpaceHor: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 8),
+                                crumbSpaceVer: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 8),
+                                crumbBorderRadius: $$.$me_atom2_prop_either(['.isTouch'], () => 5, () => 3),
+                                iconScale: $$.$me_atom2_prop_either(['.isTouch'], () => .7, () => .7 * 24 / 32),
+                                iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
+                                iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
+                                crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 44, () => 16),
+                                navFrom: () => 0,
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 4),
+                            },
+                            prop_non_render: {
+                                navTo: () => -1,
                             },
                             render: p => {
                                 const { ctx, pixelRatio } = p;
@@ -8349,42 +8377,71 @@ var $;
                                     return;
                                 const ofsHor = 16;
                                 const ofsVer = 16;
-                                const ctxFontSize = 16 * pixelRatio;
-                                const crossSize = 16;
+                                const ctxFontSize = $$.a('.fontSize') * pixelRatio;
+                                const crossSize = $$.a('.fontSize');
                                 const crossMarginRight = 8;
                                 const crossMarginLeft = 4;
                                 const crossThick = 2;
-                                const logoMarginLeft = 4;
+                                const iconScale = $$.a('.iconScale');
+                                const iconSize = 24 * iconScale;
+                                const iconOfsHor = -2 * iconScale;
+                                const iconMarginLeft = $$.a('.iconMarginLeft');
+                                const iconMarginRight = $$.a('.iconMarginRight');
                                 const navPaddingLeft = 8;
                                 const navPaddingRight = 8;
-                                const paddingLeft = 24;
+                                const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
                                 const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
-                                const crumbSpaceHor = 16;
-                                const crumbSpaceVer = 16;
+                                const crumbSpaceHor = $$.a('.crumbSpaceHor');
+                                const crumbSpaceVer = $$.a('.crumbSpaceVer');
                                 const crumbHeight = $$.a('.crumb_height');
-                                const crumbBorderRadius = 5;
+                                const crumbBorderRadius = $$.a('.crumbBorderRadius');
                                 const crumbBorderWidth = 1;
                                 const crumbBorderColor = 'silver';
                                 const crumbBackground = '#fcfcfd';
                                 const crumbTextColor = $$.a('/.colorText');
-                                const crossMargin = 44;
+                                const crossMargin = $$.a('.crossMargin');
                                 ctx.font = $$.a('<<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<<.fontFamily');
                                 ctx.textAlign = 'left';
                                 ctx.textBaseline = 'bottom';
                                 const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - ofsHor);
                                 const crossClientRect = $$.a('<<@cross.#clientRect');
                                 let crumb_prev;
-                                let shownCrumbFrom = $$.a('.navFrom');
-                                let shownCrumbTo = shownCrumbFrom;
-                                let crumb_idx = 0;
+                                let navFrom = $$.a('.navFrom');
+                                let navTo = navFrom;
                                 let navFrom_next;
-                                for (let i = shownCrumbFrom; i < crumbs.length; i++) {
+                                const navPrevText = (i) => '<< ещё ' + i;
+                                const navNextText = (i) => 'и ещё ' + i + ' >>';
+                                for (let i = navFrom; i < crumbs.length; i++) {
                                     const crumb = crumbs[i];
                                     crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
                                     crumb.navText = null;
                                     if (!crumb_prev) {
-                                        crumb.ctxLeft = ofsHor * pixelRatio;
                                         crumb.ctxTop = ofsVer * pixelRatio;
+                                        crumb.ctxLeft = ofsHor * pixelRatio;
+                                        if (navFrom) {
+                                            let ctxRight = crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio ?
+                                                (crossClientRect.left - crossMargin) * pixelRatio :
+                                                ctxRightLimit;
+                                            let navFrom_next = 0;
+                                            for (let j = i - 1; j >= 0; j--) {
+                                                const crumb = crumbs[j];
+                                                crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                                                crumb.ctxLeft = ctxRight - crumb.ctxWidth;
+                                                ctxRight -= crumb.ctxWidth + crumbSpaceHor * pixelRatio;
+                                                if (ctxRight < ofsHor * pixelRatio + (!j ? 0 :
+                                                    ctx.measureText(navPrevText(j)).width + (navPaddingLeft + navPaddingRight) * pixelRatio)) {
+                                                    navFrom_next = j + 1;
+                                                    break;
+                                                }
+                                            }
+                                            const crumb_nav = crumbs[i - 1];
+                                            crumb_nav.ctxLeft = crumb.ctxTop;
+                                            crumb_nav.ctxTop = crumb.ctxLeft;
+                                            crumb_nav.navText = navPrevText(i);
+                                            crumb_nav.ctxWidth = ctx.measureText(crumb_nav.navText).width + pixelRatio * (navPaddingLeft + navPaddingRight);
+                                            crumb.ctxLeft = crumb_nav.ctxLeft + crumb_nav.ctxWidth + crumbSpaceHor * pixelRatio;
+                                            crumb_nav.navFrom = navFrom_next;
+                                        }
                                     }
                                     else {
                                         crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
@@ -8396,11 +8453,11 @@ var $;
                                             crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
                                             if (navFrom_next === void 0)
                                                 navFrom_next = i;
-                                            if (crumb.ctxTop >= $$.a('<<.#height') * pixelRatio / 4) {
-                                                for (let j = i - 1; j > shownCrumbFrom; j--) {
-                                                    shownCrumbTo--;
+                                            if (crumb.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio > $$.a('.#height') * pixelRatio) {
+                                                for (let j = i - 1; j > navFrom; j--) {
+                                                    navTo--;
                                                     const crumb = crumbs[j];
-                                                    crumb.navText = 'и ещё ' + (crumbs.length - j - 1);
+                                                    crumb.navText = navNextText((crumbs.length - j - 1));
                                                     crumb.navFrom = navFrom_next;
                                                     crumb.ctxWidth = ctx.measureText(crumb.navText).width + (navPaddingRight + navPaddingLeft) * pixelRatio;
                                                     const crumb_prev = crumbs[j - 1];
@@ -8411,11 +8468,12 @@ var $;
                                                         crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit))
                                                         break;
                                                 }
+                                                navTo++;
                                                 break;
                                             }
                                         }
                                     }
-                                    shownCrumbTo++;
+                                    navTo++;
                                     crumb_prev = crumb;
                                 }
                                 if (crumb_prev) {
@@ -8428,10 +8486,9 @@ var $;
                                     ctx.fillRect(0, 0, $$.a('<<.#width') * pixelRatio, ctxBottom);
                                     $$.a('<<.ofsVer_max', Math.max(ctxBottom / pixelRatio), $$.a('<<.ofsVer_initial'));
                                 }
-                                crumb_idx = 0;
-                                for (const crumb of crumbs) {
-                                    if (crumb_idx++ < shownCrumbFrom)
-                                        continue;
+                                $$.a('.navTo', navTo);
+                                for (let i = !navFrom ? 0 : navFrom - 1; i < navTo; i++) {
+                                    const crumb = crumbs[i];
                                     $$.$me_atom2_ctx_rect({
                                         ctx,
                                         ctxLeft: crumb.ctxLeft,
@@ -8448,17 +8505,11 @@ var $;
                                     if (crumb.navText) {
                                         ctx.fillStyle = crumbTextColor;
                                         ctx.fillText(crumb.navText, crumb.ctxLeft + navPaddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
-                                        if (shownCrumbTo <= shownCrumbFrom)
-                                            break;
                                     }
                                     else {
                                         ctx.save();
-                                        let scale = .7;
-                                        const iconSize = 24 * scale;
-                                        const iconOfsHor = -2 * scale;
-                                        ctx.translate(crumb.ctxLeft + logoMarginLeft * pixelRatio, crumb.ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
-                                        scale *= pixelRatio;
-                                        ctx.scale(scale, scale);
+                                        ctx.translate(crumb.ctxLeft + iconMarginLeft * pixelRatio, crumb.ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
+                                        ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
                                         ctx.fillStyle = crumb.color;
                                         const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
                                         ctx.fill(path);
@@ -8477,7 +8528,6 @@ var $;
                                         ctx.fillStyle = crumbTextColor;
                                         ctx.fillText(crumb.text, crumb.ctxLeft + paddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
                                     }
-                                    --shownCrumbTo;
                                 }
                             },
                         }),
