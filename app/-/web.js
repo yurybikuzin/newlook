@@ -6069,6 +6069,7 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const newsUrl = 'https://baza-winner.ru/news/list.php?limit=2&category=W7';
         $$.$nl_main_workspace = {
             prop: {
                 sections: () => ({
@@ -6170,7 +6171,7 @@ var $;
                         news_items: $$.$me_atom2_prop([], ({ atom }) => {
                             console.log('atom', atom);
                             const result = null;
-                            fetch('https://alpha0.baza-winner.ru/news/list.php?limit=2&category=W7', {
+                            fetch(newsUrl, {
                                 method: 'get'
                             })
                                 .then(response => response.json())
@@ -6182,34 +6183,6 @@ var $;
                                 console.error(err);
                             });
                             return result;
-                            return [
-                                {
-                                    title: "Функционал Объявлений только от Собственников",
-                                    link: "https://alpha0.baza-winner.ru/item?guid=139",
-                                    pubDate: "11.06.2019",
-                                    image: {
-                                        url: "http://baza-winner.ru/img/news/sob.jpg",
-                                        thumb: "http://baza-winner.ru/img/news/thumbnail/sob.jpg"
-                                    },
-                                    guid: "139",
-                                    description: "Вы можете искать собственников очень просто на всех площадках по недвижимости в один клик, всего лишь поставьте галочку \"Только от собственников\" на форме фильтров.",
-                                    content: "",
-                                    category: "W7"
-                                },
-                                {
-                                    title: "27 мая в Москве пройдет конференция, организованная ГРМ и Райффайзен банком.",
-                                    link: "https://alpha0.baza-winner.ru/item?guid=137",
-                                    pubDate: "15.05.2019",
-                                    image: {
-                                        url: "http://baza-winner.ru/img/news/conferense.png",
-                                        thumb: "http://baza-winner.ru/img/news/thumbnail/conferense.png"
-                                    },
-                                    guid: "137",
-                                    description: "Ипотечные продукты, налоги, связанные с приобретением недвижимости, и практические вопросы о риэлторской деятельности.",
-                                    content: "",
-                                    category: "W7"
-                                }
-                            ];
                         }),
                         news_item_ids: $$.$me_atom2_prop_keys(['.news_items']),
                         news_item: $$.$me_atom2_prop({ keys: ['.news_item_ids'], masters: ['.news_items'] }, ({ key: [id], masters: [items] }) => items[id]),
@@ -8514,33 +8487,11 @@ var $;
                             ctx.fillText(crumb.text, crumb.ctxLeft + paddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2 - ctxOfsVer);
                         }
                         ctx.restore();
-                        let clickableBottom = ctxHeightVisible / pixelRatio;
-                        if ((height_content - $$.a('.ofsVer')) > (ctxHeight - ctxMargin) / pixelRatio) {
-                            const ctxCurtainHeight = $$.a('<.curtainHeight') * pixelRatio;
-                            const ctxCurtainBottom = ctxHeight - ctxMargin;
-                            const ctxCurtainTop = ctxCurtainBottom - ctxCurtainHeight;
-                            clickableBottom = ctxCurtainTop / pixelRatio;
-                            const gradient = ctx.createLinearGradient(0, ctxCurtainTop, 0, ctxCurtainBottom);
-                            const rgb = '255,255,255';
-                            gradient.addColorStop(1, `rgba(${rgb},1)`);
-                            gradient.addColorStop(.5, `rgba(${rgb},.75)`);
-                            gradient.addColorStop(.25, `rgba(${rgb},.5)`);
-                            gradient.addColorStop(0, `rgba(${rgb},0)`);
-                            ctx.fillStyle = gradient;
-                            ctx.fillRect(0, ctxCurtainTop, ctxWidth, ctxCurtainHeight);
-                            let qt = 0;
-                            for (const crumb of crumbs) {
-                                if (crumb.ctxTop - ctxOfsVer > ctxCurtainTop)
-                                    qt++;
-                            }
-                            const text = 'ещё ' + qt;
-                            ctx.fillStyle = $$.a('/.colorText');
-                            ctx.fillText(text, .5 * (ctxWidth - ctx.measureText(text).width), ctxCurtainBottom);
-                        }
-                        $$.a('.clickableBottom', clickableBottom);
+                        const curtainHeight = $$.a('<.curtainHeight');
+                        const ctxCurtainHeight = curtainHeight * pixelRatio;
                         let clickableTop = 0;
                         if ($$.a('.ofsVer')) {
-                            clickableTop = $$.a('<.curtainHeight');
+                            clickableTop = curtainHeight;
                             const ctxCurtainHeight = clickableTop * pixelRatio;
                             const ctxCurtainTop = 0;
                             const ctxCurtainBottom = ctxCurtainTop + ctxCurtainHeight;
@@ -8562,6 +8513,34 @@ var $;
                             ctx.fillText(text, .5 * (ctxWidth - ctx.measureText(text).width), ctxCurtainTop + (ctxCurtainHeight + ctxFontSize) / 3);
                         }
                         $$.a('.clickableTop', clickableTop);
+                        let clickableBottom = ctxHeightVisible / pixelRatio;
+                        if ((height_content - $$.a('.ofsVer')) > (ctxHeight - ctxMargin) / pixelRatio) {
+                            const ctxCurtainBottom = ctxHeight - ctxMargin;
+                            const ctxCurtainTop = ctxCurtainBottom - ctxCurtainHeight;
+                            clickableBottom = ctxCurtainTop / pixelRatio;
+                            const gradient = ctx.createLinearGradient(0, ctxCurtainTop, 0, ctxCurtainBottom);
+                            const rgb = '255,255,255';
+                            gradient.addColorStop(1, `rgba(${rgb},1)`);
+                            gradient.addColorStop(.5, `rgba(${rgb},.75)`);
+                            gradient.addColorStop(.25, `rgba(${rgb},.5)`);
+                            gradient.addColorStop(0, `rgba(${rgb},0)`);
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(0, ctxCurtainTop, ctxWidth, ctxCurtainHeight);
+                            let qt = 0;
+                            for (const crumb of crumbs) {
+                                if (crumb.ctxTop - ctxOfsVer > ctxCurtainTop)
+                                    qt++;
+                            }
+                            const text = '= ещё ' + qt + ' =';
+                            ctx.fillStyle = $$.a('/.colorText');
+                            ctx.fillText(text, .5 * (ctxWidth - ctx.measureText(text).width), ctxCurtainBottom);
+                        }
+                        else if (crumbs.length) {
+                            const text = '==';
+                            ctx.fillStyle = $$.a('/.colorText');
+                            ctx.fillText(text, .5 * (ctxWidth - ctx.measureText(text).width), clickableBottom * pixelRatio);
+                        }
+                        $$.a('.clickableBottom', clickableBottom);
                     },
                 }),
             },
@@ -17868,7 +17847,7 @@ var $;
                 item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
                 item_height: () => 52,
                 selected: $$.$me_atom2_prop_store({
-                    default: () => '',
+                    default: () => 'main',
                     valid: (val) => typeof val == 'string' ? val : null,
                 }),
                 menu_cursor: () => '',
