@@ -3,13 +3,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let $nl_scheme_style_type_enum;
-        (function ($nl_scheme_style_type_enum) {
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["solid"] = 0] = "solid";
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dashed"] = 1] = "dashed";
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["dotted"] = 2] = "dotted";
-            $nl_scheme_style_type_enum[$nl_scheme_style_type_enum["double"] = 3] = "double";
-        })($nl_scheme_style_type_enum = $$.$nl_scheme_style_type_enum || ($$.$nl_scheme_style_type_enum = {}));
         let $nl_scheme_will_action_enum;
         (function ($nl_scheme_will_action_enum) {
             $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
@@ -110,12 +103,6 @@ var $;
                     return false;
                 if (regexpA && regexpB)
                     return a.toString() == b.toString();
-                const canvasA = a instanceof CanvasRenderingContext2D;
-                const canvasB = b instanceof CanvasRenderingContext2D;
-                if (canvasA != canvasB)
-                    return false;
-                if (canvasA && canvasB)
-                    return a.canvas == b.canvas;
                 const keys = keyList(a);
                 const length = keys.length;
                 if (length !== keyList(b).length)
@@ -289,6 +276,13 @@ var $;
             return (align == $me_align.left ? 0 : correction() / align);
         }
         $$.$me_align_correction = $me_align_correction;
+        let $me_line_style_type_enum;
+        (function ($me_line_style_type_enum) {
+            $me_line_style_type_enum[$me_line_style_type_enum["solid"] = 0] = "solid";
+            $me_line_style_type_enum[$me_line_style_type_enum["dashed"] = 1] = "dashed";
+            $me_line_style_type_enum[$me_line_style_type_enum["dotted"] = 2] = "dotted";
+            $me_line_style_type_enum[$me_line_style_type_enum["double"] = 3] = "double";
+        })($me_line_style_type_enum = $$.$me_line_style_type_enum || ($$.$me_line_style_type_enum = {}));
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //me.js.map
@@ -962,6 +956,11 @@ var $;
         const compute_fn_diff = (p, initial) => p.masters.reduce((result, val, idx) => result + (!idx ? val : -val), initial === void 0 ? 0 : initial);
         $$.$me_atom2_prop_keys = (masters, strip_null = false) => $me_atom2_prop(masters, ({ masters }) => Object.keys(masters[0]).filter((key) => !strip_null || masters[0][key] != null));
         $$.$me_atom2_prop_bind = (master) => $me_atom2_prop([master], null, ({ val }) => { $$.a(master, val, true); });
+        $$.$me_atom2_prop_either = (masters, ifTrue, ifFalse) => $me_atom2_prop(masters, ({ atom, prev, key, len, masters }) => !len ?
+            $$.$me_throw(`non empty masters must be specified for ${atom.name()}`) :
+            masters[0] ?
+                ifTrue({ atom, prev, key, len: len - 1, masters: masters.slice(1) }) :
+                ifFalse({ atom, prev, key, len: len - 1, masters: masters.slice(1) }));
         function $me_atom2_prop_same_def(prop_def, props) {
             const result = {};
             for (const prop of props)
@@ -1034,8 +1033,6 @@ var $;
                             console.error({ name }, e);
                         }
                 }
-                if (len)
-                    console.log(masters, prev, val);
                 return val;
             }, ({ val, atom }) => {
                 val = p.valid(val);
@@ -2521,7 +2518,9 @@ var $;
                             }
                             if ((lazy_prop_to_apply === $me_atom2_elem._lazy_prop_to_apply_clientRect) ||
                                 (elem.node.style.width == 'auto' || elem.node.style.height == 'auto') && (elem_props['sfontSize'] !== void 0 ||
-                                    elem_props['dinnerText'] !== void 0)) {
+                                    elem_props['dinnerText'] !== void 0 ||
+                                    elem_props['dinnerHTML'] !== void 0 ||
+                                    false)) {
                                 elem.invalidateClientRect();
                             }
                             lazy_prop_to_apply.delete(path);
@@ -2559,7 +2558,7 @@ var $;
             static _lazy_prop_style_px(prop) {
                 if (!$me_atom2_elem._lazy_prop_style_px_cache) {
                     $me_atom2_elem._lazy_prop_style_px_cache = {};
-                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius', 'borderWidth'];
+                    const pxStyleProps = ['width', 'height', 'fontSize', 'lineHeight', 'maxWidth', 'borderRadius', 'borderWidth', 'borderTopLeftRadius', 'borderBottomLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderRightWidth', 'borderLeftWidth', 'borderTopWidth', 'borderBottomWidth'];
                     const sides = ['left', 'top', 'right', 'bottom'];
                     pxStyleProps.push(...sides);
                     pxStyleProps.push('margin');
@@ -2809,7 +2808,6 @@ var $;
         })($me_atom2_wheel_synth_mode = $$.$me_atom2_wheel_synth_mode || ($$.$me_atom2_wheel_synth_mode = {}));
         $$.$me_atom2_event_wheel_y_is = (event) => Math.abs(event._deltaX) < Math.abs(event._deltaY);
         $$.$me_atom2_event_wheel_x_is = (event) => Math.abs(event._deltaX) > Math.abs(event._deltaY);
-        let click;
         let startClick;
         let startTap;
         let hoverCurr;
@@ -2948,7 +2946,6 @@ var $;
                                     if (!hoverCurr)
                                         hoverCurr = new Set();
                                     hoverCurr.add(path);
-                                    done_ec_special = true;
                                 }
                             }
                             else if (name == 'clickOutside') {
@@ -2962,15 +2959,14 @@ var $;
                             }
                             else if (name == 'clickBegin') {
                                 if (isInRect(event.clientX, event.clientY)) {
-                                    if (!click)
-                                        click = new Set();
-                                    click.add(path);
+                                    if (!$$.$me_atom2_event_click)
+                                        $$.$me_atom2_event_click = new Set();
+                                    $$.$me_atom2_event_click.add(path);
                                     startClick = event;
-                                    done_ec_special = true;
                                 }
                             }
                             else if (name == 'clickDid') {
-                                if (click && click.has(path)) {
+                                if ($$.$me_atom2_event_click && $$.$me_atom2_event_click.has(path)) {
                                     if (clickTolerance === void 0)
                                         clickTolerance = $$.a('/.#clickTolerance');
                                     done_ec_special =
@@ -3011,7 +3007,6 @@ var $;
                                     }
                                     $$.$me_atom2_event_tap.set(ec.path, dist);
                                     startTap = event;
-                                    done_ec_special = true;
                                 }
                             }
                             else if (name == 'tapTrack') {
@@ -3070,7 +3065,7 @@ var $;
                 }
             }
             else if (name_event == 'mouseup') {
-                click && click.clear();
+                $$.$me_atom2_event_click && $$.$me_atom2_event_click.clear();
             }
             else if (name_event == 'touchend') {
                 $$.$me_atom2_event_tap && $$.$me_atom2_event_tap.clear();
@@ -4516,7 +4511,7 @@ var $;
             return $$.$me_atom2_event_process('touchstart', event);
         };
         let touchAccu;
-        const touchAccu_threshold = 30;
+        const touchAccu_threshold = 10;
         const touchmove = (event) => {
             event.preventDefault();
             if (event.touches.length == 1) {
@@ -4529,11 +4524,10 @@ var $;
                     touchAccu.deltaX1 += event.touches[1].clientX - touchAccu.clientX1;
                     touchAccu.deltaY0 += event.touches[0].clientY - touchAccu.clientY0;
                     touchAccu.deltaY1 += event.touches[1].clientY - touchAccu.clientY1;
-                    if (Math.abs(touchAccu.deltaX0) < touchAccu_threshold &&
-                        Math.abs(touchAccu.deltaX1) < touchAccu_threshold &&
-                        Math.abs(touchAccu.deltaY0) < touchAccu_threshold &&
-                        Math.abs(touchAccu.deltaY1) < touchAccu_threshold &&
-                        true) {
+                    if ((Math.abs(touchAccu.deltaX0) < touchAccu_threshold ||
+                        Math.abs(touchAccu.deltaX1) < touchAccu_threshold) &&
+                        (Math.abs(touchAccu.deltaY0) < touchAccu_threshold ||
+                            Math.abs(touchAccu.deltaY1) < touchAccu_threshold)) {
                         touchAccu.clientX0 = event.touches[0].clientX;
                         touchAccu.clientX1 = event.touches[1].clientX;
                         touchAccu.clientY0 = event.touches[0].clientY;
@@ -4913,2109 +4907,17 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_scheme_metro_data = {
-            'Кольцевая': {
-                type: 'circle',
-                radius: 210,
-                center: {
-                    ofsHor: 398 + 210,
-                    ofsVer: 270 + 210,
-                },
-                style: '#80372C',
-                points: {
-                    'Восток-Арбатско-Покровская': {
-                        type: 'anchor',
-                        angle: -8,
-                    },
-                    'Курская': {
-                        angle: -5,
-                        code: 'ru-msk-metro-kurskaya-kurskaya-chkalovskaya',
-                        label: {},
-                    },
-                    'Юг-Люблинско-Дмитровская': {
-                        type: 'anchor',
-                        angle: 0,
-                    },
-                    'Юг-Таганско-Краспресненская': {
-                        type: 'anchor',
-                        angle: 22,
-                    },
-                    'Таганская': {
-                        angle: 25,
-                        code: 'ru-msk-metro-taganskaya-taganskaya-marksistskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: -5,
-                            ofsVer: -2,
-                        },
-                    },
-                    'Восток-Калининская': {
-                        type: 'anchor',
-                        angle: 30,
-                    },
-                    'Павелецкая': {
-                        angle: 60,
-                        code: 'ru-msk-metro-paveletskaya-paveletskaya',
-                        label: {
-                            ofsHor: -4,
-                            ofsVer: 16,
-                        },
-                    },
-                    'Юг-Замоскворецкая': {
-                        type: 'anchor',
-                        angle: 63,
-                    },
-                    'Юг-Серпуховско-Тимирязевская': {
-                        angle: 99,
-                        type: 'anchor',
-                    },
-                    'Добрынинская': {
-                        angle: 102,
-                        code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                    'Юг-Калужско-Рижская': {
-                        angle: 128,
-                        type: 'anchor',
-                    },
-                    'Октябрьская': {
-                        angle: 130,
-                        code: 'ru-msk-metro-oktyabrskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                    'Юг-Сокольническая': {
-                        angle: 143,
-                        type: 'anchor',
-                    },
-                    'Парк культуры': {
-                        angle: 150,
-                        code: 'ru-msk-metro-park-kulturyi',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                    'Киевская': {
-                        angle: 168,
-                        code: 'ru-msk-metro-kievskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                        },
-                    },
-                    'Краснопресненская': {
-                        angle: 190,
-                        code: 'ru-msk-metro-krasnopresnenskaya-barrikadnaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                    'Север-Таганско-Краспресненская': {
-                        type: 'anchor',
-                        angle: 194,
-                    },
-                    'Белорусская': {
-                        angle: 220,
-                        code: 'ru-msk-metro-belorusskaya-belorusskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                    'Север-Замоскворецкая': {
-                        angle: 212,
-                        type: 'anchor',
-                    },
-                    'Новослободская': {
-                        angle: 250,
-                        code: 'ru-msk-metro-novoslobodskaya-mendeleevskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                    'Север-Серпуховско-Тимирязевская': {
-                        angle: 252,
-                        type: 'anchor',
-                    },
-                    'Север-Люблинско-Дмитровская': {
-                        angle: 260,
-                        type: 'anchor',
-                    },
-                    'Север-Калужско-Рижская': {
-                        angle: 288,
-                        type: 'anchor',
-                    },
-                    'Проспект Мира': {
-                        angle: 290,
-                        code: 'ru-msk-metro-prospekt-mira',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                    'Север-Сокольническая': {
-                        angle: 318,
-                        type: 'anchor',
-                    },
-                    'Комсомольская': {
-                        angle: 324,
-                        code: 'ru-msk-metro-komsomolskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: -4,
-                        },
-                    },
-                },
-            },
-            'МЦК': {
-                type: 'circle',
-                radius: 730 / 2,
-                center: 'center::Кольцевая',
-                style: {
-                    type: $$.$nl_scheme_style_type_enum.double,
-                    color: '#D57352',
-                    thickLine: 2,
-                    thickStyle: 10,
-                },
-                points: {
-                    'Верхние котлы': {
-                        angle: 90,
-                        code: 'ru-msk-metro-verhnie-kotlyi',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            textAlign: 'center',
-                            ofsVer: 2,
-                        },
-                    },
-                    'МЦК-Серпуховско-Тимирязевская': {
-                        type: 'anchor',
-                    },
-                    'Крымская': {
-                        angle: 107,
-                        code: 'ru-msk-metro-kryimskaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: -6,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Пл. Гагарина': {
-                        angle: 120,
-                        code: 'ru-msk-metro-leninskiy-prospekt',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: 2,
-                            ofsVer: -6,
-                        },
-                    },
-                    'Лужники': {
-                        angle: 145,
-                        code: 'ru-msk-metro-sportivnaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Кутузовская': {
-                        angle: 160,
-                        code: 'ru-msk-metro-kutuzovskaya',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Деловой центр': {
-                        angle: 175.6,
-                        code: 'ru-msk-metro-mejdunarodnaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                            text: 'Деловой центр',
-                        },
-                    },
-                    'Шелепиха': {
-                        angle: 190,
-                        code: 'ru-msk-metro-shelepiha',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.top,
-                            ofsHor: -4,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Хорошёво': {
-                        angle: 196,
-                        code: 'ru-msk-metro-polejaevskaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Зорге': {
-                        angle: 205,
-                        code: 'ru-msk-metro-zorge',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: 2,
-                            ofsVer: -6,
-                        },
-                    },
-                    'Панфиловская': {
-                        angle: 210,
-                        code: 'ru-msk-metro-oktyabrskoe-pole',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Стрешнево': {
-                        angle: 218,
-                        code: 'ru-msk-metro-streshnevo',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Балтийская': {
-                        angle: 228,
-                        code: 'ru-msk-metro-voykovskaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Коптево': {
-                        angle: 238,
-                        code: 'ru-msk-metro-koptevo',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Лихоборы': {
-                        angle: 248,
-                        code: 'ru-msk-metro-lihoboryi',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: 2,
-                            ofsVer: 4,
-                        },
-                    },
-                    'Окружная': {
-                        angle: 258,
-                        code: 'ru-msk-metro-okrujnaya',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Владыкино': {
-                        angle: 268,
-                        code: 'ru-msk-metro-vladyikino',
-                    },
-                    'Ботанический сад': {
-                        angle: -70,
-                        code: 'ru-msk-metro-botanicheskiy-sad',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: -14,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Ростокино': {
-                        angle: -62,
-                        code: 'ru-msk-metro-rostokino',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Белокаменная': {
-                        angle: -56,
-                        code: 'ru-msk-metro-belokamennaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Бульвар Рокоссовского': {
-                        angle: -44,
-                        code: 'ru-msk-metro-bulvar-rokossovskogo',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Локомотив': {
-                        angle: -37,
-                        code: 'ru-msk-metro-cherkizovskaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Измайлово': {
-                        angle: -20,
-                        code: 'ru-msk-metro-partizanskaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Соколиная гора': {
-                        angle: -15,
-                        code: 'ru-msk-metro-sokolinaya-gora',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                            text: 'Соколиная<br>гора',
-                        },
-                    },
-                    'Шоссе Энтузиастов': {
-                        angle: -4,
-                        code: 'ru-msk-metro-shosse-entuziastov',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Андроновка': {
-                        angle: 1,
-                        code: 'ru-msk-metro-andronovka',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Нижегородская': {
-                        angle: 7,
-                        code: 'ru-msk-metro-nijegorodskaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.center,
-                            ofsHor: 2,
-                        },
-                    },
-                    'Новохохловская': {
-                        angle: 20,
-                        code: 'ru-msk-metro-novohohlovskaya',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Угрешская': {
-                        angle: 44,
-                        code: 'ru-msk-metro-ugreshskaya',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                    'Дубровка': {
-                        angle: 54,
-                        code: 'ru-msk-metro-dubrovka',
-                        label: {
-                            alignHor: $$.$me_align.right,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: -8,
-                            ofsVer: 3,
-                        },
-                    },
-                    'Автозаводская': {
-                        angle: 72,
-                        code: 'ru-msk-metro-avtozavodskaya',
-                        label: {
-                            alignHor: $$.$me_align.left,
-                            alignVer: $$.$me_align.bottom,
-                            ofsHor: -10,
-                            ofsVer: 2,
-                        },
-                    },
-                    'ЗИЛ': {
-                        angle: 80,
-                        code: 'ru-msk-metro-zil',
-                        label: {
-                            alignHor: $$.$me_align.center,
-                            alignVer: $$.$me_align.bottom,
-                            ofsVer: 2,
-                        },
-                    },
-                },
-            },
-            'Сокольническая': {
-                style: '#BF3431',
-                type: 'segments',
-                segments: {
-                    'Парк культуры-Кропоткинская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Юг-Сокольническая::Кольцевая',
-                            ofsHor: -19,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 46,
-                        },
-                    },
-                    'Кропоткинская-Черкизовская': {
-                        from: {
-                            anchor: 'to::Парк культуры-Кропоткинская',
-                            ofsHor: 20,
-                            ofsVer: -10,
-                        },
-                        to: {
-                            anchor: 'Локомотив::МЦК',
-                            ofsHor: -20,
-                        },
-                        points: {
-                            'Библиотека им.Ленина': {
-                                anchor: 'from',
-                                dist: 40,
-                                label: {
-                                    ofsVer: 10,
-                                    text: 'Библиотека<br>им.Ленина',
-                                },
-                            },
-                            'Охотный ряд': {
-                                anchor: 'from',
-                                dist: 160,
-                                label: {
-                                    alignHor: $$.$me_align.right,
-                                    alignVer: $$.$me_align.bottom,
-                                    ofsVer: 2,
-                                    ofsHor: -10,
-                                    textAlign: 'right',
-                                    text: 'Охотный<br>ряд',
-                                },
-                            },
-                            'Черкизовская': {
-                                anchor: 'to',
-                                code: '',
-                                label: {
-                                    alignHor: $$.$me_align.right,
-                                },
-                                transit: 'Локомотив::МЦК',
-                            },
-                        },
-                    },
-                    'Бульвар Рокоссовского': {
-                        from: {
-                            anchor: 'Бульвар Рокоссовского::МЦК',
-                            ofsHor: 20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 10,
-                            link: 'to::Кропоткинская-Черкизовская',
-                        },
-                        points: {
-                            'Бульвар Рокоссовского': {
-                                anchor: 'from',
-                                transit: 'Бульвар Рокоссовского::МЦК',
-                            },
-                        },
-                    },
-                    'Парк культуры-Спортивная': {
-                        from: {
-                            anchor: 'from::Парк культуры-Кропоткинская',
-                            ofsVer: 10,
-                            ofsHor: -20,
-                        },
-                        to: {
-                            anchor: 'Лужники::МЦК',
-                            ofsVer: -20,
-                        },
-                    },
-                    'Воробьевы горы-Коммунарка': {
-                        from: {
-                            anchor: 'to::Парк культуры-Спортивная',
-                            ofsVer: 30,
-                            ofsHor: -20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 250,
-                        },
-                    },
-                },
-            },
-            'Калужско-Рижская': {
-                style: '#EA924C',
-                type: 'segments',
-                segments: {
-                    'Октябрьская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Юг-Калужско-Рижская::Кольцевая',
-                            ofsHor: -40,
-                            ofsVer: 50,
-                        },
-                        to: {
-                            anchor: 'Юг-Калужско-Рижская::Кольцевая',
-                            ofsHor: 30,
-                            ofsVer: -20,
-                        },
-                    },
-                    'Шаболовская-Ясенево': {
-                        through: {
-                            anchor: 'Пл. Гагарина::МЦК',
-                            ofsHor: -10,
-                            ofsVer: -18,
-                        },
-                        from: {
-                            anchor: 'through',
-                            ofsVer: -36,
-                            link: 'from::Октябрьская',
-                        },
-                        dist: 286,
-                        points: {
-                            'Шаболовская': {
-                                anchor: 'from',
-                                label: {},
-                            },
-                            'Ленинский проспект': {
-                                anchor: 'through',
-                                label: {
-                                    text: 'Ленинский<br>проспект',
-                                    ofsVer: -10,
-                                    transit: 'Пл. Гагарина::МЦК',
-                                },
-                            },
-                            'Академическая': {
-                                anchor: 'Ленинский проспект',
-                                dist: 54,
-                                label: {},
-                            },
-                            'Профсоюзная': {
-                                anchor: 'Академическая',
-                                dist: 24,
-                                label: {},
-                            },
-                            'Новые Черёмушки': {
-                                anchor: 'Профсоюзная',
-                                dist: 24,
-                                label: {},
-                            },
-                            'Калужская': {
-                                anchor: 'Новые Черёмушки',
-                                dist: 24,
-                                label: {},
-                            },
-                            'Беляево': {
-                                anchor: 'Калужская',
-                                dist: 24,
-                                label: {},
-                            },
-                            'Коньково': {
-                                anchor: 'Беляево',
-                                dist: 24,
-                                label: {},
-                            },
-                            'Тёплый стан': {
-                                anchor: 'Коньково',
-                                dist: 24,
-                                label: {},
-                            },
-                            'Ясенево': {
-                                anchor: 'Тёплый стан',
-                                dist: 24,
-                                label: {},
-                            },
-                        },
-                    },
-                    'Полянка': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Октябрьская',
-                            ofsHor: 20,
-                            ofsVer: -10,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 90,
-                        },
-                    },
-                    'Третьяковская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Полянка',
-                            ofsHor: 20,
-                            ofsVer: -10,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 60,
-                            ofsVer: -50,
-                        },
-                    },
-                    'Китай-город': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Третьяковская',
-                            ofsHor: 20,
-                            ofsVer: -35,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -100,
-                        },
-                    },
-                    'Тургеневская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Китай-город',
-                            ofsHor: -10,
-                            ofsVer: -10,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: -40,
-                            ofsVer: -20,
-                        },
-                    },
-                    'Сухаревская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Тургеневская',
-                            ofsHor: -10,
-                            ofsVer: -10,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -50,
-                        },
-                    },
-                    'Алексеевская-Медведково': {
-                        from: {
-                            anchor: 'Ботанический сад::МЦК',
-                            ofsHor: 20,
-                            ofsVer: 62,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -165,
-                        },
-                    },
-                    'Проспект мира-Рижская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Сухаревская',
-                            ofsHor: 10,
-                            ofsVer: -40,
-                        },
-                        to: {
-                            anchor: 'from::Алексеевская-Медведково',
-                            ofsHor: -15,
-                            ofsVer: 35,
-                        },
-                    },
-                },
-            },
-            'Люблинско-Дмитровская': {
-                style: '#B1CF7A',
-                type: 'segments',
-                segments: {
-                    'Римская-Чкаловская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Юг-Люблинско-Дмитровская::Кольцевая',
-                            ofsHor: 40,
-                            ofsVer: 40,
-                        },
-                        to: {
-                            anchor: 'Юг-Люблинско-Дмитровская::Кольцевая',
-                            ofsHor: -100,
-                            ofsVer: -100,
-                        },
-                    },
-                    'Сретенский бульвар': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Римская-Чкаловская',
-                            ofsHor: -40,
-                            ofsVer: -20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: -55,
-                        },
-                    },
-                    'Фонвизинская-Трубная': {
-                        from: {
-                            anchor: 'Владыкино::МЦК',
-                            ofsHor: 10,
-                            ofsVer: 60,
-                        },
-                        to: {
-                            anchor: 'from',
-                            link: 'to::Сретенский бульвар',
-                            ofsVer: 160,
-                        },
-                    },
-                    'Петровско-Разумовская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'from::Фонвизинская-Трубная',
-                            ofsHor: -8,
-                            ofsVer: -15,
-                        },
-                        to: {
-                            anchor: 'Окружная::МЦК',
-                            ofsHor: 15,
-                        },
-                    },
-                    'Окружная-Селигерская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Окружная::МЦК',
-                            ofsVer: -20,
-                            link: 'to::Петровско-Разумовская',
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -73,
-                        },
-                    },
-                    'Крестьянская застава': {
-                        from: {
-                            anchor: 'from::Римская-Чкаловская',
-                            ofsHor: 10,
-                            ofsVer: 20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 90,
-                        },
-                    },
-                    'Юг': {
-                        from: {
-                            anchor: 'Дубровка::МЦК',
-                            link: 'to::Крестьянская застава',
-                            ofsHor: 10,
-                            ofsVer: -22,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 268,
-                        },
-                        points: {
-                            'Дубровка': {
-                                anchor: 'from',
-                                transit: 'Дубровка::МЦК',
-                            },
-                            'Кожуховская': {
-                                anchor: 'Дубровка',
-                                ofsVer: 44,
-                                label: {},
-                            },
-                            'Печатники': {
-                                anchor: 'Кожуховская',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                            'Волжская': {
-                                anchor: 'Печатники',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                            'Люблино': {
-                                anchor: 'Волжская',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                            'Братиславская': {
-                                anchor: 'Люблино',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                            'Марьино': {
-                                anchor: 'Братиславская',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                            'Борисово': {
-                                anchor: 'Марьино',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                            'Шипиловская': {
-                                anchor: 'Борисово',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                            'Зябликово': {
-                                anchor: 'Шипиловская',
-                                ofsVer: 28,
-                                label: {},
-                            },
-                        },
-                    },
-                },
-            },
-            'Таганско-Краспресненская': {
-                style: '#9A6191',
-                type: 'segments',
-                segments: {
-                    'Север': {
-                        from: {
-                            anchor: 'Панфиловская::МЦК',
-                            ofsHor: -27,
-                            ofsVer: 42,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -231,
-                        },
-                    },
-                    'Баррикадная-Кузнецкий мост': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Север-Таганско-Краспресненская::Кольцевая',
-                            ofsHor: -30,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 271,
-                        },
-                        points: {
-                            'Баррикадная': {
-                                code: '',
-                                anchor: 'from',
-                                dist: 45,
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                    alignHor: $$.$me_align.center,
-                                },
-                            },
-                            'Пушкинская': {
-                                code: '',
-                                anchor: 'from',
-                                dist: 165,
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                    alignHor: $$.$me_align.center,
-                                },
-                            },
-                            'Кузнецкий мост': {
-                                code: '',
-                                anchor: 'to',
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                    alignHor: $$.$me_align.center,
-                                },
-                            },
-                        },
-                    },
-                    'Полежаевская-Улица 1905 года': {
-                        from: {
-                            anchor: 'from::Север',
-                            ofsHor: 20,
-                            ofsVer: 30,
-                        },
-                        to: {
-                            anchor: 'from::Баррикадная-Кузнецкий мост',
-                            ofsHor: -40,
-                            ofsVer: -20,
-                        },
-                        points: {
-                            'Полежаевская': {
-                                anchor: 'from',
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                    ofsHor: 35,
-                                    alignHor: $$.$me_align.center,
-                                    ofsVer: 2,
-                                    text: 'Полеж<br>аевская',
-                                    textAlign: 'right',
-                                },
-                                transit: 'Хорошёво::МЦК',
-                            },
-                        },
-                    },
-                    'Китай-город-Волгоградский проспект': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Баррикадная-Кузнецкий мост',
-                            ofsHor: 82,
-                            ofsVer: 42,
-                        },
-                        through: {
-                            anchor: 'Таганская::Кольцевая',
-                            ofsHor: 10,
-                            ofsVer: -10
-                        },
-                        dist: 258,
-                        points: {
-                            'Китай-город': {
-                                code: '',
-                                anchor: 'to',
-                                dist: -30,
-                            },
-                        },
-                    },
-                    'Текстильщики-Кузьминки': {
-                        from: {
-                            anchor: 'to::Китай-город-Волгоградский проспект',
-                            ofsHor: 37,
-                            ofsVer: 25,
-                        },
-                        through: {
-                            anchor: 'from',
-                            ofsHor: 77,
-                        },
-                        dist: 114,
-                        points: {
-                            'Текстильщики': {
-                                anchor: 'from',
-                            },
-                            'Кузьминки': {
-                                anchor: 'through',
-                            },
-                        },
-                    },
-                    'Рязанский проспект-Выхино': {
-                        from: {
-                            anchor: 'to::Текстильщики-Кузьминки',
-                            ofsHor: 20,
-                            ofsVer: 20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 30,
-                        },
-                        points: {
-                            'Рязанский проспект': {
-                                anchor: 'from',
-                                label: {},
-                            },
-                            'Выхино': {
-                                anchor: 'to',
-                                label: {},
-                            },
-                        },
-                    },
-                    'Лермонтовский проспект-Котельники': {
-                        from: {
-                            anchor: 'to::Рязанский проспект-Выхино',
-                            ofsHor: -20,
-                            ofsVer: 40,
-                        },
-                        through: {
-                            anchor: 'from',
-                            ofsHor: -20,
-                            ofsVer: 20,
-                        },
-                        dist: 90,
-                        points: {
-                            'Лермонтовский проспект': {
-                                anchor: 'through',
-                            },
-                            'Жулебино': {
-                                anchor: 'Лермонтовский проспект',
-                                dist: 30,
-                            },
-                            'Котельники': {
-                                anchor: 'Жулебино',
-                                dist: 30,
-                            },
-                        },
-                    },
-                },
-            },
-            'Серпуховско-Тимирязевская': {
-                style: '#ABAEB9',
-                type: 'segments',
-                segments: {
-                    'Полянка': {
-                        type: 'line',
-                        from: 'Юг-Серпуховско-Тимирязевская::Кольцевая',
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -46,
-                        },
-                        points: {
-                            'Полянка': {
-                                code: 'ru-msk-metro-polyanka',
-                                anchor: 'from',
-                                dist: 26,
-                                label: {},
-                            },
-                        },
-                    },
-                    'Боровицкая': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Полянка',
-                            ofsHor: -84,
-                            ofsVer: -85,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -24,
-                        },
-                        points: {
-                            'Боровицкая': {
-                                anchor: 'from',
-                                code: 'ru-msk-metro-arbatskaya-aleksandrovskiy-sad-biblioteka-im-lenina-borovitskaya',
-                                label: {
-                                    alignHor: $$.$me_align.right,
-                                    ofsHor: -4,
-                                    alignVer: $$.$me_align.top,
-                                    ofsVer: -4,
-                                },
-                                dist: 8,
-                                transit: 'Библиотека им.Ленина::Кропоткинская-Черкизовская::Сокольническая',
-                            },
-                        },
-                    },
-                    'Чеховская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Боровицкая',
-                            ofsVer: -20,
-                            ofsHor: 15,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 63,
-                            ofsVer: -60,
-                        },
-                        points: {
-                            'Чеховская': {
-                                anchor: 'from',
-                                code: 'ru-msk-metro-pushkinskaya-tverskaya-chehovskaya',
-                                dist: 50,
-                                label: {
-                                    alignHor: $$.$me_align.right,
-                                },
-                            },
-                        },
-                    },
-                    'Чеховская-Цветной бульвар': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Чеховская',
-                            ofsHor: 30,
-                            ofsVer: -60,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -30,
-                        },
-                    },
-                    'Чеховская-Цветной бульвар 2': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Владыкино::МЦК',
-                            ofsVer: 224 - 5,
-                            ofsHor: -5,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 2,
-                            ofsHor: 2,
-                            link: 'to::Чеховская-Цветной бульвар',
-                        },
-                    },
-                    'Алтуфьево-Менделеевская': {
-                        from: {
-                            anchor: 'Владыкино::МЦК',
-                            ofsHor: -18,
-                            ofsVer: -85,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 280,
-                            link: 'from::Чеховская-Цветной бульвар 2',
-                        },
-                        points: {
-                            'Савёловская': {
-                                anchor: 'to',
-                                dist: -70,
-                            },
-                        },
-                    },
-                    'Серпуховскaя-Бульвар Дмитрия Донского': {
-                        type: 'line',
-                        from: 'Юг-Серпуховско-Тимирязевская::Кольцевая',
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 400,
-                        },
-                        points: {
-                            'Серпуховскaя': {
-                                code: 'ru-msk-metro-dobryininskaya-serpuhovskaya',
-                                anchor: 'from',
-                                dist: 16,
-                                transit: 'Добрынинская::Кольцевая',
-                                label: {},
-                            },
-                            'Тульская': {
-                                code: 'ru-msk-metro-tulskaya',
-                                anchor: 'Серпуховскaя',
-                                dist: 70,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Нагатинская': {
-                                code: 'ru-msk-metro-nagatinskaya',
-                                anchor: 'Тульская',
-                                dist: 90,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Нагорная': {
-                                code: 'ru-msk-metro-nagornaya',
-                                anchor: 'Нагатинская',
-                                dist: 20,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Нахимовский проспект': {
-                                code: 'ru-msk-metro-nahimovskiy-prospekt',
-                                anchor: 'Нагорная',
-                                dist: 20,
-                                label: {
-                                    ofsHor: 2,
-                                    text: 'Нахимовский<br>проспект',
-                                },
-                            },
-                            'Севастопольская': {
-                                code: 'ru-msk-metro-kahovskaya-sevastopolskaya',
-                                anchor: 'Нахимовский проспект',
-                                dist: 46,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Чертановская': {
-                                code: 'ru-msk-metro-chertanovskaya',
-                                anchor: 'Севастопольская',
-                                dist: 22,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Южная': {
-                                code: 'ru-msk-metro-yujnaya',
-                                anchor: 'Чертановская',
-                                dist: 23,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Пражская': {
-                                code: 'ru-msk-metro-prajskaya',
-                                anchor: 'Южная',
-                                dist: 23,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Улица Академика Янгеля': {
-                                code: 'ru-msk-metro-ulitsa-akademika-yangelya',
-                                anchor: 'Пражская',
-                                dist: 23,
-                                label: {
-                                    ofsHor: 2,
-                                    text: 'Улица Академика<br>Янгеля',
-                                },
-                            },
-                            'Аннино': {
-                                code: 'ru-msk-metro-annino',
-                                anchor: 'Улица Академика Янгеля',
-                                dist: 23,
-                                label: {
-                                    ofsHor: 2,
-                                },
-                            },
-                            'Бульвар Дмитрия Донского': {
-                                code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
-                                anchor: 'to',
-                                label: {
-                                    ofsHor: 2,
-                                    text: 'Бульвар<br>Дмитрия Донского',
-                                },
-                            },
-                        }
-                    },
-                }
-            },
-            'Бутовская': {
-                type: 'segments',
-                style: '#BFDDE9',
-                segments: {
-                    'Улица Старокачаловская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Аннино::Серпуховскaя-Бульвар Дмитрия Донского::Серпуховско-Тимирязевская',
-                            ofsHor: -18,
-                        },
-                        to: {
-                            anchor: 'Бульвар Дмитрия Донского::Серпуховскaя-Бульвар Дмитрия Донского::Серпуховско-Тимирязевская',
-                            ofsHor: -18,
-                        },
-                        points: {
-                            'Улица Старокачаловская': {
-                                anchor: 'to',
-                                code: 'ru-msk-metro-bulvar-dmitriya-donskogo-ulitsa-starokachalovskaya',
-                                transit: 'Бульвар Дмитрия Донского::Серпуховскaя-Бульвар Дмитрия Донского::Серпуховско-Тимирязевская',
-                                label: {
-                                    alignHor: $$.$me_align.right,
-                                    textAlign: 'right',
-                                    ofsHor: 4,
-                                    text: 'Улица<br>Старокачаловская'
-                                },
-                            },
-                        },
-                    },
-                    'Лесопарковая-Битцевский парк': {
-                        type: 'line',
-                        from: {
-                            anchor: 'from::Улица Старокачаловская',
-                            ofsHor: -20,
-                            ofsVer: -20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: -80,
-                        },
-                        points: {
-                            'Лесопарковая': {
-                                anchor: 'from',
-                                dist: 32,
-                                code: 'ru-msk-metro-lesoparkovaya',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.center,
-                                },
-                            },
-                            'Битцевский парк': {
-                                anchor: 'to',
-                                code: 'ru-msk-metro-novoyasenevskaya-bittsevskiy-park',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.right,
-                                    text: 'Битцевский<br>парк'
-                                },
-                            },
-                        },
-                    },
-                    'Улица Скобелевская-Бунинская аллея': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Улица Старокачаловская',
-                            ofsHor: -20,
-                            ofsVer: 20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: -200,
-                        },
-                        points: {
-                            'Улица Скобелевская': {
-                                anchor: 'from',
-                                code: 'ru-msk-metro-ulitsa-skobelevskaya',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    ofsVer: 2,
-                                    ofsHor: -10,
-                                    text: 'Улица<br>Скобелевская'
-                                },
-                            },
-                            'Бульвар Адмирала Ушакова': {
-                                anchor: 'Улица Скобелевская',
-                                dist: 118,
-                                code: 'ru-msk-metro-bulvar-admirala-ushakova',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    ofsVer: 2,
-                                    ofsHor: -12,
-                                    text: 'Бульвар<br>Адмирала Ушакова'
-                                },
-                            },
-                            'Улица Горчакова': {
-                                anchor: 'Бульвар Адмирала Ушакова',
-                                dist: 53,
-                                code: 'ru-msk-metro-ulitsa-gorchakova',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.center,
-                                    ofsVer: 2,
-                                    text: 'Улица<br>Горчакова',
-                                    textAlign: 'center',
-                                },
-                            },
-                            'Бунинская аллея': {
-                                anchor: 'to',
-                                code: 'ru-msk-metro-buninskaya-alleya',
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                    alignHor: $$.$me_align.center,
-                                    ofsVer: 2,
-                                    text: 'Бунинская<br>аллея',
-                                    textAlign: 'center',
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-            'Замоскворецкая': {
-                style: '#326E3F',
-                type: 'segments',
-                segments: {
-                    'Аэропорт-Ховрино': {
-                        from: {
-                            anchor: 'Балтийская::МЦК',
-                            ofsHor: -10,
-                            ofsVer: 90,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -220,
-                        },
-                    },
-                    'Динамо-Тверская': {
-                        from: {
-                            anchor: 'from::Аэропорт-Ховрино',
-                            ofsHor: 30,
-                            ofsVer: 45,
-                        },
-                        to: {
-                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
-                            ofsHor: -30,
-                            ofsVer: 5,
-                        },
-                        points: {
-                            'Динамо': {
-                                anchor: 'from',
-                                dist: 20,
-                            },
-                        },
-                    },
-                    'Театральная': {
-                        from: {
-                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
-                            link: 'to::Динамо-Тверская',
-                            ofsHor: -5,
-                            ofsVer: 15,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 30,
-                        },
-                        points: {
-                            'Театральная': {
-                                anchor: 'from',
-                                dist: 15,
-                                transit: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                },
-                            },
-                        },
-                    },
-                    'Новокузнецкая-Домодедовская': {
-                        type: 'line',
-                        from: {
-                            anchor: 'Юг-Замоскворецкая::Кольцевая',
-                            link: 'to::Театральная',
-                            ofsVer: -104,
-                        },
-                        to: {
-                            anchor: 'Юг-Замоскворецкая::Кольцевая',
-                            ofsVer: 355,
-                        },
-                        points: {
-                            'Новокузнецкая': {
-                                code: '',
-                                anchor: 'Юг-Замоскворецкая::Кольцевая',
-                                dist: -85,
-                                label: {},
-                            },
-                            'Павелецкая': {
-                                code: 'ru-msk-metro-paveletskaya-paveletskaya',
-                                anchor: 'Юг-Замоскворецкая::Кольцевая',
-                                dist: 16,
-                                transit: 'Павелецкая::Кольцевая',
-                            },
-                            'Автозаводская': {
-                                code: '',
-                                anchor: 'Павелецкая',
-                                dist: 130,
-                                transit: 'Автозаводская::МЦК',
-                            },
-                            'Технопарк': {
-                                code: '',
-                                anchor: 'Автозаводская',
-                                dist: 43,
-                                label: {},
-                            },
-                            'Коломенская': {
-                                code: '',
-                                anchor: 'Технопарк',
-                                dist: 33,
-                                label: {},
-                            },
-                            'Каширская': {
-                                code: '',
-                                anchor: 'Коломенская',
-                                dist: 31,
-                                label: {},
-                            },
-                            'Кантемировская': {
-                                code: '',
-                                anchor: 'Каширская',
-                                dist: 29,
-                                label: {},
-                            },
-                            'Царицино': {
-                                code: '',
-                                anchor: 'Кантемировская',
-                                dist: 24,
-                                label: {},
-                            },
-                            'Орехово': {
-                                code: '',
-                                anchor: 'Царицино',
-                                dist: 25,
-                                label: {},
-                            },
-                            'Домодедовская': {
-                                code: '',
-                                anchor: 'Орехово',
-                                dist: 25,
-                                label: {},
-                            },
-                        },
-                    },
-                    'Юг': {
-                        type: 'line',
-                        from: {
-                            anchor: 'to::Новокузнецкая-Домодедовская',
-                            ofsHor: 20,
-                            ofsVer: 20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 190,
-                        },
-                        points: {
-                            'Красногвардейская': {
-                                anchor: 'from',
-                                dist: 109,
-                                code: '',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.center,
-                                },
-                                transit: 'Зябликово::Юг::Люблинско-Дмитровская',
-                            },
-                            'Алма-Атинская': {
-                                anchor: 'to',
-                                code: '',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.center,
-                                    ofsHor: 30,
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-            'Арбатско-Покровская': {
-                style: '#2B3A7C',
-                type: 'segments',
-                segments: {
-                    'Арбатская-Киевская': {
-                        through: {
-                            anchor: 'Киевская::Кольцевая',
-                            ofsVer: 15,
-                        },
-                        from: {
-                            anchor: 'through',
-                            ofsHor: 163,
-                        },
-                        dist: 182,
-                        points: {
-                            'Арбатская': {
-                                anchor: 'from',
-                                dist: 56,
-                                label: {
-                                    alignHor: $$.$me_align.center,
-                                    alignVer: $$.$me_align.bottom,
-                                    ofsHor: 8,
-                                    ofsVer: 2,
-                                },
-                                transit: [
-                                    'Библиотека им.Ленина::Кропоткинская-Черкизовская::Сокольническая',
-                                    'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
-                                ],
-                            },
-                            'Смоленская': {
-                                anchor: 'from',
-                                dist: 133,
-                                label: {
-                                    alignHor: $$.$me_align.center,
-                                    alignVer: $$.$me_align.bottom,
-                                    ofsVer: 3,
-                                },
-                            },
-                            'Киевская': {
-                                anchor: 'to',
-                                transit: 'Киевская::Кольцевая',
-                            },
-                        },
-                    },
-                    'Пл. Революции': {
-                        from: {
-                            anchor: 'Охотный ряд::Кропоткинская-Черкизовская::Сокольническая',
-                            ofsHor: -10,
-                            ofsVer: 30,
-                            link: 'from::Арбатская-Киевская',
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 126,
-                        },
-                        points: {
-                            'Пл. Революции': {
-                                anchor: 'from',
-                                dist: 30,
-                                transit: 'Театральная::Театральная::Замоскворецкая',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.center,
-                                    ofsHor: 15,
-                                    ofsVer: -1,
-                                },
-                            },
-                        },
-                    },
-                    'Киевская-Парк Победы': {
-                        from: {
-                            anchor: 'to::Арбатская-Киевская',
-                            ofsHor: -20,
-                            ofsVer: 10,
-                        },
-                        to: {
-                            anchor: 'Кутузовская::МЦК',
-                            ofsVer: 18,
-                            ofsHor: 20,
-                        },
-                    },
-                    'Парк Победы-Славянский бульвар': {
-                        from: {
-                            anchor: 'to::Киевская-Парк Победы',
-                            ofsVer: 10,
-                            ofsHor: -25,
-                        },
-                        through: {
-                            anchor: 'from',
-                            ofsHor: -60,
-                        },
-                        dist: 80,
-                        points: {
-                            'Парк Победы': {
-                                anchor: 'from',
-                            },
-                            'Славянский бульвар': {
-                                anchor: 'through',
-                            },
-                        },
-                    },
-                    'Кунцевская': {
-                        from: {
-                            anchor: 'to::Парк Победы-Славянский бульвар',
-                            ofsHor: -40,
-                            ofsVer: -20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: -110,
-                            ofsVer: -110,
-                        },
-                        points: {
-                            'Кунцевская': {
-                                anchor: 'to',
-                                label: {
-                                    alignVer: $$.$me_align.top,
-                                    alignHor: $$.$me_align.center,
-                                    ofsHor: 20,
-                                },
-                            },
-                        },
-                    },
-                    'Запад': {
-                        from: 'to::Кунцевская',
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -202,
-                        },
-                        points: {
-                            'Молодёжная': {
-                                anchor: 'from',
-                                dist: 202 - 25 * 6,
-                                label: {},
-                            },
-                            'Крылатское': {
-                                anchor: 'Молодёжная',
-                                dist: 25,
-                                label: {},
-                            },
-                            'Строгино': {
-                                anchor: 'Крылатское',
-                                dist: 25,
-                                label: {},
-                            },
-                            'Мякинино': {
-                                anchor: 'Строгино',
-                                dist: 25,
-                                label: {},
-                            },
-                            'Волоколамская': {
-                                anchor: 'Мякинино',
-                                dist: 25,
-                                label: {},
-                            },
-                            'Митино': {
-                                anchor: 'Волоколамская',
-                                dist: 25,
-                                label: {},
-                            },
-                            'Пятницкое шоссе': {
-                                anchor: 'Митино',
-                                dist: 25,
-                                label: {},
-                            },
-                        },
-                    },
-                    'Курская-Партизанская': {
-                        from: {
-                            anchor: 'to::Пл. Революции',
-                            ofsHor: 20,
-                            ofsVer: -10,
-                        },
-                        to: {
-                            anchor: 'Измайлово::МЦК',
-                            ofsVer: -26,
-                        },
-                    },
-                    'Измайловская-Щёлковская': {
-                        from: {
-                            anchor: 'to::Курская-Партизанская',
-                            ofsHor: 35,
-                            ofsVer: -41,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -65,
-                        },
-                    },
-                },
-            },
-            'Калининская': {
-                style: '#F9E36A',
-                type: 'segments',
-                segments: {
-                    'Третьяковская': {
-                        from: {
-                            anchor: 'Новокузнецкая::Новокузнецкая-Домодедовская::Замоскворецкая',
-                            ofsHor: -20,
-                            ofsVer: 20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 96,
-                        },
-                    },
-                    'Марксистская-Новокосино': {
-                        from: {
-                            anchor: 'Таганская::Кольцевая',
-                            ofsHor: 20,
-                            ofsVer: 10,
-                            link: 'to::Третьяковская',
-                        },
-                        through: {
-                            anchor: 'Шоссе Энтузиастов::МЦК',
-                            ofsHor: -20,
-                        },
-                        dist: 350,
-                    },
-                }
-            },
-            'Филевская': {
-                style: '#459BCF',
-                type: 'segments',
-                segments: {
-                    'Александровский сад-Арбатская': {
-                        from: {
-                            anchor: 'Арбатская::Арбатская-Киевская::Арбатско-Покровская',
-                            ofsVer: 14,
-                            ofsHor: -12,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: -32,
-                            ofsHor: -20,
-                        },
-                        points: {
-                            'Александровский сад': {
-                                anchor: 'from',
-                                label: {},
-                                transit: [
-                                    'Библиотека им.Ленина::Кропоткинская-Черкизовская::Сокольническая',
-                                    'Боровицкая::Боровицкая::Серпуховско-Тимирязевская',
-                                    'Арбатская::Арбатская-Киевская::Арбатско-Покровская',
-                                ],
-                            },
-                            'Арбатская': {
-                                anchor: 'to',
-                            },
-                        },
-                    },
-                    'Смоленская-Международная': {
-                        to: {
-                            anchor: 'Деловой центр::МЦК',
-                        },
-                        from: {
-                            anchor: 'to',
-                            ofsHor: 202,
-                        },
-                        points: {
-                            'Смоленская': {
-                                anchor: 'from',
-                            },
-                            'Киевская': {
-                                anchor: 'to',
-                                dist: -140,
-                                transit: [
-                                    'Киевская::Кольцевая',
-                                    'Киевская::Арбатская-Киевская::Арбатско-Покровская'
-                                ],
-                            },
-                            'Выставочная': {
-                                anchor: 'to',
-                                dist: -54,
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                    alignHor: $$.$me_align.center,
-                                    ofsHor: 40,
-                                },
-                            },
-                            'Международная': {
-                                anchor: 'to',
-                                dist: -22,
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                    alignHor: $$.$me_align.center,
-                                    ofsHor: -20,
-                                },
-                            },
-                        },
-                    },
-                    'Киевская-Кутузовская': {
-                        from: 'Киевская::Смоленская-Международная::Филевская',
-                        to: {
-                            anchor: 'Кутузовская::МЦК',
-                            ofsHor: 15,
-                        },
-                        points: {
-                            'Кутузовская': {
-                                anchor: 'to',
-                                transit: 'Кутузовская::МЦК',
-                            },
-                        },
-                    },
-                    'Кутузовская-Фили': {
-                        from: {
-                            anchor: 'from::Парк Победы-Славянский бульвар::Арбатско-Покровская',
-                            ofsVer: -15,
-                            ofsHor: -20,
-                            link: 'to::Киевская-Кутузовская',
-                        },
-                        to: {
-                            anchor: 'to::Парк Победы-Славянский бульвар::Арбатско-Покровская',
-                            ofsVer: -15,
-                            ofsHor: 20,
-                        },
-                    },
-                    'Фили-Кунцевская': {
-                        from: {
-                            anchor: 'to::Кутузовская-Фили',
-                            ofsHor: -54,
-                            ofsVer: -20,
-                        },
-                        to: {
-                            anchor: 'Кунцевская::Кунцевская::Арбатско-Покровская',
-                            ofsHor: 20,
-                        },
-                        points: {
-                            'Фили': {
-                                type: 'anchor',
-                                anchor: 'from',
-                                label: {},
-                            },
-                            'Багратионовская': {
-                                anchor: 'Фили',
-                                dist: 30,
-                                label: {},
-                            },
-                            'Филёвский парк': {
-                                anchor: 'Багратионовская',
-                                dist: 30,
-                                label: {},
-                            },
-                            'Пионерская': {
-                                anchor: 'Филёвский парк',
-                                dist: 30,
-                                label: {},
-                            },
-                            'Кунцевская': {
-                                anchor: 'to',
-                            },
-                        },
-                    },
-                }
-            },
-            'Некрасовская': {
-                style: '#EFC0D0',
-                type: 'segments',
-                segments: {
-                    'Нижегородская улица-Стахановская': {
-                        from: {
-                            anchor: 'Нижегородская::МЦК',
-                            ofsHor: 10,
-                            ofsVer: 10,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: 40,
-                            ofsVer: 50,
-                        },
-                        points: {
-                            'Нижегородская улица': {
-                                anchor: 'from',
-                            },
-                            'Стахановская': {
-                                anchor: 'to',
-                                label: {
-                                    alignVer: $$.$me_align.bottom,
-                                },
-                            },
-                        },
-                    },
-                    'Окская улица-Юго-Восточная': {
-                        from: {
-                            link: 'to::Нижегородская улица-Стахановская',
-                            anchor: 'Кузьминки::Текстильщики-Кузьминки::Таганско-Краспресненская',
-                            ofsHor: 18,
-                            ofsVer: -40,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsVer: 100,
-                        },
-                        points: {
-                            'Окская улица': {
-                                anchor: 'from',
-                                label: {
-                                    text: 'Окская<br>улица'
-                                },
-                            },
-                            'Юго-Восточная': {
-                                anchor: 'to',
-                                label: {
-                                    alignHor: $$.$me_align.right,
-                                },
-                            },
-                        },
-                    },
-                    'Косино': {
-                        from: 'to::Окская улица-Юго-Восточная',
-                        to: {
-                            anchor: 'Лермонтовский проспект::Лермонтовский проспект-Котельники::Таганско-Краспресненская',
-                            ofsHor: 20,
-                        },
-                        points: {
-                            'Косино': {
-                                anchor: 'to',
-                                transit: 'Лермонтовский проспект::Лермонтовский проспект-Котельники::Таганско-Краспресненская',
-                            },
-                        },
-                    },
-                    'Юг': {
-                        from: {
-                            anchor: 'to::Косино',
-                            ofsHor: 5,
-                            ofsVer: 20,
-                        },
-                        through: {
-                            anchor: 'from',
-                            ofsVer: 50,
-                        },
-                        dist: 100,
-                        points: {
-                            'Улица Дмитриевского': {
-                                anchor: 'from',
-                                dist: 50,
-                            },
-                            'Лухмановская': {
-                                anchor: 'Улица Дмитриевского',
-                                dist: 25,
-                            },
-                            'Некрасовка': {
-                                anchor: 'Лухмановская',
-                                dist: 25,
-                            },
-                        },
-                    },
-                }
-            },
-            'Большая кольцевая': {
-                style: '#51AFA6',
-                segments: {
-                    'Савёловская': {
-                        from: {
-                            anchor: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
-                            ofsVer: 12,
-                            ofsHor: -15,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: -40,
-                        },
-                        points: {
-                            'Савёловская': {
-                                anchor: 'from',
-                                transit: 'Савёловская::Алтуфьево-Менделеевская::Серпуховско-Тимирязевская',
-                            },
-                        },
-                    },
-                    'Петровский парк-ЦСКА': {
-                        from: {
-                            anchor: 'to::Савёловская',
-                            ofsHor: -20,
-                            ofsVer: 5,
-                        },
-                        through: {
-                            anchor: 'Динамо::Динамо-Тверская::Замоскворецкая',
-                            ofsVer: -20,
-                        },
-                        dist: 210,
-                        points: {
-                            'Петровский парк': {
-                                anchor: 'through',
-                                transit: 'Динамо::Динамо-Тверская::Замоскворецкая',
-                            },
-                            'ЦСКА': {
-                                anchor: 'Петровский парк',
-                                dist: 60,
-                                label: {
-                                    alignHor: $$.$me_align.center,
-                                    alignVer: $$.$me_align.top,
-                                },
-                            },
-                        },
-                    },
-                    'Хорошёвская': {
-                        from: {
-                            anchor: 'to::Петровский парк-ЦСКА',
-                            ofsHor: -40,
-                            ofsVer: 20,
-                        },
-                        to: {
-                            anchor: 'from',
-                            ofsHor: -60,
-                        },
-                        points: {
-                            'Хорошёвская': {
-                                anchor: 'from',
-                                dist: 20,
-                                transit: [
-                                    'Полежаевская::Полежаевская-Улица 1905 года::Таганско-Краспресненская',
-                                    'Хорошёво::МЦК',
-                                ],
-                            },
-                        },
-                    },
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//data.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         let $nl_scheme_will_action_enum;
         (function ($nl_scheme_will_action_enum) {
             $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
             $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
             $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
         })($nl_scheme_will_action_enum || ($nl_scheme_will_action_enum = {}));
-        $$.$nl_scheme_metro = {
+        $$.$nl_scheme_engine = {
             style: {
                 userSelect: () => 'none',
                 overflow: () => 'hidden',
+                background: () => 'white',
             },
             dispatch(dispatch_name, dispatch_arg) {
                 if (dispatch_name == 'lassoShow') {
@@ -7048,7 +4950,7 @@ var $;
                         };
                         const points = $$.a('.points');
                         const selected = $$.a('.selected');
-                        const codes = $$.a('.will_codes');
+                        const codes = $$.a('@container^scheme.will_codes');
                         codes.clear();
                         let will_action = $nl_scheme_will_action_enum.deselect;
                         for (const point_id in points) {
@@ -7063,7 +4965,7 @@ var $;
                             if (!selected.has(point_def.code))
                                 will_action = $nl_scheme_will_action_enum.select;
                         }
-                        $$.a('.will_codes', codes, true);
+                        $$.a('@container^scheme.will_codes', codes, true);
                         $$.a('.will_action', will_action);
                     }
                     return true;
@@ -7071,7 +4973,7 @@ var $;
                 else if (dispatch_name == 'lassoHide') {
                     const will_action = $$.a('.will_action');
                     $$.a.update('.selected', val => {
-                        for (const code of $$.a('.will_codes')) {
+                        for (const code of $$.a('@container^scheme.will_codes')) {
                             if (will_action == $nl_scheme_will_action_enum.select) {
                                 val.set(code, null);
                             }
@@ -7085,7 +4987,7 @@ var $;
                     $$.a('.isLasso', false);
                     return true;
                 }
-                else if (dispatch_name = 'codeTapped') {
+                else if (dispatch_name == 'codeTapped') {
                     const code = dispatch_arg;
                     $$.a.update('.selected', val => {
                         if (val.has(code)) {
@@ -7098,101 +5000,40 @@ var $;
                     }, true);
                     return true;
                 }
-                return true;
+                else if (dispatch_name == 'close') {
+                    return true;
+                }
+                return false;
             },
-            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', will_action: () => $nl_scheme_will_action_enum.none, will_codes: () => new Set(), isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'circle', 'label', 'cross', 'lasso'], labels: $$.$me_atom2_prop([], () => null), label_ids: $$.$me_atom2_prop_keys(['.labels']), label_ofsHor: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsHor), label_ofsVer: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => labels[id].ofsVer), label_hidden: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => !labels[id].visible), selected: $$.$me_atom2_prop_store({
+            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32, ofsHor_initial: () => 32, ofsVer_max: '.ofsVer_initial', scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial), scale: $$.$me_atom2_prop_store({
+                    condition: ['.scale_initial'],
+                    default: () => $$.a('.scale_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsHor: $$.$me_atom2_prop_store({
+                    condition: ['.ofsHor_initial'],
+                    default: () => $$.a('.ofsHor_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsVer: $$.$me_atom2_prop_store({
+                    condition: ['.ofsVer_initial'],
+                    default: () => $$.a('.ofsVer_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), will_action: () => $nl_scheme_will_action_enum.none, isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'lasso', 'cross'], labels: $$.$me_atom2_prop([], () => null), selected: $$.$me_atom2_prop_store({
                     default: () => new Map(),
                     valid: val => {
                         const isMap = val instanceof Map;
                         const result = isMap ? val : new Map();
+                        let a = 2;
                         return result;
                     },
-                    toJSON: val => [...val].map(([id]) => id),
+                    toJSON: val => {
+                        const result = [...val].map(([id]) => id);
+                        return result;
+                    },
                     fromJSON: val => !Array.isArray(val) ?
                         new Map() :
                         new Map(val.map(id => [id, null])),
-                }), radius_station: () => 6, thick_station: () => 2, thick_transit: () => 3, thick_line: () => 4, data: () => $$.$nl_scheme_metro_data, background_station: () => 'white', background_station_selected: () => 'red', background_station_will_select: () => '#F8CFD3', background_station_will_deselect: () => '#3F88DE', colorText_will_select: () => '#D5483E', colorText_will_deselect: '.background_station_will_deselect', points: $$.$me_atom2_prop([], () => null), point_ids: $$.$me_atom2_prop_keys(['.points']), point_x: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points',] }, ({ key: [id], masters: [points] }) => points[id].x), point_y: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].y), point_color: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].color), point_hidden: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => !points[id].visible) }),
+                }), points: $$.$me_atom2_prop([], () => null), demo_border: () => '' }),
             elem: {
-                label: $$.$me_atom2_prop({ keys: ['.label_ids'], masters: ['.labels'] }, ({ key: [id], masters: [labels] }) => ({
-                    prop: {
-                        '#width': () => 0,
-                        '#height': () => 0,
-                        '#ofsHor': `<.label_ofsHor[${id}]`,
-                        '#ofsVer': `<.label_ofsVer[${id}]`,
-                        '#hidden': `<.label_hidden[${id}]`,
-                    },
-                    elem: {
-                        text: () => ({
-                            dom: {
-                                innerHTML: () => labels[id].text,
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a.dispatch('<<', 'codeTapped', labels[id].code);
-                                    return true;
-                                },
-                            },
-                            style: Object.assign({}, (!labels[id].lineHeight ? {} : { lineHeight: () => labels[id].lineHeight }), (!labels[id].textAlign ? {} : { textAlign: () => labels[id].textAlign }), (!labels[id].whiteSpace ? {} : { whiteSpace: () => labels[id].whiteSpace })),
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => null,
-                                '#alignHor': () => labels[id].alignHor,
-                                '#alignVer': () => labels[id].alignVer,
-                                fontSize: $$.$me_atom2_prop(['<<@container^scheme._scale'], ({ masters: [scale] }) => 13 * scale),
-                                '#cursor': () => 'pointer',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                colorText: $$.$me_atom2_prop([
-                                    '<<.will_action',
-                                    '<<.will_codes',
-                                    '<<.colorText_will_select',
-                                    '<<.colorText_will_deselect',
-                                    '/.colorText',
-                                ], ({ masters: [will_action, will_codes, colorText_will_select, colorText_will_deselect, colorText] }) => {
-                                    const code = labels[id].code;
-                                    const result = will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
-                                        colorText_will_select :
-                                        will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
-                                            colorText_will_deselect :
-                                            colorText;
-                                    return result;
-                                }),
-                            },
-                        }),
-                    },
-                })),
-                circle: $$.$me_atom2_prop({ keys: ['.point_ids'], masters: ['.points'] }, ({ key: [id], masters: [points] }) => points[id].type != 'circle' ? null : {
-                    prop: Object.assign({}, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['<@container^scheme._scale', '<.radius_station'], ({ masters: [scale, radius] }) => 2 * radius * scale), ['#width', '#height']), { '#ofsHor': $$.$me_atom2_prop([`<.point_x[${id}]`, '.#width'], ({ masters: [x, width] }) => x - width / 2), '#ofsVer': $$.$me_atom2_prop([`<.point_y[${id}]`, '.#height'], ({ masters: [x, width] }) => x - width / 2), '#hidden': `<.point_hidden[${id}]`, '#cursor': () => 'pointer', '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
-                    style: {
-                        border: $$.$me_atom2_prop([`<@container^scheme._scale`, '<.thick_station', `<.point_color[${id}]`], ({ masters: [scale, thick, color] }) => `${scale * thick}px solid ${color}`),
-                        borderRadius: () => '50%',
-                        boxSizing: () => 'border-box',
-                        background: $$.$me_atom2_prop([
-                            '<.will_action',
-                            '<.will_codes',
-                            '<.background_station_will_select',
-                            '<.background_station_will_deselect',
-                            '<.selected',
-                            '<.background_station',
-                            '<.background_station_selected',
-                        ], ({ masters: [will_action, will_codes, background_station_will_select, background_station_will_deselect, selected, background, background_selected,] }) => {
-                            const code = points[id].code;
-                            const result = will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
-                                background_station_will_deselect :
-                                selected.has(code) ?
-                                    background_selected :
-                                    will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
-                                        background_station_will_select :
-                                        background;
-                            return result;
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a.dispatch('<', 'codeTapped', points[id].code);
-                            return true;
-                        },
-                    },
-                }),
                 cross: () => ({
                     base: $$.$me_cross,
                     prop: {
@@ -7233,11 +5074,11 @@ var $;
                             event: {
                                 pinchFini: p => {
                                     console.warn('pinchFini', p.event);
-                                    $$.a('.scale', $$.a('._scale'));
+                                    $$.a('<<.scale', $$.a('._scale'));
                                     return false;
                                 },
                                 pinch: p => {
-                                    handle_pinch($$.a('.scale') * p.event.scale, p.event.center, '._scale');
+                                    handle_pinch($$.a('<<.scale') * p.event.scale, p.event.center, '._scale');
                                     return false;
                                 },
                                 wheelDragInit: p => {
@@ -7249,11 +5090,16 @@ var $;
                                     return false;
                                 },
                                 wheelDrag: p => {
-                                    const { clientX, clientY } = p.event.last;
-                                    $$.a.dispatch('<<', 'lassoMove', {
-                                        clientX, clientY,
-                                        mode: p.event.mode,
-                                    });
+                                    if (p.event.last && p.event.last.ctrlKey) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const { clientX, clientY } = p.event.last;
+                                        $$.a.dispatch('<<', 'lassoMove', {
+                                            clientX, clientY,
+                                            mode: p.event.mode,
+                                        });
+                                    }
                                     return true;
                                 },
                                 wheelTouchInit: p => {
@@ -7289,55 +5135,144 @@ var $;
                                         const clientRect = $$.a('.#clientRect');
                                         const x = p.event.clientX - clientRect.left;
                                         const y = p.event.clientY - clientRect.top;
-                                        handle_pinch($$.a('.scale') - p.event.deltaY * 0.02, { x, y });
+                                        handle_pinch($$.a('<<.scale') - p.event.deltaY * 0.002, { x, y });
                                     }
                                     return true;
                                 },
+                                mousemove: p => {
+                                    let clientX;
+                                    let clientY;
+                                    if (p.event instanceof MouseEvent) {
+                                        clientX = p.event.clientX;
+                                        clientY = p.event.clientY;
+                                    }
+                                    else {
+                                        clientX = p.event.touches[0].clientX;
+                                        clientY = p.event.touches[0].clientY;
+                                    }
+                                    const scale = $$.a('._scale');
+                                    const data = $$.a('.data');
+                                    if (!data)
+                                        return;
+                                    const radius_station = data.settings.circle_radius * scale;
+                                    const points = $$.a('<<.points') || {};
+                                    const labels = $$.a('<<.labels') || {};
+                                    for (const id in points) {
+                                        if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
+                                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                            return true;
+                                        }
+                                    }
+                                    for (const label_id in labels) {
+                                        const label = labels[label_id];
+                                        if (label.rect && $$.$me_point_in_rect(clientX, clientY, label.rect)) {
+                                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                            return true;
+                                        }
+                                    }
+                                    $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: null });
+                                    return false;
+                                },
                                 clickOrTap: (p) => {
+                                    let clientX;
+                                    let clientY;
+                                    if (p.event.start instanceof MouseEvent) {
+                                        clientX = p.event.start.clientX;
+                                        clientY = p.event.start.clientY;
+                                    }
+                                    else {
+                                        clientX = p.event.start.touches[0].clientX;
+                                        clientY = p.event.start.touches[0].clientY;
+                                    }
+                                    const scale = $$.a('._scale');
+                                    const data = $$.a('.data');
+                                    const code2guids = $$.a('/.code2guids');
+                                    if (!data)
+                                        return;
+                                    const radius_station = data.settings.circle_radius * scale;
+                                    const points = $$.a('<<.points') || {};
+                                    const labels = $$.a('<<.labels') || {};
+                                    console.log('click', clientX, clientY);
+                                    for (const id in points) {
+                                        if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
+                                            const guids = code2guids[points[id].code];
+                                            if (guids) {
+                                                const value_new = $$.a('<<.value').slice();
+                                                for (const i in guids) {
+                                                    let j = value_new.indexOf(guids[i]);
+                                                    if (j >= 0) {
+                                                        value_new.splice(j, 1);
+                                                    }
+                                                    else {
+                                                        value_new.push(guids[i]);
+                                                    }
+                                                }
+                                                if (guids.length > 0) {
+                                                    $$.a('<<.value', value_new);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    for (const label_id in labels) {
+                                        const label = labels[label_id];
+                                        if (label.rect && $$.$me_point_in_rect(clientX, clientY, label.rect)) {
+                                            const guids = code2guids[labels[label_id].code];
+                                            if (guids) {
+                                                const value_new = $$.a('<<.value').slice();
+                                                for (const i in guids) {
+                                                    let j = value_new.indexOf(guids[i]);
+                                                    if (j >= 0) {
+                                                        value_new.splice(j, 1);
+                                                    }
+                                                    else {
+                                                        value_new.push(guids[i]);
+                                                    }
+                                                }
+                                                if (guids.length > 0) {
+                                                    $$.a('<<.value', value_new);
+                                                }
+                                            }
+                                        }
+                                    }
                                     return true;
                                 },
                             },
                             prop: {
-                                ofsVer_initial: () => 32,
-                                ofsHor_initial: () => 32,
-                                width_initial: () => 1136,
-                                height_initial: () => 1148,
-                                scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial),
-                                scale: $$.$me_atom2_prop_store({
-                                    default: () => $$.a('.scale_initial'),
-                                    valid: (val) => typeof val == 'number' ? val : null,
-                                }),
-                                _scale: '.scale',
-                                ofsHor: $$.$me_atom2_prop_store({
-                                    default: () => $$.a('.ofsHor_initial'),
-                                    valid: (val) => typeof val == 'number' ? val : null,
-                                }),
-                                ofsVer: $$.$me_atom2_prop_store({
-                                    default: () => $$.a('.ofsVer_initial'),
-                                    valid: (val) => typeof val == 'number' ? val : null,
-                                }),
-                                width: $$.$me_atom2_prop(['.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
-                                height: $$.$me_atom2_prop(['.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
-                                radius_station: '<<.radius_station',
-                                thick_transit: '<<.thick_transit',
-                                thick_line: '<<.thick_line',
+                                _scale: '<<.scale',
+                                ofsHor: '<<.ofsHor',
+                                ofsVer: '<<.ofsVer',
+                                width: $$.$me_atom2_prop(['<<.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                                height: $$.$me_atom2_prop(['<<.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
                                 data: '<<.data',
+                                value: '<<.value',
+                                will_codes: $$.$me_atom2_prop([], () => new Set()),
+                                will_codes_str: $$.$me_atom2_prop(['.will_codes'], ({ masters: [will_codes] }) => [...will_codes].join(','), ({ val }) => {
+                                }),
                             },
                             render: p => {
+                                const data = $$.a('.data');
+                                const will_action = $$.a('<<.will_action');
+                                const will_codes = $$.a('.will_codes');
+                                if (!data)
+                                    return;
                                 const { ctx, pixelRatio } = p;
-                                const ctxFontSize = $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
-                                $$.$me_atom2_ctx_rect({
-                                    ctx,
-                                    ctxTop: pixelRatio * $$.a('.ofsVer'),
-                                    ctxLeft: pixelRatio * $$.a('.ofsHor'),
-                                    ctxWidth: pixelRatio * $$.a('.width'),
-                                    ctxHeight: pixelRatio * $$.a('.height'),
-                                    stroke: { ctxWidth: pixelRatio, style: 'red' },
-                                });
+                                const demo_border = $$.a('<<.demo_border');
+                                if (demo_border) {
+                                    $$.$me_atom2_ctx_rect({
+                                        ctx,
+                                        ctxTop: pixelRatio * $$.a('<<.ofsVer'),
+                                        ctxLeft: pixelRatio * $$.a('<<.ofsHor'),
+                                        ctxWidth: pixelRatio * $$.a('.width'),
+                                        ctxHeight: pixelRatio * $$.a('.height'),
+                                        stroke: { ctxWidth: pixelRatio, style: demo_border },
+                                    });
+                                }
                                 const scale = $$.a('._scale');
-                                const thick_transit = $$.a('.thick_transit') * scale;
-                                const thick_line = $$.a('.thick_line') * scale;
-                                const radius_station = $$.a('.radius_station') * scale;
+                                const thick_transit = data.settings.thick_transit * scale;
+                                const thick_line = data.settings.thick_line * scale;
+                                const radius_station = data.settings.circle_radius * scale;
+                                const thick_station = data.settings.circle_thick * scale;
+                                const ctxFontSize = data.settings.label.fontSize * pixelRatio * scale;
                                 const labels = $$.a('<<.labels') || {};
                                 for (const label_id in labels) {
                                     labels[label_id].visible = false;
@@ -7347,11 +5282,18 @@ var $;
                                     points[point_id].visible = false;
                                 }
                                 const lines = {};
+                                const selected = new Set($$.a('.value'));
                                 const main = () => {
-                                    const items = $$.a('.data');
+                                    const items = $$.a('<<.data');
                                     for (const item_id in items) {
                                         const item_def = items[item_id];
-                                        if (~Object.keys(segment_helper).indexOf(item_def.type)) {
+                                        if (item_id == 'settings') {
+                                            points['root'] = {
+                                                x: item_def.root.x * scale + $$.a('<<.ofsHor'),
+                                                y: item_def.root.y * scale + $$.a('<<.ofsVer'),
+                                            };
+                                        }
+                                        else if (~Object.keys(segment_helper).indexOf(item_def.type)) {
                                             segment(item_def, item_def, [item_id]);
                                         }
                                         else if (item_def.type == null || item_def.type == 'segments') {
@@ -7359,6 +5301,190 @@ var $;
                                         }
                                         else
                                             $$.$me_throw('unsupported item_def.type', item_def.type);
+                                    }
+                                    for (const id in points) {
+                                        const point = points[id];
+                                        if (point.type != 'circle')
+                                            continue;
+                                        const code = points[id].code;
+                                        const _fillStyle = will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
+                                            $$.a('<<.background_station_will_deselect') :
+                                            selected.has(point.guid) ?
+                                                $$.a('<<.background_station_selected') :
+                                                will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
+                                                    $$.a('<<.background_station_will_select') :
+                                                    $$.a('<<.background_station');
+                                        $$.$me_atom2_ctx_circle({
+                                            ctx,
+                                            ctxRadius: radius_station * pixelRatio,
+                                            ctxCenterX: point.x * pixelRatio,
+                                            ctxCenterY: point.y * pixelRatio,
+                                            stroke: {
+                                                ctxWidth: thick_station * pixelRatio,
+                                                style: point.color,
+                                            },
+                                            fillStyle: _fillStyle
+                                        });
+                                    }
+                                    ctx.font = $$.a('<<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<<.fontFamily');
+                                    ctx.textAlign = 'left';
+                                    ctx.textBaseline = 'bottom';
+                                    for (const id in labels) {
+                                        const label = labels[id];
+                                        const code = label.code;
+                                        const _fillStyle = will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
+                                            $$.a('<<.colorText_will_deselect') :
+                                            will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
+                                                $$.a('<<.colorText_will_select') :
+                                                $$.a('<<.colorText');
+                                        if (!~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            const _width = ctxWidth / pixelRatio;
+                                            const _height = ctxHeight / pixelRatio;
+                                            let _left = label.ofsHor;
+                                            let _right = _left + _width;
+                                            let _ctxLeft = _left * pixelRatio;
+                                            let _ctxTop = label.ofsVer * pixelRatio - .5 * ctxHeight;
+                                            let _top = label.ofsVer - .5 * ctxHeight / pixelRatio;
+                                            let _bottom = _top + _height;
+                                            if (label.alignHor == $$.$me_align.left) {
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right) {
+                                                _left = label.ofsHor - _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.center) {
+                                                _left = label.ofsHor - .5 * _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - .5 * ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else {
+                                                console.error('что ты такое???');
+                                            }
+                                            _bottom = _top + _height;
+                                            $$.$me_atom2_ctx_rect({ ctx, ctxLeft: _ctxLeft, ctxTop: _ctxTop, ctxWidth, ctxHeight, fillStyle: 'rgba(255,255,255,.5)' });
+                                            labels[id].rect = { left: _left, right: _right, top: _top, bottom: _bottom };
+                                            ctx.fillStyle = _fillStyle;
+                                            ctx.fillText(label.text, _ctxLeft, _ctxTop + ctxHeight);
+                                        }
+                                        else if (label.text.indexOf('<')) {
+                                            const ta = label.textAlign;
+                                            const lines = label.text.split('<br>');
+                                            const linesCount = lines.length;
+                                            var ctxWidth = 0;
+                                            var ctxHeight = 0;
+                                            for (const i in lines) {
+                                                const line = lines[i];
+                                                let w = ctx.measureText(line).width;
+                                                let h = ctxFontSize;
+                                                if (w > ctxWidth)
+                                                    ctxWidth = w;
+                                                ctxHeight = ctxHeight + h;
+                                            }
+                                            const _width = ctxWidth / pixelRatio;
+                                            const _height = ctxHeight / pixelRatio;
+                                            let _left = label.ofsHor;
+                                            let _right = _left + _width;
+                                            let _ctxLeft = _left * pixelRatio;
+                                            let _ctxTop = label.ofsVer * pixelRatio - .5 * ctxHeight;
+                                            let _top = label.ofsVer - .5 * ctxHeight / pixelRatio;
+                                            let _bottom = _top + _height;
+                                            if (label.alignHor == $$.$me_align.left) {
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right) {
+                                                _left = label.ofsHor - _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.center) {
+                                                _left = label.ofsHor - .5 * _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - .5 * ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else {
+                                                console.log('что ты такое?', label.text, label.alignHor, label.alignVer);
+                                            }
+                                            _bottom = _top + _height;
+                                            $$.$me_atom2_ctx_rect({ ctx, ctxLeft: _ctxLeft, ctxTop: _ctxTop, ctxWidth, ctxHeight, fillStyle: 'rgba(255,255,255,.5)', });
+                                            labels[id].rect = { left: _left, right: _right, top: _top, bottom: _bottom };
+                                            ctx.fillStyle = _fillStyle;
+                                            for (const i in lines) {
+                                                const line = lines[i];
+                                                _ctxTop += ctxFontSize;
+                                                let w = ctx.measureText(line).width;
+                                                if (ta == 'right') {
+                                                    ctx.fillText(line, _ctxLeft + ctxWidth - w, _ctxTop);
+                                                }
+                                                else if (ta == 'center') {
+                                                    ctx.fillText(line, _ctxLeft + .5 * (ctxWidth - w), _ctxTop);
+                                                }
+                                                else {
+                                                    ctx.fillText(line, _ctxLeft, _ctxTop);
+                                                }
+                                            }
+                                        }
                                     }
                                     $$.a('<<.points', points, true);
                                     $$.a('<<.labels', labels, true);
@@ -7381,13 +5507,13 @@ var $;
                                 const segment_helper = {
                                     circle: (line_def, segment_def, id) => {
                                         const p = prepare_point(['center'], id, segment_def, points, scale);
-                                        if (!p['center'])
+                                        if (!p.center)
                                             anchored_point(id, segment_def, 'center', points, scale);
                                         line_def.ctxCenterX = p.center.x * pixelRatio;
                                         line_def.ctxCenterY = p.center.y * pixelRatio;
                                         line_def.ctxRadius = line_def.radius * scale * pixelRatio;
                                         const type = styleType(line_def.style);
-                                        if (type == $$.$nl_scheme_style_type_enum.solid) {
+                                        if (type == $$.$me_line_style_type_enum.solid) {
                                             $$.$me_atom2_ctx_circle({
                                                 ctx,
                                                 ctxCenterX: line_def.ctxCenterX,
@@ -7396,7 +5522,7 @@ var $;
                                                 stroke: { ctxWidth: thick_line * pixelRatio, style: styleColor(line_def.style) },
                                             });
                                         }
-                                        else if (type == $$.$nl_scheme_style_type_enum.double) {
+                                        else if (type == $$.$me_line_style_type_enum.double) {
                                             const thickStyle = (line_def.style.thickStyle || thick_line) * scale;
                                             const thickLine = (line_def.style.thickLine || pixelRatio) * scale;
                                             $$.$me_atom2_ctx_circle({
@@ -7415,7 +5541,7 @@ var $;
                                             });
                                         }
                                         else {
-                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$nl_scheme_style_type_enum[type]}`, line_def);
+                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$me_line_style_type_enum[type]}`, line_def);
                                         }
                                         const retCircle = {
                                             centerX: line_def.ctxCenterX / pixelRatio,
@@ -7425,6 +5551,8 @@ var $;
                                         for (const point_id in line_def.points) {
                                             const point_def = line_def.points[point_id];
                                             const point = anchored_point(id, line_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'circle';
                                                 if (req == 'circle')
                                                     return retCircle;
                                                 return anchored_point_provider(req, result, {
@@ -7437,14 +5565,20 @@ var $;
                                         }
                                     },
                                     line: (line_def, segment_def, id) => {
-                                        const p = prepare_point(['from', 'to', 'through'], id, segment_def, points, scale);
+                                        const props = ['through'];
+                                        for (const prop of ['from', 'to'])
+                                            if (segment_def.hasOwnProperty(prop) && (typeof segment_def[prop] == 'string' ||
+                                                segment_def[prop].hasOwnProperty('anchor')))
+                                                props.push(prop);
+                                        const p = prepare_point(props, id, segment_def, points, scale);
                                         if (p.from && p.to && p.through) {
                                             $$.$me_throw('.through is not expected whilst .from and .to are set');
                                         }
                                         else if (!p.to) {
                                             if (!(p.from && p.through && segment_def.dist))
                                                 $$.$me_throw(id() + ': .from, .through and .dist must be set whilst .to is absent');
-                                            points[id(['to'])] = p.to = $$.$me_vector_transform({ from: p.from, to: p.through }, segment_def.dist * scale).to;
+                                            let to = $$.$me_vector_transform({ from: p.from, to: p.through }, segment_def.dist * scale).to;
+                                            points[id(['to'])] = p.to = to;
                                         }
                                         else if (!p.from) {
                                             if (!(p.to && p.through) && segment_def.dist)
@@ -7503,9 +5637,21 @@ var $;
                                             ctx.lineWidth = thick_line * pixelRatio;
                                             ctx.stroke();
                                         }
+                                        let point_def_prev;
+                                        let point_id_prev;
                                         for (const point_id in segment_def.points) {
                                             const point_def = segment_def.points[point_id];
+                                            if (point_def.anchor === '' && point_id_prev) {
+                                                point_def.anchor = point_id_prev;
+                                            }
+                                            if (point_def.dist === null && point_def_prev) {
+                                                point_def.dist = point_def_prev.dist;
+                                            }
+                                            point_def_prev = point_def;
+                                            point_id_prev = point_id;
                                             const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'line';
                                                 if (req == 'line')
                                                     return p;
                                                 return anchored_point_provider(req, result, {
@@ -7554,6 +5700,7 @@ var $;
                                             visible: true,
                                             color: styleColor(p.line_def.style),
                                             code: p.point_def.code,
+                                            guid: p.point_def.guid,
                                         };
                                     }
                                     if (req == 'label') {
@@ -7570,8 +5717,10 @@ var $;
                                                 $$.$me_throw('unsupported .transit', p.point_def.transit);
                                         for (const anchor of anchors) {
                                             const point_to = points[anchor];
+                                            if (!point_to)
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit refers to unknown points['${anchor}']`, points);
                                             if (point_to.type != 'circle')
-                                                $$.$me_throw(`.anchor'${p.id([p.point_id, 'transit'])}' of ${anchor} must refer to point with .type'circle', not`, point_to);
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit'${anchor}' must refer to point with .type'circle', not`, point_to);
                                             const dx = point_to.x - result.x;
                                             const dy = point_to.y - result.y;
                                             const len = Math.hypot(dx, dy);
@@ -7590,12 +5739,15 @@ var $;
                                         return true;
                                     }
                                 };
-                                const prepare_point = (prop_names, id, segment_def, points, scale) => {
+                                const prepare_point = (prop_names, id, segment_def, points, scale, type) => {
                                     const result = {};
                                     for (const prop_name in segment_def) {
                                         if (!~prop_names.indexOf(prop_name))
                                             continue;
-                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale);
+                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale, !type ? null : (req, result) => {
+                                            if (req == 'type')
+                                                return type;
+                                        });
                                     }
                                     return result;
                                 };
@@ -7609,8 +5761,8 @@ var $;
         };
         function styleType(style) {
             const result = typeof style == 'string' ?
-                $$.$nl_scheme_style_type_enum.solid :
-                style.type || $$.$nl_scheme_style_type_enum.solid;
+                $$.$me_line_style_type_enum.solid :
+                style.type || $$.$me_line_style_type_enum.solid;
             return result;
         }
         function styleColor(style) {
@@ -7623,18 +5775,27 @@ var $;
             const point_def = src[point_id];
             if (!point_def.label)
                 return;
-            const alignHor = point_def.label.alignHor || $$.$me_align.left;
-            const alignVer = point_def.label.alignVer == null ?
-                $$.$me_align.center :
-                point_def.label.alignVer;
+            const data = $$.a('<<.data');
+            const alignHor = point_def.label.alignHor != null ?
+                point_def.label.alignHor :
+                data.settings.label.alignHor;
+            const alignVer = point_def.label.alignVer != null ?
+                point_def.label.alignVer :
+                data.settings.label.alignVer;
             const ofsHor = point_def.label.ofsHor != null ?
                 point_def.label.ofsHor :
-                alignHor == $$.$me_align.center ? 0 :
-                    alignVer == $$.$me_align.center ? 2 : -2;
+                alignHor == $$.$me_align.center ?
+                    0 :
+                    alignVer == $$.$me_align.center ?
+                        data.settings.label.ofsHor :
+                        -.25 * data.settings.circle_radius;
             const ofsVer = point_def.label.ofsVer != null ?
                 point_def.label.ofsVer :
-                alignVer == $$.$me_align.center ? 0 :
-                    alignHor == $$.$me_align.center ? 2 : -2;
+                alignVer == $$.$me_align.center ?
+                    0 :
+                    alignHor == $$.$me_align.center ?
+                        data.settings.label.ofsVer :
+                        -.25 * data.settings.circle_radius;
             const result = labels[id([point_id])] = {
                 text: point_def.label.text || point_id,
                 ofsHor: alignHor == $$.$me_align.left ?
@@ -7680,8 +5841,13 @@ var $;
             let point_id = typeof arg == 'string' ?
                 arg :
                 arg.anchor;
-            if (!point_id) {
-                result = { x: $$.a('.ofsHor'), y: $$.a('.ofsVer') };
+            const parent_type = provider && provider('type', result) || '';
+            if (parent_type == 'circle') {
+                if (point_id)
+                    $$.$me_throw(`${id([prop_name])}.anchor is not expected`, src);
+            }
+            else if (!point_id) {
+                $$.$me_throw(`${id([prop_name])}.anchor expected`, src);
             }
             else {
                 result = points[get_point_id(point_id, points, id, () => `${id([prop_name])}.anchor`)];
@@ -7690,10 +5856,10 @@ var $;
             if (typeof arg == 'string') {
                 result = Object.assign({}, props, { x: result.x, y: result.y });
             }
-            else if (arg.angle != null) {
+            else if (parent_type == 'circle') {
                 const angle = arg.angle;
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.angle`);
+                if (angle == null)
+                    $$.$me_throw(`${id([prop_name])}.angle is expected`);
                 const ret = provider('circle', result);
                 if (ret == null ||
                     typeof ret.centerX != 'number' ||
@@ -7704,10 +5870,10 @@ var $;
                 const { centerX, centerY, radius } = ret;
                 result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
             }
-            else if (arg.dist != null) {
+            else if (parent_type == 'line') {
                 const dist = arg.dist;
-                if (!provider)
-                    $$.$me_throw(`provider expected due to ${id([prop_name])}.dist`);
+                if (dist == null)
+                    $$.$me_throw(`${id([prop_name])}.dist is expected`);
                 const ret = provider('line', result);
                 if (ret == null ||
                     !ret.from ||
@@ -7717,10 +5883,12 @@ var $;
                     typeof ret.to.x != 'number' ||
                     typeof ret.to.y != 'number' ||
                     false)
-                    $$.$me_throw(`provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
+                    $$.$me_throw(`${id()}: provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
                 result = Object.assign({}, props, $$.$me_vector_transform(ret, dist * scale, result).to);
             }
             else {
+                if (!result)
+                    $$.$me_throw(`${id([prop_name])}`);
                 result = Object.assign({}, props, { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
             }
             if (typeof arg != 'string' && arg.label) {
@@ -7745,28 +5913,17 @@ var $;
             points[id([prop_name])] = result;
             return result;
         }
-        function handle_pinch(scale_new, pinch_center, prop_name = '.scale') {
+        function handle_pinch(scale_new, pinch_center, prop_name = '<<.scale') {
             handle_helper(p => {
                 const width = p.width;
                 const height = p.height;
                 const scale = $$.a(prop_name);
                 p.width = width / scale * scale_new;
                 p.height = height / scale * scale_new;
-                const width_max = 3500;
-                const height_max = 3500;
                 const width_netto = p.width_upper - 2 * p.padding_Hor;
                 const height_netto = p.height_upper - 2 * p.padding_Ver;
-                if (p.width < width_netto &&
-                    p.height < height_netto &&
-                    true) {
-                    p.scale = Math.min(width_netto / width * scale, height_netto / height * scale);
-                }
-                else if (p.width > width_max && p.height > height_max) {
-                    p.scale = Math.max(width_max / width * scale, height_max / height * scale);
-                }
-                else {
-                    p.scale = scale_new;
-                }
+                p.scale =
+                    Math.min(Math.max(scale_new, Math.min(width_netto / width * scale, height_netto / height * scale)), $$.a('<<.scale_max'));
                 if (pinch_center.x < p.ofsHor) {
                     pinch_center.x = p.ofsHor;
                 }
@@ -7774,10 +5931,10 @@ var $;
                     pinch_center.x = p.ofsHor + width;
                 }
                 $$.a(prop_name, p.scale);
-                p.width = $$.a('.width_initial') * p.scale;
-                p.height = $$.a('.height_initial') * p.scale;
-                p.ofsHor += (scale - p.scale) * pinch_center.x;
-                p.ofsVer += (scale - p.scale) * pinch_center.y;
+                p.width = $$.a('<<.width_initial') * p.scale;
+                p.height = $$.a('<<.height_initial') * p.scale;
+                p.ofsHor = pinch_center.x - (pinch_center.x - p.ofsHor) * p.scale / scale;
+                p.ofsVer = pinch_center.y - (pinch_center.y - p.ofsVer) * p.scale / scale;
             });
         }
         function handle_move(deltaX, deltaY) {
@@ -7789,33 +5946,945 @@ var $;
         function handle_helper(fn) {
             const width_upper = $$.a('<.#width');
             const height_upper = $$.a('<.#height');
-            const padding_Hor = $$.a('.ofsHor_initial');
-            const padding_Ver = $$.a('.ofsVer_initial');
+            const padding_Hor = $$.a('<<.ofsHor_initial');
+            const padding_Ver = $$.a('<<.ofsVer_initial');
             const p = {
-                ofsHor: $$.a('.ofsHor'),
-                ofsVer: $$.a('.ofsVer'),
+                ofsHor: $$.a('<<.ofsHor'),
+                ofsVer: $$.a('<<.ofsVer'),
                 width: $$.a('.width'),
                 height: $$.a('.height'),
-                scale: $$.a('.scale'),
+                scale: $$.a('<<.scale'),
                 width_upper,
                 height_upper,
                 padding_Hor,
                 padding_Ver,
             };
             fn(p);
-            const ofsHor_max = Math.max($$.a('.ofsHor_initial'), (p.width_upper - p.width) / 2);
+            const ofsHor_max = Math.max($$.a('<<.ofsHor_initial'), (p.width_upper - p.width) / 2);
             const ofsHor_min = p.width_upper >= p.width ?
                 (p.width_upper - p.width) / 2 :
-                p.width_upper - $$.a('.ofsHor_initial') - p.width;
-            const ofsVer_max = Math.max($$.a('.ofsVer_initial'), (p.height_upper - p.height) / 2);
+                p.width_upper - $$.a('<<.ofsHor_initial') - p.width;
+            const ofsVer_max = Math.max($$.a('<<.ofsVer_max'), (p.height_upper - p.height) / 2, $$.a('<<.ofsVer'));
             const ofsVer_min = p.height_upper >= p.height ?
                 (p.height_upper - p.height) / 2 :
-                p.height_upper - $$.a('.ofsVer_initial') - p.height;
+                p.height_upper - $$.a('<<.ofsVer_initial') - p.height;
             p.ofsHor = Math.round(Math.min(ofsHor_max, Math.max(ofsHor_min, p.ofsHor)));
             p.ofsVer = Math.round(Math.min(ofsVer_max, Math.max(ofsVer_min, p.ofsVer)));
-            $$.a('.ofsHor', p.ofsHor);
-            $$.a('.ofsVer', p.ofsVer);
+            $$.a('<<.ofsHor', p.ofsHor);
+            $$.a('<<.ofsVer', p.ofsVer);
         }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//engine.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_crumbs_pc = {
+            type: '$nl_scheme_metro_crumbs_pc',
+            prop: {
+                crumbs: $$.$me_atom2_prop_abstract(),
+                crumb_height: () => 32,
+                fontSize: () => 14,
+                fontWeight: '<<.fontWeight',
+                fontFamily: '<<.fontFamily',
+                crumbSpaceHor: () => 8,
+                crumbSpaceVer: () => 8,
+                crumbBorderRadius: () => 3,
+                iconScale: () => .7 * 24 / 32,
+                iconMarginLeft: () => 4,
+                iconMarginRight: () => 4,
+                crossMargin: () => 16,
+                curtainHeight: () => 0,
+            },
+            control: {
+                canvas: () => ({
+                    event: {
+                        mousemove: p => {
+                            const crumbs = $$.a('.crumbs');
+                            if (!crumbs)
+                                return false;
+                            const pixelRatio = $$.a('/.#pixelRatio');
+                            const ctxX = p.event.clientX * pixelRatio;
+                            const ctxY = p.event.clientY * pixelRatio;
+                            const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
+                            const navFrom = $$.a('.navFrom');
+                            for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
+                                const crumb = crumbs[i];
+                                const rect = {
+                                    left: crumb.ctxLeft,
+                                    right: crumb.ctxLeft + crumb.ctxWidth,
+                                    top: crumb.ctxTop,
+                                    bottom: crumb.ctxTop + ctxCrumbHeight,
+                                };
+                                if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
+                                    $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                    return true;
+                                }
+                            }
+                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: null });
+                            return false;
+                        },
+                        clickOrTap: p => {
+                            const crumbs = $$.a('.crumbs');
+                            console.log($$.a('.#zIndex'));
+                            if (!crumbs)
+                                return false;
+                            const pixelRatio = $$.a('/.#pixelRatio');
+                            const ctxX = pixelRatio * (p.event.start instanceof MouseEvent ?
+                                p.event.start.clientX :
+                                p.event.start.touches[0].clientX);
+                            const ctxY = pixelRatio * (p.event.start instanceof MouseEvent ?
+                                p.event.start.clientY :
+                                p.event.start.touches[0].clientY);
+                            const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
+                            const navFrom = $$.a('.navFrom');
+                            for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
+                                const crumb = crumbs[i];
+                                const rect = {
+                                    left: crumb.ctxLeft,
+                                    right: crumb.ctxLeft + crumb.ctxWidth,
+                                    top: crumb.ctxTop,
+                                    bottom: crumb.ctxTop + ctxCrumbHeight,
+                                };
+                                if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
+                                    if (crumb.navText) {
+                                        $$.a('.navFrom', crumb.navFrom);
+                                    }
+                                    else {
+                                        $$.a.update('<<.selected', (val) => {
+                                            val.delete(crumb.code);
+                                            return val;
+                                        }, true);
+                                    }
+                                    return true;
+                                }
+                            }
+                            return false;
+                        },
+                    },
+                    prop: {
+                        crumbs: '<.crumbs',
+                        navFrom: () => 0,
+                    },
+                    prop_non_render: {
+                        navTo: () => -1,
+                    },
+                    render: p => {
+                        const { ctx, pixelRatio } = p;
+                        const crumbs = $$.a('.crumbs');
+                        if (!crumbs)
+                            return;
+                        const ofsHor = 16;
+                        const ofsVer = 16;
+                        const ctxFontSize = $$.a('<.fontSize') * pixelRatio;
+                        const crossSize = $$.a('<.fontSize');
+                        const crossMarginRight = 8;
+                        const crossMarginLeft = 4;
+                        const crossThick = 2;
+                        const iconScale = $$.a('<.iconScale');
+                        const iconSize = 24 * iconScale;
+                        const iconOfsHor = -2 * iconScale;
+                        const iconMarginLeft = $$.a('<.iconMarginLeft');
+                        const iconMarginRight = $$.a('<.iconMarginRight');
+                        const navPaddingLeft = 8;
+                        const navPaddingRight = 8;
+                        const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
+                        const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
+                        const crumbSpaceHor = $$.a('<.crumbSpaceHor');
+                        const crumbSpaceVer = $$.a('<.crumbSpaceVer');
+                        const crumbHeight = $$.a('<.crumb_height');
+                        const crumbBorderRadius = $$.a('<.crumbBorderRadius');
+                        const crumbBorderWidth = 1;
+                        const crumbBorderColor = 'silver';
+                        const crumbBackground = '#fcfcfd';
+                        const crumbTextColor = $$.a('/.colorText');
+                        const crossMargin = $$.a('<.crossMargin');
+                        ctx.font = $$.a('<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<.fontFamily');
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'bottom';
+                        const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - ofsHor);
+                        const crossClientRect = $$.a('<<@cross.#clientRect');
+                        let crumb_prev;
+                        let navFrom = $$.a('.navFrom');
+                        let navTo = navFrom;
+                        let navFrom_next;
+                        const navPrevText = (i) => '<< ещё ' + i;
+                        const navNextText = (i) => 'и ещё ' + i + ' >>';
+                        for (let i = navFrom; i < crumbs.length; i++) {
+                            const crumb = crumbs[i];
+                            crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                            crumb.navText = null;
+                            if (!crumb_prev) {
+                                crumb.ctxTop = ofsVer * pixelRatio;
+                                crumb.ctxLeft = ofsHor * pixelRatio;
+                                if (navFrom) {
+                                    let ctxRight = crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio ?
+                                        (crossClientRect.left - crossMargin) * pixelRatio :
+                                        ctxRightLimit;
+                                    let navFrom_next = 0;
+                                    for (let j = i - 1; j >= 0; j--) {
+                                        const crumb = crumbs[j];
+                                        crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                                        crumb.ctxLeft = ctxRight - crumb.ctxWidth;
+                                        ctxRight -= crumb.ctxWidth + crumbSpaceHor * pixelRatio;
+                                        if (ctxRight < ofsHor * pixelRatio + (!j ? 0 :
+                                            ctx.measureText(navPrevText(j)).width + (navPaddingLeft + navPaddingRight) * pixelRatio)) {
+                                            navFrom_next = j + 1;
+                                            break;
+                                        }
+                                    }
+                                    const crumb_nav = crumbs[i - 1];
+                                    crumb_nav.ctxLeft = crumb.ctxTop;
+                                    crumb_nav.ctxTop = crumb.ctxLeft;
+                                    crumb_nav.navText = navPrevText(i);
+                                    crumb_nav.ctxWidth = ctx.measureText(crumb_nav.navText).width + pixelRatio * (navPaddingLeft + navPaddingRight);
+                                    crumb.ctxLeft = crumb_nav.ctxLeft + crumb_nav.ctxWidth + crumbSpaceHor * pixelRatio;
+                                    crumb_nav.navFrom = navFrom_next;
+                                }
+                            }
+                            else {
+                                crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                crumb.ctxTop = crumb_prev.ctxTop;
+                                if (crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio &&
+                                    crumb.ctxLeft + crumb.ctxWidth > (crossClientRect.left - crossMargin) * pixelRatio ||
+                                    crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit) {
+                                    crumb.ctxLeft = ofsHor * pixelRatio;
+                                    crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
+                                    if (navFrom_next === void 0)
+                                        navFrom_next = i;
+                                    if (crumb.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio > $$.a('.#height') * pixelRatio) {
+                                        for (let j = i - 1; j > navFrom; j--) {
+                                            navTo--;
+                                            const crumb = crumbs[j];
+                                            crumb.navText = navNextText((crumbs.length - j - 1));
+                                            crumb.navFrom = navFrom_next;
+                                            crumb.ctxWidth = ctx.measureText(crumb.navText).width + (navPaddingRight + navPaddingLeft) * pixelRatio;
+                                            const crumb_prev = crumbs[j - 1];
+                                            crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                            crumb.ctxTop = crumb_prev.ctxTop;
+                                            if (crumb_prev.ctxLeft == ofsHor * pixelRatio || !(crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio &&
+                                                crumb.ctxLeft + crumb.ctxWidth > (crossClientRect.left - crossMargin) * pixelRatio ||
+                                                crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit))
+                                                break;
+                                        }
+                                        navTo++;
+                                        break;
+                                    }
+                                }
+                            }
+                            navTo++;
+                            crumb_prev = crumb;
+                        }
+                        if (crumb_prev) {
+                            const ctxBottom = crumb_prev.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, ctxBottom);
+                            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+                            gradient.addColorStop(1 - (crumbSpaceVer + ofsHor) * pixelRatio / ctxBottom, 'rgba(255,255,255,1)');
+                            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(0, 0, $$.a('<<.#width') * pixelRatio, ctxBottom);
+                            $$.a('<<.ofsVer_max', Math.max(ctxBottom / pixelRatio), $$.a('<<.ofsVer_initial'));
+                        }
+                        $$.a('.navTo', navTo);
+                        for (let i = !navFrom ? 0 : navFrom - 1; i < navTo; i++) {
+                            const crumb = crumbs[i];
+                            $$.$me_atom2_ctx_rect({
+                                ctx,
+                                ctxLeft: crumb.ctxLeft,
+                                ctxTop: crumb.ctxTop,
+                                ctxWidth: crumb.ctxWidth,
+                                ctxHeight: crumbHeight * pixelRatio,
+                                ctxBorderRadius: crumbBorderRadius * pixelRatio,
+                                stroke: {
+                                    ctxWidth: crumbBorderWidth * pixelRatio,
+                                    style: crumbBorderColor,
+                                },
+                                fillStyle: crumbBackground,
+                            });
+                            if (crumb.navText) {
+                                ctx.fillStyle = crumbTextColor;
+                                ctx.fillText(crumb.navText, crumb.ctxLeft + navPaddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+                            }
+                            else {
+                                ctx.save();
+                                ctx.translate(crumb.ctxLeft + iconMarginLeft * pixelRatio, crumb.ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
+                                ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
+                                ctx.fillStyle = crumb.color;
+                                const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
+                                ctx.fill(path);
+                                ctx.restore();
+                                $$.$me_atom2_ctx_cross({
+                                    ctx,
+                                    ctxTop: crumb.ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
+                                    ctxLeft: crumb.ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
+                                    ctxWidth: crossSize * pixelRatio,
+                                    ctxHeight: crossSize * pixelRatio,
+                                    stroke: {
+                                        ctxWidth: crossThick * pixelRatio,
+                                        style: crumbTextColor,
+                                    },
+                                });
+                                ctx.fillStyle = crumbTextColor;
+                                ctx.fillText(crumb.text, crumb.ctxLeft + paddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+                            }
+                        }
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//crumbs_pc.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let mode_enum;
+        (function (mode_enum) {
+            mode_enum[mode_enum["ver"] = 0] = "ver";
+            mode_enum[mode_enum["hor"] = 1] = "hor";
+        })(mode_enum || (mode_enum = {}));
+        $$.$nl_scheme_metro_crumbs_pad = {
+            type: '$nl_scheme_metro_crumbs_pad',
+            prop: {
+                crumbs: $$.$me_atom2_prop_abstract(),
+                crumb_height: () => 32,
+                fontSize: () => 14,
+                fontWeight: '<<.fontWeight',
+                fontFamily: '<<.fontFamily',
+                crumbSpaceHor: () => 16,
+                crumbSpaceVer: () => 16,
+                crumbBorderRadius: () => 3,
+                iconScale: () => .7 * 24 / 32,
+                iconMarginLeft: () => 4,
+                iconMarginRight: () => 4,
+                crossMargin: () => 16,
+                curtainHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], $$.$me_atom2_prop_compute_fn_sum()),
+                resizerHeight: () => 13,
+                horModeHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], ({ masters: [crumb_height, crumbSpaceVer] }) => crumb_height + 2 * crumbSpaceVer),
+                horModeTreshold: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], ({ masters: [crumb_height, crumbSpaceVer] }) => 2 * crumb_height + 3 * crumbSpaceVer),
+            },
+            control: {
+                canvas: () => ({
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'wheel') {
+                            const { clientX, clientY, deltaY } = dispatch_arg;
+                            if ($$.a.dispatch('', 'isInVisible', {
+                                clientX, clientY, ret: false
+                            }).ret) {
+                                $$.a.update('.ofsVer', val => $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret);
+                                dispatch_arg.ret = true;
+                            }
+                            return true;
+                        }
+                        else if (dispatch_name == 'ofsVer') {
+                            const { val, deltaY } = dispatch_arg;
+                            dispatch_arg.ret = deltaY < 0 ?
+                                Math.max(val + deltaY, 0) :
+                                Math.min(val + deltaY, $$.a('.height_content') - $$.a('.height_visible'));
+                            return true;
+                        }
+                        else if (dispatch_name == 'isInResizer') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const clientRect = $$.a('.#clientRect');
+                            const resizerBottom = $$.a('.resizerBottom');
+                            if (dispatch_arg.ret = !!resizerBottom) {
+                                const resizerTop = $$.a('.resizerTop');
+                                const clientRect = $$.a('.#clientRect');
+                                const rect = {
+                                    left: clientRect.left,
+                                    right: clientRect.right,
+                                    top: clientRect.top + resizerTop,
+                                    bottom: clientRect.top + resizerBottom,
+                                };
+                                dispatch_arg.ret = $$.$me_point_in_rect(clientX, clientY, rect);
+                            }
+                            return true;
+                        }
+                        else if (dispatch_name == 'isInVisible') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const clientRect = $$.a('.#clientRect');
+                            const rect = {
+                                left: clientRect.left,
+                                top: clientRect.top,
+                                right: clientRect.right,
+                                bottom: clientRect.top + $$.a('.height_visible'),
+                            };
+                            dispatch_arg.ret = $$.$me_point_in_rect(clientX, clientY, rect);
+                            return true;
+                        }
+                        else if (dispatch_name == 'deltaY') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const clientRect = $$.a('.#clientRect');
+                            dispatch_arg.ret =
+                                clientY < $$.a('.clickableTop') + clientRect.top ?
+                                    -$$.a('<.curtainHeight') :
+                                    clientY > $$.a('.clickableBottom') + clientRect.top ?
+                                        $$.a('<.curtainHeight') :
+                                        0;
+                            return true;
+                        }
+                        else if (dispatch_name == 'guid') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const crumbs = $$.a('.crumbs');
+                            if (crumbs) {
+                                const pixelRatio = $$.a('/.#pixelRatio');
+                                const ctxX = pixelRatio * clientX;
+                                const ctxY = pixelRatio * clientY;
+                                const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
+                                const ctxOfsVer = $$.a('.ofsVer') * pixelRatio;
+                                for (let i = 0; i < crumbs.length; i++) {
+                                    const crumb = crumbs[i];
+                                    const rect = {
+                                        left: crumb.ctxLeft,
+                                        right: crumb.ctxLeft + crumb.ctxWidth,
+                                        top: crumb.ctxTop - ctxOfsVer,
+                                        bottom: crumb.ctxTop + ctxCrumbHeight - ctxOfsVer,
+                                    };
+                                    if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
+                                        dispatch_arg.ret = crumb.guid;
+                                        break;
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                        return false;
+                    },
+                    event: {
+                        wheel: p => $$.a.dispatch('', 'wheel', {
+                            clientX: p.event.clientX,
+                            clientY: p.event.clientY,
+                            deltaY: p.event._deltaY,
+                            ret: false,
+                        }).ret,
+                        wheelTouch: p => $$.a.dispatch('', 'wheel', {
+                            clientX: p.event.start.touches[0].clientX,
+                            clientY: p.event.start.touches[0].clientY,
+                            deltaY: p.event._deltaY,
+                            ret: false,
+                        }).ret,
+                        clickOrTap: p => {
+                            let clientX;
+                            let clientY;
+                            if (p.event.start instanceof MouseEvent) {
+                                clientX = p.event.start.clientX;
+                                clientY = p.event.start.clientY;
+                            }
+                            else {
+                                clientX = p.event.start.touches[0].clientX;
+                                clientY = p.event.start.touches[0].clientY;
+                            }
+                            if (!$$.a.dispatch('', 'isInVisible', {
+                                clientX, clientY, ret: false
+                            }).ret)
+                                return false;
+                            const clientRect = $$.a('.#clientRect');
+                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false }).ret;
+                            if (deltaY) {
+                                $$.a.update('.ofsVer', val => $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret);
+                                return true;
+                            }
+                            const crumbs = $$.a('.crumbs');
+                            if (!crumbs)
+                                return false;
+                            const guid = $$.a.dispatch('', 'guid', { clientX, clientY, ret: '' }).ret;
+                            if (guid) {
+                                $$.a.update('<<.value', (val) => val.filter(s => s != guid));
+                            }
+                            return true;
+                        },
+                        mousedown: p => {
+                            const clientX = p.event.clientX;
+                            const clientY = p.event.clientY;
+                            if ($$.a.dispatch('', 'isInResizer', { clientX, clientY, ret: false }).ret) {
+                                $$.a('.resizer_start', clientY);
+                                const atom_isResizeMode = $$.a.get('.isResizeMode');
+                                $$.a('.resizeModeStarter', setTimeout(() => {
+                                    atom_isResizeMode.value(true);
+                                }, 600));
+                                return false;
+                            }
+                            return false;
+                        },
+                        mouseup: p => {
+                            if ($$.a('.isResizeMode')) {
+                                $$.a('.isResizeMode', false);
+                                return true;
+                            }
+                            else {
+                                const clientX = p.event.clientX;
+                                const clientY = p.event.clientY;
+                                if (!$$.a.dispatch('', 'isInResizer', { clientX, clientY, ret: false }).ret)
+                                    return false;
+                                const timer = $$.a('.resizeModeStarter');
+                                if (timer) {
+                                    clearTimeout(timer);
+                                    $$.a('.resizeModeStarter', null);
+                                }
+                                return false;
+                            }
+                        },
+                        mousemove: p => {
+                            const clientX = p.event.clientX;
+                            const clientY = p.event.clientY;
+                            if (p.event.buttons == 1) {
+                                const timer = $$.a('.resizeModeStarter');
+                                if (timer) {
+                                    clearTimeout(timer);
+                                    $$.a('.resizeModeStarter', null);
+                                    $$.a('.isResizeMode', true);
+                                }
+                            }
+                            if ($$.a('.isResizeMode')) {
+                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'row-resize' });
+                                const clientRect = $$.a('.#clientRect');
+                                $$.a('.height_visible_manual', Math.min(Math.max($$.a('.height_visible_manual_start') + clientY - $$.a('.resizer_start'), $$.a('<.horModeHeight')), $$.a('.#height') - $$.a('<<.ofsVer_initial'), $$.a('.height_content')));
+                                $$.a('<<.isLasso', false);
+                                return true;
+                            }
+                            if (!$$.a.dispatch('', 'isInVisible', {
+                                clientX, clientY, ret: false
+                            }).ret)
+                                return false;
+                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false }).ret;
+                            if (deltaY) {
+                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                return true;
+                            }
+                            const guid = $$.a.dispatch('', 'guid', { clientX, clientY, ret: '' }).ret;
+                            if (guid) {
+                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                return true;
+                            }
+                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: null });
+                            return false;
+                        },
+                    },
+                    prop: {
+                        ofsVer: $$.$me_atom2_prop([], () => 0),
+                        ofsHor: () => 0,
+                        crumbs: '<.crumbs',
+                        mode: () => mode_enum.ver,
+                        isResizeMode: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
+                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: val ? 'row-resize' : null });
+                            if (val) {
+                                $$.a('.height_visible_manual_start', $$.a('.height_visible'));
+                            }
+                            else {
+                                const mode = $$.a('.height_visible') >= $$.a('<.horModeTreshold') ?
+                                    mode_enum.ver :
+                                    mode_enum.hor;
+                                $$.a('.mode', mode);
+                                if (mode == mode_enum.hor)
+                                    $$.a('.height_visible_manual', $$.$me_atom2_anim({ to: $$.a('<.horModeHeight') }));
+                            }
+                        }),
+                        height_visible_manual: $$.$me_atom2_prop_store({
+                            default: () => 0,
+                            valid: (val) => typeof val == 'number' ? val : null,
+                        }),
+                    },
+                    prop_non_render: {
+                        height_visible_manual_start: () => 0,
+                        resizer_start: () => 0,
+                        height_content: () => 0,
+                        width_content: () => 0,
+                        height_visible: $$.$me_atom2_prop(['.height_visible_manual'], ({ masters: [manual] }) => manual),
+                        clickableBottom: () => 0,
+                        clickableTop: () => 0,
+                        resizerBottom: () => 0,
+                        resizerTop: () => 0,
+                        resizeModeStarter: () => null,
+                        needReposCrumbs: $$.$me_atom2_prop(['.crumbs', '<<.#width'], () => true),
+                        more_down: () => 0,
+                    },
+                    render: p => {
+                        const { ctx, pixelRatio, ctxWidth, ctxHeight } = p;
+                        const crumbs = $$.a('.crumbs');
+                        if (!crumbs)
+                            return;
+                        const ctxFontSize = $$.a('<.fontSize') * pixelRatio;
+                        const mode = $$.a('.mode');
+                        const crossSize = $$.a('<.fontSize');
+                        const crossMarginRight = 8;
+                        const crossMarginLeft = 4;
+                        const crossThick = 2;
+                        const iconScale = $$.a('<.iconScale');
+                        const iconSize = 24 * iconScale;
+                        const iconOfsHor = -2 * iconScale;
+                        const iconMarginLeft = $$.a('<.iconMarginLeft');
+                        const iconMarginRight = $$.a('<.iconMarginRight');
+                        const navPaddingLeft = 8;
+                        const navPaddingRight = 8;
+                        const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
+                        const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
+                        const crumbSpaceHor = $$.a('<.crumbSpaceHor');
+                        const crumbSpaceVer = $$.a('<.crumbSpaceVer');
+                        const crumbHeight = $$.a('<.crumb_height');
+                        const ctxCrumbHeight = crumbHeight * pixelRatio;
+                        const crumbBorderRadius = $$.a('<.crumbBorderRadius');
+                        const crumbBorderWidth = 1;
+                        const crumbBorderColor = 'silver';
+                        const crumbBackground = '#fcfcfd';
+                        const crumbTextColor = $$.a('/.colorText');
+                        const crossMargin = $$.a('<.crossMargin');
+                        ctx.font = $$.a('<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<.fontFamily');
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'bottom';
+                        let height_content;
+                        let width_content;
+                        const crossClientRect = $$.a('<<@cross.#clientRect');
+                        const clientRect = $$.a('.#clientRect');
+                        const ctxRightLimitFirstRow = (crossClientRect.left - clientRect.left - crossMargin) * pixelRatio;
+                        if (!$$.a('.needReposCrumbs')) {
+                            height_content = $$.a('.height_content');
+                            width_content = $$.a('.width_content');
+                        }
+                        else {
+                            const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - crumbSpaceHor);
+                            let crumb_prev;
+                            for (let i = 0; i < crumbs.length; i++) {
+                                const crumb = crumbs[i];
+                                crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                                if (!crumb_prev) {
+                                    crumb.ctxLeftHor = crumbSpaceHor * pixelRatio;
+                                    crumb.ctxLeft = crumbSpaceHor * pixelRatio;
+                                    crumb.ctxTop = crumbSpaceVer * pixelRatio;
+                                }
+                                else {
+                                    crumb.ctxLeftHor = crumb_prev.ctxLeftHor + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                    crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                    crumb.ctxTop = crumb_prev.ctxTop;
+                                    if (crumb.ctxTop < (crossClientRect.bottom - clientRect.top + crossMargin) * pixelRatio &&
+                                        crumb.ctxLeft + crumb.ctxWidth > ctxRightLimitFirstRow ||
+                                        crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit) {
+                                        crumb.ctxLeft = crumbSpaceHor * pixelRatio;
+                                        crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
+                                    }
+                                }
+                                crumb_prev = crumb;
+                            }
+                            height_content = 0;
+                            width_content = 0;
+                            if (crumb_prev) {
+                                height_content = crumb_prev.ctxTop / pixelRatio + crumbHeight + crumbSpaceVer;
+                                width_content = (crumb_prev.ctxLeftHor + crumb_prev.ctxWidth) / pixelRatio + crumbSpaceHor;
+                            }
+                            $$.a('.height_content', height_content);
+                            $$.a('.width_content', width_content);
+                            $$.a('.needReposCrumbs', false);
+                        }
+                        const margin = $$.a('<<.ofsVer_initial');
+                        const ctxMargin = margin * pixelRatio;
+                        let ctxHeightVisible = Math.min(ctxHeight - ctxMargin, height_content * pixelRatio);
+                        if ($$.a('.height_visible_manual'))
+                            ctxHeightVisible = Math.min(ctxHeightVisible, $$.a('.height_visible_manual') * pixelRatio);
+                        $$.a('.height_visible', ctxHeightVisible / pixelRatio);
+                        $$.a('<<.ofsVer_max', Math.min($$.a('.#height'), height_content + margin));
+                        const ctxOfsVer = $$.a('.ofsVer') * pixelRatio;
+                        const ctxOfsHor = $$.a('.ofsHor') * pixelRatio;
+                        if (crumbs.length) {
+                            const ctxBottom = Math.min(height_content * pixelRatio + ctxMargin, ctxHeightVisible + ctxMargin);
+                            const ctxTop = ctxBottom - ctxMargin;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, ctxBottom);
+                            const rgb = '255,255,255';
+                            gradient.addColorStop(0, `rgba(${rgb},1)`);
+                            gradient.addColorStop(1 - ctxMargin / ctxBottom, `rgba(${rgb},1)`);
+                            gradient.addColorStop(1, `rgba(${rgb},0)`);
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(0, 0, ctxWidth, ctxHeight);
+                        }
+                        draw_crumbs({
+                            ctx,
+                            pixelRatio,
+                            crumbs,
+                            ctxWidth,
+                            ctxHeightVisible,
+                            ctxOfsVer,
+                            crumbHeight,
+                            crumbBorderRadius,
+                            crumbBorderWidth,
+                            crumbBorderColor,
+                            crumbBackground,
+                            iconMarginLeft,
+                            iconOfsHor,
+                            crossMarginRight,
+                            crumbTextColor,
+                            ctxFontSize,
+                            iconSize,
+                            iconScale,
+                            crossSize,
+                            crossThick,
+                            paddingLeft,
+                            ctxRightLimitFirstRow,
+                            mode,
+                            ctxOfsHor,
+                            crumbSpaceVer,
+                        });
+                        const curtainHeight = $$.a('<.curtainHeight');
+                        const ctxCurtainHeight = curtainHeight * pixelRatio;
+                        let clickableTop = 0;
+                        if (mode == mode_enum.ver && $$.a('.ofsVer')) {
+                            clickableTop = curtainHeight;
+                            const ctxCurtainHeight = clickableTop * pixelRatio;
+                            const ctxCurtainTop = 0;
+                            const ctxCurtainBottom = ctxCurtainTop + ctxCurtainHeight;
+                            let qt = 0;
+                            for (const crumb of crumbs) {
+                                if (crumb.ctxTop - ctxOfsVer + ctxCrumbHeight < ctxCurtainBottom)
+                                    qt++;
+                            }
+                            if (qt) {
+                                const gradient = ctx.createLinearGradient(0, ctxCurtainBottom, 0, ctxCurtainTop);
+                                const rgb = '255,255,255';
+                                gradient.addColorStop(1, `rgba(${rgb},1)`);
+                                gradient.addColorStop(.5, `rgba(${rgb},.75)`);
+                                gradient.addColorStop(.25, `rgba(${rgb},.5)`);
+                                gradient.addColorStop(0, `rgba(${rgb},0)`);
+                                ctx.fillStyle = gradient;
+                                ctx.fillRect(0, ctxCurtainTop, ctxWidth, ctxCurtainHeight);
+                                const text = 'ещё ' + qt;
+                                ctx.fillStyle = $$.a('/.colorText');
+                                ctx.fillText(text, .5 * (ctxWidth - ctx.measureText(text).width), ctxCurtainTop + (ctxCurtainHeight + ctxFontSize) / 3);
+                            }
+                        }
+                        $$.a('.clickableTop', clickableTop);
+                        const resizerHeight = $$.a('<.resizerHeight');
+                        let clickableBottom = ctxHeightVisible / pixelRatio;
+                        let resizerBottom = 0;
+                        let resizerText;
+                        let more_down = 0;
+                        if (crumbs.length) {
+                            const ctxCurtainBottom = ctxHeightVisible;
+                            const ctxCurtainTop = ctxCurtainBottom - ctxCurtainHeight;
+                            if (mode == mode_enum.ver && (height_content - $$.a('.ofsVer')) > resizerHeight)
+                                for (const crumb of crumbs)
+                                    if (crumb.ctxTop - ctxOfsVer > ctxCurtainTop)
+                                        more_down++;
+                            if (!more_down) {
+                                resizerText = '==';
+                            }
+                            else {
+                                resizerText = '= ещё ' + more_down + ' =';
+                                clickableBottom = ctxCurtainTop / pixelRatio;
+                                const gradient = ctx.createLinearGradient(0, ctxCurtainTop, 0, ctxCurtainBottom);
+                                const rgb = '255,255,255';
+                                gradient.addColorStop(1, `rgba(${rgb},1)`);
+                                gradient.addColorStop(.5, `rgba(${rgb},.75)`);
+                                gradient.addColorStop(.25, `rgba(${rgb},.5)`);
+                                gradient.addColorStop(0, `rgba(${rgb},0)`);
+                                ctx.fillStyle = gradient;
+                                ctx.fillRect(0, ctxCurtainTop, ctxWidth, ctxCurtainHeight);
+                            }
+                            resizerBottom = ctxHeightVisible / pixelRatio;
+                        }
+                        $$.a('.more_down', more_down);
+                        const isResizeMode = $$.a('.isResizeMode');
+                        const ctxResizerHeight = resizerHeight * pixelRatio;
+                        let ctxResizerTop;
+                        if (isResizeMode) {
+                            let ctxY = resizerBottom * pixelRatio - 6 * pixelRatio;
+                            ctx.fillStyle = '#474F61';
+                            ctxResizerTop = ctxY - 8 * pixelRatio;
+                            ctx.fillRect(0, ctxResizerTop, ctxWidth, ctxResizerHeight);
+                            ctx.strokeStyle = '#D6DAE0';
+                            ctx.beginPath();
+                            ctx.moveTo(0, ctxY);
+                            ctx.lineWidth = 1 * pixelRatio;
+                            ctx.lineTo(ctxWidth, ctxY);
+                            ctxY -= 3 * pixelRatio;
+                            ctx.moveTo(0, ctxY);
+                            ctx.lineTo(ctxWidth, ctxY);
+                            ctx.stroke();
+                        }
+                        if (resizerBottom) {
+                            const ctxTextWidth = ctx.measureText(resizerText).width;
+                            if (isResizeMode) {
+                                const ctxRectWidth = ctxTextWidth + 8 * pixelRatio;
+                                ctx.fillStyle = 'rgba(255,255,255,.8)';
+                                ctx.fillRect(.5 * (ctxWidth - ctxRectWidth), ctxResizerTop, ctxRectWidth, ctxResizerHeight);
+                            }
+                            ctx.fillStyle = $$.a('/.colorText');
+                            ctx.fillText(resizerText, .5 * (ctxWidth - ctxTextWidth), resizerBottom * pixelRatio);
+                        }
+                        $$.a('.clickableBottom', clickableBottom);
+                        $$.a('.resizerBottom', resizerBottom);
+                        $$.a('.resizerTop', resizerBottom - ctxFontSize / pixelRatio);
+                    },
+                }),
+            },
+        };
+        function draw_crumbs(p) {
+            const { ctx, pixelRatio, crumbs, ctxWidth, ctxHeightVisible, ctxOfsVer, crumbHeight, crumbBorderRadius, crumbBorderWidth, crumbBorderColor, crumbBackground, iconMarginLeft, iconOfsHor, crossMarginRight, crumbTextColor, ctxFontSize, iconSize, iconScale, crossSize, crossThick, paddingLeft, ctxRightLimitFirstRow, mode, ctxOfsHor, crumbSpaceVer, } = p;
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, mode == mode_enum.hor ? ctxRightLimitFirstRow : ctxWidth, ctxHeightVisible);
+            ctx.clip();
+            for (const crumb of crumbs) {
+                const ctxLeft = mode == mode_enum.ver ? crumb.ctxLeft : crumb.ctxLeftHor;
+                const ctxTop = mode == mode_enum.ver ? crumb.ctxTop - ctxOfsVer : crumbSpaceVer * pixelRatio;
+                $$.$me_atom2_ctx_rect({
+                    ctx,
+                    ctxLeft,
+                    ctxTop,
+                    ctxWidth: crumb.ctxWidth,
+                    ctxHeight: crumbHeight * pixelRatio,
+                    ctxBorderRadius: crumbBorderRadius * pixelRatio,
+                    stroke: {
+                        ctxWidth: crumbBorderWidth * pixelRatio,
+                        style: crumbBorderColor,
+                    },
+                    fillStyle: crumbBackground,
+                });
+                ctx.save();
+                ctx.translate(ctxLeft + iconMarginLeft * pixelRatio, ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
+                ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
+                ctx.fillStyle = crumb.color;
+                const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
+                ctx.fill(path);
+                ctx.restore();
+                $$.$me_atom2_ctx_cross({
+                    ctx,
+                    ctxLeft: ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
+                    ctxTop: ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
+                    ctxWidth: crossSize * pixelRatio,
+                    ctxHeight: crossSize * pixelRatio,
+                    stroke: {
+                        ctxWidth: crossThick * pixelRatio,
+                        style: crumbTextColor,
+                    },
+                });
+                ctx.fillStyle = crumbTextColor;
+                ctx.fillText(crumb.text, ctxLeft + paddingLeft * pixelRatio, ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+            }
+            ctx.restore();
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//crumbs_pad.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro = {
+            base: $$.$nl_scheme_engine,
+            prop: {
+                data: '/.scheme_metro',
+                background_station: () => 'white',
+                background_station_selected: () => 'red',
+                background_station_will_select: () => '#F8CFD3',
+                background_station_will_deselect: () => '#3F88DE',
+                colorText_will_select: () => '#D5483E',
+                colorText_will_deselect: '.background_station_will_deselect',
+                value: $$.$me_atom2_prop(['.selected', '/.code2guids'], ({ masters: [selected, code2guids] }) => {
+                    const result = [];
+                    for (const code of [...selected].map(([code]) => code)) {
+                        const guids = code2guids[code];
+                        if (guids)
+                            result.push(...guids);
+                    }
+                    return result;
+                }, ({ val }) => {
+                    const guid2point = $$.a('/.guid2point');
+                    const selected = new Map();
+                    for (const guid of val) {
+                        const point = guid2point[guid];
+                        if (!point)
+                            console.warn(`unknown guid ${guid}`);
+                        if (!selected.has(point.station.code))
+                            selected.set(point.station.code, null);
+                    }
+                    $$.a('.selected', selected);
+                }),
+                crumbs: $$.$me_atom2_prop(['.value', '/.guid2point'], ({ masters: [value, guid2point] }) => {
+                    const result = [];
+                    for (const guid of value) {
+                        const point = guid2point[guid];
+                        if (!point)
+                            console.warn(`unknown guid ${guid}`);
+                        result.push({
+                            guid: guid,
+                            code: point.station.code,
+                            text: point.station.text,
+                            color: point.line.color,
+                        });
+                    }
+                    return result;
+                }),
+                isTouch: $$.$me_atom2_prop_store({
+                    default: () => true,
+                    valid: (val) => typeof val == 'boolean' ? val : null,
+                }),
+                crumb_height: $$.$me_atom2_prop_either(['.isTouch'], () => 32, () => 24),
+                fontSize: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 14),
+                crumbSpaceHor: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 8),
+                crumbSpaceVer: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 8),
+                crumbBorderRadius: $$.$me_atom2_prop_either(['.isTouch'], () => 5, () => 3),
+                iconScale: $$.$me_atom2_prop_either(['.isTouch'], () => .7, () => .7 * 24 / 32),
+                iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
+                iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
+                crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 44, () => 16),
+                '#order': () => ['container', 'container2', 'lasso', 'crumbs', 'cross'],
+            },
+            elem: {
+                crumbs: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => ({
+                    type: (isTouch ? $$.$nl_scheme_metro_crumbs_pad : $$.$nl_scheme_metro_crumbs_pc).type,
+                    base: isTouch ?
+                        $$.$nl_scheme_metro_crumbs_pad :
+                        $$.$nl_scheme_metro_crumbs_pc,
+                    prop: {
+                        '#height': $$.$me_atom2_prop(['<.#height', '<.ofsVer_initial', '.curtainHeight'], ({ masters: [height, ofsVer_initial, curtainHeight] }) => .25 * height + ofsVer_initial + curtainHeight),
+                        crumbs: '<.crumbs',
+                        crumb_height: '<.crumb_height',
+                        fontSize: '<.fontSize',
+                        crumbSpaceHor: '<.crumbSpaceHor',
+                        crumbSpaceVer: '<.crumbSpaceVer',
+                        crumbBorderRadius: '<.crumbBorderRadius',
+                        iconScale: '<.iconScale',
+                        iconMarginLeft: '<.iconMarginLeft',
+                        iconMarginRight: '<.iconMarginRight',
+                        crossMargin: '<.crossMargin',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                })),
+            },
+        };
+        const idx = window.location.pathname.indexOf('/', 1);
+        const root = !~idx ?
+            window.location.pathname :
+            window.location.pathname.slice(0, idx);
+        const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
+        worker.postMessage({ cmd: 'prepare' });
+        worker.postMessage({ cmd: 'data' });
+        worker.onmessage = (event) => {
+            const cmd = event.data.cmd;
+            const data = event.data.data;
+            if (cmd == 'data') {
+                $$.a('/.scheme_metro', data.scheme);
+                $$.a('/.guid2point', data.guid2point);
+                $$.a('/.code2guids', data.code2guids);
+            }
+            else if (cmd == 'setItem') {
+                localStorage.setItem('msk-metro-guids', data);
+            }
+            else if (cmd == 'getItem') {
+                const data = localStorage.getItem('msk-metro-guids');
+                worker.postMessage({ cmd: 'getItem', data });
+            }
+        };
+        $$.$me_atom2_entity.root().props({
+            'scheme_metro': () => null,
+            'guid2point': () => null,
+            'code2guids': () => null,
+        });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //metro.js.map
@@ -7863,7 +6932,9 @@ var $;
                     style: {
                         margin: () => 0,
                     },
-                    prop: {},
+                    prop: {
+                        demo_border: () => 'red',
+                    },
                     elem: {
                         scheme: () => ({
                             base: $$.$nl_scheme_metro
