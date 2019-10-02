@@ -1,3 +1,4 @@
+function require( path ){ return $node[ path ] };
 "use strict";
 var $;
 (function ($) {
@@ -894,7 +895,7 @@ var $;
                     fn_compute,
                     fn_apply
                 } :
-                Object.assign({}, masters, { fn_compute,
+                Object.assign(Object.assign({}, masters), { fn_compute,
                     fn_apply });
             return result;
         }
@@ -909,7 +910,7 @@ var $;
                 typeof prop_def === 'function' ? {
                     masters: [],
                     fn_compute: prop_def,
-                } : Object.assign({}, prop_def, { masters: Array.isArray(prop_def.masters) ?
+                } : Object.assign(Object.assign({}, prop_def), { masters: Array.isArray(prop_def.masters) ?
                         [...prop_def.masters] :
                         prop_def.masters });
             if (pp.masters) {
@@ -921,7 +922,7 @@ var $;
             if (pp.fn_apply && p.fn_apply)
                 $$.$me_throw(`fn_apply collision for ${p.tail}`, p.fn_apply, pp.fn_apply);
             pp.fn_apply = pp.fn_apply || p.fn_apply;
-            return Object.assign({}, p, pp);
+            return Object.assign(Object.assign({}, p), pp);
         }
         $$.$me_atom2_prop_def_prepare = $me_atom2_prop_def_prepare;
         $$.$me_atom2_prop_compute_fn_or = (initial) => initial === void 0 ? compute_fn_or :
@@ -1047,333 +1048,6 @@ var $;
 ;
 "use strict";
 //control.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const accel_scrollAccu_threshold = 30;
-        class $me_atom2_wheel_synth_class {
-            constructor() {
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                this.lastDeltaX = 0;
-                this.lastDeltaY = 0;
-                this.accelX = 0;
-                this.accelY = 0;
-            }
-            cancel() {
-                this.mode = null;
-            }
-            endHelper() {
-                if (this.mode != $$.$me_atom2_wheel_synth_mode.move) {
-                    this.cancel();
-                }
-                else {
-                    this.accel_k = 1;
-                    this.mode = $$.$me_atom2_wheel_synth_mode.end;
-                    $$.$me_atom2_async();
-                }
-            }
-            raf(t) {
-                return (this.mode == $$.$me_atom2_wheel_synth_mode.move ||
-                    this.mode == $$.$me_atom2_wheel_synth_mode.init ||
-                    false ?
-                    this.rafMove(t) :
-                    this.mode == $$.$me_atom2_wheel_synth_mode.end ?
-                        this.rafEnd(t) :
-                        null);
-            }
-            rafMoveHeler(t) {
-                const timeCurr = performance.now();
-                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
-                if (Math.abs(this.scrollAccuX) < accel_threshold) {
-                    this.accelX = 0;
-                }
-                else if (this.timePrevX != null &&
-                    Math.abs(this.scrollAccuX) >= accel_scrollAccu_threshold &&
-                    timeCurr != this.timePrevX &&
-                    true) {
-                    this.tPrev = t;
-                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
-                    this.timePrevX = timeCurr;
-                }
-                if (Math.abs(this.scrollAccuY) < accel_threshold) {
-                    this.accelY = 0;
-                }
-                else if (this.timePrevY != null &&
-                    Math.abs(this.scrollAccuY) >= accel_scrollAccu_threshold &&
-                    timeCurr != this.timePrevY &&
-                    true) {
-                    this.tPrev = t;
-                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
-                    this.timePrevY = timeCurr;
-                }
-                const result = {
-                    mode: this.mode,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
-                };
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                return result;
-            }
-        }
-        $$.$me_atom2_wheel_synth_class = $me_atom2_wheel_synth_class;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//wheel_synth.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $me_atom2_wheel_touch_class extends $$.$me_atom2_wheel_synth_class {
-            start(event) {
-                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
-                this._start = event;
-                this._last = event;
-                this.clientX0 = event.touches[0].clientX;
-                this.clientY0 = event.touches[0].clientY;
-                if (event.touches.length > 1) {
-                    this.clientX1 = event.touches[1].clientX;
-                    this.clientY1 = event.touches[1].clientY;
-                    if (event.touches.length > 2) {
-                        this.clientX2 = event.touches[2].clientX;
-                        this.clientY2 = event.touches[2].clientY;
-                    }
-                }
-                this.scrollAccuX = 0;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-                this.timePrevX = null;
-                this.timePrevY = null;
-            }
-            move(event) {
-                this._last = event;
-                this._end = event;
-                const deltaX = event.touches.length == 1 ?
-                    this.clientX0 - event.touches[0].clientX :
-                    event.touches.length == 2 ?
-                        Math.sign(this.clientX0 - event.touches[0].clientX) *
-                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX)) :
-                        event.touches.length == 3 ?
-                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX), Math.abs(this.clientX2 - event.touches[2].clientX)) :
-                            0;
-                const deltaY = event.touches.length == 1 ?
-                    this.clientY0 - event.touches[0].clientY :
-                    event.touches.length == 2 ?
-                        Math.sign(this.clientY0 - event.touches[0].clientY) *
-                            Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY)) :
-                        event.touches.length == 3 ?
-                            Math.sign(this.clientY0 - event.touches[0].clientY) *
-                                Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY), Math.abs(this.clientY2 - event.touches[2].clientY)) :
-                            0;
-                this.clientX0 = event.touches[0].clientX;
-                this.clientY0 = event.touches[0].clientY;
-                if (event.touches.length > 1) {
-                    this.clientX1 = event.touches[1].clientX;
-                    this.clientY1 = event.touches[1].clientY;
-                    if (event.touches.length > 2) {
-                        this.clientX2 = event.touches[2].clientX;
-                        this.clientY2 = event.touches[2].clientY;
-                    }
-                }
-                if (deltaX) {
-                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
-                        this.scrollAccuX = deltaX;
-                        this.timePrevX = performance.now();
-                    }
-                    else {
-                        if (this.timePrevX == null)
-                            this.timePrevX = performance.now();
-                        this.scrollAccuX += deltaX;
-                    }
-                }
-                if (deltaY) {
-                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
-                        this.scrollAccuY = deltaY;
-                        this.timePrevY = performance.now();
-                    }
-                    else {
-                        if (this.timePrevY == null)
-                            this.timePrevY = performance.now();
-                        this.scrollAccuY += deltaY;
-                    }
-                }
-                this.lastDeltaX = deltaX;
-                this.lastDeltaY = deltaY;
-                if (deltaX || deltaY) {
-                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
-                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
-                    }
-                    $$.$me_atom2_async();
-                }
-            }
-            end(event) {
-                this._end = event;
-                this.endHelper();
-            }
-            rafMove(t) {
-                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafMoveHeler(t));
-            }
-            rafEndHelper(t) {
-                const tDelta = t - this.tPrev;
-                const scrollAccuX = this.accelX * tDelta;
-                const scrollAccuY = this.accelY * tDelta;
-                const result = {
-                    mode: this.mode,
-                    _deltaX: scrollAccuX,
-                    _deltaY: scrollAccuY,
-                };
-                if (!(Math.abs(scrollAccuX) >= 1 ||
-                    Math.abs(scrollAccuY) >= 1)) {
-                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
-                }
-                else {
-                    this.accelX = this.accelX * this.accel_k;
-                    this.accelY = this.accelY * this.accel_k;
-                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
-                    this.tPrev = t;
-                    $$.$me_atom2_async();
-                }
-                return result;
-            }
-            rafEnd(t) {
-                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafEndHelper(t));
-            }
-        }
-        $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//wheel_touch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $me_atom2_wheel_drag_class extends $$.$me_atom2_wheel_synth_class {
-            start(event) {
-                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
-                this._start = event;
-                this._last = event;
-                this.scrollAccuX = 0;
-                this.clientX = event.clientX;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.clientY = event.clientY;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-                this.timePrevX = null;
-                this.timePrevY = null;
-            }
-            move(event) {
-                this._last = event;
-                this._end = event;
-                const deltaX = this.clientX - event.clientX;
-                if (deltaX)
-                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
-                        this.scrollAccuX = deltaX;
-                        this.timePrevX = performance.now();
-                    }
-                    else {
-                        if (this.timePrevX == null)
-                            this.timePrevX = performance.now();
-                        this.scrollAccuX += deltaX;
-                    }
-                this.clientX = event.clientX;
-                this.lastDeltaX = deltaX;
-                const deltaY = this.clientY - event.clientY;
-                if (deltaY)
-                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
-                        this.scrollAccuY = deltaY;
-                        this.timePrevY = performance.now();
-                    }
-                    else {
-                        if (this.timePrevY == null)
-                            this.timePrevY = performance.now();
-                        this.scrollAccuY += deltaY;
-                    }
-                this.clientY = event.clientY;
-                this.lastDeltaY = deltaY;
-                if (deltaX || deltaY) {
-                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
-                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
-                    }
-                    $$.$me_atom2_async();
-                }
-            }
-            end(event) {
-                this._end = event;
-                this.endHelper();
-            }
-            rafMove(t) {
-                const timeCurr = performance.now();
-                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
-                if (Math.abs(this.scrollAccuX) < accel_threshold) {
-                    this.accelX = 0;
-                }
-                else if (this.timePrevX != null) {
-                    this.tPrev = t;
-                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
-                    this.timePrevX = timeCurr;
-                }
-                if (Math.abs(this.scrollAccuY) < accel_threshold) {
-                    this.accelY = 0;
-                }
-                else if (this.timePrevY != null) {
-                    this.tPrev = t;
-                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
-                    this.timePrevY = timeCurr;
-                }
-                const result = {
-                    mode: this.mode,
-                    start: this._start,
-                    last: this._last,
-                    end: this._end,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
-                };
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                return result;
-            }
-            rafEnd(t) {
-                const tDelta = t - this.tPrev;
-                const scrollAccuX = this.accelX * tDelta;
-                const scrollAccuY = this.accelY * tDelta;
-                const result = {
-                    start: this._start,
-                    last: this._last,
-                    end: this._end,
-                    _deltaX: scrollAccuX,
-                    _deltaY: scrollAccuY,
-                };
-                if (!(Math.abs(scrollAccuX) >= 1 ||
-                    Math.abs(scrollAccuY) >= 1)) {
-                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
-                }
-                else {
-                    this.accelX = this.accelX * this.accel_k;
-                    this.accelY = this.accelY * this.accel_k;
-                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
-                    this.tPrev = t;
-                    $$.$me_atom2_async();
-                }
-                return result;
-            }
-        }
-        $$.$me_atom2_wheel_drag_class = $me_atom2_wheel_drag_class;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//wheel_drag.js.map
 ;
 "use strict";
 var $;
@@ -1715,7 +1389,7 @@ var $;
                 };
             }
         }
-        $me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer']), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
+        $me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer'])), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
         $me_atom2_ec._to_init = Array();
         $me_atom2_ec.almost_ready = new Set();
         $me_atom2_ec._cnf_cache = new Map();
@@ -1739,7 +1413,7 @@ var $;
         })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
         class $me_atom2_control extends $me_atom2_ec {
             constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
+                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.control }));
                 this._mk_controls(this.level = p.level || 1);
                 this._mk_props('<'.repeat(this.level));
             }
@@ -2068,9 +1742,336 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const accel_scrollAccu_threshold = 30;
+        class $me_atom2_wheel_synth_class {
+            constructor() {
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                this.lastDeltaX = 0;
+                this.lastDeltaY = 0;
+                this.accelX = 0;
+                this.accelY = 0;
+            }
+            cancel() {
+                this.mode = null;
+            }
+            endHelper() {
+                if (this.mode != $$.$me_atom2_wheel_synth_mode.move) {
+                    this.cancel();
+                }
+                else {
+                    this.accel_k = 1;
+                    this.mode = $$.$me_atom2_wheel_synth_mode.end;
+                    $$.$me_atom2_async();
+                }
+            }
+            raf(t) {
+                return (this.mode == $$.$me_atom2_wheel_synth_mode.move ||
+                    this.mode == $$.$me_atom2_wheel_synth_mode.init ||
+                    false ?
+                    this.rafMove(t) :
+                    this.mode == $$.$me_atom2_wheel_synth_mode.end ?
+                        this.rafEnd(t) :
+                        null);
+            }
+            rafMoveHeler(t) {
+                const timeCurr = performance.now();
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
+                if (Math.abs(this.scrollAccuX) < accel_threshold) {
+                    this.accelX = 0;
+                }
+                else if (this.timePrevX != null &&
+                    Math.abs(this.scrollAccuX) >= accel_scrollAccu_threshold &&
+                    timeCurr != this.timePrevX &&
+                    true) {
+                    this.tPrev = t;
+                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
+                    this.timePrevX = timeCurr;
+                }
+                if (Math.abs(this.scrollAccuY) < accel_threshold) {
+                    this.accelY = 0;
+                }
+                else if (this.timePrevY != null &&
+                    Math.abs(this.scrollAccuY) >= accel_scrollAccu_threshold &&
+                    timeCurr != this.timePrevY &&
+                    true) {
+                    this.tPrev = t;
+                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
+                    this.timePrevY = timeCurr;
+                }
+                const result = {
+                    mode: this.mode,
+                    _deltaX: this.scrollAccuX,
+                    _deltaY: this.scrollAccuY,
+                };
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                return result;
+            }
+        }
+        $$.$me_atom2_wheel_synth_class = $me_atom2_wheel_synth_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_synth.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $me_atom2_wheel_touch_class extends $$.$me_atom2_wheel_synth_class {
+            start(event) {
+                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
+                this._start = event;
+                this._last = event;
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                if (event.touches.length > 1) {
+                    this.clientX1 = event.touches[1].clientX;
+                    this.clientY1 = event.touches[1].clientY;
+                    if (event.touches.length > 2) {
+                        this.clientX2 = event.touches[2].clientX;
+                        this.clientY2 = event.touches[2].clientY;
+                    }
+                }
+                this.scrollAccuX = 0;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+                this.timePrevX = null;
+                this.timePrevY = null;
+            }
+            move(event) {
+                this._last = event;
+                this._end = event;
+                const deltaX = event.touches.length == 1 ?
+                    this.clientX0 - event.touches[0].clientX :
+                    event.touches.length == 2 ?
+                        Math.sign(this.clientX0 - event.touches[0].clientX) *
+                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX)) :
+                        event.touches.length == 3 ?
+                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX), Math.abs(this.clientX2 - event.touches[2].clientX)) :
+                            0;
+                const deltaY = event.touches.length == 1 ?
+                    this.clientY0 - event.touches[0].clientY :
+                    event.touches.length == 2 ?
+                        Math.sign(this.clientY0 - event.touches[0].clientY) *
+                            Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY)) :
+                        event.touches.length == 3 ?
+                            Math.sign(this.clientY0 - event.touches[0].clientY) *
+                                Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY), Math.abs(this.clientY2 - event.touches[2].clientY)) :
+                            0;
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                if (event.touches.length > 1) {
+                    this.clientX1 = event.touches[1].clientX;
+                    this.clientY1 = event.touches[1].clientY;
+                    if (event.touches.length > 2) {
+                        this.clientX2 = event.touches[2].clientX;
+                        this.clientY2 = event.touches[2].clientY;
+                    }
+                }
+                if (deltaX) {
+                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
+                        this.scrollAccuX = deltaX;
+                        this.timePrevX = performance.now();
+                    }
+                    else {
+                        if (this.timePrevX == null)
+                            this.timePrevX = performance.now();
+                        this.scrollAccuX += deltaX;
+                    }
+                }
+                if (deltaY) {
+                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
+                        this.scrollAccuY = deltaY;
+                        this.timePrevY = performance.now();
+                    }
+                    else {
+                        if (this.timePrevY == null)
+                            this.timePrevY = performance.now();
+                        this.scrollAccuY += deltaY;
+                    }
+                }
+                this.lastDeltaX = deltaX;
+                this.lastDeltaY = deltaY;
+                if (deltaX || deltaY) {
+                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
+                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
+                    }
+                    $$.$me_atom2_async();
+                }
+            }
+            end(event) {
+                this._end = event;
+                this.endHelper();
+            }
+            rafMove(t) {
+                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafMoveHeler(t));
+            }
+            rafEndHelper(t) {
+                const tDelta = t - this.tPrev;
+                const scrollAccuX = this.accelX * tDelta;
+                const scrollAccuY = this.accelY * tDelta;
+                const result = {
+                    mode: this.mode,
+                    _deltaX: scrollAccuX,
+                    _deltaY: scrollAccuY,
+                };
+                if (!(Math.abs(scrollAccuX) >= 1 ||
+                    Math.abs(scrollAccuY) >= 1)) {
+                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
+                }
+                else {
+                    this.accelX = this.accelX * this.accel_k;
+                    this.accelY = this.accelY * this.accel_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
+                    this.tPrev = t;
+                    $$.$me_atom2_async();
+                }
+                return result;
+            }
+            rafEnd(t) {
+                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafEndHelper(t));
+            }
+        }
+        $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_touch.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $me_atom2_wheel_drag_class extends $$.$me_atom2_wheel_synth_class {
+            start(event) {
+                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
+                this._start = event;
+                this._last = event;
+                this.scrollAccuX = 0;
+                this.clientX = event.clientX;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.clientY = event.clientY;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+                this.timePrevX = null;
+                this.timePrevY = null;
+            }
+            move(event) {
+                this._last = event;
+                this._end = event;
+                const deltaX = this.clientX - event.clientX;
+                if (deltaX)
+                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
+                        this.scrollAccuX = deltaX;
+                        this.timePrevX = performance.now();
+                    }
+                    else {
+                        if (this.timePrevX == null)
+                            this.timePrevX = performance.now();
+                        this.scrollAccuX += deltaX;
+                    }
+                this.clientX = event.clientX;
+                this.lastDeltaX = deltaX;
+                const deltaY = this.clientY - event.clientY;
+                if (deltaY)
+                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
+                        this.scrollAccuY = deltaY;
+                        this.timePrevY = performance.now();
+                    }
+                    else {
+                        if (this.timePrevY == null)
+                            this.timePrevY = performance.now();
+                        this.scrollAccuY += deltaY;
+                    }
+                this.clientY = event.clientY;
+                this.lastDeltaY = deltaY;
+                if (deltaX || deltaY) {
+                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
+                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
+                    }
+                    $$.$me_atom2_async();
+                }
+            }
+            end(event) {
+                this._end = event;
+                this.endHelper();
+            }
+            rafMove(t) {
+                const timeCurr = performance.now();
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
+                if (Math.abs(this.scrollAccuX) < accel_threshold) {
+                    this.accelX = 0;
+                }
+                else if (this.timePrevX != null) {
+                    this.tPrev = t;
+                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
+                    this.timePrevX = timeCurr;
+                }
+                if (Math.abs(this.scrollAccuY) < accel_threshold) {
+                    this.accelY = 0;
+                }
+                else if (this.timePrevY != null) {
+                    this.tPrev = t;
+                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
+                    this.timePrevY = timeCurr;
+                }
+                const result = {
+                    mode: this.mode,
+                    start: this._start,
+                    last: this._last,
+                    end: this._end,
+                    _deltaX: this.scrollAccuX,
+                    _deltaY: this.scrollAccuY,
+                };
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                return result;
+            }
+            rafEnd(t) {
+                const tDelta = t - this.tPrev;
+                const scrollAccuX = this.accelX * tDelta;
+                const scrollAccuY = this.accelY * tDelta;
+                const result = {
+                    start: this._start,
+                    last: this._last,
+                    end: this._end,
+                    _deltaX: scrollAccuX,
+                    _deltaY: scrollAccuY,
+                };
+                if (!(Math.abs(scrollAccuX) >= 1 ||
+                    Math.abs(scrollAccuY) >= 1)) {
+                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
+                }
+                else {
+                    this.accelX = this.accelX * this.accel_k;
+                    this.accelY = this.accelY * this.accel_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
+                    this.tPrev = t;
+                    $$.$me_atom2_async();
+                }
+                return result;
+            }
+        }
+        $$.$me_atom2_wheel_drag_class = $me_atom2_wheel_drag_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_drag.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         class $me_atom2_elem extends $$.$me_atom2_ec {
             constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.elem }));
+                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.elem }));
                 this.skipStyle = false;
                 const cnf_control = this._mk_controls();
                 const has_control = !!Object.keys(cnf_control).length;
@@ -2311,10 +2312,10 @@ var $;
                     this.cnf_items('prop'),
                     defaults,
                     defaults_relative,
-                    Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
+                    Object.assign(Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
                         '#order': this.fn_compute_order,
-                    }), { '#isHover': () => false }),
-                    Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
+                    })), { '#isHover': () => false }),
+                    Object.assign(Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
                             if (val)
                                 $$.$me_atom2_ec._to_init.push(this.path);
                         }), '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
@@ -2322,7 +2323,7 @@ var $;
                         }), '#visible': $$.$me_atom2_prop(['.#hidden'].concat(!has_parent ? [] : ['<.#visible']), this.fn_compute_visible), '#clientRect': $$.$me_atom2_prop(['.#isReady'], this.fn_compute_clientRect, this.fn_apply_clientRect) }, (!has_control ? {} : {
                         '#ctx': () => this.node.getContext('2d'),
                         '#ctxSize': $$.$me_atom2_prop(['/.#pixelRatio', '.#width', '.#height'], this.fn_compute_ctxSize, this.fn_apply_ctxSize),
-                    }), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
+                    })), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
                             '<.#height', '.#height', '.#ofsVer'], this.fn_compute_left, this.fn_apply_top) }),
                 ], {
                     def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
@@ -3077,7 +3078,7 @@ var $;
     (function ($$) {
         class $me_atom2 extends $$.$me_atom2_entity {
             constructor(p) {
-                super(Object.assign({}, p, { ent: p.is_key ?
+                super(Object.assign(Object.assign({}, p), { ent: p.is_key ?
                         $$.$me_atom2_entity_enum.key :
                         $$.$me_atom2_entity_enum.prop }));
                 this._descendant_level = p.descendant_level || 0;
@@ -3110,7 +3111,7 @@ var $;
                                 ss_prev = new Set(prev);
                                 for (const tail of val)
                                     if (!ss_prev.has(tail))
-                                        new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
+                                        new $me_atom2(Object.assign(Object.assign({}, p), { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
                             }
                             if (val && !val.length && this.path.tail.startsWith('@')) {
                                 const ec = this.parent();
@@ -3341,7 +3342,7 @@ var $;
                             anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
                         }
                         if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
-                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
+                            $me_atom2.anim_to_play.set(this.path, Object.assign(Object.assign({}, anim), { value: anim.from }));
                             $me_atom2.anim_active(anim, true);
                             $$.$me_atom2_async();
                         }
@@ -3605,7 +3606,7 @@ var $;
                     for (const k in entities_key) {
                         entities_key[k]._key_idx_changed({
                             key: p.key.concat(k),
-                            change: Object.assign({}, p.change, { i_key: p.change.i_key - 1 }),
+                            change: Object.assign(Object.assign({}, p.change), { i_key: p.change.i_key - 1 }),
                         });
                     }
                 }
@@ -3759,7 +3760,7 @@ var $;
         $$.$me_atom2_anim = $me_atom2_anim;
         class $me_atom2_anim_class {
             constructor(anim) {
-                this._anim = Object.assign({}, anim, { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
+                this._anim = Object.assign(Object.assign({}, anim), { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
             }
         }
         $$.$me_atom2_anim_class = $me_atom2_anim_class;
@@ -3824,7 +3825,7 @@ var $;
                 (null == p.stroke.ctxWidth || typeof p.stroke.ctxWidth == 'number') &&
                     (null == p.stroke.style || typeof p.stroke.style == 'string')) {
                 ctx_rect_rounded(p, p.stroke && p.stroke.ctxWidth || 0);
-                fill_stroke(Object.assign({}, p, { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
+                fill_stroke(Object.assign(Object.assign({}, p), { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
             }
             else {
                 if (!(p.fillStyle == 'transparent' || p.fillStyle == null)) {
@@ -4778,8 +4779,8 @@ var $;
                     '#2b87db' :
                     '#53adff'),
             });
-            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
-            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
+            $$.$me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_ec.prop_default), { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
+            $$.$me_atom2_elem.style_default = Object.assign(Object.assign({}, $$.$me_atom2_elem.style_default), { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
         }
         $$.$nl_defaults_init = $nl_defaults_init;
     })($$ = $.$$ || ($.$$ = {}));
@@ -5490,8 +5491,6 @@ var $;
 })($ || ($ = {}));
 //eyeOpen.js.map
 ;
-
-;
 "use strict";
 var $;
 (function ($) {
@@ -5517,8 +5516,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //eyeClose.js.map
-;
-
 ;
 "use strict";
 var $;
@@ -5692,7 +5689,7 @@ var $;
             elem: {
                 tab: $$.$me_atom2_prop({ keys: ['.tab_ids'], masters: ['.selected', '.def'] }, ({ key: [id], masters: [selected, def] }) => !def[id].condition(selected) ? null :
                     {
-                        prop: Object.assign({}, def[id].prop, { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
+                        prop: Object.assign(Object.assign({}, def[id].prop), { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
                         event: {
                             clickOrTap: () => {
                                 $$.a('<.selected', id);
@@ -5840,11 +5837,11 @@ var $;
                             null :
                             {
                                 base: $$.$nl_logo_icon,
-                                prop: Object.assign({}, logo_props, { '#ofsVer': () => 56 }),
+                                prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': () => 56 }),
                             }),
                         logo_word: () => ({
                             base: $$.$nl_logo_word,
-                            prop: Object.assign({}, logo_props, { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
+                            prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
                                     ['.#ofsVer', '.#height'].map(s => '<@logo_icon' + s)), ({ len, masters: [ofsVer, height] }) => !len ? 56 : ofsVer + height + 15) }),
                         }),
                         tabs: () => ({
@@ -6052,6 +6049,2117 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let $nl_scheme_will_action_enum;
+        (function ($nl_scheme_will_action_enum) {
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
+        })($nl_scheme_will_action_enum = $$.$nl_scheme_will_action_enum || ($$.$nl_scheme_will_action_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//scheme.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $nl_scheme_will_action_enum;
+        (function ($nl_scheme_will_action_enum) {
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
+            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
+        })($nl_scheme_will_action_enum || ($nl_scheme_will_action_enum = {}));
+        $$.$nl_scheme_engine = {
+            style: {
+                userSelect: () => 'none',
+                overflow: () => 'hidden',
+                background: () => 'white',
+            },
+            dispatch(dispatch_name, dispatch_arg) {
+                if (dispatch_name == 'lassoShow') {
+                    const { clientX, clientY } = dispatch_arg;
+                    const clientRect = $$.a('@container.#clientRect');
+                    const x = clientX - clientRect.left;
+                    const y = clientY - clientRect.top;
+                    const point = { x, y };
+                    $$.a('.isLasso', true);
+                    $$.a('.lassoStart', point);
+                    $$.a('.lassoEnd', point);
+                    return true;
+                }
+                else if (dispatch_name == 'lassoMove') {
+                    const { mode, clientX, clientY } = dispatch_arg;
+                    if (mode == $$.$me_atom2_wheel_synth_mode.end) {
+                        $$.a.dispatch('', 'lassoHide');
+                    }
+                    else {
+                        const clientRect = $$.a('@container.#clientRect');
+                        const x = clientX - clientRect.left;
+                        const y = clientY - clientRect.top;
+                        $$.a('.lassoEnd', { x, y });
+                        const lassoStart = $$.a('.lassoStart');
+                        const rect = {
+                            left: Math.min(x, lassoStart.x),
+                            top: Math.min(y, lassoStart.y),
+                            right: Math.max(x, lassoStart.x),
+                            bottom: Math.max(y, lassoStart.y),
+                        };
+                        const points = $$.a('.points');
+                        const selected = $$.a('.selected');
+                        const codes = $$.a('@container^scheme.will_codes');
+                        codes.clear();
+                        let will_action = $nl_scheme_will_action_enum.deselect;
+                        for (const point_id in points) {
+                            const point_def = points[point_id];
+                            if (point_def.type != 'circle')
+                                continue;
+                            if (!point_def.visible)
+                                continue;
+                            if (!$$.$me_point_in_rect(point_def.x, point_def.y, rect))
+                                continue;
+                            codes.add(point_def.code);
+                            if (!selected.has(point_def.code))
+                                will_action = $nl_scheme_will_action_enum.select;
+                        }
+                        $$.a('@container^scheme.will_codes', codes, true);
+                        $$.a('.will_action', will_action);
+                    }
+                    return true;
+                }
+                else if (dispatch_name == 'lassoHide') {
+                    const will_action = $$.a('.will_action');
+                    $$.a.update('.selected', val => {
+                        for (const code of $$.a('@container^scheme.will_codes')) {
+                            if (will_action == $nl_scheme_will_action_enum.select) {
+                                val.set(code, null);
+                            }
+                            else {
+                                val.delete(code);
+                            }
+                        }
+                        return val;
+                    }, true);
+                    $$.a('.will_action', $nl_scheme_will_action_enum.none);
+                    $$.a('.isLasso', false);
+                    return true;
+                }
+                else if (dispatch_name == 'codeTapped') {
+                    const code = dispatch_arg;
+                    $$.a.update('.selected', val => {
+                        if (val.has(code)) {
+                            val.delete(code);
+                        }
+                        else {
+                            val.set(code, null);
+                        }
+                        return val;
+                    }, true);
+                    return true;
+                }
+                else if (dispatch_name == 'close') {
+                    return true;
+                }
+                return false;
+            },
+            prop: Object.assign(Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32, ofsHor_initial: () => 32, ofsVer_max: '.ofsVer_initial', scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial), scale: $$.$me_atom2_prop_store({
+                    condition: ['.scale_initial'],
+                    default: () => $$.a('.scale_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsHor: $$.$me_atom2_prop_store({
+                    condition: ['.ofsHor_initial'],
+                    default: () => $$.a('.ofsHor_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), ofsVer: $$.$me_atom2_prop_store({
+                    condition: ['.ofsVer_initial'],
+                    default: () => $$.a('.ofsVer_initial'),
+                    valid: (val) => typeof val == 'number' ? val : null,
+                }), will_action: () => $nl_scheme_will_action_enum.none, isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd'])), { lassoEnd: () => null, '#order': () => ['container', 'lasso', 'cross'], labels: $$.$me_atom2_prop([], () => null), selected: $$.$me_atom2_prop_store({
+                    default: () => new Map(),
+                    valid: val => {
+                        const isMap = val instanceof Map;
+                        const result = isMap ? val : new Map();
+                        let a = 2;
+                        return result;
+                    },
+                    toJSON: val => {
+                        const result = [...val].map(([id]) => id);
+                        return result;
+                    },
+                    fromJSON: val => !Array.isArray(val) ?
+                        new Map() :
+                        new Map(val.map(id => [id, null])),
+                }), points: $$.$me_atom2_prop([], () => null), demo_border: () => '' }),
+            elem: {
+                cross: () => ({
+                    base: $$.$me_cross,
+                    prop: {
+                        size: () => 24,
+                        thick: () => 3,
+                        '#ofsVer': () => 8,
+                        '#ofsHor': () => 16,
+                        '#alignHor': () => $$.$me_align.right,
+                        color: '/.colorText',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a.dispatch('<', 'close');
+                            return true;
+                        },
+                    },
+                }),
+                lasso: $$.$me_atom2_prop(['.isLasso'], ({ masters: [isLasso] }) => !isLasso ? null : {
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.x, lassoEnd.x)),
+                        '#ofsVer': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.min(lassoStart.y, lassoEnd.y)),
+                        '#width': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.x - lassoEnd.x)),
+                        '#height': $$.$me_atom2_prop(['<.lassoStart', '<.lassoEnd'], ({ masters: [lassoStart, lassoEnd] }) => Math.abs(lassoStart.y - lassoEnd.y)),
+                    },
+                    style: {
+                        border: () => '1px dashed red',
+                    },
+                }),
+                container: () => ({
+                    prop: {
+                        '#width': '<.#width',
+                        '#height': '<.#height',
+                    },
+                    control: {
+                        scheme: () => ({
+                            event: {
+                                pinchFini: p => {
+                                    console.warn('pinchFini', p.event);
+                                    $$.a('<<.scale', $$.a('._scale'));
+                                    return false;
+                                },
+                                pinch: p => {
+                                    handle_pinch($$.a('<<.scale') * p.event.scale, p.event.center, '._scale');
+                                    return false;
+                                },
+                                wheelDragInit: p => {
+                                    $$.a.dispatch('<<', 'lassoShow', p.event.last);
+                                    return false;
+                                },
+                                wheelDragFini: p => {
+                                    $$.a.dispatch('<<', 'lassoHide');
+                                    return false;
+                                },
+                                wheelDrag: p => {
+                                    if (p.event.last && p.event.last.ctrlKey) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const { clientX, clientY } = p.event.last;
+                                        $$.a.dispatch('<<', 'lassoMove', {
+                                            clientX, clientY,
+                                            mode: p.event.mode,
+                                        });
+                                    }
+                                    return true;
+                                },
+                                wheelTouchInit: p => {
+                                    if (p.event.last.touches.length == 1) {
+                                        $$.a.dispatch('<<', 'lassoShow', p.event.last.touches[0]);
+                                    }
+                                    return false;
+                                },
+                                wheelTouch: p => {
+                                    if (p.event.start.touches.length > 1) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const { clientX, clientY } = p.event.last.touches[0];
+                                        $$.a.dispatch('<<', 'lassoMove', {
+                                            clientX, clientY,
+                                            mode: p.event.mode,
+                                        });
+                                    }
+                                    return true;
+                                },
+                                wheelTouchFini: p => {
+                                    if (p.event.start.touches.length == 1) {
+                                        $$.a.dispatch('<<', 'lassoHide');
+                                    }
+                                    return false;
+                                },
+                                wheel: p => {
+                                    if (!p.event.ctrlKey) {
+                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    }
+                                    else {
+                                        const clientRect = $$.a('.#clientRect');
+                                        const x = p.event.clientX - clientRect.left;
+                                        const y = p.event.clientY - clientRect.top;
+                                        handle_pinch($$.a('<<.scale') - p.event.deltaY * 0.002, { x, y });
+                                    }
+                                    return true;
+                                },
+                                mousemove: p => {
+                                    let clientX;
+                                    let clientY;
+                                    if (p.event instanceof MouseEvent) {
+                                        clientX = p.event.clientX;
+                                        clientY = p.event.clientY;
+                                    }
+                                    else {
+                                        clientX = p.event.touches[0].clientX;
+                                        clientY = p.event.touches[0].clientY;
+                                    }
+                                    const scale = $$.a('._scale');
+                                    const data = $$.a('.data');
+                                    if (!data)
+                                        return;
+                                    const radius_station = data.settings.circle_radius * scale;
+                                    const points = $$.a('<<.points') || {};
+                                    const labels = $$.a('<<.labels') || {};
+                                    const codes = $$.a('.will_codes');
+                                    const selected = $$.a('<<.selected');
+                                    let will_action = $nl_scheme_will_action_enum.deselect;
+                                    for (const id in points) {
+                                        if (points[id].type && points[id].type == 'circle') {
+                                            if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
+                                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                                codes.add(points[id].code);
+                                                if (!selected.has(points[id].code)) {
+                                                    will_action = $nl_scheme_will_action_enum.select;
+                                                }
+                                                $$.a('.will_codes', codes, true);
+                                                $$.a('<<.will_action', will_action);
+                                                return true;
+                                            }
+                                            else if (codes.has(points[id].code)) {
+                                                codes.delete(points[id].code);
+                                            }
+                                        }
+                                    }
+                                    for (const label_id in labels) {
+                                        const label = labels[label_id];
+                                        if (label.rects) {
+                                            for (const k in label.rects) {
+                                                const rect = label.rects[k];
+                                                if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
+                                                    $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                                    codes.add(label.code);
+                                                    if (!selected.has(label.code)) {
+                                                        will_action = $nl_scheme_will_action_enum.select;
+                                                    }
+                                                    $$.a('.will_codes', codes, true);
+                                                    $$.a('<<.will_action', will_action);
+                                                    return true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    $$.a('.will_codes', codes, true);
+                                    $$.a('<<.will_action', will_action);
+                                    $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: null });
+                                    return false;
+                                },
+                                clickOrTap: (p) => {
+                                    console.log('clickOrTap');
+                                    let clientX;
+                                    let clientY;
+                                    let touchTolerance = 0;
+                                    const scale = $$.a('._scale');
+                                    const data = $$.a('.data');
+                                    const code2guids = $$.a('/.code2guids');
+                                    if (!data)
+                                        return;
+                                    const radius_station = data.settings.circle_radius * scale;
+                                    const points = $$.a('<<.points') || {};
+                                    const labels = $$.a('<<.labels') || {};
+                                    if (p.event.start instanceof MouseEvent) {
+                                        clientX = p.event.start.clientX;
+                                        clientY = p.event.start.clientY;
+                                    }
+                                    else {
+                                        clientX = p.event.start.touches[0].clientX;
+                                        clientY = p.event.start.touches[0].clientY;
+                                        touchTolerance = $$.a('/.#touchTolerance') * scale;
+                                    }
+                                    touchTolerance = $$.a('/.#touchTolerance') * scale;
+                                    if (touchTolerance > 0) {
+                                        let candidate_dist = 0;
+                                        let candidate_guids;
+                                        for (const id in points) {
+                                            if (points[id].type && points[id].type == 'circle') {
+                                                if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
+                                                    candidate_dist = 0.00000001;
+                                                    candidate_guids = code2guids[points[id].code];
+                                                    console.log('candidate point', points[id].code);
+                                                }
+                                                else if (Math.abs(points[id].x - clientX) < radius_station + touchTolerance && Math.abs(points[id].y - clientY) < radius_station + touchTolerance) {
+                                                    let dist = Math.hypot(Math.abs(points[id].x - clientX), Math.abs(points[id].y - clientY));
+                                                    if (dist < candidate_dist || candidate_dist == 0) {
+                                                        candidate_dist = dist;
+                                                        candidate_guids = code2guids[points[id].code];
+                                                        console.log('candidate point tolerance', points[id].code, points[id]);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        for (const label_id in labels) {
+                                            const label = labels[label_id];
+                                            if (label.rects) {
+                                                for (const k in label.rects) {
+                                                    const rect = label.rects[k];
+                                                    if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
+                                                        candidate_dist = 0.00000001;
+                                                        candidate_guids = code2guids[label.code];
+                                                        console.log('candidate label', label.code);
+                                                    }
+                                                    else if (rect && $$.$me_dist_to_rect(clientX, clientY, rect) < touchTolerance) {
+                                                        let dist = $$.$me_dist_to_rect(clientX, clientY, rect);
+                                                        if (dist < candidate_dist || candidate_dist == 0) {
+                                                            candidate_dist = dist;
+                                                            candidate_guids = code2guids[label.code];
+                                                            console.log('candidate label tolerance', label.code);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (candidate_guids) {
+                                            const value_new = $$.a('<<.value').slice();
+                                            for (const i in candidate_guids) {
+                                                let j = value_new.indexOf(candidate_guids[i]);
+                                                if (j >= 0) {
+                                                    value_new.splice(j, 1);
+                                                }
+                                                else {
+                                                    value_new.push(candidate_guids[i]);
+                                                }
+                                            }
+                                            if (candidate_guids.length > 0) {
+                                                $$.a('<<.value', value_new);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        for (const id in points) {
+                                            if (points[id].type && points[id].type == 'circle') {
+                                                if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
+                                                    const guids = code2guids[points[id].code];
+                                                    if (guids) {
+                                                        const value_new = $$.a('<<.value').slice();
+                                                        for (const i in guids) {
+                                                            let j = value_new.indexOf(guids[i]);
+                                                            if (j >= 0) {
+                                                                value_new.splice(j, 1);
+                                                            }
+                                                            else {
+                                                                value_new.push(guids[i]);
+                                                            }
+                                                        }
+                                                        if (guids.length > 0) {
+                                                            $$.a('<<.value', value_new);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        for (const label_id in labels) {
+                                            const label = labels[label_id];
+                                            if (label.rects) {
+                                                for (const k in label.rects) {
+                                                    const rect = label.rects[k];
+                                                    if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
+                                                        const guids = code2guids[label.code];
+                                                        if (guids) {
+                                                            const value_new = $$.a('<<.value').slice();
+                                                            for (const i in guids) {
+                                                                let j = value_new.indexOf(guids[i]);
+                                                                if (j >= 0) {
+                                                                    value_new.splice(j, 1);
+                                                                }
+                                                                else {
+                                                                    value_new.push(guids[i]);
+                                                                }
+                                                            }
+                                                            if (guids.length > 0) {
+                                                                $$.a('<<.value', value_new);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return true;
+                                },
+                            },
+                            prop: {
+                                _scale: '<<.scale',
+                                ofsHor: '<<.ofsHor',
+                                ofsVer: '<<.ofsVer',
+                                width: $$.$me_atom2_prop(['<<.width_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                                height: $$.$me_atom2_prop(['<<.height_initial', '._scale'], $$.$me_atom2_prop_compute_fn_mul()),
+                                data: '<<.data',
+                                value: '<<.value',
+                                will_codes: $$.$me_atom2_prop([], () => new Set()),
+                                will_codes_str: $$.$me_atom2_prop(['.will_codes'], ({ masters: [will_codes] }) => [...will_codes].join(','), ({ val }) => {
+                                }),
+                            },
+                            render: p => {
+                                const data = $$.a('.data');
+                                const will_action = $$.a('<<.will_action');
+                                const will_codes = $$.a('.will_codes');
+                                if (!data)
+                                    return;
+                                const { ctx, pixelRatio } = p;
+                                const demo_border = $$.a('<<.demo_border');
+                                if (demo_border) {
+                                    $$.$me_atom2_ctx_rect({
+                                        ctx,
+                                        ctxTop: pixelRatio * $$.a('<<.ofsVer'),
+                                        ctxLeft: pixelRatio * $$.a('<<.ofsHor'),
+                                        ctxWidth: pixelRatio * $$.a('.width'),
+                                        ctxHeight: pixelRatio * $$.a('.height'),
+                                        stroke: { ctxWidth: pixelRatio, style: demo_border },
+                                    });
+                                }
+                                $$.$me_atom2_ctx_rect({
+                                    ctx,
+                                    ctxTop: 0,
+                                    ctxLeft: 0,
+                                    ctxWidth: pixelRatio * $$.a('<.#width'),
+                                    ctxHeight: pixelRatio * $$.a('<.#height'),
+                                    fillStyle: $$.a('<<.background_scheme'),
+                                });
+                                const scale = $$.a('._scale');
+                                const thick_transit = data.settings.thick_transit * scale;
+                                const thick_line = data.settings.thick_line * scale;
+                                const radius_station = data.settings.circle_radius * scale;
+                                const thick_station = data.settings.circle_thick * scale;
+                                const ctxFontSize = data.settings.label.fontSize * pixelRatio * scale;
+                                const background_text_fill_style = $$.a('<<.background_text_fill_style');
+                                const labels = $$.a('<<.labels') || {};
+                                for (const label_id in labels) {
+                                    labels[label_id].visible = false;
+                                }
+                                const points = $$.a('<<.points') || {};
+                                for (const point_id in points) {
+                                    points[point_id].visible = false;
+                                }
+                                const lines = {};
+                                const selected = new Set($$.a('.value'));
+                                const main = () => {
+                                    const items = $$.a('<<.data');
+                                    for (const item_id in items) {
+                                        const item_def = items[item_id];
+                                        if (item_id == 'settings') {
+                                            points['root'] = {
+                                                x: item_def.root.x * scale + $$.a('<<.ofsHor'),
+                                                y: item_def.root.y * scale + $$.a('<<.ofsVer'),
+                                            };
+                                        }
+                                        else if (~Object.keys(segment_helper).indexOf(item_def.type)) {
+                                            segment(item_def, item_def, [item_id]);
+                                        }
+                                        else if (item_def.type == null || item_def.type == 'segments') {
+                                            segments(item_def, item_def, [item_id]);
+                                        }
+                                        else
+                                            $$.$me_throw('unsupported item_def.type', item_def.type);
+                                    }
+                                    for (const id in points) {
+                                        const point = points[id];
+                                        if (point.type != 'circle')
+                                            continue;
+                                        const code = points[id].code;
+                                        const _fillStyle = will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
+                                            $$.a('<<.background_station_will_deselect') :
+                                            selected.has(point.guid) ?
+                                                $$.a('<<.background_station_selected') :
+                                                will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
+                                                    $$.a('<<.background_station_will_select') :
+                                                    $$.a('<<.background_station');
+                                        $$.$me_atom2_ctx_circle({
+                                            ctx,
+                                            ctxRadius: radius_station * pixelRatio,
+                                            ctxCenterX: point.x * pixelRatio,
+                                            ctxCenterY: point.y * pixelRatio,
+                                            stroke: {
+                                                ctxWidth: thick_station * pixelRatio,
+                                                style: point.color,
+                                            },
+                                            fillStyle: _fillStyle,
+                                        });
+                                    }
+                                    ctx.font = $$.a('<<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<<.fontFamily');
+                                    ctx.textAlign = 'left';
+                                    ctx.textBaseline = 'bottom';
+                                    for (const id in labels) {
+                                        const label = labels[id];
+                                        const code = label.code;
+                                        const _fillStyle = will_action == $nl_scheme_will_action_enum.deselect && will_codes.has(code) ?
+                                            $$.a('<<.colorText_will_deselect') :
+                                            will_action == $nl_scheme_will_action_enum.select && will_codes.has(code) ?
+                                                $$.a('<<.colorText_will_select') :
+                                                $$.a('<<.colorText');
+                                        if (!~label.text.indexOf('<')) {
+                                            const ctxWidth = ctx.measureText(label.text).width;
+                                            const ctxHeight = ctxFontSize;
+                                            const _width = ctxWidth / pixelRatio;
+                                            const _height = ctxHeight / pixelRatio;
+                                            let _left = label.ofsHor;
+                                            let _right = _left + _width;
+                                            let _ctxLeft = _left * pixelRatio;
+                                            let _ctxTop = label.ofsVer * pixelRatio - .5 * ctxHeight;
+                                            let _top = label.ofsVer - .5 * ctxHeight / pixelRatio;
+                                            let _bottom = _top + _height;
+                                            if (label.alignHor == $$.$me_align.left) {
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right) {
+                                                _left = label.ofsHor - _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.center) {
+                                                _left = label.ofsHor - .5 * _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - .5 * ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else {
+                                                console.log('что ты такое?', label.text, label.alignHor, label.alignVer);
+                                            }
+                                            _bottom = _top + _height;
+                                            $$.$me_atom2_ctx_rect({ ctx, ctxLeft: _ctxLeft, ctxTop: _ctxTop, ctxWidth, ctxHeight, fillStyle: background_text_fill_style });
+                                            labels[id].rects = [];
+                                            labels[id].rects.push({ left: _left, right: _right, top: _top, bottom: _bottom });
+                                            ctx.fillStyle = _fillStyle;
+                                            ctx.fillText(label.text, _ctxLeft, _ctxTop + ctxHeight);
+                                        }
+                                        else if (label.text.indexOf('<')) {
+                                            const ta = label.textAlign;
+                                            const lines = label.text.split('<br>');
+                                            const linesCount = lines.length;
+                                            var ctxWidth = 0;
+                                            var ctxHeight = 0;
+                                            for (const i in lines) {
+                                                const line = lines[i];
+                                                let w = ctx.measureText(line).width;
+                                                let h = ctxFontSize;
+                                                if (w > ctxWidth)
+                                                    ctxWidth = w;
+                                                ctxHeight = ctxHeight + h;
+                                            }
+                                            const _width = ctxWidth / pixelRatio;
+                                            const _height = ctxHeight / pixelRatio;
+                                            let _left = label.ofsHor;
+                                            let _right = _left + _width;
+                                            let _ctxLeft = _left * pixelRatio;
+                                            let _ctxTop = label.ofsVer * pixelRatio - .5 * ctxHeight;
+                                            let _top = label.ofsVer - .5 * ctxHeight / pixelRatio;
+                                            let _bottom = _top + _height;
+                                            if (label.alignHor == $$.$me_align.left) {
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.right) {
+                                                _left = label.ofsHor - _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else if (label.alignHor == $$.$me_align.center) {
+                                                _left = label.ofsHor - .5 * _width;
+                                                _right = _left + _width;
+                                                _ctxLeft = label.ofsHor * pixelRatio - .5 * ctxWidth;
+                                                if (label.alignVer == $$.$me_align.center) {
+                                                }
+                                                else if (label.alignVer == $$.$me_align.bottom) {
+                                                    _ctxTop = label.ofsVer * pixelRatio - ctxHeight;
+                                                    _top = label.ofsVer - ctxHeight / pixelRatio;
+                                                }
+                                                else if (label.alignVer == $$.$me_align.top) {
+                                                    _ctxTop = label.ofsVer * pixelRatio;
+                                                    _top = label.ofsVer;
+                                                }
+                                            }
+                                            else {
+                                                console.log('что ты такое?', label.text, label.alignHor, label.alignVer);
+                                            }
+                                            ctx.fillStyle = _fillStyle;
+                                            labels[id].rects = [];
+                                            for (const i in lines) {
+                                                const line = lines[i];
+                                                _ctxTop += ctxFontSize;
+                                                _top += ctxFontSize / pixelRatio;
+                                                let w = ctx.measureText(line).width;
+                                                let l = _ctxLeft;
+                                                let _l = _left;
+                                                if (ta == 'right') {
+                                                    l = _ctxLeft + ctxWidth - w;
+                                                    _left = _l + ctxWidth / pixelRatio - w / pixelRatio;
+                                                }
+                                                else if (ta == 'center') {
+                                                    l = _ctxLeft + .5 * (ctxWidth - w);
+                                                    _left = _l + .5 * (ctxWidth / pixelRatio - w / pixelRatio);
+                                                }
+                                                _right = _left + w / pixelRatio;
+                                                _bottom = _top;
+                                                $$.$me_atom2_ctx_rect({ ctx, ctxLeft: l, ctxTop: _ctxTop - ctxFontSize, ctxWidth: w, ctxHeight: ctxFontSize, fillStyle: background_text_fill_style });
+                                                labels[id].rects.push({ left: _left, right: _right, top: _top - ctxFontSize / pixelRatio, bottom: _bottom });
+                                                ctx.fillStyle = _fillStyle;
+                                                ctx.fillText(line, l, _ctxTop);
+                                            }
+                                        }
+                                    }
+                                    $$.a('<<.points', points, true);
+                                    $$.a('<<.labels', labels, true);
+                                };
+                                const segments = (line_def, group_def, id_items) => {
+                                    for (const segment_id in group_def.segments) {
+                                        const segment_def = group_def.segments[segment_id];
+                                        segment(line_def, segment_def, id_items.concat(segment_id));
+                                    }
+                                };
+                                const segment = (line_def, segment_def, id_items) => {
+                                    const fn = segment_helper[segment_def.type || 'line'];
+                                    if (!fn) {
+                                        $$.$me_throw('unsupported segment_def.type', segment_def.type);
+                                    }
+                                    else {
+                                        fn(line_def, segment_def, (tail) => id_items.concat(!tail ? [] : tail).reverse().join('::'));
+                                    }
+                                };
+                                const segment_helper = {
+                                    circle: (line_def, segment_def, id) => {
+                                        const p = prepare_point(['center'], id, segment_def, points, scale);
+                                        if (!p.center)
+                                            anchored_point(id, segment_def, 'center', points, scale);
+                                        line_def.ctxCenterX = p.center.x * pixelRatio;
+                                        line_def.ctxCenterY = p.center.y * pixelRatio;
+                                        line_def.ctxRadius = line_def.radius * scale * pixelRatio;
+                                        const type = styleType(line_def.style);
+                                        if (type == $$.$me_line_style_type_enum.solid) {
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + (thick_line * pixelRatio) / 2,
+                                                stroke: { ctxWidth: thick_line * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                        }
+                                        else if (type == $$.$me_line_style_type_enum.double) {
+                                            const thickStyle = (line_def.style.thickStyle || thick_line) * scale;
+                                            const thickLine = (line_def.style.thickLine || pixelRatio) * scale;
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + thickLine / 2 - thickStyle / 2,
+                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                            $$.$me_atom2_ctx_circle({
+                                                ctx,
+                                                ctxCenterX: line_def.ctxCenterX,
+                                                ctxCenterY: line_def.ctxCenterY,
+                                                ctxRadius: line_def.ctxRadius + thickLine / 2 + thickStyle / 2,
+                                                stroke: { ctxWidth: thickLine * pixelRatio, style: styleColor(line_def.style) },
+                                            });
+                                        }
+                                        else {
+                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$me_line_style_type_enum[type]}`, line_def);
+                                        }
+                                        const retCircle = {
+                                            centerX: line_def.ctxCenterX / pixelRatio,
+                                            centerY: line_def.ctxCenterY / pixelRatio,
+                                            radius: line_def.ctxRadius / pixelRatio,
+                                        };
+                                        for (const point_id in line_def.points) {
+                                            const point_def = line_def.points[point_id];
+                                            const point = anchored_point(id, line_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'circle';
+                                                if (req == 'circle')
+                                                    return retCircle;
+                                                return anchored_point_provider(req, result, {
+                                                    point_id,
+                                                    point_def,
+                                                    line_def,
+                                                    id,
+                                                });
+                                            });
+                                        }
+                                    },
+                                    line: (line_def, segment_def, id) => {
+                                        const props = ['through'];
+                                        for (const prop of ['from', 'to'])
+                                            if (segment_def.hasOwnProperty(prop) && (typeof segment_def[prop] == 'string' ||
+                                                segment_def[prop].hasOwnProperty('anchor')))
+                                                props.push(prop);
+                                        const p = prepare_point(props, id, segment_def, points, scale);
+                                        if (p.from && p.to && p.through) {
+                                            $$.$me_throw('.through is not expected whilst .from and .to are set');
+                                        }
+                                        else if (!p.to) {
+                                            if (!(p.from && p.through && segment_def.dist))
+                                                $$.$me_throw(id() + ': .from, .through and .dist must be set whilst .to is absent');
+                                            let to = $$.$me_vector_transform({ from: p.from, to: p.through }, segment_def.dist * scale).to;
+                                            points[id(['to'])] = p.to = to;
+                                        }
+                                        else if (!p.from) {
+                                            if (!(p.to && p.through) && segment_def.dist)
+                                                $$.$me_throw('.to, .through and .dist must be set whilst .from is absent');
+                                            const dx = p.through.x - p.to.x;
+                                            const dy = p.through.y - p.to.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const dist = segment_def.dist;
+                                            points[id(['from'])] = p.from = $$.$me_vector_transform({ from: p.to, to: p.through }, -segment_def.dist * scale).to;
+                                        }
+                                        const line = lines[id()] = { from: p.from, to: p.to };
+                                        ctx.beginPath();
+                                        ctx.moveTo(p.from.x * pixelRatio, p.from.y * pixelRatio);
+                                        ctx.lineTo(p.to.x * pixelRatio, p.to.y * pixelRatio);
+                                        ctx.closePath();
+                                        ctx.strokeStyle = styleColor(line_def.style);
+                                        ctx.lineWidth = thick_line * pixelRatio;
+                                        ctx.stroke();
+                                        for (const link_prop of ['from', 'to']) {
+                                            const link = !segment_def[link_prop] ?
+                                                null :
+                                                segment_def[link_prop].hasOwnProperty('link') ?
+                                                    segment_def[link_prop].link :
+                                                    segment_def[link_prop].hasOwnProperty('anchor') &&
+                                                        (() => {
+                                                            const splitted = segment_def[link_prop].anchor.split('::');
+                                                            return splitted.length == 2 && (splitted[0] == 'from' || splitted[0] == 'to');
+                                                        })() ?
+                                                        segment_def[link_prop].anchor :
+                                                        null;
+                                            if (!link)
+                                                continue;
+                                            const point_id = get_point_id(link, points, id, () => `${id}.${link_prop}.link`);
+                                            const [line_link_prop, line_link_id] = point_id.startsWith('to::') ? [point_id.slice(0, 2), point_id.slice(4)] :
+                                                point_id.startsWith('from::') ? [point_id.slice(0, 4), point_id.slice(6)] :
+                                                    $$.$me_throw(`${id()}.${link_prop}.link'${link}': must start with 'to::' or '::from'`);
+                                            let line_link = lines[line_link_id];
+                                            if (!line_link)
+                                                $$.$me_throw(`${id()}.${link_prop}.link'${link}': lines['${line_link_id}'] not found`);
+                                            line_link = line_link_prop == 'from' ? line_link : $$.$me_vector_revert(line_link);
+                                            const intersection_result = intersection(line, line_link);
+                                            ctx.beginPath();
+                                            ctx.moveTo(line_link.from.x * pixelRatio, line_link.from.y * pixelRatio);
+                                            if (intersection_result && (intersection_result.gamma <= 0 && (link_prop == 'from' ?
+                                                intersection_result.lambda <= 1 :
+                                                intersection_result.lambda >= 0))) {
+                                                ctx.quadraticCurveTo(intersection_result.point.x * pixelRatio, intersection_result.point.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            else {
+                                                const dist = -Math.hypot(line_link.from.x - line.from.x, line_link.from.y - line.from.y) / 2;
+                                                const control_point = $$.$me_vector_transform(line_link, dist).to;
+                                                const control_point2 = $$.$me_vector_transform(line, dist).to;
+                                                ctx.bezierCurveTo(control_point.x * pixelRatio, control_point.y * pixelRatio, control_point2.x * pixelRatio, control_point2.y * pixelRatio, line[link_prop].x * pixelRatio, line[link_prop].y * pixelRatio);
+                                            }
+                                            ctx.strokeStyle = styleColor(line_def.style);
+                                            ctx.lineWidth = thick_line * pixelRatio;
+                                            ctx.stroke();
+                                        }
+                                        let point_def_prev;
+                                        let point_id_prev;
+                                        for (const point_id in segment_def.points) {
+                                            const point_def = segment_def.points[point_id];
+                                            if (point_def.anchor === '' && point_id_prev) {
+                                                point_def.anchor = point_id_prev;
+                                            }
+                                            if (point_def.dist === null && point_def_prev) {
+                                                point_def.dist = point_def_prev.dist;
+                                            }
+                                            point_def_prev = point_def;
+                                            point_id_prev = point_id;
+                                            const point = anchored_point(id, segment_def.points, point_id, points, scale, (req, result) => {
+                                                if (req == 'type')
+                                                    return 'line';
+                                                if (req == 'line')
+                                                    return p;
+                                                return anchored_point_provider(req, result, {
+                                                    point_id,
+                                                    point_def,
+                                                    line_def,
+                                                    id,
+                                                });
+                                            });
+                                        }
+                                    },
+                                };
+                                function intersection(v, v2) {
+                                    const a = v.from.x;
+                                    const b = v.from.y;
+                                    const c = v.to.x;
+                                    const d = v.to.y;
+                                    const p = v2.from.x;
+                                    const q = v2.from.y;
+                                    const r = v2.to.x;
+                                    const s = v2.to.y;
+                                    var det, gamma, lambda;
+                                    det = (c - a) * (s - q) - (r - p) * (d - b);
+                                    if (det === 0) {
+                                        return null;
+                                    }
+                                    else {
+                                        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+                                        gamma = 1 - ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+                                        const result = {
+                                            lambda,
+                                            gamma,
+                                            point: {
+                                                x: (1 - lambda) * v.from.x + lambda * v.to.x,
+                                                y: (1 - lambda) * v.from.y + lambda * v.to.y,
+                                            },
+                                        };
+                                        return result;
+                                    }
+                                }
+                                const anchored_point_provider = (req, result, p) => {
+                                    if (req == 'props') {
+                                        const type = p.point_def.type || 'circle';
+                                        return type != 'circle' ? { type } : {
+                                            type,
+                                            visible: true,
+                                            color: styleColor(p.line_def.style),
+                                            code: p.point_def.code,
+                                            guid: p.point_def.guid,
+                                        };
+                                    }
+                                    if (req == 'label') {
+                                        return {
+                                            labels,
+                                            radius_station,
+                                        };
+                                    }
+                                    if (req == 'transit') {
+                                        const anchors = typeof p.point_def.transit == 'string' ?
+                                            [p.point_def.transit] :
+                                            Array.isArray(p.point_def.transit) ?
+                                                p.point_def.transit :
+                                                $$.$me_throw('unsupported .transit', p.point_def.transit);
+                                        for (const anchor of anchors) {
+                                            const point_to = points[anchor];
+                                            if (!point_to)
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit refers to unknown points['${anchor}']`, points);
+                                            if (point_to.type != 'circle')
+                                                $$.$me_throw(`${p.id([p.point_id])}.transit'${anchor}' must refer to point with .type'circle', not`, point_to);
+                                            const dx = point_to.x - result.x;
+                                            const dy = point_to.y - result.y;
+                                            const len = Math.hypot(dx, dy);
+                                            const gradient_from = $$.$me_vector_transform({ from: result, to: point_to }, radius_station);
+                                            const gradient_to = $$.$me_vector_transform({ from: point_to, to: result }, radius_station);
+                                            const gradient = ctx.createLinearGradient(gradient_from.to.x * pixelRatio, gradient_from.to.y * pixelRatio, gradient_to.to.x * pixelRatio, gradient_to.to.y * pixelRatio);
+                                            gradient.addColorStop(0, styleColor(p.line_def.style));
+                                            gradient.addColorStop(1, point_to.color);
+                                            ctx.beginPath();
+                                            ctx.moveTo(result.x * pixelRatio, result.y * pixelRatio);
+                                            ctx.lineTo(point_to.x * pixelRatio, point_to.y * pixelRatio);
+                                            ctx.strokeStyle = gradient;
+                                            ctx.lineWidth = thick_transit * pixelRatio;
+                                            ctx.stroke();
+                                        }
+                                        return true;
+                                    }
+                                };
+                                const prepare_point = (prop_names, id, segment_def, points, scale, type) => {
+                                    const result = {};
+                                    for (const prop_name in segment_def) {
+                                        if (!~prop_names.indexOf(prop_name))
+                                            continue;
+                                        result[prop_name] = anchored_point(id, segment_def, prop_name, points, scale, !type ? null : (req, result) => {
+                                            if (req == 'type')
+                                                return type;
+                                        });
+                                    }
+                                    return result;
+                                };
+                                main();
+                                return true;
+                            },
+                        }),
+                    },
+                }),
+            },
+        };
+        function styleType(style) {
+            const result = typeof style == 'string' ?
+                $$.$me_line_style_type_enum.solid :
+                style.type || $$.$me_line_style_type_enum.solid;
+            return result;
+        }
+        function styleColor(style) {
+            const result = typeof style == 'string' ?
+                style :
+                style.color;
+            return result;
+        }
+        function add_label(id, src, point_id, labels, scale, centerX, centerY, radius_station) {
+            const point_def = src[point_id];
+            if (!point_def.label)
+                return;
+            const data = $$.a('<<.data');
+            const alignHor = point_def.label.alignHor != null ?
+                point_def.label.alignHor :
+                data.settings.label.alignHor;
+            const alignVer = point_def.label.alignVer != null ?
+                point_def.label.alignVer :
+                data.settings.label.alignVer;
+            const ofsHor = point_def.label.ofsHor != null ?
+                point_def.label.ofsHor :
+                alignHor == $$.$me_align.center ?
+                    0 :
+                    alignVer == $$.$me_align.center ?
+                        data.settings.label.ofsHor :
+                        -.25 * data.settings.circle_radius;
+            const ofsVer = point_def.label.ofsVer != null ?
+                point_def.label.ofsVer :
+                alignVer == $$.$me_align.center ?
+                    0 :
+                    alignHor == $$.$me_align.center ?
+                        data.settings.label.ofsVer :
+                        -.25 * data.settings.circle_radius;
+            const result = labels[id([point_id])] = {
+                text: point_def.label.text || point_id,
+                ofsHor: alignHor == $$.$me_align.left ?
+                    centerX + radius_station + ofsHor * scale :
+                    alignHor == $$.$me_align.right ?
+                        centerX - radius_station - ofsHor * scale :
+                        centerX + ofsHor * scale,
+                ofsVer: alignVer == $$.$me_align.top ?
+                    centerY + radius_station + ofsVer * scale :
+                    alignVer == $$.$me_align.bottom ?
+                        centerY - radius_station - ofsVer * scale :
+                        centerY + ofsVer * scale,
+                code: point_def.code,
+                alignHor,
+                alignVer,
+                visible: true,
+                textAlign: point_def.label.textAlign,
+                whiteSpace: point_def.label.whiteSpace || 'pre',
+                lineHeight: point_def.label.lineHeight || '1.0',
+            };
+        }
+        function get_point_id(point_id, points, id, err) {
+            let result = point_id;
+            if (!points[point_id]) {
+                const splitted_point_id = point_id.split('::');
+                const splitted_id = id().split('::');
+                const point_id_extended = splitted_point_id.concat(splitted_id.slice(splitted_point_id.length - 1)).join('::');
+                if (point_id_extended == point_id) {
+                    $$.$me_throw(`points['${point_id}'] not found for ${err()}`, points);
+                }
+                result = point_id_extended;
+                if (!points[point_id_extended]) {
+                    $$.$me_throw(`nor points['${point_id}'] neither points['${point_id_extended}'] found for ${err()}`, points);
+                }
+            }
+            return result;
+        }
+        function anchored_point(id, src, prop_name, points, scale, provider) {
+            let result;
+            if (!src[prop_name])
+                $$.$me_throw(`${id()}: .${prop_name} expected due to .type'${src.type}' `);
+            const arg = src[prop_name];
+            let point_id = typeof arg == 'string' ?
+                arg :
+                arg.anchor;
+            const parent_type = provider && provider('type', result) || '';
+            if (parent_type == 'circle') {
+                if (point_id)
+                    $$.$me_throw(`${id([prop_name])}.anchor is not expected`, src);
+            }
+            else if (!point_id) {
+                $$.$me_throw(`${id([prop_name])}.anchor expected`, src);
+            }
+            else {
+                result = points[get_point_id(point_id, points, id, () => `${id([prop_name])}.anchor`)];
+            }
+            const props = provider && provider('props', result) || {};
+            if (typeof arg == 'string') {
+                result = Object.assign(Object.assign({}, props), { x: result.x, y: result.y });
+            }
+            else if (parent_type == 'circle') {
+                const angle = arg.angle;
+                if (angle == null)
+                    $$.$me_throw(`${id([prop_name])}.angle is expected`);
+                const ret = provider('circle', result);
+                if (ret == null ||
+                    typeof ret.centerX != 'number' ||
+                    typeof ret.centerY != 'number' ||
+                    typeof ret.radius != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('circle') expected to return {centerX: number, centerY: number, radius: number}, not`, ret);
+                const { centerX, centerY, radius } = ret;
+                result = Object.assign(Object.assign({}, props), { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
+            }
+            else if (parent_type == 'line') {
+                const dist = arg.dist;
+                if (dist == null)
+                    $$.$me_throw(`${id([prop_name])}.dist is expected`);
+                const ret = provider('line', result);
+                if (ret == null ||
+                    !ret.from ||
+                    typeof ret.from.x != 'number' ||
+                    typeof ret.from.y != 'number' ||
+                    !ret.to ||
+                    typeof ret.to.x != 'number' ||
+                    typeof ret.to.y != 'number' ||
+                    false)
+                    $$.$me_throw(`${id()}: provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
+                result = Object.assign(Object.assign({}, props), $$.$me_vector_transform(ret, dist * scale, result).to);
+            }
+            else {
+                if (!result)
+                    $$.$me_throw(`${id([prop_name])}`);
+                result = Object.assign(Object.assign({}, props), { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
+            }
+            if (typeof arg != 'string' && arg.label) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.label`);
+                const ret = provider('label', result);
+                if (ret == null ||
+                    !ret.labels ||
+                    typeof ret.radius_station != 'number' ||
+                    false)
+                    $$.$me_throw(`provider('label') expected to return {labels: any, radius_station: number}, not`, ret);
+                const { labels, radius_station } = ret;
+                add_label(id, src, prop_name, labels, scale, result.x, result.y, radius_station);
+            }
+            if (typeof arg != 'string' && arg.transit) {
+                if (!provider)
+                    $$.$me_throw(`provider expected due to ${id([prop_name])}.transit`);
+                const ret = provider('transit', result);
+                if (ret !== true)
+                    $$.$me_throw(`provider('transit') expected to return true, not`, ret);
+            }
+            points[id([prop_name])] = result;
+            return result;
+        }
+        function handle_pinch(scale_new, pinch_center, prop_name = '<<.scale') {
+            handle_helper(p => {
+                const width = p.width;
+                const height = p.height;
+                const scale = $$.a(prop_name);
+                p.width = width / scale * scale_new;
+                p.height = height / scale * scale_new;
+                const width_netto = p.width_upper - 2 * p.padding_Hor;
+                const height_netto = p.height_upper - 2 * p.padding_Ver;
+                p.scale =
+                    Math.min(Math.max(scale_new, Math.min(width_netto / width * scale, height_netto / height * scale)), $$.a('<<.scale_max'));
+                if (pinch_center.x < p.ofsHor) {
+                    pinch_center.x = p.ofsHor;
+                }
+                else if (pinch_center.x > p.ofsHor + width) {
+                    pinch_center.x = p.ofsHor + width;
+                }
+                $$.a(prop_name, p.scale);
+                p.width = $$.a('<<.width_initial') * p.scale;
+                p.height = $$.a('<<.height_initial') * p.scale;
+                p.ofsHor = pinch_center.x - (pinch_center.x - p.ofsHor) * p.scale / scale;
+                p.ofsVer = pinch_center.y - (pinch_center.y - p.ofsVer) * p.scale / scale;
+            });
+        }
+        function handle_move(deltaX, deltaY) {
+            handle_helper(p => {
+                p.ofsHor -= deltaX;
+                p.ofsVer -= deltaY;
+            });
+        }
+        function handle_helper(fn) {
+            const width_upper = $$.a('<.#width');
+            const height_upper = $$.a('<.#height');
+            const padding_Hor = $$.a('<<.ofsHor_initial');
+            const padding_Ver = $$.a('<<.ofsVer_initial');
+            const p = {
+                ofsHor: $$.a('<<.ofsHor'),
+                ofsVer: $$.a('<<.ofsVer'),
+                width: $$.a('.width'),
+                height: $$.a('.height'),
+                scale: $$.a('<<.scale'),
+                width_upper,
+                height_upper,
+                padding_Hor,
+                padding_Ver,
+            };
+            fn(p);
+            const ofsHor_max = Math.max($$.a('<<.ofsHor_initial'), (p.width_upper - p.width) / 2);
+            const ofsHor_min = p.width_upper >= p.width ?
+                (p.width_upper - p.width) / 2 :
+                p.width_upper - $$.a('<<.ofsHor_initial') - p.width;
+            const ofsVer_max = Math.max($$.a('<<.ofsVer_max'), (p.height_upper - p.height) / 2, $$.a('<<.ofsVer'));
+            const ofsVer_min = p.height_upper >= p.height ?
+                (p.height_upper - p.height) / 2 :
+                p.height_upper - $$.a('<<.ofsVer_initial') - p.height;
+            p.ofsHor = Math.round(Math.min(ofsHor_max, Math.max(ofsHor_min, p.ofsHor)));
+            p.ofsVer = Math.round(Math.min(ofsVer_max, Math.max(ofsVer_min, p.ofsVer)));
+            $$.a('<<.ofsHor', p.ofsHor);
+            $$.a('<<.ofsVer', p.ofsVer);
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//engine.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro_crumbs_pc = {
+            type: '$nl_scheme_metro_crumbs_pc',
+            prop: {
+                crumbs: $$.$me_atom2_prop_abstract(),
+                crumb_height: () => 32,
+                fontSize: () => 14,
+                fontWeight: '<<.fontWeight',
+                fontFamily: '<<.fontFamily',
+                crumbSpaceHor: () => 8,
+                crumbSpaceVer: () => 8,
+                crumbBorderRadius: () => 3,
+                iconScale: () => .7 * 24 / 32,
+                iconMarginLeft: () => 4,
+                iconMarginRight: () => 4,
+                crossMargin: () => 16,
+                curtainHeight: () => 0,
+            },
+            control: {
+                canvas: () => ({
+                    event: {
+                        mousemove: p => {
+                            const crumbs = $$.a('.crumbs');
+                            if (!crumbs)
+                                return false;
+                            const pixelRatio = $$.a('/.#pixelRatio');
+                            const ctxX = p.event.clientX * pixelRatio;
+                            const ctxY = p.event.clientY * pixelRatio;
+                            const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
+                            const navFrom = $$.a('.navFrom');
+                            for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
+                                const crumb = crumbs[i];
+                                const rect = {
+                                    left: crumb.ctxLeft,
+                                    right: crumb.ctxLeft + crumb.ctxWidth,
+                                    top: crumb.ctxTop,
+                                    bottom: crumb.ctxTop + ctxCrumbHeight,
+                                };
+                                if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
+                                    $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                    return true;
+                                }
+                            }
+                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: null });
+                            return false;
+                        },
+                        clickOrTap: p => {
+                            const crumbs = $$.a('.crumbs');
+                            console.log($$.a('.#zIndex'));
+                            if (!crumbs)
+                                return false;
+                            const pixelRatio = $$.a('/.#pixelRatio');
+                            const ctxX = pixelRatio * (p.event.start instanceof MouseEvent ?
+                                p.event.start.clientX :
+                                p.event.start.touches[0].clientX);
+                            const ctxY = pixelRatio * (p.event.start instanceof MouseEvent ?
+                                p.event.start.clientY :
+                                p.event.start.touches[0].clientY);
+                            const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
+                            const navFrom = $$.a('.navFrom');
+                            for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
+                                const crumb = crumbs[i];
+                                const rect = {
+                                    left: crumb.ctxLeft,
+                                    right: crumb.ctxLeft + crumb.ctxWidth,
+                                    top: crumb.ctxTop,
+                                    bottom: crumb.ctxTop + ctxCrumbHeight,
+                                };
+                                if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
+                                    if (crumb.navText) {
+                                        $$.a('.navFrom', crumb.navFrom);
+                                    }
+                                    else {
+                                        $$.a.update('<<.selected', (val) => {
+                                            val.delete(crumb.code);
+                                            return val;
+                                        }, true);
+                                    }
+                                    return true;
+                                }
+                            }
+                            return false;
+                        },
+                    },
+                    prop: {
+                        crumbs: '<.crumbs',
+                        navFrom: () => 0,
+                    },
+                    prop_non_render: {
+                        navTo: () => -1,
+                    },
+                    render: p => {
+                        const { ctx, pixelRatio } = p;
+                        const crumbs = $$.a('.crumbs');
+                        if (!crumbs)
+                            return;
+                        const ofsHor = 16;
+                        const ofsVer = 16;
+                        const ctxFontSize = $$.a('<.fontSize') * pixelRatio;
+                        const crossSize = $$.a('<.fontSize');
+                        const crossMarginRight = 8;
+                        const crossMarginLeft = 4;
+                        const crossThick = 2;
+                        const iconScale = $$.a('<.iconScale');
+                        const iconSize = 24 * iconScale;
+                        const iconOfsHor = -2 * iconScale;
+                        const iconMarginLeft = $$.a('<.iconMarginLeft');
+                        const iconMarginRight = $$.a('<.iconMarginRight');
+                        const navPaddingLeft = 8;
+                        const navPaddingRight = 8;
+                        const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
+                        const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
+                        const crumbSpaceHor = $$.a('<.crumbSpaceHor');
+                        const crumbSpaceVer = $$.a('<.crumbSpaceVer');
+                        const crumbHeight = $$.a('<.crumb_height');
+                        const crumbBorderRadius = $$.a('<.crumbBorderRadius');
+                        const crumbBorderWidth = 1;
+                        const crumbBorderColor = 'silver';
+                        const crumbBackground = '#fcfcfd';
+                        const crumbTextColor = $$.a('/.colorText');
+                        const crossMargin = $$.a('<.crossMargin');
+                        ctx.font = $$.a('<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<.fontFamily');
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'bottom';
+                        const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - ofsHor);
+                        const crossClientRect = $$.a('<<@cross.#clientRect');
+                        let crumb_prev;
+                        let navFrom = $$.a('.navFrom');
+                        let navTo = navFrom;
+                        let navFrom_next;
+                        const navPrevText = (i) => '<< ещё ' + i;
+                        const navNextText = (i) => 'и ещё ' + i + ' >>';
+                        for (let i = navFrom; i < crumbs.length; i++) {
+                            const crumb = crumbs[i];
+                            crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                            crumb.navText = null;
+                            if (!crumb_prev) {
+                                crumb.ctxTop = ofsVer * pixelRatio;
+                                crumb.ctxLeft = ofsHor * pixelRatio;
+                                if (navFrom) {
+                                    let ctxRight = crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio ?
+                                        (crossClientRect.left - crossMargin) * pixelRatio :
+                                        ctxRightLimit;
+                                    let navFrom_next = 0;
+                                    for (let j = i - 1; j >= 0; j--) {
+                                        const crumb = crumbs[j];
+                                        crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                                        crumb.ctxLeft = ctxRight - crumb.ctxWidth;
+                                        ctxRight -= crumb.ctxWidth + crumbSpaceHor * pixelRatio;
+                                        if (ctxRight < ofsHor * pixelRatio + (!j ? 0 :
+                                            ctx.measureText(navPrevText(j)).width + (navPaddingLeft + navPaddingRight) * pixelRatio)) {
+                                            navFrom_next = j + 1;
+                                            break;
+                                        }
+                                    }
+                                    const crumb_nav = crumbs[i - 1];
+                                    crumb_nav.ctxLeft = crumb.ctxTop;
+                                    crumb_nav.ctxTop = crumb.ctxLeft;
+                                    crumb_nav.navText = navPrevText(i);
+                                    crumb_nav.ctxWidth = ctx.measureText(crumb_nav.navText).width + pixelRatio * (navPaddingLeft + navPaddingRight);
+                                    crumb.ctxLeft = crumb_nav.ctxLeft + crumb_nav.ctxWidth + crumbSpaceHor * pixelRatio;
+                                    crumb_nav.navFrom = navFrom_next;
+                                }
+                            }
+                            else {
+                                crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                crumb.ctxTop = crumb_prev.ctxTop;
+                                if (crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio &&
+                                    crumb.ctxLeft + crumb.ctxWidth > (crossClientRect.left - crossMargin) * pixelRatio ||
+                                    crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit) {
+                                    crumb.ctxLeft = ofsHor * pixelRatio;
+                                    crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
+                                    if (navFrom_next === void 0)
+                                        navFrom_next = i;
+                                    if (crumb.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio > $$.a('.#height') * pixelRatio) {
+                                        for (let j = i - 1; j > navFrom; j--) {
+                                            navTo--;
+                                            const crumb = crumbs[j];
+                                            crumb.navText = navNextText((crumbs.length - j - 1));
+                                            crumb.navFrom = navFrom_next;
+                                            crumb.ctxWidth = ctx.measureText(crumb.navText).width + (navPaddingRight + navPaddingLeft) * pixelRatio;
+                                            const crumb_prev = crumbs[j - 1];
+                                            crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                            crumb.ctxTop = crumb_prev.ctxTop;
+                                            if (crumb_prev.ctxLeft == ofsHor * pixelRatio || !(crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio &&
+                                                crumb.ctxLeft + crumb.ctxWidth > (crossClientRect.left - crossMargin) * pixelRatio ||
+                                                crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit))
+                                                break;
+                                        }
+                                        navTo++;
+                                        break;
+                                    }
+                                }
+                            }
+                            navTo++;
+                            crumb_prev = crumb;
+                        }
+                        if (crumb_prev) {
+                            const ctxBottom = crumb_prev.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, ctxBottom);
+                            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+                            gradient.addColorStop(1 - (crumbSpaceVer + ofsHor) * pixelRatio / ctxBottom, 'rgba(255,255,255,1)');
+                            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(0, 0, $$.a('<<.#width') * pixelRatio, ctxBottom);
+                            $$.a('<<.ofsVer_max', Math.max(ctxBottom / pixelRatio), $$.a('<<.ofsVer_initial'));
+                        }
+                        $$.a('.navTo', navTo);
+                        for (let i = !navFrom ? 0 : navFrom - 1; i < navTo; i++) {
+                            const crumb = crumbs[i];
+                            $$.$me_atom2_ctx_rect({
+                                ctx,
+                                ctxLeft: crumb.ctxLeft,
+                                ctxTop: crumb.ctxTop,
+                                ctxWidth: crumb.ctxWidth,
+                                ctxHeight: crumbHeight * pixelRatio,
+                                ctxBorderRadius: crumbBorderRadius * pixelRatio,
+                                stroke: {
+                                    ctxWidth: crumbBorderWidth * pixelRatio,
+                                    style: crumbBorderColor,
+                                },
+                                fillStyle: crumbBackground,
+                            });
+                            if (crumb.navText) {
+                                ctx.fillStyle = crumbTextColor;
+                                ctx.fillText(crumb.navText, crumb.ctxLeft + navPaddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+                            }
+                            else {
+                                ctx.save();
+                                ctx.translate(crumb.ctxLeft + iconMarginLeft * pixelRatio, crumb.ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
+                                ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
+                                ctx.fillStyle = crumb.color;
+                                const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
+                                ctx.fill(path);
+                                ctx.restore();
+                                $$.$me_atom2_ctx_cross({
+                                    ctx,
+                                    ctxTop: crumb.ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
+                                    ctxLeft: crumb.ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
+                                    ctxWidth: crossSize * pixelRatio,
+                                    ctxHeight: crossSize * pixelRatio,
+                                    stroke: {
+                                        ctxWidth: crossThick * pixelRatio,
+                                        style: crumbTextColor,
+                                    },
+                                });
+                                ctx.fillStyle = crumbTextColor;
+                                ctx.fillText(crumb.text, crumb.ctxLeft + paddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+                            }
+                        }
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//crumbs_pc.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let mode_enum;
+        (function (mode_enum) {
+            mode_enum[mode_enum["ver"] = 0] = "ver";
+            mode_enum[mode_enum["hor"] = 1] = "hor";
+        })(mode_enum || (mode_enum = {}));
+        $$.$nl_scheme_metro_crumbs_pad = {
+            type: '$nl_scheme_metro_crumbs_pad',
+            prop: {
+                crumbs: $$.$me_atom2_prop_abstract(),
+                crumb_height: () => 32,
+                fontSize: () => 14,
+                fontWeight: '<<.fontWeight',
+                fontFamily: '<<.fontFamily',
+                crumbSpaceHor: () => 16,
+                crumbSpaceVer: () => 16,
+                crumbBorderRadius: () => 3,
+                iconScale: () => .7 * 24 / 32,
+                iconMarginLeft: () => 4,
+                iconMarginRight: () => 4,
+                crossMargin: () => 16,
+                curtainHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], $$.$me_atom2_prop_compute_fn_sum()),
+                resizerHeight: () => 13,
+                horModeHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], ({ masters: [crumb_height, crumbSpaceVer] }) => crumb_height + 2 * crumbSpaceVer),
+                horModeTreshold: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], ({ masters: [crumb_height, crumbSpaceVer] }) => 2 * crumb_height + 3 * crumbSpaceVer),
+            },
+            control: {
+                canvas: () => ({
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'wheel') {
+                            const { clientX, clientY, deltaY } = dispatch_arg;
+                            if ($$.a.dispatch('', 'isInVisible', {
+                                clientX, clientY, ret: false
+                            }).ret) {
+                                $$.a.update('.ofsVer', val => $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret);
+                                dispatch_arg.ret = true;
+                            }
+                            return true;
+                        }
+                        else if (dispatch_name == 'ofsVer') {
+                            const { val, deltaY } = dispatch_arg;
+                            dispatch_arg.ret = deltaY < 0 ?
+                                Math.max(val + deltaY, 0) :
+                                Math.min(val + deltaY, $$.a('.height_content') - $$.a('.height_visible'));
+                            return true;
+                        }
+                        else if (dispatch_name == 'isInResizer') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const clientRect = $$.a('.#clientRect');
+                            const resizerBottom = $$.a('.resizerBottom');
+                            if (dispatch_arg.ret = !!resizerBottom) {
+                                const resizerTop = $$.a('.resizerTop');
+                                const clientRect = $$.a('.#clientRect');
+                                const rect = {
+                                    left: clientRect.left,
+                                    right: clientRect.right,
+                                    top: clientRect.top + resizerTop,
+                                    bottom: clientRect.top + resizerBottom,
+                                };
+                                dispatch_arg.ret = $$.$me_point_in_rect(clientX, clientY, rect);
+                            }
+                            return true;
+                        }
+                        else if (dispatch_name == 'isInVisible') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const clientRect = $$.a('.#clientRect');
+                            const rect = {
+                                left: clientRect.left,
+                                top: clientRect.top,
+                                right: clientRect.right,
+                                bottom: clientRect.top + $$.a('.height_visible'),
+                            };
+                            dispatch_arg.ret = $$.$me_point_in_rect(clientX, clientY, rect);
+                            return true;
+                        }
+                        else if (dispatch_name == 'deltaY') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const clientRect = $$.a('.#clientRect');
+                            dispatch_arg.ret =
+                                clientY < $$.a('.clickableTop') + clientRect.top ?
+                                    -$$.a('<.curtainHeight') :
+                                    clientY > $$.a('.clickableBottom') + clientRect.top ?
+                                        $$.a('<.curtainHeight') :
+                                        0;
+                            return true;
+                        }
+                        else if (dispatch_name == 'guid') {
+                            const { clientX, clientY } = dispatch_arg;
+                            const crumbs = $$.a('.crumbs');
+                            if (crumbs) {
+                                const pixelRatio = $$.a('/.#pixelRatio');
+                                const ctxX = pixelRatio * clientX;
+                                const ctxY = pixelRatio * clientY;
+                                const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
+                                const ctxOfsVer = $$.a('.ofsVer') * pixelRatio;
+                                for (let i = 0; i < crumbs.length; i++) {
+                                    const crumb = crumbs[i];
+                                    const rect = {
+                                        left: crumb.ctxLeft,
+                                        right: crumb.ctxLeft + crumb.ctxWidth,
+                                        top: crumb.ctxTop - ctxOfsVer,
+                                        bottom: crumb.ctxTop + ctxCrumbHeight - ctxOfsVer,
+                                    };
+                                    if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
+                                        dispatch_arg.ret = crumb.guid;
+                                        break;
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                        return false;
+                    },
+                    event: {
+                        wheel: p => $$.a.dispatch('', 'wheel', {
+                            clientX: p.event.clientX,
+                            clientY: p.event.clientY,
+                            deltaY: p.event._deltaY,
+                            ret: false,
+                        }).ret,
+                        wheelTouch: p => $$.a.dispatch('', 'wheel', {
+                            clientX: p.event.start.touches[0].clientX,
+                            clientY: p.event.start.touches[0].clientY,
+                            deltaY: p.event._deltaY,
+                            ret: false,
+                        }).ret,
+                        clickOrTap: p => {
+                            let clientX;
+                            let clientY;
+                            if (p.event.start instanceof MouseEvent) {
+                                clientX = p.event.start.clientX;
+                                clientY = p.event.start.clientY;
+                            }
+                            else {
+                                clientX = p.event.start.touches[0].clientX;
+                                clientY = p.event.start.touches[0].clientY;
+                            }
+                            if (!$$.a.dispatch('', 'isInVisible', {
+                                clientX, clientY, ret: false
+                            }).ret)
+                                return false;
+                            const clientRect = $$.a('.#clientRect');
+                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false }).ret;
+                            if (deltaY) {
+                                $$.a.update('.ofsVer', val => $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret);
+                                return true;
+                            }
+                            const crumbs = $$.a('.crumbs');
+                            if (!crumbs)
+                                return false;
+                            const guid = $$.a.dispatch('', 'guid', { clientX, clientY, ret: '' }).ret;
+                            if (guid) {
+                                $$.a.update('<<.value', (val) => val.filter(s => s != guid));
+                            }
+                            return true;
+                        },
+                        mousedown: p => {
+                            const clientX = p.event.clientX;
+                            const clientY = p.event.clientY;
+                            if ($$.a.dispatch('', 'isInResizer', { clientX, clientY, ret: false }).ret) {
+                                $$.a('.resizer_start', clientY);
+                                const atom_isResizeMode = $$.a.get('.isResizeMode');
+                                $$.a('.resizeModeStarter', setTimeout(() => {
+                                    atom_isResizeMode.value(true);
+                                }, 600));
+                                return false;
+                            }
+                            return false;
+                        },
+                        mouseup: p => {
+                            if ($$.a('.isResizeMode')) {
+                                $$.a('.isResizeMode', false);
+                                return true;
+                            }
+                            else {
+                                const clientX = p.event.clientX;
+                                const clientY = p.event.clientY;
+                                if (!$$.a.dispatch('', 'isInResizer', { clientX, clientY, ret: false }).ret)
+                                    return false;
+                                const timer = $$.a('.resizeModeStarter');
+                                if (timer) {
+                                    clearTimeout(timer);
+                                    $$.a('.resizeModeStarter', null);
+                                }
+                                return false;
+                            }
+                        },
+                        mousemove: p => {
+                            const clientX = p.event.clientX;
+                            const clientY = p.event.clientY;
+                            if (p.event.buttons == 1) {
+                                const timer = $$.a('.resizeModeStarter');
+                                if (timer) {
+                                    clearTimeout(timer);
+                                    $$.a('.resizeModeStarter', null);
+                                    $$.a('.isResizeMode', true);
+                                }
+                            }
+                            if ($$.a('.isResizeMode')) {
+                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'row-resize' });
+                                const clientRect = $$.a('.#clientRect');
+                                $$.a('.height_visible_manual', Math.min(Math.max($$.a('.height_visible_manual_start') + clientY - $$.a('.resizer_start'), $$.a('<.horModeHeight')), $$.a('.#height') - $$.a('<<.ofsVer_initial'), $$.a('.height_content')));
+                                $$.a('<<.isLasso', false);
+                                return true;
+                            }
+                            if (!$$.a.dispatch('', 'isInVisible', {
+                                clientX, clientY, ret: false
+                            }).ret)
+                                return false;
+                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false }).ret;
+                            if (deltaY) {
+                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                return true;
+                            }
+                            const guid = $$.a.dispatch('', 'guid', { clientX, clientY, ret: '' }).ret;
+                            if (guid) {
+                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
+                                return true;
+                            }
+                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: null });
+                            return false;
+                        },
+                    },
+                    prop: {
+                        ofsVer: $$.$me_atom2_prop([], () => 0),
+                        ofsHor: () => 0,
+                        crumbs: '<.crumbs',
+                        mode: () => mode_enum.ver,
+                        isResizeMode: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
+                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: val ? 'row-resize' : null });
+                            if (val) {
+                                $$.a('.height_visible_manual_start', $$.a('.height_visible'));
+                            }
+                            else {
+                                const mode = $$.a('.height_visible') >= $$.a('<.horModeTreshold') ?
+                                    mode_enum.ver :
+                                    mode_enum.hor;
+                                $$.a('.mode', mode);
+                                if (mode == mode_enum.hor)
+                                    $$.a('.height_visible_manual', $$.$me_atom2_anim({ to: $$.a('<.horModeHeight') }));
+                            }
+                        }),
+                        height_visible_manual: $$.$me_atom2_prop_store({
+                            default: () => 0,
+                            valid: (val) => typeof val == 'number' ? val : null,
+                        }),
+                    },
+                    prop_non_render: {
+                        height_visible_manual_start: () => 0,
+                        resizer_start: () => 0,
+                        height_content: () => 0,
+                        width_content: () => 0,
+                        height_visible: $$.$me_atom2_prop(['.height_visible_manual'], ({ masters: [manual] }) => manual),
+                        clickableBottom: () => 0,
+                        clickableTop: () => 0,
+                        resizerBottom: () => 0,
+                        resizerTop: () => 0,
+                        resizeModeStarter: () => null,
+                        needReposCrumbs: $$.$me_atom2_prop(['.crumbs', '<<.#width'], () => true),
+                        more_down: () => 0,
+                    },
+                    render: p => {
+                        const { ctx, pixelRatio, ctxWidth, ctxHeight } = p;
+                        const crumbs = $$.a('.crumbs');
+                        if (!crumbs)
+                            return;
+                        const ctxFontSize = $$.a('<.fontSize') * pixelRatio;
+                        const mode = $$.a('.mode');
+                        const crossSize = $$.a('<.fontSize');
+                        const crossMarginRight = 8;
+                        const crossMarginLeft = 4;
+                        const crossThick = 2;
+                        const iconScale = $$.a('<.iconScale');
+                        const iconSize = 24 * iconScale;
+                        const iconOfsHor = -2 * iconScale;
+                        const iconMarginLeft = $$.a('<.iconMarginLeft');
+                        const iconMarginRight = $$.a('<.iconMarginRight');
+                        const navPaddingLeft = 8;
+                        const navPaddingRight = 8;
+                        const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
+                        const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
+                        const crumbSpaceHor = $$.a('<.crumbSpaceHor');
+                        const crumbSpaceVer = $$.a('<.crumbSpaceVer');
+                        const crumbHeight = $$.a('<.crumb_height');
+                        const ctxCrumbHeight = crumbHeight * pixelRatio;
+                        const crumbBorderRadius = $$.a('<.crumbBorderRadius');
+                        const crumbBorderWidth = 1;
+                        const crumbBorderColor = 'silver';
+                        const crumbBackground = '#fcfcfd';
+                        const crumbTextColor = $$.a('/.colorText');
+                        const crossMargin = $$.a('<.crossMargin');
+                        ctx.font = $$.a('<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<.fontFamily');
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'bottom';
+                        let height_content;
+                        let width_content;
+                        const crossClientRect = $$.a('<<@cross.#clientRect');
+                        const clientRect = $$.a('.#clientRect');
+                        const ctxRightLimitFirstRow = (crossClientRect.left - clientRect.left - crossMargin) * pixelRatio;
+                        if (!$$.a('.needReposCrumbs')) {
+                            height_content = $$.a('.height_content');
+                            width_content = $$.a('.width_content');
+                        }
+                        else {
+                            const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - crumbSpaceHor);
+                            let crumb_prev;
+                            for (let i = 0; i < crumbs.length; i++) {
+                                const crumb = crumbs[i];
+                                crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                                if (!crumb_prev) {
+                                    crumb.ctxLeftHor = crumbSpaceHor * pixelRatio;
+                                    crumb.ctxLeft = crumbSpaceHor * pixelRatio;
+                                    crumb.ctxTop = crumbSpaceVer * pixelRatio;
+                                }
+                                else {
+                                    crumb.ctxLeftHor = crumb_prev.ctxLeftHor + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                    crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
+                                    crumb.ctxTop = crumb_prev.ctxTop;
+                                    if (crumb.ctxTop < (crossClientRect.bottom - clientRect.top + crossMargin) * pixelRatio &&
+                                        crumb.ctxLeft + crumb.ctxWidth > ctxRightLimitFirstRow ||
+                                        crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit) {
+                                        crumb.ctxLeft = crumbSpaceHor * pixelRatio;
+                                        crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
+                                    }
+                                }
+                                crumb_prev = crumb;
+                            }
+                            height_content = 0;
+                            width_content = 0;
+                            if (crumb_prev) {
+                                height_content = crumb_prev.ctxTop / pixelRatio + crumbHeight + crumbSpaceVer;
+                                width_content = (crumb_prev.ctxLeftHor + crumb_prev.ctxWidth) / pixelRatio + crumbSpaceHor;
+                            }
+                            $$.a('.height_content', height_content);
+                            $$.a('.width_content', width_content);
+                            $$.a('.needReposCrumbs', false);
+                        }
+                        const margin = $$.a('<<.ofsVer_initial');
+                        const ctxMargin = margin * pixelRatio;
+                        let ctxHeightVisible = Math.min(ctxHeight - ctxMargin, height_content * pixelRatio);
+                        if ($$.a('.height_visible_manual'))
+                            ctxHeightVisible = Math.min(ctxHeightVisible, $$.a('.height_visible_manual') * pixelRatio);
+                        $$.a('.height_visible', ctxHeightVisible / pixelRatio);
+                        $$.a('<<.ofsVer_max', Math.min($$.a('.#height'), height_content + margin));
+                        const ctxOfsVer = $$.a('.ofsVer') * pixelRatio;
+                        const ctxOfsHor = $$.a('.ofsHor') * pixelRatio;
+                        if (crumbs.length) {
+                            const ctxBottom = Math.min(height_content * pixelRatio + ctxMargin, ctxHeightVisible + ctxMargin);
+                            const ctxTop = ctxBottom - ctxMargin;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, ctxBottom);
+                            const rgb = '255,255,255';
+                            gradient.addColorStop(0, `rgba(${rgb},1)`);
+                            gradient.addColorStop(1 - ctxMargin / ctxBottom, `rgba(${rgb},1)`);
+                            gradient.addColorStop(1, `rgba(${rgb},0)`);
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(0, 0, ctxWidth, ctxHeight);
+                        }
+                        draw_crumbs({
+                            ctx,
+                            pixelRatio,
+                            crumbs,
+                            ctxWidth,
+                            ctxHeightVisible,
+                            ctxOfsVer,
+                            crumbHeight,
+                            crumbBorderRadius,
+                            crumbBorderWidth,
+                            crumbBorderColor,
+                            crumbBackground,
+                            iconMarginLeft,
+                            iconOfsHor,
+                            crossMarginRight,
+                            crumbTextColor,
+                            ctxFontSize,
+                            iconSize,
+                            iconScale,
+                            crossSize,
+                            crossThick,
+                            paddingLeft,
+                            ctxRightLimitFirstRow,
+                            mode,
+                            ctxOfsHor,
+                            crumbSpaceVer,
+                        });
+                        const curtainHeight = $$.a('<.curtainHeight');
+                        const ctxCurtainHeight = curtainHeight * pixelRatio;
+                        let clickableTop = 0;
+                        if (mode == mode_enum.ver && $$.a('.ofsVer')) {
+                            clickableTop = curtainHeight;
+                            const ctxCurtainHeight = clickableTop * pixelRatio;
+                            const ctxCurtainTop = 0;
+                            const ctxCurtainBottom = ctxCurtainTop + ctxCurtainHeight;
+                            let qt = 0;
+                            for (const crumb of crumbs) {
+                                if (crumb.ctxTop - ctxOfsVer + ctxCrumbHeight < ctxCurtainBottom)
+                                    qt++;
+                            }
+                            if (qt) {
+                                const gradient = ctx.createLinearGradient(0, ctxCurtainBottom, 0, ctxCurtainTop);
+                                const rgb = '255,255,255';
+                                gradient.addColorStop(1, `rgba(${rgb},1)`);
+                                gradient.addColorStop(.5, `rgba(${rgb},.75)`);
+                                gradient.addColorStop(.25, `rgba(${rgb},.5)`);
+                                gradient.addColorStop(0, `rgba(${rgb},0)`);
+                                ctx.fillStyle = gradient;
+                                ctx.fillRect(0, ctxCurtainTop, ctxWidth, ctxCurtainHeight);
+                                const text = 'ещё ' + qt;
+                                ctx.fillStyle = $$.a('/.colorText');
+                                ctx.fillText(text, .5 * (ctxWidth - ctx.measureText(text).width), ctxCurtainTop + (ctxCurtainHeight + ctxFontSize) / 3);
+                            }
+                        }
+                        $$.a('.clickableTop', clickableTop);
+                        const resizerHeight = $$.a('<.resizerHeight');
+                        let clickableBottom = ctxHeightVisible / pixelRatio;
+                        let resizerBottom = 0;
+                        let resizerText;
+                        let more_down = 0;
+                        if (crumbs.length) {
+                            const ctxCurtainBottom = ctxHeightVisible;
+                            const ctxCurtainTop = ctxCurtainBottom - ctxCurtainHeight;
+                            if (mode == mode_enum.ver && (height_content - $$.a('.ofsVer')) > resizerHeight)
+                                for (const crumb of crumbs)
+                                    if (crumb.ctxTop - ctxOfsVer > ctxCurtainTop)
+                                        more_down++;
+                            if (!more_down) {
+                                resizerText = '==';
+                            }
+                            else {
+                                resizerText = '= ещё ' + more_down + ' =';
+                                clickableBottom = ctxCurtainTop / pixelRatio;
+                                const gradient = ctx.createLinearGradient(0, ctxCurtainTop, 0, ctxCurtainBottom);
+                                const rgb = '255,255,255';
+                                gradient.addColorStop(1, `rgba(${rgb},1)`);
+                                gradient.addColorStop(.5, `rgba(${rgb},.75)`);
+                                gradient.addColorStop(.25, `rgba(${rgb},.5)`);
+                                gradient.addColorStop(0, `rgba(${rgb},0)`);
+                                ctx.fillStyle = gradient;
+                                ctx.fillRect(0, ctxCurtainTop, ctxWidth, ctxCurtainHeight);
+                            }
+                            resizerBottom = ctxHeightVisible / pixelRatio;
+                        }
+                        $$.a('.more_down', more_down);
+                        const isResizeMode = $$.a('.isResizeMode');
+                        const ctxResizerHeight = resizerHeight * pixelRatio;
+                        let ctxResizerTop;
+                        if (isResizeMode) {
+                            let ctxY = resizerBottom * pixelRatio - 6 * pixelRatio;
+                            ctx.fillStyle = '#474F61';
+                            ctxResizerTop = ctxY - 8 * pixelRatio;
+                            ctx.fillRect(0, ctxResizerTop, ctxWidth, ctxResizerHeight);
+                            ctx.strokeStyle = '#D6DAE0';
+                            ctx.beginPath();
+                            ctx.moveTo(0, ctxY);
+                            ctx.lineWidth = 1 * pixelRatio;
+                            ctx.lineTo(ctxWidth, ctxY);
+                            ctxY -= 3 * pixelRatio;
+                            ctx.moveTo(0, ctxY);
+                            ctx.lineTo(ctxWidth, ctxY);
+                            ctx.stroke();
+                        }
+                        if (resizerBottom) {
+                            const ctxTextWidth = ctx.measureText(resizerText).width;
+                            if (isResizeMode) {
+                                const ctxRectWidth = ctxTextWidth + 8 * pixelRatio;
+                                ctx.fillStyle = 'rgba(255,255,255,.8)';
+                                ctx.fillRect(.5 * (ctxWidth - ctxRectWidth), ctxResizerTop, ctxRectWidth, ctxResizerHeight);
+                            }
+                            ctx.fillStyle = $$.a('/.colorText');
+                            ctx.fillText(resizerText, .5 * (ctxWidth - ctxTextWidth), resizerBottom * pixelRatio);
+                        }
+                        $$.a('.clickableBottom', clickableBottom);
+                        $$.a('.resizerBottom', resizerBottom);
+                        $$.a('.resizerTop', resizerBottom - ctxFontSize / pixelRatio);
+                    },
+                }),
+            },
+        };
+        function draw_crumbs(p) {
+            const { ctx, pixelRatio, crumbs, ctxWidth, ctxHeightVisible, ctxOfsVer, crumbHeight, crumbBorderRadius, crumbBorderWidth, crumbBorderColor, crumbBackground, iconMarginLeft, iconOfsHor, crossMarginRight, crumbTextColor, ctxFontSize, iconSize, iconScale, crossSize, crossThick, paddingLeft, ctxRightLimitFirstRow, mode, ctxOfsHor, crumbSpaceVer, } = p;
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, mode == mode_enum.hor ? ctxRightLimitFirstRow : ctxWidth, ctxHeightVisible);
+            ctx.clip();
+            for (const crumb of crumbs) {
+                const ctxLeft = mode == mode_enum.ver ? crumb.ctxLeft : crumb.ctxLeftHor;
+                const ctxTop = mode == mode_enum.ver ? crumb.ctxTop - ctxOfsVer : crumbSpaceVer * pixelRatio;
+                $$.$me_atom2_ctx_rect({
+                    ctx,
+                    ctxLeft,
+                    ctxTop,
+                    ctxWidth: crumb.ctxWidth,
+                    ctxHeight: crumbHeight * pixelRatio,
+                    ctxBorderRadius: crumbBorderRadius * pixelRatio,
+                    stroke: {
+                        ctxWidth: crumbBorderWidth * pixelRatio,
+                        style: crumbBorderColor,
+                    },
+                    fillStyle: crumbBackground,
+                });
+                ctx.save();
+                ctx.translate(ctxLeft + iconMarginLeft * pixelRatio, ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
+                ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
+                ctx.fillStyle = crumb.color;
+                const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
+                ctx.fill(path);
+                ctx.restore();
+                $$.$me_atom2_ctx_cross({
+                    ctx,
+                    ctxLeft: ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
+                    ctxTop: ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
+                    ctxWidth: crossSize * pixelRatio,
+                    ctxHeight: crossSize * pixelRatio,
+                    stroke: {
+                        ctxWidth: crossThick * pixelRatio,
+                        style: crumbTextColor,
+                    },
+                });
+                ctx.fillStyle = crumbTextColor;
+                ctx.fillText(crumb.text, ctxLeft + paddingLeft * pixelRatio, ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+            }
+            ctx.restore();
+        }
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//crumbs_pad.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_scheme_metro = {
+            base: $$.$nl_scheme_engine,
+            prop: {
+                data: '/.scheme_metro',
+                background_station: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                background_scheme: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                background_text_fill_style: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'rgba(255,255,255,.5)' : '#464f63'),
+                background_station_selected: () => 'red',
+                background_station_will_select: () => '#F8CFD3',
+                background_station_will_deselect: () => '#3F88DE',
+                colorText_will_select: () => '#D5483E',
+                colorText_will_deselect: '.background_station_will_deselect',
+                value: $$.$me_atom2_prop(['.selected', '/.code2guids'], ({ masters: [selected, code2guids] }) => {
+                    const result = [];
+                    for (const code of [...selected].map(([code]) => code)) {
+                        const guids = code2guids[code];
+                        if (guids)
+                            result.push(...guids);
+                    }
+                    return result;
+                }, ({ val }) => {
+                    const guid2point = $$.a('/.guid2point');
+                    const selected = new Map();
+                    for (const guid of val) {
+                        const point = guid2point[guid];
+                        if (!point)
+                            console.warn(`unknown guid ${guid}`);
+                        if (!selected.has(point.station.code))
+                            selected.set(point.station.code, null);
+                    }
+                    $$.a('.selected', selected);
+                }),
+                crumbs: $$.$me_atom2_prop(['.value', '/.guid2point'], ({ masters: [value, guid2point] }) => {
+                    const result = [];
+                    for (const guid of value) {
+                        const point = guid2point[guid];
+                        if (!point)
+                            console.warn(`unknown guid ${guid}`);
+                        result.push({
+                            guid: guid,
+                            code: point.station.code,
+                            text: point.station.text,
+                            color: point.line.color,
+                        });
+                    }
+                    return result;
+                }),
+                isTouch: $$.$me_atom2_prop_store({
+                    default: () => true,
+                    valid: (val) => typeof val == 'boolean' ? val : null,
+                }),
+                crumb_height: $$.$me_atom2_prop_either(['.isTouch'], () => 32, () => 24),
+                fontSize: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 14),
+                crumbSpaceHor: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 8),
+                crumbSpaceVer: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 8),
+                crumbBorderRadius: $$.$me_atom2_prop_either(['.isTouch'], () => 5, () => 3),
+                iconScale: $$.$me_atom2_prop_either(['.isTouch'], () => .7, () => .7 * 24 / 32),
+                iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
+                iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
+                crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 44, () => 16),
+                '#order': () => ['container', 'container2', 'lasso', 'crumbs', 'cross'],
+            },
+            elem: {
+                crumbs: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => ({
+                    type: (isTouch ? $$.$nl_scheme_metro_crumbs_pad : $$.$nl_scheme_metro_crumbs_pc).type,
+                    base: isTouch ?
+                        $$.$nl_scheme_metro_crumbs_pad :
+                        $$.$nl_scheme_metro_crumbs_pc,
+                    prop: {
+                        '#height': $$.$me_atom2_prop(['<.#height', '<.ofsVer_initial', '.curtainHeight'], ({ masters: [height, ofsVer_initial, curtainHeight] }) => .25 * height + ofsVer_initial + curtainHeight),
+                        crumbs: '<.crumbs',
+                        crumb_height: '<.crumb_height',
+                        fontSize: '<.fontSize',
+                        crumbSpaceHor: '<.crumbSpaceHor',
+                        crumbSpaceVer: '<.crumbSpaceVer',
+                        crumbBorderRadius: '<.crumbBorderRadius',
+                        iconScale: '<.iconScale',
+                        iconMarginLeft: '<.iconMarginLeft',
+                        iconMarginRight: '<.iconMarginRight',
+                        crossMargin: '<.crossMargin',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                })),
+            },
+        };
+        const idx = window.location.pathname.indexOf('/', 1);
+        const root = !~idx ?
+            window.location.pathname :
+            window.location.pathname.slice(0, idx);
+        const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
+        const store_key = 'msk-metro-guids';
+        worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
+        worker.onmessage = (event) => {
+            const cmd = event.data.cmd;
+            const data = event.data.data;
+            if (cmd == 'data') {
+                $$.a('/.scheme_metro', data.scheme);
+                $$.a('/.guid2point', data.guid2point);
+                $$.a('/.code2guids', data.code2guids);
+                if (data.guids)
+                    localStorage.setItem(store_key, data.guids);
+            }
+        };
+        $$.$me_atom2_entity.root().props({
+            'scheme_metro': () => null,
+            'guid2point': () => null,
+            'code2guids': () => null,
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//metro.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_panel = {
             style: {
                 background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
@@ -6168,18 +8276,28 @@ var $;
                         '#width': () => 619,
                         '#height': () => 300,
                         news_items: $$.$me_atom2_prop([], ({ atom }) => {
-                            console.log('atom', atom);
-                            const result = null;
-                            fetch(newsUrl, {
-                                method: 'get'
-                            })
+                            const store_key = 'news';
+                            let result = {};
+                            let already_got = false;
+                            const stored = localStorage.getItem(store_key);
+                            if (stored)
+                                try {
+                                    result = JSON.parse(stored);
+                                }
+                                catch (err) {
+                                    console.error(err, { stored });
+                                }
+                            fetch(newsUrl, { method: 'get' })
                                 .then(response => response.json())
                                 .then(jsonData => {
-                                console.log(jsonData);
-                                atom.value(jsonData);
+                                const stored_to_be = JSON.stringify(jsonData);
+                                if (stored_to_be != stored) {
+                                    localStorage.setItem(store_key, stored_to_be);
+                                    atom.value(jsonData);
+                                }
                             })
                                 .catch(err => {
-                                console.error(err);
+                                console[already_got ? 'warn' : 'error'](`while ${already_got ? 'update' : 'fetch'} data for news:`, err);
                             });
                             return result;
                         }),
@@ -7004,59 +9122,18 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let $nl_scheme_will_action_enum;
-        (function ($nl_scheme_will_action_enum) {
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["select"] = 1] = "select";
-            $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["deselect"] = 2] = "deselect";
-        })($nl_scheme_will_action_enum = $$.$nl_scheme_will_action_enum || ($$.$nl_scheme_will_action_enum = {}));
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//scheme.js.map
-;
-"use strict";
-//crumbs_pc.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro_crumbs_pad = {
-            type: '$nl_scheme_metro_crumbs_pad',
-            prop: {},
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//crumbs_pad.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_scheme_metro = {};
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//metro.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$me_panel = {
             type: '$me_panel',
-            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
+            prop: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
                 'borderRadiusLeftTop', 'borderRadiusRightTop',
                 'borderRadiusLeftBottom', 'borderRadiusRightBottom',
-            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+            ])), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground'])), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
                 ['paddingHor', ['paddingLeft', 'paddingRight']],
                 ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+            ])), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
                 ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
                 ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+            ])), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
                 ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
                 ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
             ])),
@@ -7148,13 +9225,13 @@ var $;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+            prop: Object.assign(Object.assign(Object.assign(Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer'])), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer'])), { _text_n_ctxLeft: $$.$me_atom2_prop([
                     '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
                 ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
                     const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
                     return result;
-                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                }) }), $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
                 '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
                 '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
             })),
@@ -7751,7 +9828,7 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
+            prop: Object.assign(Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
                     keys: ['.curtain'],
                     masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
                         if (curtain == 'top') {
@@ -7784,7 +9861,7 @@ var $;
                 }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')), row_i_min: () => 0, row_i_max: () => -1 }, $$.$me_atom2_prop_same_def(() => 0, [
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
-            ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
+            ])), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
                         const key = +row_i;
@@ -10086,47 +12163,19 @@ var $;
                                     if (dispatch_arg == 'open') {
                                         const atom_order = $$.a.get('<<.order');
                                         const order = atom_order.value();
-                                        const value = order.params[id] || new Map();
+                                        const value = order.params[id] || [];
                                         const zIndex = $$.a('.#zIndex') + 20;
-                                        scheme_metro = new $$.$me_atom2_elem({
-                                            tail: 'me_dropdown' + id,
-                                            parent: $$.a.get('/@app'),
-                                            cnf: {
-                                                base: $$.$nl_scheme_metro,
-                                                prop: {
-                                                    scale: '.scale_initial',
-                                                    ofsHor: '.ofsHor_initial',
-                                                    ofsVer: '.ofsVer_initial',
-                                                    selected: () => value,
-                                                    src: () => '',
-                                                    '#zIndex': () => zIndex,
-                                                },
-                                                dispatch: (dispatch_name, dispatch_arg) => {
-                                                    if (dispatch_name == 'open') {
-                                                        $$.a('.scale', $$.a('.scale_initial'));
-                                                        $$.a('.ofsHor', $$.a('.ofsHor_initial'));
-                                                        $$.a('.ofsVer', $$.a('.ofsVer_initial'));
-                                                        $$.a('.src', dispatch_arg.src);
-                                                        $$.a('.selected', dispatch_arg.val);
-                                                        return true;
-                                                    }
-                                                    else if (dispatch_name == 'close') {
-                                                        order.params[id] = $$.a('.selected');
-                                                        atom_order.value(order);
-                                                        scheme_metro.destroy();
-                                                        return true;
-                                                    }
-                                                    return false;
-                                                },
-                                            },
-                                        });
+                                        $$.a('/@app.scheme_metro_value_reciever', $$.a.curr.name());
+                                        $$.a('/@app.scheme_metro_value', value);
+                                        $$.a('/@app.isShownSchemeMetro', true);
                                         return true;
                                     }
                                     else if (dispatch_name == 'close') {
                                         const order = $$.a('<<.order');
                                         if (!order.params)
                                             order.params = {};
-                                        order.params[id] = dispatch_arg;
+                                        order.params[id] = $$.a('/@app.scheme_metro_value');
+                                        $$.a('/@app.isShownSchemeMetro', false);
                                         return true;
                                     }
                                     return false;
@@ -10736,7 +12785,7 @@ var $;
                             if (def.type == 'select') {
                                 return {
                                     base: $$.$nl_select,
-                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -10748,7 +12797,7 @@ var $;
                             else if (def.type == 'address') {
                                 return {
                                     base: input_with_button,
-                                    prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
                                 };
                             }
                             else if (def.type == 'picker' || def.type == 'pickermulti') {
@@ -10789,7 +12838,7 @@ var $;
                             else if (def.type == 'diap') {
                                 return {
                                     base: diap,
-                                    prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -10834,7 +12883,7 @@ var $;
                             }
                             else if (def.type == 'include_exclude') {
                                 return {
-                                    prop: Object.assign({}, prop_common(def, { ofsVer: -5 }), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
                                     elem: {
                                         label: () => ({
                                             prop: {
@@ -10876,7 +12925,7 @@ var $;
                             else if (def.type == 'button') {
                                 return {
                                     base: $$.$nl_button,
-                                    prop: Object.assign({}, prop_common(def), { target: def.target, cmd: def.cmd, caption: def.caption }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { target: def.target, cmd: def.cmd, caption: def.caption }),
                                     dispatch: def.dispatch,
                                 };
                             }
@@ -12592,7 +14641,7 @@ var $;
                     control: {
                         cell: () => ({
                             base: $$.$me_panel,
-                            prop: Object.assign({}, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
+                            prop: Object.assign(Object.assign({}, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
                         }),
                     },
                 }),
@@ -12610,7 +14659,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
@@ -13100,7 +15149,7 @@ var $;
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
                                 }),
                             },
                         }),
@@ -13120,7 +15169,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
@@ -13451,7 +15500,7 @@ var $;
             base: $$.$nl_search_panel,
             dispatch: (dispatch_name, dispatch_arg) => {
                 if (dispatch_name == 'get_recs') {
-                    $$.a('.dataWorker').postMessage(Object.assign({}, dispatch_arg, { cmd: 'recs', tag: $$.a('.provider_tag') }));
+                    $$.a('.dataWorker').postMessage(Object.assign(Object.assign({}, dispatch_arg), { cmd: 'recs', tag: $$.a('.provider_tag') }));
                     return true;
                 }
                 else if (dispatch_name == 'recs') {
@@ -15646,12 +17695,18 @@ var $;
                         background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
-                    prop: Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
+                    prop: Object.assign(Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
                         default: () => false,
                         valid: (val) => typeof val == 'boolean' ?
                             val :
                             null,
-                    }), ['isShownLoginForm', 'isShownLoginMenu']), { login: $$.$me_atom2_prop_store({
+                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro'])), { scheme_metro_value: $$.$me_atom2_prop_store({
+                            default: () => [],
+                            valid: (val) => Array.isArray(val) ? val : null,
+                        }), scheme_metro_value_reciever: $$.$me_atom2_prop_store({
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val : null,
+                        }), login: $$.$me_atom2_prop_store({
                             default: () => '',
                             valid: (val) => typeof val == 'string' ?
                                 val.trim() :
@@ -15673,6 +17728,30 @@ var $;
                                 isShown: $$.$me_atom2_prop_bind('<.isShownLoginForm'),
                                 stayLogged: $$.$me_atom2_prop_bind('<.stayLogged'),
                                 login: $$.$me_atom2_prop_bind('<.login'),
+                            },
+                        }),
+                        schemeMetro: $$.$me_atom2_prop(['.isShownSchemeMetro'], ({ masters: [isShownSchemeMetro] }) => !isShownSchemeMetro ? null : {
+                            base: $$.$nl_scheme_metro,
+                            prop: {
+                                scale: '.scale_initial',
+                                ofsHor: '.ofsHor_initial',
+                                ofsVer: '.ofsVer_initial',
+                                value: $$.$me_atom2_prop_bind('/@app.scheme_metro_value'),
+                                src: () => '',
+                                '#zIndex': () => 1000,
+                            },
+                            dispatch: (dispatch_name, dispatch_arg) => {
+                                if (dispatch_name == 'close') {
+                                    const scheme_metro_value_reciever = $$.a('/@app.scheme_metro_value_reciever');
+                                    if (!scheme_metro_value_reciever) {
+                                        console.error({ scheme_metro_value_reciever });
+                                    }
+                                    else {
+                                        $$.a.dispatch(scheme_metro_value_reciever, 'close');
+                                    }
+                                    return true;
+                                }
+                                return false;
                             },
                         }),
                         tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
@@ -16077,4 +18156,5 @@ var $;
 /*! modernizr 3.6.0 (Custom Build) | MIT *
  * https://modernizr.com/download/?-prefixed !*/
 !function(e,n,t){function r(e,n){return typeof e===n}function o(){var e,n,t,o,i,s,l;for(var u in h)if(h.hasOwnProperty(u)){if(e=[],n=h[u],n.name&&(e.push(n.name.toLowerCase()),n.options&&n.options.aliases&&n.options.aliases.length))for(t=0;t<n.options.aliases.length;t++)e.push(n.options.aliases[t].toLowerCase());for(o=r(n.fn,"function")?n.fn():n.fn,i=0;i<e.length;i++)s=e[i],l=s.split("."),1===l.length?Modernizr[l[0]]=o:(!Modernizr[l[0]]||Modernizr[l[0]]instanceof Boolean||(Modernizr[l[0]]=new Boolean(Modernizr[l[0]])),Modernizr[l[0]][l[1]]=o),C.push((o?"":"no-")+l.join("-"))}}function i(e){return e.replace(/([a-z])-([a-z])/g,function(e,n,t){return n+t.toUpperCase()}).replace(/^-/,"")}function s(e,n){return function(){return e.apply(n,arguments)}}function l(e,n,t){var o;for(var i in e)if(e[i]in n)return t===!1?e[i]:(o=n[e[i]],r(o,"function")?s(o,t||n):o);return!1}function u(e,n){return!!~(""+e).indexOf(n)}function f(e){return e.replace(/([A-Z])/g,function(e,n){return"-"+n.toLowerCase()}).replace(/^ms-/,"-ms-")}function a(n,t,r){var o;if("getComputedStyle"in e){o=getComputedStyle.call(e,n,t);var i=e.console;if(null!==o)r&&(o=o.getPropertyValue(r));else if(i){var s=i.error?"error":"log";i[s].call(i,"getComputedStyle returning null, its possible modernizr test results are inaccurate")}}else o=!t&&n.currentStyle&&n.currentStyle[r];return o}function p(){return"function"!=typeof n.createElement?n.createElement(arguments[0]):E?n.createElementNS.call(n,"http://www.w3.org/2000/svg",arguments[0]):n.createElement.apply(n,arguments)}function d(){var e=n.body;return e||(e=p(E?"svg":"body"),e.fake=!0),e}function c(e,t,r,o){var i,s,l,u,f="modernizr",a=p("div"),c=d();if(parseInt(r,10))for(;r--;)l=p("div"),l.id=o?o[r]:f+(r+1),a.appendChild(l);return i=p("style"),i.type="text/css",i.id="s"+f,(c.fake?c:a).appendChild(i),c.appendChild(a),i.styleSheet?i.styleSheet.cssText=e:i.appendChild(n.createTextNode(e)),a.id=f,c.fake&&(c.style.background="",c.style.overflow="hidden",u=z.style.overflow,z.style.overflow="hidden",z.appendChild(c)),s=t(a,e),c.fake?(c.parentNode.removeChild(c),z.style.overflow=u,z.offsetHeight):a.parentNode.removeChild(a),!!s}function m(n,r){var o=n.length;if("CSS"in e&&"supports"in e.CSS){for(;o--;)if(e.CSS.supports(f(n[o]),r))return!0;return!1}if("CSSSupportsRule"in e){for(var i=[];o--;)i.push("("+f(n[o])+":"+r+")");return i=i.join(" or "),c("@supports ("+i+") { #modernizr { position: absolute; } }",function(e){return"absolute"==a(e,null,"position")})}return t}function y(e,n,o,s){function l(){a&&(delete P.style,delete P.modElem)}if(s=r(s,"undefined")?!1:s,!r(o,"undefined")){var f=m(e,o);if(!r(f,"undefined"))return f}for(var a,d,c,y,v,h=["modernizr","tspan","samp"];!P.style&&h.length;)a=!0,P.modElem=p(h.shift()),P.style=P.modElem.style;for(c=e.length,d=0;c>d;d++)if(y=e[d],v=P.style[y],u(y,"-")&&(y=i(y)),P.style[y]!==t){if(s||r(o,"undefined"))return l(),"pfx"==n?y:!0;try{P.style[y]=o}catch(g){}if(P.style[y]!=v)return l(),"pfx"==n?y:!0}return l(),!1}function v(e,n,t,o,i){var s=e.charAt(0).toUpperCase()+e.slice(1),u=(e+" "+w.join(s+" ")+s).split(" ");return r(n,"string")||r(n,"undefined")?y(u,n,o,i):(u=(e+" "+_.join(s+" ")+s).split(" "),l(u,n,t))}var h=[],g={_version:"3.6.0",_config:{classPrefix:"",enableClasses:!0,enableJSClass:!0,usePrefixes:!0},_q:[],on:function(e,n){var t=this;setTimeout(function(){n(t[e])},0)},addTest:function(e,n,t){h.push({name:e,fn:n,options:t})},addAsyncTest:function(e){h.push({name:null,fn:e})}},Modernizr=function(){};Modernizr.prototype=g,Modernizr=new Modernizr;var C=[],S="Moz O ms Webkit",w=g._config.usePrefixes?S.split(" "):[];g._cssomPrefixes=w;var x=function(n){var r,o=prefixes.length,i=e.CSSRule;if("undefined"==typeof i)return t;if(!n)return!1;if(n=n.replace(/^@/,""),r=n.replace(/-/g,"_").toUpperCase()+"_RULE",r in i)return"@"+n;for(var s=0;o>s;s++){var l=prefixes[s],u=l.toUpperCase()+"_"+r;if(u in i)return"@-"+l.toLowerCase()+"-"+n}return!1};g.atRule=x;var _=g._config.usePrefixes?S.toLowerCase().split(" "):[];g._domPrefixes=_;var z=n.documentElement,E="svg"===z.nodeName.toLowerCase(),b={elem:p("modernizr")};Modernizr._q.push(function(){delete b.elem});var P={style:b.elem.style};Modernizr._q.unshift(function(){delete P.style}),g.testAllProps=v;g.prefixed=function(e,n,t){return 0===e.indexOf("@")?x(e):(-1!=e.indexOf("-")&&(e=i(e)),n?v(e,n,t):v(e,"pfx"))};o(),delete g.addTest,delete g.addAsyncTest;for(var L=0;L<Modernizr._q.length;L++)Modernizr._q[L]();e.Modernizr=Modernizr}(window,document);
+
 //# sourceMappingURL=web.js.map
