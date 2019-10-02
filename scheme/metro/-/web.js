@@ -6446,7 +6446,6 @@ var $;
                                 bottom: clientRect.top + $$.a('.height_visible'),
                             };
                             dispatch_arg.ret = $$.$me_point_in_rect(clientX, clientY, rect);
-                            console.log(96, dispatch_arg.ret, { clientX, clientY }, clientRect, $$.a('.height_visible'));
                             return true;
                         }
                         else if (dispatch_name == 'deltaY') {
@@ -6458,7 +6457,6 @@ var $;
                                     clientY > $$.a('.clickableBottom') + clientRect.top - (tolerance || 0) ?
                                         $$.a('<.curtainHeight') :
                                         0;
-                            console.log({ tolerance, clientY }, $$.a('.clickableBottom'), $$.a('.clickableTop'), clientRect.top);
                             return true;
                         }
                         else if (dispatch_name == 'guid') {
@@ -6577,7 +6575,15 @@ var $;
                                 }));
                             }
                             else if (guid) {
-                                $$.a.update('<<.value', (val) => val.filter(s => s != guid));
+                                console.log({ guid });
+                                for (const crumb of crumbs) {
+                                    if (crumb.guid == guid) {
+                                        crumb.deleteStart = performance.now();
+                                        $$.a.update('.deleteProgress', val => val < 0 ? 0 : val);
+                                        console.log($$.a('.deleteProgress'));
+                                        break;
+                                    }
+                                }
                             }
                             return true;
                         },
@@ -6733,8 +6739,10 @@ var $;
                             default: () => 0,
                             valid: (val) => typeof val == 'number' ? val : null,
                         }),
+                        deleteProgress: () => -1,
                     },
                     prop_non_render: {
+                        deleteDuration: () => 200,
                         mode: () => mode_enum.ver,
                         height_visible_manual_start: () => 0,
                         resizer_start: () => null,
@@ -6747,7 +6755,7 @@ var $;
                         resizerBottom: () => 0,
                         resizerTop: () => 0,
                         resizeModeStarter: () => null,
-                        needReposCrumbs: $$.$me_atom2_prop(['.crumbs', '<<.#width'], () => true),
+                        needReposCrumbs: $$.$me_atom2_prop(['.crumbs', '<<.#width', '.deleteProgress'], () => true, ({ val }) => console.log({ needReposCrumbs: val })),
                         more_down: () => 0,
                         navHorPrevRect: () => null,
                         navHorNextRect: () => null,
@@ -6807,9 +6815,27 @@ var $;
                         else {
                             const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - crumbSpaceHor);
                             let crumb_prev;
-                            for (let i = 0; i < crumbs.length; i++) {
-                                const crumb = crumbs[i];
+                            const deleteDuration = $$.a('.deleteDuration');
+                            let hasDeleted = false;
+                            for (const crumb of crumbs) {
+                                if (crumb.deleteStart) {
+                                    crumb.deleteProgress = (performance.now() - crumb.deleteStart) / deleteDuration;
+                                    if (1 <= (crumb.deleteProgress = (performance.now() - crumb.deleteStart) / deleteDuration))
+                                        hasDeleted = true;
+                                }
+                            }
+                            if (hasDeleted) {
+                                $$.a('.crumbs', crumbs.filter(crumb => !(crumb.deleteProgress >= 1)));
+                                $$.a('.deleteProgress', -1);
+                                return;
+                            }
+                            let deleteProgress = -1;
+                            for (const crumb of crumbs) {
                                 crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
+                                if (crumb.deleteProgress !== void 0) {
+                                    deleteProgress = Math.max(deleteProgress, crumb.deleteProgress);
+                                    crumb.ctxWidth *= 1 - crumb.deleteProgress;
+                                }
                                 if (!crumb_prev) {
                                     crumb.ctxLeftHor = crumbSpaceHor * pixelRatio;
                                     crumb.ctxLeft = crumbSpaceHor * pixelRatio;
@@ -6836,7 +6862,11 @@ var $;
                             }
                             $$.a('.height_content', height_content);
                             $$.a('.width_content', width_content);
-                            $$.a('.needReposCrumbs', false);
+                            const atom = $$.a.get('.deleteProgress');
+                            setTimeout(() => {
+                                atom.value(deleteProgress);
+                            }, 5);
+                            $$.a('.needReposCrumbs', deleteProgress >= 0);
                         }
                         const margin = $$.a('<<.ofsVer_initial');
                         const ctxMargin = margin * pixelRatio;
@@ -7126,6 +7156,10 @@ var $;
             for (const crumb of crumbs) {
                 const ctxLeft = mode == mode_enum.ver ? crumb.ctxLeft : crumb.ctxLeftHor - ctxOfsHor;
                 const ctxTop = mode == mode_enum.ver ? crumb.ctxTop - ctxOfsVer : crumbSpaceVer * pixelRatio;
+                if (crumb.deleteProgress !== void 0) {
+                    ctx.save();
+                    ctx.globalAlpha = 1 - crumb.deleteProgress;
+                }
                 $$.$me_atom2_ctx_rect({
                     ctx,
                     ctxLeft,
@@ -7139,6 +7173,9 @@ var $;
                     },
                     fillStyle: crumbBackground,
                 });
+                if (crumb.deleteProgress !== void 0) {
+                    console.error(crumb.ctxWidth, ctx.globalAlpha, crumb.text, performance.now());
+                }
                 ctx.save();
                 ctx.translate(ctxLeft + iconMarginLeft * pixelRatio, ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
                 ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
@@ -7146,19 +7183,23 @@ var $;
                 const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
                 ctx.fill(path);
                 ctx.restore();
-                $$.$me_atom2_ctx_cross({
-                    ctx,
-                    ctxLeft: ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
-                    ctxTop: ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
-                    ctxWidth: crossSize * pixelRatio,
-                    ctxHeight: crossSize * pixelRatio,
-                    stroke: {
-                        ctxWidth: crossThick * pixelRatio,
-                        style: crumbTextColor,
-                    },
-                });
+                if (crumb.deleteProgress == void 0)
+                    $$.$me_atom2_ctx_cross({
+                        ctx,
+                        ctxLeft: ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
+                        ctxTop: ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
+                        ctxWidth: crossSize * pixelRatio,
+                        ctxHeight: crossSize * pixelRatio,
+                        stroke: {
+                            ctxWidth: crossThick * pixelRatio,
+                            style: crumbTextColor,
+                        },
+                    });
                 ctx.fillStyle = crumbTextColor;
                 ctx.fillText(crumb.text, ctxLeft + paddingLeft * pixelRatio, ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+                if (crumb.deleteProgress !== void 0) {
+                    ctx.restore();
+                }
             }
             ctx.restore();
         }
@@ -7219,7 +7260,7 @@ var $;
                     return result;
                 }),
                 isTouch: $$.$me_atom2_prop_store({
-                    default: () => true,
+                    default: () => $$.a('/.#isTouch'),
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
                 crumb_height: $$.$me_atom2_prop_either(['.isTouch'], () => 32, () => 24),
@@ -7236,9 +7277,7 @@ var $;
             elem: {
                 crumbs: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => ({
                     type: (isTouch ? $$.$nl_scheme_metro_crumbs_pad : $$.$nl_scheme_metro_crumbs_pc).type,
-                    base: isTouch ?
-                        $$.$nl_scheme_metro_crumbs_pad :
-                        $$.$nl_scheme_metro_crumbs_pc,
+                    base: $$.$nl_scheme_metro_crumbs_pad,
                     prop: {
                         '#height': $$.$me_atom2_prop(['<.#height', '<.ofsVer_initial', '.curtainHeight'], ({ masters: [height, ofsVer_initial, curtainHeight] }) => .25 * height + ofsVer_initial + curtainHeight),
                         crumbs: '<.crumbs',
