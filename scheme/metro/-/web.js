@@ -5201,7 +5201,6 @@ var $;
                                     return false;
                                 },
                                 clickOrTap: (p) => {
-                                    console.log('clickOrTap');
                                     let clientX;
                                     let clientY;
                                     let touchTolerance = 0;
@@ -5231,14 +5230,12 @@ var $;
                                                 if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
                                                     candidate_dist = 0.00000001;
                                                     candidate_guids = code2guids[points[id].code];
-                                                    console.log('candidate point', points[id].code);
                                                 }
                                                 else if (Math.abs(points[id].x - clientX) < radius_station + touchTolerance && Math.abs(points[id].y - clientY) < radius_station + touchTolerance) {
                                                     let dist = Math.hypot(Math.abs(points[id].x - clientX), Math.abs(points[id].y - clientY));
                                                     if (dist < candidate_dist || candidate_dist == 0) {
                                                         candidate_dist = dist;
                                                         candidate_guids = code2guids[points[id].code];
-                                                        console.log('candidate point tolerance', points[id].code, points[id]);
                                                     }
                                                 }
                                             }
@@ -5251,14 +5248,12 @@ var $;
                                                     if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
                                                         candidate_dist = 0.00000001;
                                                         candidate_guids = code2guids[label.code];
-                                                        console.log('candidate label', label.code);
                                                     }
                                                     else if (rect && $$.$me_dist_to_rect(clientX, clientY, rect) < touchTolerance) {
                                                         let dist = $$.$me_dist_to_rect(clientX, clientY, rect);
                                                         if (dist < candidate_dist || candidate_dist == 0) {
                                                             candidate_dist = dist;
                                                             candidate_guids = code2guids[label.code];
-                                                            console.log('candidate label tolerance', label.code);
                                                         }
                                                     }
                                                 }
@@ -6575,12 +6570,10 @@ var $;
                                 }));
                             }
                             else if (guid) {
-                                console.log({ guid });
                                 for (const crumb of crumbs) {
                                     if (crumb.guid == guid) {
                                         crumb.deleteStart = performance.now();
                                         $$.a.update('.deleteProgress', val => val < 0 ? 0 : val);
-                                        console.log($$.a('.deleteProgress'));
                                         break;
                                     }
                                 }
@@ -6755,7 +6748,7 @@ var $;
                         resizerBottom: () => 0,
                         resizerTop: () => 0,
                         resizeModeStarter: () => null,
-                        needReposCrumbs: $$.$me_atom2_prop(['.crumbs', '<<.#width', '.deleteProgress'], () => true, ({ val }) => console.log({ needReposCrumbs: val })),
+                        needReposCrumbs: $$.$me_atom2_prop(['.crumbs', '<<.#width', '.deleteProgress'], () => true),
                         more_down: () => 0,
                         navHorPrevRect: () => null,
                         navHorNextRect: () => null,
@@ -7173,9 +7166,6 @@ var $;
                     },
                     fillStyle: crumbBackground,
                 });
-                if (crumb.deleteProgress !== void 0) {
-                    console.error(crumb.ctxWidth, ctx.globalAlpha, crumb.text, performance.now());
-                }
                 ctx.save();
                 ctx.translate(ctxLeft + iconMarginLeft * pixelRatio, ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
                 ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
