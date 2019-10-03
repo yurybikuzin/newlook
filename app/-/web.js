@@ -6106,7 +6106,8 @@ var $;
                             bottom: Math.max(y, lassoStart.y),
                         };
                         const points = $$.a('.points');
-                        const selected = $$.a('.selected');
+                        const code2guids = $$.a('/.code2guids');
+                        const value = $$.a('.value').slice();
                         const codes = $$.a('@container^scheme.will_codes');
                         codes.clear();
                         let will_action = $nl_scheme_will_action_enum.deselect;
@@ -6119,7 +6120,15 @@ var $;
                             if (!$$.$me_point_in_rect(point_def.x, point_def.y, rect))
                                 continue;
                             codes.add(point_def.code);
-                            if (!selected.has(point_def.code))
+                            let guids = code2guids[point_def.code];
+                            let found = false;
+                            for (const i in guids) {
+                                if (value.indexOf(guids[i]) >= 0) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found)
                                 will_action = $nl_scheme_will_action_enum.select;
                         }
                         $$.a('@container^scheme.will_codes', codes, true);
@@ -6129,42 +6138,28 @@ var $;
                 }
                 else if (dispatch_name == 'lassoHide') {
                     const will_action = $$.a('.will_action');
-                    $$.a.update('.selected', val => {
-                        for (const code of $$.a('@container^scheme.will_codes')) {
-                            if (will_action == $nl_scheme_will_action_enum.select) {
-                                val.set(code, null);
-                            }
-                            else {
-                                val.delete(code);
-                            }
-                        }
-                        return val;
-                    }, true);
-                    const selected = $$.a('.selected');
+                    const value = $$.a('.value').slice();
                     const code2guids = $$.a('/.code2guids');
-                    const res = [];
-                    for (const code of [...selected].map(([code]) => code)) {
+                    for (const code of $$.a('@container^scheme.will_codes')) {
                         const guids = code2guids[code];
-                        if (guids)
-                            res.push(...guids);
-                    }
-                    $$.a('.value', res);
-                    $$.a('.will_action', $nl_scheme_will_action_enum.none);
-                    $$.a('.isLasso', false);
-                    return true;
-                }
-                else if (dispatch_name == 'codeTapped') {
-                    const code = dispatch_arg;
-                    $$.a.update('.selected', val => {
-                        if (val.has(code)) {
-                            val.delete(code);
+                        if (will_action == $nl_scheme_will_action_enum.select) {
+                            for (const i in guids) {
+                                if (value.indexOf(guids[i]) < 0)
+                                    value.push(guids[i]);
+                            }
                         }
                         else {
-                            val.set(code, null);
+                            for (const i in guids) {
+                                let j = value.indexOf(guids[i]);
+                                if (j >= 0) {
+                                    value.splice(j, 1);
+                                }
+                            }
                         }
-                        console.log('tapped selected', val);
-                        return val;
-                    }, true);
+                    }
+                    $$.a('.value', value);
+                    $$.a('.will_action', $nl_scheme_will_action_enum.none);
+                    $$.a('.isLasso', false);
                     return true;
                 }
                 else if (dispatch_name == 'close') {
@@ -6324,14 +6319,24 @@ var $;
                                     const points = $$.a('<<.points') || {};
                                     const labels = $$.a('<<.labels') || {};
                                     const codes = $$.a('.will_codes');
-                                    const selected = $$.a('<<.selected');
+                                    const guid2point = $$.a('/.guid2point');
+                                    const code2guids = $$.a('/.code2guids');
+                                    const value = $$.a('.value').slice();
                                     let will_action = $nl_scheme_will_action_enum.deselect;
                                     for (const id in points) {
                                         if (points[id].type && points[id].type == 'circle') {
                                             if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
                                                 $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
                                                 codes.add(points[id].code);
-                                                if (!selected.has(points[id].code)) {
+                                                let guids = code2guids[points[id].code];
+                                                let found = false;
+                                                for (const i in guids) {
+                                                    if (value.indexOf(guids[i]) >= 0) {
+                                                        found = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!found) {
                                                     will_action = $nl_scheme_will_action_enum.select;
                                                 }
                                                 $$.a('.will_codes', codes, true);
@@ -6351,7 +6356,15 @@ var $;
                                                 if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
                                                     $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
                                                     codes.add(label.code);
-                                                    if (!selected.has(label.code)) {
+                                                    let guids = code2guids[label.code];
+                                                    let found = false;
+                                                    for (const i in guids) {
+                                                        if (value.indexOf(guids[i]) >= 0) {
+                                                            found = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!found) {
                                                         will_action = $nl_scheme_will_action_enum.select;
                                                     }
                                                     $$.a('.will_codes', codes, true);
@@ -8130,27 +8143,7 @@ var $;
                 background_station_will_deselect: () => '#3F88DE',
                 colorText_will_select: () => '#D5483E',
                 colorText_will_deselect: '.background_station_will_deselect',
-                value: $$.$me_atom2_prop(['.selected', '/.code2guids'], ({ masters: [selected, code2guids] }) => {
-                    const result = [];
-                    for (const code of [...selected].map(([code]) => code)) {
-                        const guids = code2guids[code];
-                        if (guids)
-                            result.push(...guids);
-                    }
-                    return result;
-                }, ({ val }) => {
-                    const guid2point = $$.a('/.guid2point');
-                    const selected = new Map();
-                    for (const guid of val) {
-                        const point = guid2point[guid];
-                        if (!point)
-                            console.warn(`unknown guid ${guid}`);
-                        if (!selected.has(point.station.code))
-                            selected.set(point.station.code, null);
-                    }
-                    console.log('apply selected', selected);
-                    $$.a('.selected', selected);
-                }),
+                value: () => [],
                 crumbs: $$.$me_atom2_prop(['.value', '/.guid2point'], ({ masters: [value, guid2point] }) => {
                     const result = [];
                     for (const guid of value) {
