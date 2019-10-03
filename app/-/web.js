@@ -6179,21 +6179,7 @@ var $;
                     condition: ['.ofsVer_initial'],
                     default: () => $$.a('.ofsVer_initial'),
                     valid: (val) => typeof val == 'number' ? val : null,
-                }), will_action: () => $nl_scheme_will_action_enum.none, isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd'])), { lassoEnd: () => null, '#order': () => ['container', 'lasso', 'cross'], labels: $$.$me_atom2_prop([], () => null), selected: $$.$me_atom2_prop_store({
-                    default: () => new Map(),
-                    valid: val => {
-                        const isMap = val instanceof Map;
-                        const result = isMap ? val : new Map();
-                        return result;
-                    },
-                    toJSON: val => {
-                        const result = [...val].map(([id]) => id);
-                        return result;
-                    },
-                    fromJSON: val => !Array.isArray(val) ?
-                        new Map() :
-                        new Map(val.map(id => [id, null])),
-                }), points: $$.$me_atom2_prop([], () => null), demo_border: () => '' }),
+                }), will_action: () => $nl_scheme_will_action_enum.none, isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd'])), { lassoEnd: () => null, '#order': () => ['container', 'lasso', 'cross'], labels: $$.$me_atom2_prop([], () => null), points: $$.$me_atom2_prop([], () => null), demo_border: () => '' }),
             elem: {
                 cross: () => ({
                     base: $$.$me_cross,
@@ -7657,6 +7643,11 @@ var $;
                             valid: (val) => typeof val == 'number' ? val : null,
                         }),
                         deleteProgress: () => -1,
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#868e9b'),
+                        backgroundRGB: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '255,255,255' : '70,78,99'),
+                        borderColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'silver' : '#f5f5f5'),
+                        resizerBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#464e63' : '#d8dce3'),
+                        resizerStroke: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D6DAE0' : '#464e63'),
                     },
                     prop_non_render: {
                         deleteDuration: () => 200,
@@ -7709,8 +7700,11 @@ var $;
                         const ctxCrumbHeight = crumbHeight * pixelRatio;
                         const crumbBorderRadius = $$.a('<.crumbBorderRadius');
                         const crumbBorderWidth = 1;
-                        const crumbBorderColor = 'silver';
-                        const crumbBackground = '#fcfcfd';
+                        const crumbBorderColor = $$.a('.borderColor');
+                        const crumbBackground = $$.a('.background');
+                        const backgroundRGB = $$.a('.backgroundRGB');
+                        const resizerBackground = $$.a('.resizerBackground');
+                        const resizerStroke = $$.a('.resizerStroke');
                         const crumbTextColor = $$.a('/.colorText');
                         const crossMargin = $$.a('<.crossMargin');
                         const nextText_fn = (n) => 'ещё ' + n + ' >>';
@@ -7843,7 +7837,7 @@ var $;
                             const ctxBottom = Math.min(height_content * pixelRatio + ctxMargin, ctxHeightVisible + ctxMargin);
                             const ctxTop = ctxBottom - ctxMargin;
                             const gradient = ctx.createLinearGradient(0, 0, 0, ctxBottom);
-                            const rgb = '255,255,255';
+                            const rgb = backgroundRGB;
                             gradient.addColorStop(0, `rgba(${rgb},1)`);
                             gradient.addColorStop(1 - ctxMargin / ctxBottom, `rgba(${rgb},1)`);
                             gradient.addColorStop(1, `rgba(${rgb},0)`);
@@ -7902,7 +7896,7 @@ var $;
                                 }
                                 const ctxCurtainWidth = ctxNavNextWidth + $$.a('<.crumbSpaceHor') * pixelRatio;
                                 const gradient = ctx.createLinearGradient(ctxRightLimitFirstRow - ctxCurtainWidth, 0, ctxRightLimitFirstRow, 0);
-                                const rgb = '255,255,255';
+                                const rgb = backgroundRGB;
                                 gradient.addColorStop(1, `rgba(${rgb},1)`);
                                 gradient.addColorStop($$.a('<.crumbSpaceHor') * pixelRatio / ctxCurtainWidth, `rgba(${rgb},1)`);
                                 gradient.addColorStop(0, `rgba(${rgb},0)`);
@@ -7943,7 +7937,7 @@ var $;
                                 }
                                 const ctxCurtainWidth = ctxNavPrevWidth + ($$.a('<.crumbSpaceHor') + crumbsMarginHor) * pixelRatio;
                                 const gradient = ctx.createLinearGradient(ctxCurtainWidth, 0, 0, 0);
-                                const rgb = '255,255,255';
+                                const rgb = backgroundRGB;
                                 gradient.addColorStop(1, `rgba(${rgb},1)`);
                                 gradient.addColorStop($$.a('<.crumbSpaceHor') * pixelRatio / ctxCurtainWidth, `rgba(${rgb},1)`);
                                 gradient.addColorStop(0, `rgba(${rgb},0)`);
@@ -7991,7 +7985,7 @@ var $;
                             }
                             if (qt) {
                                 const gradient = ctx.createLinearGradient(0, ctxCurtainBottom, 0, ctxCurtainTop);
-                                const rgb = '255,255,255';
+                                const rgb = backgroundRGB;
                                 gradient.addColorStop(1, `rgba(${rgb},1)`);
                                 gradient.addColorStop(.5, `rgba(${rgb},.75)`);
                                 gradient.addColorStop(.25, `rgba(${rgb},.5)`);
@@ -8023,7 +8017,7 @@ var $;
                                 resizerText = '= ещё ' + more_down + ' =';
                                 clickableBottom = ctxCurtainTop / pixelRatio;
                                 const gradient = ctx.createLinearGradient(0, ctxCurtainTop, 0, ctxCurtainBottom);
-                                const rgb = '255,255,255';
+                                const rgb = backgroundRGB;
                                 gradient.addColorStop(1, `rgba(${rgb},1)`);
                                 gradient.addColorStop(.5, `rgba(${rgb},.75)`);
                                 gradient.addColorStop(.25, `rgba(${rgb},.5)`);
@@ -8039,10 +8033,10 @@ var $;
                         let ctxResizerTop;
                         if (isResizeMode) {
                             let ctxY = resizerBottom * pixelRatio - 6 * pixelRatio;
-                            ctx.fillStyle = '#474F61';
+                            ctx.fillStyle = resizerBackground;
                             ctxResizerTop = ctxY - 8 * pixelRatio;
                             ctx.fillRect(0, ctxResizerTop, ctxWidth, ctxResizerHeight);
-                            ctx.strokeStyle = '#D6DAE0';
+                            ctx.strokeStyle = resizerStroke;
                             ctx.beginPath();
                             ctx.moveTo(0, ctxY);
                             ctx.lineWidth = 1 * pixelRatio;
@@ -8056,7 +8050,8 @@ var $;
                             const ctxTextWidth = ctx.measureText(resizerText).width;
                             if (isResizeMode) {
                                 const ctxRectWidth = ctxTextWidth + 8 * pixelRatio;
-                                ctx.fillStyle = 'rgba(255,255,255,.8)';
+                                const rgb = backgroundRGB;
+                                ctx.fillStyle = `rgba(${rgb},.8)`;
                                 ctx.fillRect(.5 * (ctxWidth - ctxRectWidth), ctxResizerTop, ctxRectWidth, ctxResizerHeight);
                             }
                             ctx.fillStyle = $$.a('/.colorText');
