@@ -6365,6 +6365,7 @@ var $;
                 fontWeight: '<<.fontWeight',
                 fontFamily: '<<.fontFamily',
                 crumbSpaceHor: () => 16,
+                crumbsMarginHor: () => 16,
                 crumbSpaceVer: () => 16,
                 crumbBorderRadius: () => 3,
                 iconScale: () => .7 * 24 / 32,
@@ -6541,7 +6542,12 @@ var $;
                             }).ret)
                                 return false;
                             const clientRect = $$.a('.#clientRect');
-                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false, tolerance: p.event.start ? $$.a('/.#touchTolerance') : 0 }).ret;
+                            const deltaY = $$.a.dispatch('', 'deltaY', {
+                                clientX,
+                                clientY,
+                                ret: false,
+                                tolerance: p.event.start instanceof MouseEvent ? 0 : $$.a('/.#touchTolerance'),
+                            }).ret;
                             if (deltaY) {
                                 $$.a.update('.ofsVer', val => {
                                     const to = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
@@ -6777,6 +6783,8 @@ var $;
                         const navHorPaddingRight = navHorPaddingLeft;
                         const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
                         const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
+                        const crumbsMarginHor = $$.a('<.crumbsMarginHor');
+                        const crumbsMarginVer = 16;
                         const crumbSpaceHor = $$.a('<.crumbSpaceHor');
                         const crumbSpaceVer = $$.a('<.crumbSpaceVer');
                         const crumbHeight = $$.a('<.crumb_height');
@@ -6806,7 +6814,7 @@ var $;
                             width_content = $$.a('.width_content');
                         }
                         else {
-                            const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - crumbSpaceHor);
+                            const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - crumbsMarginHor);
                             let crumb_prev;
                             const deleteDuration = $$.a('.deleteDuration');
                             let hasDeleted = false;
@@ -6830,8 +6838,8 @@ var $;
                                     crumb.ctxWidth *= 1 - crumb.deleteProgress;
                                 }
                                 if (!crumb_prev) {
-                                    crumb.ctxLeftHor = crumbSpaceHor * pixelRatio;
-                                    crumb.ctxLeft = crumbSpaceHor * pixelRatio;
+                                    crumb.ctxLeftHor = crumbsMarginHor * pixelRatio;
+                                    crumb.ctxLeft = crumbsMarginHor * pixelRatio;
                                     crumb.ctxTop = crumbSpaceVer * pixelRatio;
                                 }
                                 else {
@@ -6841,7 +6849,7 @@ var $;
                                     if (crumb.ctxTop < (crossClientRect.bottom - clientRect.top + crossMargin) * pixelRatio &&
                                         crumb.ctxLeft + crumb.ctxWidth > ctxRightLimitFirstRow ||
                                         crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit) {
-                                        crumb.ctxLeft = crumbSpaceHor * pixelRatio;
+                                        crumb.ctxLeft = crumbsMarginHor * pixelRatio;
                                         crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
                                     }
                                 }
@@ -6851,7 +6859,7 @@ var $;
                             width_content = 0;
                             if (crumb_prev) {
                                 height_content = crumb_prev.ctxTop / pixelRatio + crumbHeight + crumbSpaceVer;
-                                width_content = (crumb_prev.ctxLeftHor + crumb_prev.ctxWidth) / pixelRatio + crumbSpaceHor;
+                                width_content = (crumb_prev.ctxLeftHor + crumb_prev.ctxWidth) / pixelRatio + crumbsMarginHor;
                             }
                             $$.a('.height_content', height_content);
                             $$.a('.width_content', width_content);
@@ -6886,7 +6894,7 @@ var $;
                                             break;
                                     }
                                     if (i)
-                                        ofsHor = crumbs[i].ctxLeftHor / pixelRatio - (ctxNavWidth(prevText_fn(i - 1)) / pixelRatio + 2 * $$.a('<.crumbSpaceHor'));
+                                        ofsHor = crumbs[i].ctxLeftHor / pixelRatio - (ctxNavWidth(prevText_fn(i - 1)) / pixelRatio + $$.a('<.crumbSpaceHor') + crumbsMarginHor);
                                 }
                                 $$.a('.ofsHor', ofsHor);
                                 ctxOfsHor = ofsHor * pixelRatio;
@@ -7006,13 +7014,13 @@ var $;
                             if (navHorPrevCount) {
                                 let prevText = prevText_fn(navHorPrevCount);
                                 let ctxNavPrevWidth = ctxNavWidth(prevText);
-                                const ctxNavPrevRight = ctxNavPrevWidth + $$.a('<.crumbSpaceHor');
+                                const ctxNavPrevRight = ctxNavPrevWidth + crumbsMarginHor;
                                 while (crumbs.length > navHorPrevCount &&
                                     crumbs[navHorPrevCount].ctxLeftHor < ctxOfsHor + ctxNavPrevRight) {
                                     prevText = prevText_fn(++navHorPrevCount);
                                     ctxNavPrevWidth = ctxNavWidth(prevText);
                                 }
-                                const ctxCurtainWidth = ctxNavPrevWidth + 2 * $$.a('<.crumbSpaceHor') * pixelRatio;
+                                const ctxCurtainWidth = ctxNavPrevWidth + ($$.a('<.crumbSpaceHor') + crumbsMarginHor) * pixelRatio;
                                 const gradient = ctx.createLinearGradient(ctxCurtainWidth, 0, 0, 0);
                                 const rgb = '255,255,255';
                                 gradient.addColorStop(1, `rgba(${rgb},1)`);
@@ -7020,7 +7028,7 @@ var $;
                                 gradient.addColorStop(0, `rgba(${rgb},0)`);
                                 ctx.fillStyle = gradient;
                                 ctx.fillRect(0, 0, ctxCurtainWidth, ctxHeightVisible);
-                                const ctxLeft = $$.a('<.crumbSpaceHor') * pixelRatio;
+                                const ctxLeft = crumbsMarginHor * pixelRatio;
                                 const ctxTop = $$.a('<.crumbSpaceVer') * pixelRatio;
                                 $$.$me_atom2_ctx_rect({
                                     ctx,
