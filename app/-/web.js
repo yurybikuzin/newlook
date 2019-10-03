@@ -11956,6 +11956,17 @@ var $;
             '#width': !def.col_count ? '<.row_width' : $$.$me_atom2_prop(['<.row_width', '.col_space', '.col_count', '.col_span'], ({ masters: [width, col_space, col_count, col_span] }) => Math.round((width - col_space * (col_count - 1)) / col_count) * col_span + col_space * (col_span - 1)),
             '#ofsHor': !def.col_count || !def.col ? '<.row_left' : $$.$me_atom2_prop(['<.row_left', '<.row_width', '.col_space', '.col_count', '.col'], ({ masters: [left, width, col_space, col_count, col] }) => left + col * (Math.round((width - col_space * (col_count - 1)) / col_count) + col_space)),
         });
+        function crumb_metro(result, params, fld_name, fld_caption = '') {
+            let size;
+            if (params[fld_name] && (size = params[fld_name].length)) {
+                const guid = params[fld_name][0];
+                const guid2point = $$.a('/.guid2point');
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    guid2point[guid].station.text +
+                    (size == 1 ? '' : ' и ещё ' + (size - 1));
+                result[fld_name] = { caption };
+            }
+        }
         function crumb_pickermulti(result, params, fld_name, fld_caption = '') {
             let size;
             if (params[fld_name] && (size = params[fld_name].size)) {
@@ -12046,7 +12057,7 @@ var $;
                     }
                     crumb_picker(result, params, 'ОтСтанции');
                     crumb_select(result, params, 'apart', ['no_matter', 'only'], ['только апартаменты', 'кроме апартаментов']);
-                    crumb_pickermulti(result, params, 'rmqt');
+                    crumb_metro(result, params, 'СхемаМетро', 'Метро');
                     crumb_select(result, params, 'plan', ['no_matter', 'only'], ['изолированные комнаты', 'только смежные комнаты']);
                     crumb_diap(result, params, 'total_sq', 'м²', 'общая');
                     crumb_diap(result, params, 'life_sq', 'м²', 'жилая');
@@ -12236,6 +12247,7 @@ var $;
                                         if (!order.params)
                                             order.params = {};
                                         order.params[id] = $$.a('/@app.scheme_metro_value');
+                                        $$.a('<<.order', order, true);
                                         $$.a('/@app.isShownSchemeMetro', false);
                                         return true;
                                     }
@@ -12787,9 +12799,13 @@ var $;
                     },
                     event: {
                         clickOrTap: () => {
+                            console.log(id, crumbs[id], $$.a.curr.name(), $$.a('<.tabs'));
                             let found;
                             if (id == 'Область') {
                                 found = 'Местоположение';
+                            }
+                            else if (id == 'СхемаМетро') {
+                                $$.a('/@app.isShownSchemeMetro', true);
                             }
                             else {
                                 const tabs = $$.a('<.tabs');
