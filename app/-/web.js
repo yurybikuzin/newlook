@@ -1,3 +1,4 @@
+function require( path ){ return $node[ path ] };
 "use strict";
 var $;
 (function ($) {
@@ -894,7 +895,7 @@ var $;
                     fn_compute,
                     fn_apply
                 } :
-                Object.assign({}, masters, { fn_compute,
+                Object.assign(Object.assign({}, masters), { fn_compute,
                     fn_apply });
             return result;
         }
@@ -909,7 +910,7 @@ var $;
                 typeof prop_def === 'function' ? {
                     masters: [],
                     fn_compute: prop_def,
-                } : Object.assign({}, prop_def, { masters: Array.isArray(prop_def.masters) ?
+                } : Object.assign(Object.assign({}, prop_def), { masters: Array.isArray(prop_def.masters) ?
                         [...prop_def.masters] :
                         prop_def.masters });
             if (pp.masters) {
@@ -921,7 +922,7 @@ var $;
             if (pp.fn_apply && p.fn_apply)
                 $$.$me_throw(`fn_apply collision for ${p.tail}`, p.fn_apply, pp.fn_apply);
             pp.fn_apply = pp.fn_apply || p.fn_apply;
-            return Object.assign({}, p, pp);
+            return Object.assign(Object.assign({}, p), pp);
         }
         $$.$me_atom2_prop_def_prepare = $me_atom2_prop_def_prepare;
         $$.$me_atom2_prop_compute_fn_or = (initial) => initial === void 0 ? compute_fn_or :
@@ -1047,333 +1048,6 @@ var $;
 ;
 "use strict";
 //control.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const accel_scrollAccu_threshold = 30;
-        class $me_atom2_wheel_synth_class {
-            constructor() {
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                this.lastDeltaX = 0;
-                this.lastDeltaY = 0;
-                this.accelX = 0;
-                this.accelY = 0;
-            }
-            cancel() {
-                this.mode = null;
-            }
-            endHelper() {
-                if (this.mode != $$.$me_atom2_wheel_synth_mode.move) {
-                    this.cancel();
-                }
-                else {
-                    this.accel_k = 1;
-                    this.mode = $$.$me_atom2_wheel_synth_mode.end;
-                    $$.$me_atom2_async();
-                }
-            }
-            raf(t) {
-                const result = this.mode == $$.$me_atom2_wheel_synth_mode.move ||
-                    this.mode == $$.$me_atom2_wheel_synth_mode.init ||
-                    false ?
-                    this.rafMove(t) :
-                    this.mode == $$.$me_atom2_wheel_synth_mode.end ?
-                        this.rafEnd(t) :
-                        null;
-                return result;
-            }
-            rafMoveHeler(t) {
-                const timeCurr = performance.now();
-                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
-                if (Math.abs(this.scrollAccuX) < accel_threshold) {
-                    this.accelX = 0;
-                }
-                else if (this.timePrevX != null &&
-                    Math.abs(this.scrollAccuX) >= accel_scrollAccu_threshold &&
-                    timeCurr != this.timePrevX &&
-                    true) {
-                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
-                    this.timePrevX = timeCurr;
-                }
-                if (Math.abs(this.scrollAccuY) < accel_threshold) {
-                    this.accelY = 0;
-                }
-                else if (this.timePrevY != null &&
-                    Math.abs(this.scrollAccuY) >= accel_scrollAccu_threshold &&
-                    timeCurr != this.timePrevY &&
-                    true) {
-                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
-                    this.timePrevY = timeCurr;
-                }
-                this.tPrev = t;
-                const result = {
-                    mode: this.mode,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
-                };
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                return result;
-            }
-        }
-        $$.$me_atom2_wheel_synth_class = $me_atom2_wheel_synth_class;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//wheel_synth.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $me_atom2_wheel_touch_class extends $$.$me_atom2_wheel_synth_class {
-            start(event) {
-                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
-                this._start = event;
-                this._last = event;
-                this.clientX0 = event.touches[0].clientX;
-                this.clientY0 = event.touches[0].clientY;
-                if (event.touches.length > 1) {
-                    this.clientX1 = event.touches[1].clientX;
-                    this.clientY1 = event.touches[1].clientY;
-                    if (event.touches.length > 2) {
-                        this.clientX2 = event.touches[2].clientX;
-                        this.clientY2 = event.touches[2].clientY;
-                    }
-                }
-                this.scrollAccuX = 0;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-                this.timePrevX = null;
-                this.timePrevY = null;
-            }
-            move(event) {
-                this._last = event;
-                this._end = event;
-                const deltaX = event.touches.length == 1 ?
-                    this.clientX0 - event.touches[0].clientX :
-                    event.touches.length == 2 ?
-                        Math.sign(this.clientX0 - event.touches[0].clientX) *
-                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX)) :
-                        event.touches.length == 3 ?
-                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX), Math.abs(this.clientX2 - event.touches[2].clientX)) :
-                            0;
-                const deltaY = event.touches.length == 1 ?
-                    this.clientY0 - event.touches[0].clientY :
-                    event.touches.length == 2 ?
-                        Math.sign(this.clientY0 - event.touches[0].clientY) *
-                            Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY)) :
-                        event.touches.length == 3 ?
-                            Math.sign(this.clientY0 - event.touches[0].clientY) *
-                                Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY), Math.abs(this.clientY2 - event.touches[2].clientY)) :
-                            0;
-                this.clientX0 = event.touches[0].clientX;
-                this.clientY0 = event.touches[0].clientY;
-                if (event.touches.length > 1) {
-                    this.clientX1 = event.touches[1].clientX;
-                    this.clientY1 = event.touches[1].clientY;
-                    if (event.touches.length > 2) {
-                        this.clientX2 = event.touches[2].clientX;
-                        this.clientY2 = event.touches[2].clientY;
-                    }
-                }
-                if (deltaX) {
-                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
-                        this.scrollAccuX = deltaX;
-                        this.timePrevX = performance.now();
-                    }
-                    else {
-                        if (this.timePrevX == null)
-                            this.timePrevX = performance.now();
-                        this.scrollAccuX += deltaX;
-                    }
-                }
-                if (deltaY) {
-                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
-                        this.scrollAccuY = deltaY;
-                        this.timePrevY = performance.now();
-                    }
-                    else {
-                        if (this.timePrevY == null)
-                            this.timePrevY = performance.now();
-                        this.scrollAccuY += deltaY;
-                    }
-                }
-                this.lastDeltaX = deltaX;
-                this.lastDeltaY = deltaY;
-                if (deltaX || deltaY) {
-                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
-                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
-                    }
-                    $$.$me_atom2_async();
-                }
-            }
-            end(event) {
-                this._end = event;
-                this.endHelper();
-            }
-            rafMove(t) {
-                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafMoveHeler(t));
-            }
-            rafEndHelper(t) {
-                const tDelta = t - this.tPrev;
-                const scrollAccuX = this.accelX * tDelta;
-                const scrollAccuY = this.accelY * tDelta;
-                const result = {
-                    mode: this.mode,
-                    _deltaX: scrollAccuX,
-                    _deltaY: scrollAccuY,
-                };
-                if (!(Math.abs(scrollAccuX) >= 1 ||
-                    Math.abs(scrollAccuY) >= 1)) {
-                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
-                }
-                else {
-                    this.accelX = this.accelX * this.accel_k;
-                    this.accelY = this.accelY * this.accel_k;
-                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
-                    this.tPrev = t;
-                    $$.$me_atom2_async();
-                }
-                return result;
-            }
-            rafEnd(t) {
-                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafEndHelper(t));
-            }
-        }
-        $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//wheel_touch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $me_atom2_wheel_drag_class extends $$.$me_atom2_wheel_synth_class {
-            start(event) {
-                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
-                this._start = event;
-                this._last = event;
-                this.scrollAccuX = 0;
-                this.clientX = event.clientX;
-                this.lastDeltaX = 0;
-                this.accelX = 0;
-                this.scrollAccuY = 0;
-                this.clientY = event.clientY;
-                this.lastDeltaY = 0;
-                this.accelY = 0;
-                this.timePrevX = null;
-                this.timePrevY = null;
-            }
-            move(event) {
-                this._last = event;
-                this._end = event;
-                const deltaX = this.clientX - event.clientX;
-                if (deltaX)
-                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
-                        this.scrollAccuX = deltaX;
-                        this.timePrevX = performance.now();
-                    }
-                    else {
-                        if (this.timePrevX == null)
-                            this.timePrevX = performance.now();
-                        this.scrollAccuX += deltaX;
-                    }
-                this.clientX = event.clientX;
-                this.lastDeltaX = deltaX;
-                const deltaY = this.clientY - event.clientY;
-                if (deltaY)
-                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
-                        this.scrollAccuY = deltaY;
-                        this.timePrevY = performance.now();
-                    }
-                    else {
-                        if (this.timePrevY == null)
-                            this.timePrevY = performance.now();
-                        this.scrollAccuY += deltaY;
-                    }
-                this.clientY = event.clientY;
-                this.lastDeltaY = deltaY;
-                if (deltaX || deltaY) {
-                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
-                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
-                    }
-                    $$.$me_atom2_async();
-                }
-            }
-            end(event) {
-                this._end = event;
-                this.endHelper();
-            }
-            rafMove(t) {
-                const timeCurr = performance.now();
-                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
-                if (Math.abs(this.scrollAccuX) < accel_threshold) {
-                    this.accelX = 0;
-                }
-                else if (this.timePrevX != null) {
-                    this.tPrev = t;
-                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
-                    this.timePrevX = timeCurr;
-                }
-                if (Math.abs(this.scrollAccuY) < accel_threshold) {
-                    this.accelY = 0;
-                }
-                else if (this.timePrevY != null) {
-                    this.tPrev = t;
-                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
-                    this.timePrevY = timeCurr;
-                }
-                const result = {
-                    mode: this.mode,
-                    start: this._start,
-                    last: this._last,
-                    end: this._end,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
-                };
-                this.scrollAccuX = 0;
-                this.scrollAccuY = 0;
-                return result;
-            }
-            rafEnd(t) {
-                const tDelta = t - this.tPrev;
-                const scrollAccuX = this.accelX * tDelta;
-                const scrollAccuY = this.accelY * tDelta;
-                const result = {
-                    start: this._start,
-                    last: this._last,
-                    end: this._end,
-                    _deltaX: scrollAccuX,
-                    _deltaY: scrollAccuY,
-                };
-                if (!(Math.abs(scrollAccuX) >= 1 ||
-                    Math.abs(scrollAccuY) >= 1)) {
-                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
-                }
-                else {
-                    this.accelX = this.accelX * this.accel_k;
-                    this.accelY = this.accelY * this.accel_k;
-                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
-                    this.tPrev = t;
-                    $$.$me_atom2_async();
-                }
-                return result;
-            }
-        }
-        $$.$me_atom2_wheel_drag_class = $me_atom2_wheel_drag_class;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//wheel_drag.js.map
 ;
 "use strict";
 var $;
@@ -1715,7 +1389,7 @@ var $;
                 };
             }
         }
-        $me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer']), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
+        $me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, '#align', ['#alignHor', '#alignVer'])), { '#ofsHor': () => 0, '#ofsVer': () => 0, '#width': '<.#width', '#height': '<.#height' });
         $me_atom2_ec._to_init = Array();
         $me_atom2_ec.almost_ready = new Set();
         $me_atom2_ec._cnf_cache = new Map();
@@ -1739,7 +1413,7 @@ var $;
         })($me_atom2_control_render_state_enum = $$.$me_atom2_control_render_state_enum || ($$.$me_atom2_control_render_state_enum = {}));
         class $me_atom2_control extends $me_atom2_ec {
             constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.control }));
+                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.control }));
                 this._mk_controls(this.level = p.level || 1);
                 this._mk_props('<'.repeat(this.level));
             }
@@ -2068,9 +1742,336 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const accel_scrollAccu_threshold = 30;
+        class $me_atom2_wheel_synth_class {
+            constructor() {
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                this.lastDeltaX = 0;
+                this.lastDeltaY = 0;
+                this.accelX = 0;
+                this.accelY = 0;
+            }
+            cancel() {
+                this.mode = null;
+            }
+            endHelper() {
+                if (this.mode != $$.$me_atom2_wheel_synth_mode.move) {
+                    this.cancel();
+                }
+                else {
+                    this.accel_k = 1;
+                    this.mode = $$.$me_atom2_wheel_synth_mode.end;
+                    $$.$me_atom2_async();
+                }
+            }
+            raf(t) {
+                const result = this.mode == $$.$me_atom2_wheel_synth_mode.move ||
+                    this.mode == $$.$me_atom2_wheel_synth_mode.init ||
+                    false ?
+                    this.rafMove(t) :
+                    this.mode == $$.$me_atom2_wheel_synth_mode.end ?
+                        this.rafEnd(t) :
+                        null;
+                return result;
+            }
+            rafMoveHeler(t) {
+                const timeCurr = performance.now();
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
+                if (Math.abs(this.scrollAccuX) < accel_threshold) {
+                    this.accelX = 0;
+                }
+                else if (this.timePrevX != null &&
+                    Math.abs(this.scrollAccuX) >= accel_scrollAccu_threshold &&
+                    timeCurr != this.timePrevX &&
+                    true) {
+                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
+                    this.timePrevX = timeCurr;
+                }
+                if (Math.abs(this.scrollAccuY) < accel_threshold) {
+                    this.accelY = 0;
+                }
+                else if (this.timePrevY != null &&
+                    Math.abs(this.scrollAccuY) >= accel_scrollAccu_threshold &&
+                    timeCurr != this.timePrevY &&
+                    true) {
+                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
+                    this.timePrevY = timeCurr;
+                }
+                this.tPrev = t;
+                const result = {
+                    mode: this.mode,
+                    _deltaX: this.scrollAccuX,
+                    _deltaY: this.scrollAccuY,
+                };
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                return result;
+            }
+        }
+        $$.$me_atom2_wheel_synth_class = $me_atom2_wheel_synth_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_synth.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $me_atom2_wheel_touch_class extends $$.$me_atom2_wheel_synth_class {
+            start(event) {
+                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
+                this._start = event;
+                this._last = event;
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                if (event.touches.length > 1) {
+                    this.clientX1 = event.touches[1].clientX;
+                    this.clientY1 = event.touches[1].clientY;
+                    if (event.touches.length > 2) {
+                        this.clientX2 = event.touches[2].clientX;
+                        this.clientY2 = event.touches[2].clientY;
+                    }
+                }
+                this.scrollAccuX = 0;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+                this.timePrevX = null;
+                this.timePrevY = null;
+            }
+            move(event) {
+                this._last = event;
+                this._end = event;
+                const deltaX = event.touches.length == 1 ?
+                    this.clientX0 - event.touches[0].clientX :
+                    event.touches.length == 2 ?
+                        Math.sign(this.clientX0 - event.touches[0].clientX) *
+                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX)) :
+                        event.touches.length == 3 ?
+                            Math.max(Math.abs(this.clientX0 - event.touches[0].clientX), Math.abs(this.clientX1 - event.touches[1].clientX), Math.abs(this.clientX2 - event.touches[2].clientX)) :
+                            0;
+                const deltaY = event.touches.length == 1 ?
+                    this.clientY0 - event.touches[0].clientY :
+                    event.touches.length == 2 ?
+                        Math.sign(this.clientY0 - event.touches[0].clientY) *
+                            Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY)) :
+                        event.touches.length == 3 ?
+                            Math.sign(this.clientY0 - event.touches[0].clientY) *
+                                Math.max(Math.abs(this.clientY0 - event.touches[0].clientY), Math.abs(this.clientY1 - event.touches[1].clientY), Math.abs(this.clientY2 - event.touches[2].clientY)) :
+                            0;
+                this.clientX0 = event.touches[0].clientX;
+                this.clientY0 = event.touches[0].clientY;
+                if (event.touches.length > 1) {
+                    this.clientX1 = event.touches[1].clientX;
+                    this.clientY1 = event.touches[1].clientY;
+                    if (event.touches.length > 2) {
+                        this.clientX2 = event.touches[2].clientX;
+                        this.clientY2 = event.touches[2].clientY;
+                    }
+                }
+                if (deltaX) {
+                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
+                        this.scrollAccuX = deltaX;
+                        this.timePrevX = performance.now();
+                    }
+                    else {
+                        if (this.timePrevX == null)
+                            this.timePrevX = performance.now();
+                        this.scrollAccuX += deltaX;
+                    }
+                }
+                if (deltaY) {
+                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
+                        this.scrollAccuY = deltaY;
+                        this.timePrevY = performance.now();
+                    }
+                    else {
+                        if (this.timePrevY == null)
+                            this.timePrevY = performance.now();
+                        this.scrollAccuY += deltaY;
+                    }
+                }
+                this.lastDeltaX = deltaX;
+                this.lastDeltaY = deltaY;
+                if (deltaX || deltaY) {
+                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
+                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
+                    }
+                    $$.$me_atom2_async();
+                }
+            }
+            end(event) {
+                this._end = event;
+                this.endHelper();
+            }
+            rafMove(t) {
+                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafMoveHeler(t));
+            }
+            rafEndHelper(t) {
+                const tDelta = t - this.tPrev;
+                const scrollAccuX = this.accelX * tDelta;
+                const scrollAccuY = this.accelY * tDelta;
+                const result = {
+                    mode: this.mode,
+                    _deltaX: scrollAccuX,
+                    _deltaY: scrollAccuY,
+                };
+                if (!(Math.abs(scrollAccuX) >= 1 ||
+                    Math.abs(scrollAccuY) >= 1)) {
+                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
+                }
+                else {
+                    this.accelX = this.accelX * this.accel_k;
+                    this.accelY = this.accelY * this.accel_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
+                    this.tPrev = t;
+                    $$.$me_atom2_async();
+                }
+                return result;
+            }
+            rafEnd(t) {
+                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafEndHelper(t));
+            }
+        }
+        $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_touch.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $me_atom2_wheel_drag_class extends $$.$me_atom2_wheel_synth_class {
+            start(event) {
+                this.mode = $$.$me_atom2_wheel_synth_mode.justStarted;
+                this._start = event;
+                this._last = event;
+                this.scrollAccuX = 0;
+                this.clientX = event.clientX;
+                this.lastDeltaX = 0;
+                this.accelX = 0;
+                this.scrollAccuY = 0;
+                this.clientY = event.clientY;
+                this.lastDeltaY = 0;
+                this.accelY = 0;
+                this.timePrevX = null;
+                this.timePrevY = null;
+            }
+            move(event) {
+                this._last = event;
+                this._end = event;
+                const deltaX = this.clientX - event.clientX;
+                if (deltaX)
+                    if (Math.sign(this.lastDeltaX) != Math.sign(deltaX)) {
+                        this.scrollAccuX = deltaX;
+                        this.timePrevX = performance.now();
+                    }
+                    else {
+                        if (this.timePrevX == null)
+                            this.timePrevX = performance.now();
+                        this.scrollAccuX += deltaX;
+                    }
+                this.clientX = event.clientX;
+                this.lastDeltaX = deltaX;
+                const deltaY = this.clientY - event.clientY;
+                if (deltaY)
+                    if (Math.sign(this.lastDeltaY) != Math.sign(deltaY)) {
+                        this.scrollAccuY = deltaY;
+                        this.timePrevY = performance.now();
+                    }
+                    else {
+                        if (this.timePrevY == null)
+                            this.timePrevY = performance.now();
+                        this.scrollAccuY += deltaY;
+                    }
+                this.clientY = event.clientY;
+                this.lastDeltaY = deltaY;
+                if (deltaX || deltaY) {
+                    if (this.mode == $$.$me_atom2_wheel_synth_mode.justStarted) {
+                        this.mode = $$.$me_atom2_wheel_synth_mode.init;
+                    }
+                    $$.$me_atom2_async();
+                }
+            }
+            end(event) {
+                this._end = event;
+                this.endHelper();
+            }
+            rafMove(t) {
+                const timeCurr = performance.now();
+                const accel_threshold = $$.a('/.#wheelTouchAccelThreshold');
+                if (Math.abs(this.scrollAccuX) < accel_threshold) {
+                    this.accelX = 0;
+                }
+                else if (this.timePrevX != null) {
+                    this.tPrev = t;
+                    this.accelX = this.scrollAccuX / (timeCurr - this.timePrevX);
+                    this.timePrevX = timeCurr;
+                }
+                if (Math.abs(this.scrollAccuY) < accel_threshold) {
+                    this.accelY = 0;
+                }
+                else if (this.timePrevY != null) {
+                    this.tPrev = t;
+                    this.accelY = this.scrollAccuY / (timeCurr - this.timePrevY);
+                    this.timePrevY = timeCurr;
+                }
+                const result = {
+                    mode: this.mode,
+                    start: this._start,
+                    last: this._last,
+                    end: this._end,
+                    _deltaX: this.scrollAccuX,
+                    _deltaY: this.scrollAccuY,
+                };
+                this.scrollAccuX = 0;
+                this.scrollAccuY = 0;
+                return result;
+            }
+            rafEnd(t) {
+                const tDelta = t - this.tPrev;
+                const scrollAccuX = this.accelX * tDelta;
+                const scrollAccuY = this.accelY * tDelta;
+                const result = {
+                    start: this._start,
+                    last: this._last,
+                    end: this._end,
+                    _deltaX: scrollAccuX,
+                    _deltaY: scrollAccuY,
+                };
+                if (!(Math.abs(scrollAccuX) >= 1 ||
+                    Math.abs(scrollAccuY) >= 1)) {
+                    result.mode = this.mode = $$.$me_atom2_wheel_synth_mode.fini;
+                }
+                else {
+                    this.accelX = this.accelX * this.accel_k;
+                    this.accelY = this.accelY * this.accel_k;
+                    this.accel_k = this.accel_k * $$.a('/.#wheelTouchAccelFactor');
+                    this.tPrev = t;
+                    $$.$me_atom2_async();
+                }
+                return result;
+            }
+        }
+        $$.$me_atom2_wheel_drag_class = $me_atom2_wheel_drag_class;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wheel_drag.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         class $me_atom2_elem extends $$.$me_atom2_ec {
             constructor(p) {
-                super(Object.assign({}, p, { ent: $$.$me_atom2_entity_enum.elem }));
+                super(Object.assign(Object.assign({}, p), { ent: $$.$me_atom2_entity_enum.elem }));
                 this.skipStyle = false;
                 const cnf_control = this._mk_controls();
                 const has_control = !!Object.keys(cnf_control).length;
@@ -2311,10 +2312,10 @@ var $;
                     this.cnf_items('prop'),
                     defaults,
                     defaults_relative,
-                    Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
+                    Object.assign(Object.assign({ '#hidden': $$.$me_atom2.fn_compute_false, '#zIndex': has_parent ? '<.#zIndex' : $$.$me_atom2.fn_compute_zero }, (!has_elem ? {} : {
                         '#order': this.fn_compute_order,
-                    }), { '#isHover': () => false }),
-                    Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
+                    })), { '#isHover': () => false }),
+                    Object.assign(Object.assign({ '#_isReady': () => false, '#isReady': $$.$me_atom2_prop(['<.#isReady', '.#_isReady'], $$.$me_atom2_prop_compute_fn_and(), ({ val }) => {
                             if (val)
                                 $$.$me_atom2_ec._to_init.push(this.path);
                         }), '#_cursor': $$.$me_atom2_prop(['.#isHover', '.#cursor'], ({ masters: [isHover, cursor] }) => !isHover ? null : cursor, ({ atom, val }) => {
@@ -2322,7 +2323,7 @@ var $;
                         }), '#visible': $$.$me_atom2_prop(['.#hidden'].concat(!has_parent ? [] : ['<.#visible']), this.fn_compute_visible), '#clientRect': $$.$me_atom2_prop(['.#isReady'], this.fn_compute_clientRect, this.fn_apply_clientRect) }, (!has_control ? {} : {
                         '#ctx': () => this.node.getContext('2d'),
                         '#ctxSize': $$.$me_atom2_prop(['/.#pixelRatio', '.#width', '.#height'], this.fn_compute_ctxSize, this.fn_apply_ctxSize),
-                    }), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
+                    })), { '#left': $$.$me_atom2_prop(['.#alignHor', '<.#width', '.#width', '.#ofsHor'], this.fn_compute_left, this.fn_apply_left), '#top': $$.$me_atom2_prop(['.#alignVer',
                             '<.#height', '.#height', '.#ofsVer'], this.fn_compute_left, this.fn_apply_top) }),
                 ], {
                     def: ({ tail, prop_def, prop_defined, p, idx, len }) => {
@@ -3077,7 +3078,7 @@ var $;
     (function ($$) {
         class $me_atom2 extends $$.$me_atom2_entity {
             constructor(p) {
-                super(Object.assign({}, p, { ent: p.is_key ?
+                super(Object.assign(Object.assign({}, p), { ent: p.is_key ?
                         $$.$me_atom2_entity_enum.key :
                         $$.$me_atom2_entity_enum.prop }));
                 this._descendant_level = p.descendant_level || 0;
@@ -3110,7 +3111,7 @@ var $;
                                 ss_prev = new Set(prev);
                                 for (const tail of val)
                                     if (!ss_prev.has(tail))
-                                        new $me_atom2(Object.assign({}, p, { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
+                                        new $me_atom2(Object.assign(Object.assign({}, p), { descendant_level: 1, tail, is_key: true, keys: p.keys.slice(1), parent: self }));
                             }
                             if (val && !val.length && this.path.tail.startsWith('@')) {
                                 const ec = this.parent();
@@ -3341,7 +3342,7 @@ var $;
                             anim.from = $me_atom2.is_valid_value(value) ? value : anim.to;
                         }
                         if (just_set_anim = (anim.delay > 0 || !$$.$me_equal(anim.from, anim.to))) {
-                            $me_atom2.anim_to_play.set(this.path, Object.assign({}, anim, { value: anim.from }));
+                            $me_atom2.anim_to_play.set(this.path, Object.assign(Object.assign({}, anim), { value: anim.from }));
                             $me_atom2.anim_active(anim, true);
                             $$.$me_atom2_async();
                         }
@@ -3605,7 +3606,7 @@ var $;
                     for (const k in entities_key) {
                         entities_key[k]._key_idx_changed({
                             key: p.key.concat(k),
-                            change: Object.assign({}, p.change, { i_key: p.change.i_key - 1 }),
+                            change: Object.assign(Object.assign({}, p.change), { i_key: p.change.i_key - 1 }),
                         });
                     }
                 }
@@ -3759,7 +3760,7 @@ var $;
         $$.$me_atom2_anim = $me_atom2_anim;
         class $me_atom2_anim_class {
             constructor(anim) {
-                this._anim = Object.assign({}, anim, { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
+                this._anim = Object.assign(Object.assign({}, anim), { delay: anim.delay || 0, duration: anim.duration || 200, easing: anim.easing || $$.$me_easing.easeInOutQuad });
             }
         }
         $$.$me_atom2_anim_class = $me_atom2_anim_class;
@@ -3824,7 +3825,7 @@ var $;
                 (null == p.stroke.ctxWidth || typeof p.stroke.ctxWidth == 'number') &&
                     (null == p.stroke.style || typeof p.stroke.style == 'string')) {
                 ctx_rect_rounded(p, p.stroke && p.stroke.ctxWidth || 0);
-                fill_stroke(Object.assign({}, p, { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
+                fill_stroke(Object.assign(Object.assign({}, p), { stroke: p.stroke && { ctxWidth: p.stroke.ctxWidth, style: p.stroke.style } }));
             }
             else {
                 if (!(p.fillStyle == 'transparent' || p.fillStyle == null)) {
@@ -4778,8 +4779,8 @@ var $;
                     '#2b87db' :
                     '#53adff'),
             });
-            $$.$me_atom2_ec.prop_default = Object.assign({}, $$.$me_atom2_ec.prop_default, { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
-            $$.$me_atom2_elem.style_default = Object.assign({}, $$.$me_atom2_elem.style_default, { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
+            $$.$me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_ec.prop_default), { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
+            $$.$me_atom2_elem.style_default = Object.assign(Object.assign({}, $$.$me_atom2_elem.style_default), { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
         }
         $$.$nl_defaults_init = $nl_defaults_init;
     })($$ = $.$$ || ($.$$ = {}));
@@ -5490,8 +5491,6 @@ var $;
 })($ || ($ = {}));
 //eyeOpen.js.map
 ;
-
-;
 "use strict";
 var $;
 (function ($) {
@@ -5517,8 +5516,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //eyeClose.js.map
-;
-
 ;
 "use strict";
 var $;
@@ -5692,7 +5689,7 @@ var $;
             elem: {
                 tab: $$.$me_atom2_prop({ keys: ['.tab_ids'], masters: ['.selected', '.def'] }, ({ key: [id], masters: [selected, def] }) => !def[id].condition(selected) ? null :
                     {
-                        prop: Object.assign({}, def[id].prop, { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
+                        prop: Object.assign(Object.assign({}, def[id].prop), { isSelected: $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => selected == id), '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer') }),
                         event: {
                             clickOrTap: () => {
                                 $$.a('<.selected', id);
@@ -5840,11 +5837,11 @@ var $;
                             null :
                             {
                                 base: $$.$nl_logo_icon,
-                                prop: Object.assign({}, logo_props, { '#ofsVer': () => 56 }),
+                                prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': () => 56 }),
                             }),
                         logo_word: () => ({
                             base: $$.$nl_logo_word,
-                            prop: Object.assign({}, logo_props, { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
+                            prop: Object.assign(Object.assign({}, logo_props), { '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['/.#viewportHeight', '<.logo_icon_threshold'], ({ masters: [viewportHeight, logo_icon_threshold] }) => viewportHeight < logo_icon_threshold ? [] :
                                     ['.#ofsVer', '.#height'].map(s => '<@logo_icon' + s)), ({ len, masters: [ofsVer, height] }) => !len ? 56 : ofsVer + height + 15) }),
                         }),
                         tabs: () => ({
@@ -6143,6 +6140,15 @@ var $;
                         }
                         return val;
                     }, true);
+                    const selected = $$.a('.selected');
+                    const code2guids = $$.a('/.code2guids');
+                    const res = [];
+                    for (const code of [...selected].map(([code]) => code)) {
+                        const guids = code2guids[code];
+                        if (guids)
+                            res.push(...guids);
+                    }
+                    $$.a('.value', res);
                     $$.a('.will_action', $nl_scheme_will_action_enum.none);
                     $$.a('.isLasso', false);
                     return true;
@@ -6156,6 +6162,7 @@ var $;
                         else {
                             val.set(code, null);
                         }
+                        console.log('tapped selected', val);
                         return val;
                     }, true);
                     return true;
@@ -6165,7 +6172,7 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32, ofsHor_initial: () => 32, ofsVer_max: '.ofsVer_initial', scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial), scale: $$.$me_atom2_prop_store({
+            prop: Object.assign(Object.assign({ '#width': '/.#viewportWidth', '#height': '/.#viewportHeight', ofsVer_initial: () => 32, ofsHor_initial: () => 32, ofsVer_max: '.ofsVer_initial', scale_max: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.scale_max), width_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.width), height_initial: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => data.settings.height), scale_initial: $$.$me_atom2_prop(['.#width', '.width_initial', '.ofsHor_initial'], ({ masters: [width, width_initial, ofsHor_initial] }) => (width - 2 * ofsHor_initial) / width_initial), scale: $$.$me_atom2_prop_store({
                     condition: ['.scale_initial'],
                     default: () => $$.a('.scale_initial'),
                     valid: (val) => typeof val == 'number' ? val : null,
@@ -6177,12 +6184,11 @@ var $;
                     condition: ['.ofsVer_initial'],
                     default: () => $$.a('.ofsVer_initial'),
                     valid: (val) => typeof val == 'number' ? val : null,
-                }), will_action: () => $nl_scheme_will_action_enum.none, isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd']), { lassoEnd: () => null, '#order': () => ['container', 'lasso', 'cross'], labels: $$.$me_atom2_prop([], () => null), selected: $$.$me_atom2_prop_store({
+                }), will_action: () => $nl_scheme_will_action_enum.none, isLasso: () => false }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop(['.isLasso'], () => ({ x: 0, y: 0 })), ['lassoStart', 'lassoEnd'])), { lassoEnd: () => null, '#order': () => ['container', 'lasso', 'cross'], labels: $$.$me_atom2_prop([], () => null), selected: $$.$me_atom2_prop_store({
                     default: () => new Map(),
                     valid: val => {
                         const isMap = val instanceof Map;
                         const result = isMap ? val : new Map();
-                        let a = 2;
                         return result;
                     },
                     toJSON: val => {
@@ -6361,7 +6367,6 @@ var $;
                                     return false;
                                 },
                                 clickOrTap: (p) => {
-                                    console.log('clickOrTap');
                                     let clientX;
                                     let clientY;
                                     let touchTolerance = 0;
@@ -6391,14 +6396,12 @@ var $;
                                                 if (Math.abs(points[id].x - clientX) < radius_station && Math.abs(points[id].y - clientY) < radius_station) {
                                                     candidate_dist = 0.00000001;
                                                     candidate_guids = code2guids[points[id].code];
-                                                    console.log('candidate point', points[id].code);
                                                 }
                                                 else if (Math.abs(points[id].x - clientX) < radius_station + touchTolerance && Math.abs(points[id].y - clientY) < radius_station + touchTolerance) {
                                                     let dist = Math.hypot(Math.abs(points[id].x - clientX), Math.abs(points[id].y - clientY));
                                                     if (dist < candidate_dist || candidate_dist == 0) {
                                                         candidate_dist = dist;
                                                         candidate_guids = code2guids[points[id].code];
-                                                        console.log('candidate point tolerance', points[id].code, points[id]);
                                                     }
                                                 }
                                             }
@@ -6411,14 +6414,12 @@ var $;
                                                     if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
                                                         candidate_dist = 0.00000001;
                                                         candidate_guids = code2guids[label.code];
-                                                        console.log('candidate label', label.code);
                                                     }
                                                     else if (rect && $$.$me_dist_to_rect(clientX, clientY, rect) < touchTolerance) {
                                                         let dist = $$.$me_dist_to_rect(clientX, clientY, rect);
                                                         if (dist < candidate_dist || candidate_dist == 0) {
                                                             candidate_dist = dist;
                                                             candidate_guids = code2guids[label.code];
-                                                            console.log('candidate label tolerance', label.code);
                                                         }
                                                     }
                                                 }
@@ -7126,7 +7127,7 @@ var $;
             }
             const props = provider && provider('props', result) || {};
             if (typeof arg == 'string') {
-                result = Object.assign({}, props, { x: result.x, y: result.y });
+                result = Object.assign(Object.assign({}, props), { x: result.x, y: result.y });
             }
             else if (parent_type == 'circle') {
                 const angle = arg.angle;
@@ -7140,7 +7141,7 @@ var $;
                     false)
                     $$.$me_throw(`provider('circle') expected to return {centerX: number, centerY: number, radius: number}, not`, ret);
                 const { centerX, centerY, radius } = ret;
-                result = Object.assign({}, props, { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
+                result = Object.assign(Object.assign({}, props), { x: Math.cos(angle * Math.PI / 180) * radius + centerX, y: Math.sin(angle * Math.PI / 180) * radius + centerY });
             }
             else if (parent_type == 'line') {
                 const dist = arg.dist;
@@ -7156,12 +7157,12 @@ var $;
                     typeof ret.to.y != 'number' ||
                     false)
                     $$.$me_throw(`${id()}: provider('line') expected to return {from: $me_point_intf, to: $me_point_intf}, not`, ret);
-                result = Object.assign({}, props, $$.$me_vector_transform(ret, dist * scale, result).to);
+                result = Object.assign(Object.assign({}, props), $$.$me_vector_transform(ret, dist * scale, result).to);
             }
             else {
                 if (!result)
                     $$.$me_throw(`${id([prop_name])}`);
-                result = Object.assign({}, props, { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
+                result = Object.assign(Object.assign({}, props), { x: result.x + (arg.ofsHor || 0) * scale, y: result.y + (arg.ofsVer || 0) * scale });
             }
             if (typeof arg != 'string' && arg.label) {
                 if (!provider)
@@ -7254,275 +7255,13 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_scheme_metro_crumbs_pc = {
-            type: '$nl_scheme_metro_crumbs_pc',
-            prop: {
-                crumbs: $$.$me_atom2_prop_abstract(),
-                crumb_height: () => 32,
-                fontSize: () => 14,
-                fontWeight: '<<.fontWeight',
-                fontFamily: '<<.fontFamily',
-                crumbSpaceHor: () => 8,
-                crumbSpaceVer: () => 8,
-                crumbBorderRadius: () => 3,
-                iconScale: () => .7 * 24 / 32,
-                iconMarginLeft: () => 4,
-                iconMarginRight: () => 4,
-                crossMargin: () => 16,
-                curtainHeight: () => 0,
-            },
-            control: {
-                canvas: () => ({
-                    event: {
-                        mousemove: p => {
-                            const crumbs = $$.a('.crumbs');
-                            if (!crumbs)
-                                return false;
-                            const pixelRatio = $$.a('/.#pixelRatio');
-                            const ctxX = p.event.clientX * pixelRatio;
-                            const ctxY = p.event.clientY * pixelRatio;
-                            const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
-                            const navFrom = $$.a('.navFrom');
-                            for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
-                                const crumb = crumbs[i];
-                                const rect = {
-                                    left: crumb.ctxLeft,
-                                    right: crumb.ctxLeft + crumb.ctxWidth,
-                                    top: crumb.ctxTop,
-                                    bottom: crumb.ctxTop + ctxCrumbHeight,
-                                };
-                                if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
-                                    $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
-                                    return true;
-                                }
-                            }
-                            $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: null });
-                            return false;
-                        },
-                        clickOrTap: p => {
-                            const crumbs = $$.a('.crumbs');
-                            console.log($$.a('.#zIndex'));
-                            if (!crumbs)
-                                return false;
-                            const pixelRatio = $$.a('/.#pixelRatio');
-                            const ctxX = pixelRatio * (p.event.start instanceof MouseEvent ?
-                                p.event.start.clientX :
-                                p.event.start.touches[0].clientX);
-                            const ctxY = pixelRatio * (p.event.start instanceof MouseEvent ?
-                                p.event.start.clientY :
-                                p.event.start.touches[0].clientY);
-                            const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
-                            const navFrom = $$.a('.navFrom');
-                            for (let i = !navFrom ? navFrom : navFrom - 1; i < $$.a('.navTo'); i++) {
-                                const crumb = crumbs[i];
-                                const rect = {
-                                    left: crumb.ctxLeft,
-                                    right: crumb.ctxLeft + crumb.ctxWidth,
-                                    top: crumb.ctxTop,
-                                    bottom: crumb.ctxTop + ctxCrumbHeight,
-                                };
-                                if ($$.$me_point_in_rect(ctxX, ctxY, rect)) {
-                                    if (crumb.navText) {
-                                        $$.a('.navFrom', crumb.navFrom);
-                                    }
-                                    else {
-                                        $$.a.update('<<.selected', (val) => {
-                                            val.delete(crumb.code);
-                                            return val;
-                                        }, true);
-                                    }
-                                    return true;
-                                }
-                            }
-                            return false;
-                        },
-                    },
-                    prop: {
-                        crumbs: '<.crumbs',
-                        navFrom: () => 0,
-                    },
-                    prop_non_render: {
-                        navTo: () => -1,
-                    },
-                    render: p => {
-                        const { ctx, pixelRatio } = p;
-                        const crumbs = $$.a('.crumbs');
-                        if (!crumbs)
-                            return;
-                        const ofsHor = 16;
-                        const ofsVer = 16;
-                        const ctxFontSize = $$.a('<.fontSize') * pixelRatio;
-                        const crossSize = $$.a('<.fontSize');
-                        const crossMarginRight = 8;
-                        const crossMarginLeft = 4;
-                        const crossThick = 2;
-                        const iconScale = $$.a('<.iconScale');
-                        const iconSize = 24 * iconScale;
-                        const iconOfsHor = -2 * iconScale;
-                        const iconMarginLeft = $$.a('<.iconMarginLeft');
-                        const iconMarginRight = $$.a('<.iconMarginRight');
-                        const navPaddingLeft = 8;
-                        const navPaddingRight = 8;
-                        const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
-                        const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
-                        const crumbSpaceHor = $$.a('<.crumbSpaceHor');
-                        const crumbSpaceVer = $$.a('<.crumbSpaceVer');
-                        const crumbHeight = $$.a('<.crumb_height');
-                        const crumbBorderRadius = $$.a('<.crumbBorderRadius');
-                        const crumbBorderWidth = 1;
-                        const crumbBorderColor = 'silver';
-                        const crumbBackground = '#fcfcfd';
-                        const crumbTextColor = $$.a('/.colorText');
-                        const crossMargin = $$.a('<.crossMargin');
-                        ctx.font = $$.a('<.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('<.fontFamily');
-                        ctx.textAlign = 'left';
-                        ctx.textBaseline = 'bottom';
-                        const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - ofsHor);
-                        const crossClientRect = $$.a('<<@cross.#clientRect');
-                        let crumb_prev;
-                        let navFrom = $$.a('.navFrom');
-                        let navTo = navFrom;
-                        let navFrom_next;
-                        const navPrevText = (i) => '<< ещё ' + i;
-                        const navNextText = (i) => 'и ещё ' + i + ' >>';
-                        for (let i = navFrom; i < crumbs.length; i++) {
-                            const crumb = crumbs[i];
-                            crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
-                            crumb.navText = null;
-                            if (!crumb_prev) {
-                                crumb.ctxTop = ofsVer * pixelRatio;
-                                crumb.ctxLeft = ofsHor * pixelRatio;
-                                if (navFrom) {
-                                    let ctxRight = crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio ?
-                                        (crossClientRect.left - crossMargin) * pixelRatio :
-                                        ctxRightLimit;
-                                    let navFrom_next = 0;
-                                    for (let j = i - 1; j >= 0; j--) {
-                                        const crumb = crumbs[j];
-                                        crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
-                                        crumb.ctxLeft = ctxRight - crumb.ctxWidth;
-                                        ctxRight -= crumb.ctxWidth + crumbSpaceHor * pixelRatio;
-                                        if (ctxRight < ofsHor * pixelRatio + (!j ? 0 :
-                                            ctx.measureText(navPrevText(j)).width + (navPaddingLeft + navPaddingRight) * pixelRatio)) {
-                                            navFrom_next = j + 1;
-                                            break;
-                                        }
-                                    }
-                                    const crumb_nav = crumbs[i - 1];
-                                    crumb_nav.ctxLeft = crumb.ctxTop;
-                                    crumb_nav.ctxTop = crumb.ctxLeft;
-                                    crumb_nav.navText = navPrevText(i);
-                                    crumb_nav.ctxWidth = ctx.measureText(crumb_nav.navText).width + pixelRatio * (navPaddingLeft + navPaddingRight);
-                                    crumb.ctxLeft = crumb_nav.ctxLeft + crumb_nav.ctxWidth + crumbSpaceHor * pixelRatio;
-                                    crumb_nav.navFrom = navFrom_next;
-                                }
-                            }
-                            else {
-                                crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
-                                crumb.ctxTop = crumb_prev.ctxTop;
-                                if (crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio &&
-                                    crumb.ctxLeft + crumb.ctxWidth > (crossClientRect.left - crossMargin) * pixelRatio ||
-                                    crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit) {
-                                    crumb.ctxLeft = ofsHor * pixelRatio;
-                                    crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
-                                    if (navFrom_next === void 0)
-                                        navFrom_next = i;
-                                    if (crumb.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio > $$.a('.#height') * pixelRatio) {
-                                        for (let j = i - 1; j > navFrom; j--) {
-                                            navTo--;
-                                            const crumb = crumbs[j];
-                                            crumb.navText = navNextText((crumbs.length - j - 1));
-                                            crumb.navFrom = navFrom_next;
-                                            crumb.ctxWidth = ctx.measureText(crumb.navText).width + (navPaddingRight + navPaddingLeft) * pixelRatio;
-                                            const crumb_prev = crumbs[j - 1];
-                                            crumb.ctxLeft = crumb_prev.ctxLeft + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
-                                            crumb.ctxTop = crumb_prev.ctxTop;
-                                            if (crumb_prev.ctxLeft == ofsHor * pixelRatio || !(crumb.ctxTop < (crossClientRect.bottom + crossMargin) * pixelRatio &&
-                                                crumb.ctxLeft + crumb.ctxWidth > (crossClientRect.left - crossMargin) * pixelRatio ||
-                                                crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit))
-                                                break;
-                                        }
-                                        navTo++;
-                                        break;
-                                    }
-                                }
-                            }
-                            navTo++;
-                            crumb_prev = crumb;
-                        }
-                        if (crumb_prev) {
-                            const ctxBottom = crumb_prev.ctxTop + (crumbHeight + crumbSpaceVer + ofsHor) * pixelRatio;
-                            const gradient = ctx.createLinearGradient(0, 0, 0, ctxBottom);
-                            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-                            gradient.addColorStop(1 - (crumbSpaceVer + ofsHor) * pixelRatio / ctxBottom, 'rgba(255,255,255,1)');
-                            gradient.addColorStop(1, 'rgba(255,255,255,0)');
-                            ctx.fillStyle = gradient;
-                            ctx.fillRect(0, 0, $$.a('<<.#width') * pixelRatio, ctxBottom);
-                            $$.a('<<.ofsVer_max', Math.max(ctxBottom / pixelRatio), $$.a('<<.ofsVer_initial'));
-                        }
-                        $$.a('.navTo', navTo);
-                        for (let i = !navFrom ? 0 : navFrom - 1; i < navTo; i++) {
-                            const crumb = crumbs[i];
-                            $$.$me_atom2_ctx_rect({
-                                ctx,
-                                ctxLeft: crumb.ctxLeft,
-                                ctxTop: crumb.ctxTop,
-                                ctxWidth: crumb.ctxWidth,
-                                ctxHeight: crumbHeight * pixelRatio,
-                                ctxBorderRadius: crumbBorderRadius * pixelRatio,
-                                stroke: {
-                                    ctxWidth: crumbBorderWidth * pixelRatio,
-                                    style: crumbBorderColor,
-                                },
-                                fillStyle: crumbBackground,
-                            });
-                            if (crumb.navText) {
-                                ctx.fillStyle = crumbTextColor;
-                                ctx.fillText(crumb.navText, crumb.ctxLeft + navPaddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
-                            }
-                            else {
-                                ctx.save();
-                                ctx.translate(crumb.ctxLeft + iconMarginLeft * pixelRatio, crumb.ctxTop + ((crumbHeight - iconSize) / 2 + iconOfsHor) * pixelRatio);
-                                ctx.scale(iconScale * pixelRatio, iconScale * pixelRatio);
-                                ctx.fillStyle = crumb.color;
-                                const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
-                                ctx.fill(path);
-                                ctx.restore();
-                                $$.$me_atom2_ctx_cross({
-                                    ctx,
-                                    ctxTop: crumb.ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
-                                    ctxLeft: crumb.ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
-                                    ctxWidth: crossSize * pixelRatio,
-                                    ctxHeight: crossSize * pixelRatio,
-                                    stroke: {
-                                        ctxWidth: crossThick * pixelRatio,
-                                        style: crumbTextColor,
-                                    },
-                                });
-                                ctx.fillStyle = crumbTextColor;
-                                ctx.fillText(crumb.text, crumb.ctxLeft + paddingLeft * pixelRatio, crumb.ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
-                            }
-                        }
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//crumbs_pc.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         let mode_enum;
         (function (mode_enum) {
             mode_enum[mode_enum["ver"] = 0] = "ver";
             mode_enum[mode_enum["hor"] = 1] = "hor";
         })(mode_enum || (mode_enum = {}));
-        $$.$nl_scheme_metro_crumbs_pad = {
-            type: '$nl_scheme_metro_crumbs_pad',
+        $$.$nl_scheme_metro_crumbs = {
+            type: '$nl_scheme_metro_crumbs',
             prop: {
                 crumbs: $$.$me_atom2_prop_abstract(),
                 crumb_height: () => 32,
@@ -7530,16 +7269,18 @@ var $;
                 fontWeight: '<<.fontWeight',
                 fontFamily: '<<.fontFamily',
                 crumbSpaceHor: () => 16,
+                crumbsMarginHor: () => 16,
+                crumbsMarginVer: () => 16,
                 crumbSpaceVer: () => 16,
                 crumbBorderRadius: () => 3,
                 iconScale: () => .7 * 24 / 32,
                 iconMarginLeft: () => 4,
                 iconMarginRight: () => 4,
                 crossMargin: () => 16,
-                curtainHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], $$.$me_atom2_prop_compute_fn_sum()),
+                curtainHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbsMarginVer'], $$.$me_atom2_prop_compute_fn_sum()),
                 resizerHeight: () => 13,
-                horModeHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], ({ masters: [crumb_height, crumbSpaceVer] }) => crumb_height + 2 * crumbSpaceVer),
-                horModeTreshold: $$.$me_atom2_prop(['.crumb_height', '.crumbSpaceVer'], ({ masters: [crumb_height, crumbSpaceVer] }) => 2 * crumb_height + 3 * crumbSpaceVer),
+                horModeHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbsMarginVer'], ({ masters: [crumb_height, crumbsMarginVer] }) => crumb_height + 2 * crumbsMarginVer),
+                horModeTreshold: $$.$me_atom2_prop(['.crumb_height', '.crumbsMarginVer'], ({ masters: [crumb_height, crumbsMarginVer] }) => 2 * crumb_height + 3 * crumbsMarginVer),
             },
             control: {
                 canvas: () => ({
@@ -7642,7 +7383,7 @@ var $;
                                     const ctxX = pixelRatio * x + (mode == mode_enum.ver ? 0 : ctxOfsHor);
                                     const ctxY = pixelRatio * y + (mode == mode_enum.hor ? 0 : ctxOfsVer);
                                     const ctxCrumbHeight = $$.a('<.crumb_height') * pixelRatio;
-                                    const crumbSpaceVer = $$.a('<.crumbSpaceVer') * pixelRatio;
+                                    const ctxCrumbsMarginVer = $$.a('<.crumbsMarginVer') * pixelRatio;
                                     const rect = $$.a('.mode') == mode_enum.ver ?
                                         (crumb) => ({
                                             left: crumb.ctxLeft,
@@ -7653,8 +7394,8 @@ var $;
                                         (crumb) => ({
                                             left: crumb.ctxLeftHor,
                                             right: crumb.ctxLeftHor + crumb.ctxWidth,
-                                            top: crumbSpaceVer,
-                                            bottom: crumbSpaceVer + ctxCrumbHeight,
+                                            top: ctxCrumbsMarginVer,
+                                            bottom: ctxCrumbsMarginVer + ctxCrumbHeight,
                                         });
                                     for (const crumb of crumbs) {
                                         const rect_crumb = rect(crumb);
@@ -7706,7 +7447,12 @@ var $;
                             }).ret)
                                 return false;
                             const clientRect = $$.a('.#clientRect');
-                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false, tolerance: p.event.start ? $$.a('/.#touchTolerance') : 0 }).ret;
+                            const deltaY = $$.a.dispatch('', 'deltaY', {
+                                clientX,
+                                clientY,
+                                ret: false,
+                                tolerance: p.event.start instanceof MouseEvent ? 0 : $$.a('/.#touchTolerance'),
+                            }).ret;
                             if (deltaY) {
                                 $$.a.update('.ofsVer', val => {
                                     const to = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
@@ -7900,7 +7646,7 @@ var $;
                         deleteProgress: () => -1,
                     },
                     prop_non_render: {
-                        deleteDuration: () => 400,
+                        deleteDuration: () => 200,
                         mode: () => mode_enum.ver,
                         height_visible_manual_start: () => 0,
                         resizer_start: () => null,
@@ -7942,6 +7688,8 @@ var $;
                         const navHorPaddingRight = navHorPaddingLeft;
                         const paddingLeft = iconMarginLeft + iconSize + iconMarginRight;
                         const paddingRight = crossMarginLeft + crossSize + crossMarginRight;
+                        const crumbsMarginHor = $$.a('<.crumbsMarginHor');
+                        const crumbsMarginVer = $$.a('<.crumbsMarginVer');
                         const crumbSpaceHor = $$.a('<.crumbSpaceHor');
                         const crumbSpaceVer = $$.a('<.crumbSpaceVer');
                         const crumbHeight = $$.a('<.crumb_height');
@@ -7971,7 +7719,7 @@ var $;
                             width_content = $$.a('.width_content');
                         }
                         else {
-                            const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - crumbSpaceHor);
+                            const ctxRightLimit = pixelRatio * ($$.a('<<.#width') - crumbsMarginHor);
                             let crumb_prev;
                             const deleteDuration = $$.a('.deleteDuration');
                             let hasDeleted = false;
@@ -7983,22 +7731,23 @@ var $;
                                 }
                             }
                             if (hasDeleted) {
+                                const deleted = new Set(crumbs.filter(crumb => crumb.deleteProgress >= 1).map(crumb => crumb.guid));
                                 $$.a('.crumbs', crumbs.filter(crumb => !(crumb.deleteProgress >= 1)));
+                                $$.a.update('<<.value', val => val.filter(guid => !deleted.has(guid)));
                                 $$.a('.deleteProgress', -1);
                                 return;
                             }
                             let deleteProgress = -1;
                             for (const crumb of crumbs) {
                                 crumb.ctxWidth = ctx.measureText(crumb.text).width + pixelRatio * (paddingLeft + paddingRight);
-                                if (crumb.deleteProgress) {
+                                if (crumb.deleteProgress !== void 0) {
                                     deleteProgress = Math.max(deleteProgress, crumb.deleteProgress);
                                     crumb.ctxWidth *= 1 - crumb.deleteProgress;
-                                    console.log(crumb.deleteProgress, deleteProgress, crumb.ctxWidth);
                                 }
                                 if (!crumb_prev) {
-                                    crumb.ctxLeftHor = crumbSpaceHor * pixelRatio;
-                                    crumb.ctxLeft = crumbSpaceHor * pixelRatio;
-                                    crumb.ctxTop = crumbSpaceVer * pixelRatio;
+                                    crumb.ctxLeftHor = crumbsMarginHor * pixelRatio;
+                                    crumb.ctxLeft = crumbsMarginHor * pixelRatio;
+                                    crumb.ctxTop = crumbsMarginVer * pixelRatio;
                                 }
                                 else {
                                     crumb.ctxLeftHor = crumb_prev.ctxLeftHor + crumb_prev.ctxWidth + crumbSpaceHor * pixelRatio;
@@ -8007,22 +7756,25 @@ var $;
                                     if (crumb.ctxTop < (crossClientRect.bottom - clientRect.top + crossMargin) * pixelRatio &&
                                         crumb.ctxLeft + crumb.ctxWidth > ctxRightLimitFirstRow ||
                                         crumb.ctxLeft + crumb.ctxWidth > ctxRightLimit) {
-                                        crumb.ctxLeft = crumbSpaceHor * pixelRatio;
+                                        crumb.ctxLeft = crumbsMarginHor * pixelRatio;
                                         crumb.ctxTop += (crumbHeight + crumbSpaceVer) * pixelRatio;
                                     }
                                 }
                                 crumb_prev = crumb;
                             }
-                            $$.a('.deleteProgress', deleteProgress);
                             height_content = 0;
                             width_content = 0;
                             if (crumb_prev) {
-                                height_content = crumb_prev.ctxTop / pixelRatio + crumbHeight + crumbSpaceVer;
-                                width_content = (crumb_prev.ctxLeftHor + crumb_prev.ctxWidth) / pixelRatio + crumbSpaceHor;
+                                height_content = crumb_prev.ctxTop / pixelRatio + crumbHeight + crumbsMarginVer;
+                                width_content = (crumb_prev.ctxLeftHor + crumb_prev.ctxWidth) / pixelRatio + crumbsMarginHor;
                             }
                             $$.a('.height_content', height_content);
                             $$.a('.width_content', width_content);
-                            $$.a('.needReposCrumbs', false);
+                            const atom = $$.a.get('.deleteProgress');
+                            setTimeout(() => {
+                                atom.value(deleteProgress);
+                            }, 5);
+                            $$.a('.needReposCrumbs', deleteProgress >= 0);
                         }
                         const margin = $$.a('<<.ofsVer_initial');
                         const ctxMargin = margin * pixelRatio;
@@ -8035,7 +7787,7 @@ var $;
                         const ctxCurtainHeight = curtainHeight * pixelRatio;
                         let ctxOfsVer = $$.a('.ofsVer') * pixelRatio;
                         let ctxOfsHor = $$.a('.ofsHor') * pixelRatio;
-                        const mode = ctxHeightVisible / pixelRatio > $$.a('<.horModeHeight') + $$.a('<.crumbSpaceVer') ?
+                        const mode = ctxHeightVisible / pixelRatio > $$.a('<.horModeHeight') + crumbSpaceVer ?
                             mode_enum.ver :
                             mode_enum.hor;
                         if ($$.a('.mode') != mode) {
@@ -8049,7 +7801,7 @@ var $;
                                             break;
                                     }
                                     if (i)
-                                        ofsHor = crumbs[i].ctxLeftHor / pixelRatio - (ctxNavWidth(prevText_fn(i - 1)) / pixelRatio + 2 * $$.a('<.crumbSpaceHor'));
+                                        ofsHor = crumbs[i].ctxLeftHor / pixelRatio - (ctxNavWidth(prevText_fn(i - 1)) / pixelRatio + $$.a('<.crumbSpaceHor') + crumbsMarginHor);
                                 }
                                 $$.a('.ofsHor', ofsHor);
                                 ctxOfsHor = ofsHor * pixelRatio;
@@ -8111,6 +7863,7 @@ var $;
                             mode,
                             ctxOfsHor,
                             crumbSpaceVer,
+                            crumbsMarginVer,
                         });
                         let navHorPrevRect = null;
                         let navHorNextRect = null;
@@ -8143,7 +7896,7 @@ var $;
                                 ctx.fillStyle = gradient;
                                 ctx.fillRect(ctxRightLimitFirstRow - ctxCurtainWidth, 0, ctxCurtainWidth, ctxHeightVisible);
                                 const ctxLeft = ctxRightLimitFirstRow - (ctxCurtainWidth - $$.a('<.crumbSpaceHor') * pixelRatio);
-                                const ctxTop = $$.a('<.crumbSpaceVer') * pixelRatio;
+                                const ctxTop = crumbsMarginVer * pixelRatio;
                                 $$.$me_atom2_ctx_rect({
                                     ctx,
                                     ctxLeft,
@@ -8169,13 +7922,13 @@ var $;
                             if (navHorPrevCount) {
                                 let prevText = prevText_fn(navHorPrevCount);
                                 let ctxNavPrevWidth = ctxNavWidth(prevText);
-                                const ctxNavPrevRight = ctxNavPrevWidth + $$.a('<.crumbSpaceHor');
+                                const ctxNavPrevRight = ctxNavPrevWidth + crumbsMarginHor;
                                 while (crumbs.length > navHorPrevCount &&
                                     crumbs[navHorPrevCount].ctxLeftHor < ctxOfsHor + ctxNavPrevRight) {
                                     prevText = prevText_fn(++navHorPrevCount);
                                     ctxNavPrevWidth = ctxNavWidth(prevText);
                                 }
-                                const ctxCurtainWidth = ctxNavPrevWidth + 2 * $$.a('<.crumbSpaceHor') * pixelRatio;
+                                const ctxCurtainWidth = ctxNavPrevWidth + ($$.a('<.crumbSpaceHor') + crumbsMarginHor) * pixelRatio;
                                 const gradient = ctx.createLinearGradient(ctxCurtainWidth, 0, 0, 0);
                                 const rgb = '255,255,255';
                                 gradient.addColorStop(1, `rgba(${rgb},1)`);
@@ -8183,8 +7936,8 @@ var $;
                                 gradient.addColorStop(0, `rgba(${rgb},0)`);
                                 ctx.fillStyle = gradient;
                                 ctx.fillRect(0, 0, ctxCurtainWidth, ctxHeightVisible);
-                                const ctxLeft = $$.a('<.crumbSpaceHor') * pixelRatio;
-                                const ctxTop = $$.a('<.crumbSpaceVer') * pixelRatio;
+                                const ctxLeft = crumbsMarginHor * pixelRatio;
+                                const ctxTop = crumbsMarginVer * pixelRatio;
                                 $$.$me_atom2_ctx_rect({
                                     ctx,
                                     ctxLeft,
@@ -8304,14 +8057,18 @@ var $;
             },
         };
         function draw_crumbs(p) {
-            const { ctx, pixelRatio, crumbs, ctxWidth, ctxHeightVisible, ctxOfsVer, crumbHeight, crumbBorderRadius, crumbBorderWidth, crumbBorderColor, crumbBackground, iconMarginLeft, iconOfsHor, crossMarginRight, crumbTextColor, ctxFontSize, iconSize, iconScale, crossSize, crossThick, paddingLeft, ctxRightLimitFirstRow, mode, ctxOfsHor, crumbSpaceVer, } = p;
+            const { ctx, pixelRatio, crumbs, ctxWidth, ctxHeightVisible, ctxOfsVer, crumbHeight, crumbBorderRadius, crumbBorderWidth, crumbBorderColor, crumbBackground, iconMarginLeft, iconOfsHor, crossMarginRight, crumbTextColor, ctxFontSize, iconSize, iconScale, crossSize, crossThick, paddingLeft, ctxRightLimitFirstRow, mode, ctxOfsHor, crumbSpaceVer, crumbsMarginVer, } = p;
             ctx.save();
             ctx.beginPath();
             ctx.rect(0, 0, mode == mode_enum.hor ? ctxRightLimitFirstRow : ctxWidth, ctxHeightVisible);
             ctx.clip();
             for (const crumb of crumbs) {
                 const ctxLeft = mode == mode_enum.ver ? crumb.ctxLeft : crumb.ctxLeftHor - ctxOfsHor;
-                const ctxTop = mode == mode_enum.ver ? crumb.ctxTop - ctxOfsVer : crumbSpaceVer * pixelRatio;
+                const ctxTop = mode == mode_enum.ver ? crumb.ctxTop - ctxOfsVer : crumbsMarginVer * pixelRatio;
+                if (crumb.deleteProgress !== void 0) {
+                    ctx.save();
+                    ctx.globalAlpha = 1 - crumb.deleteProgress;
+                }
                 $$.$me_atom2_ctx_rect({
                     ctx,
                     ctxLeft,
@@ -8332,25 +8089,29 @@ var $;
                 const path = new Path2D("M22.35 19.7l-5.6-14.2L12 13.8 7.28 5.5 1.65 19.7H0v2.14h8.5V19.7H7.2l1.23-3.54L12 22l3.55-5.84 1.23 3.53H15.5v2.13H24V19.7z");
                 ctx.fill(path);
                 ctx.restore();
-                $$.$me_atom2_ctx_cross({
-                    ctx,
-                    ctxLeft: ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
-                    ctxTop: ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
-                    ctxWidth: crossSize * pixelRatio,
-                    ctxHeight: crossSize * pixelRatio,
-                    stroke: {
-                        ctxWidth: crossThick * pixelRatio,
-                        style: crumbTextColor,
-                    },
-                });
+                if (crumb.deleteProgress == void 0)
+                    $$.$me_atom2_ctx_cross({
+                        ctx,
+                        ctxLeft: ctxLeft + crumb.ctxWidth - (crossSize + crossMarginRight) * pixelRatio,
+                        ctxTop: ctxTop + (crumbHeight - crossSize) * pixelRatio / 2,
+                        ctxWidth: crossSize * pixelRatio,
+                        ctxHeight: crossSize * pixelRatio,
+                        stroke: {
+                            ctxWidth: crossThick * pixelRatio,
+                            style: crumbTextColor,
+                        },
+                    });
                 ctx.fillStyle = crumbTextColor;
                 ctx.fillText(crumb.text, ctxLeft + paddingLeft * pixelRatio, ctxTop + (crumbHeight * pixelRatio + ctxFontSize) / 2);
+                if (crumb.deleteProgress !== void 0) {
+                    ctx.restore();
+                }
             }
             ctx.restore();
         }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//crumbs_pad.js.map
+//crumbs.js.map
 ;
 "use strict";
 var $;
@@ -8387,6 +8148,7 @@ var $;
                         if (!selected.has(point.station.code))
                             selected.set(point.station.code, null);
                     }
+                    console.log('apply selected', selected);
                     $$.a('.selected', selected);
                 }),
                 crumbs: $$.$me_atom2_prop(['.value', '/.guid2point'], ({ masters: [value, guid2point] }) => {
@@ -8421,8 +8183,7 @@ var $;
             },
             elem: {
                 crumbs: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => ({
-                    type: (isTouch ? $$.$nl_scheme_metro_crumbs_pad : $$.$nl_scheme_metro_crumbs_pc).type,
-                    base: $$.$nl_scheme_metro_crumbs_pad,
+                    base: $$.$nl_scheme_metro_crumbs,
                     prop: {
                         '#height': $$.$me_atom2_prop(['<.#height', '<.ofsVer_initial', '.curtainHeight'], ({ masters: [height, ofsVer_initial, curtainHeight] }) => .25 * height + ofsVer_initial + curtainHeight),
                         crumbs: '<.crumbs',
@@ -9436,16 +9197,16 @@ var $;
     (function ($$) {
         $$.$me_panel = {
             type: '$me_panel',
-            prop: Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
+            prop: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, $$.$me_atom2_prop_cascade(() => 0, 'borderRadius', [
                 'borderRadiusLeftTop', 'borderRadiusRightTop',
                 'borderRadiusLeftBottom', 'borderRadiusRightBottom',
-            ]), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground']), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
+            ])), $$.$me_atom2_prop_same_def(() => 'transparent', ['colorBackground'])), $$.$me_atom2_prop_cascade(() => 0, 'padding', [
                 ['paddingHor', ['paddingLeft', 'paddingRight']],
                 ['paddingVer', ['paddingTop', 'paddingBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
+            ])), $$.$me_atom2_prop_cascade(() => 'transparent', 'colorBorder', [
                 ['colorBorderHor', ['colorBorderLeft', 'colorBorderRight']],
                 ['colorBorderVer', ['colorBorderTop', 'colorBorderBottom']],
-            ]), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
+            ])), $$.$me_atom2_prop_cascade(() => 0, 'borderWidth', [
                 ['borderWidthHor', ['borderWidthLeft', 'borderWidthRight']],
                 ['borderWidthVer', ['borderWidthTop', 'borderWidthBottom']],
             ])),
@@ -9537,13 +9298,13 @@ var $;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer']), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer']), { _text_n_ctxLeft: $$.$me_atom2_prop([
+            prop: Object.assign(Object.assign(Object.assign(Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer'])), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer'])), { _text_n_ctxLeft: $$.$me_atom2_prop([
                     '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
                 ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
                     const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
                     return result;
-                }) }, $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
+                }) }), $$.$me_atom2_prop_same_fn_compute($$.$me_atom2_prop_compute_fn_sum(), {
                 '#width': ['._textWidth', '.paddingLeft', '.paddingRight'],
                 '#height': ['.fontSize', '.paddingTop', '.paddingBottom'],
             })),
@@ -10140,7 +9901,7 @@ var $;
                 }
                 return false;
             },
-            prop: Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
+            prop: Object.assign(Object.assign({ header_height: $$.$me_atom2_prop_abstract(), row_height_min: $$.$me_atom2_prop_abstract(), rec_count: $$.$me_atom2_prop_abstract(), provider_tag: $$.$me_atom2_prop_abstract(), header_content: $$.$me_atom2_prop_abstract(), row_content: $$.$me_atom2_prop_abstract(), hidden_curtain: () => false, height_curtain: () => 40, width_curtain: '.#width', curtain_kind: () => 'black', curtain: () => ['top', 'bottom'], curtainVisible: $$.$me_atom2_prop({
                     keys: ['.curtain'],
                     masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
                         if (curtain == 'top') {
@@ -10173,7 +9934,7 @@ var $;
                 }), row_i: $$.$me_atom2_prop(['.row_count'], ({ masters: [row_count] }) => [...Array(row_count).keys()].map(i => i + '')), row_i_min: () => 0, row_i_max: () => -1 }, $$.$me_atom2_prop_same_def(() => 0, [
                 ...min_max('visible_idx'),
                 ...min_max('visible', 'top', 'bottom')
-            ]), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
+            ])), { row_hidden: $$.$me_atom2_prop({ keys: ['.row_i'], masters: ['.row_i_min', '.row_i_max'] }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max)), rec_idx: $$.$me_atom2_prop({
                     keys: ['.row_i'],
                     masters: $$.$me_atom2_prop_masters(['.row_i_min', '.row_i_max', '.row_count'], ({ key: [row_i], masters: [row_i_min, row_i_max, row_count] }) => {
                         const key = +row_i;
@@ -13097,7 +12858,7 @@ var $;
                             if (def.type == 'select') {
                                 return {
                                     base: $$.$nl_select,
-                                    prop: Object.assign({}, prop_common(def), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { options: def.options, value: $$.$me_atom2_prop(['.option_ids', '<<.order'], ({ masters: [ids, order] }) => order.params && order.params[id] || ids[0], ({ val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -13109,7 +12870,7 @@ var $;
                             else if (def.type == 'address') {
                                 return {
                                     base: input_with_button,
-                                    prop: Object.assign({}, prop_common(def), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
                                 };
                             }
                             else if (def.type == 'picker' || def.type == 'pickermulti') {
@@ -13150,7 +12911,7 @@ var $;
                             else if (def.type == 'diap') {
                                 return {
                                     base: diap,
-                                    prop: Object.assign({}, prop_common(def), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { label: def.label, label_width: def.label_width, diap_space: def.diap_space, value: $$.$me_atom2_prop({ keys: ['.ids'], masters: ['<<.order'] }, ({ key: [kind], masters: [order] }) => order.params && order.params[id] && order.params[id][kind] || 0, ({ key: [kind], val }) => {
                                             const order = $$.a('<<.order');
                                             if (!order.params)
                                                 order.params = {};
@@ -13195,7 +12956,7 @@ var $;
                             }
                             else if (def.type == 'include_exclude') {
                                 return {
-                                    prop: Object.assign({}, prop_common(def, { ofsVer: -5 }), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
                                     elem: {
                                         label: () => ({
                                             prop: {
@@ -13237,7 +12998,7 @@ var $;
                             else if (def.type == 'button') {
                                 return {
                                     base: $$.$nl_button,
-                                    prop: Object.assign({}, prop_common(def), { target: def.target, cmd: def.cmd, caption: def.caption }),
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { target: def.target, cmd: def.cmd, caption: def.caption }),
                                     dispatch: def.dispatch,
                                 };
                             }
@@ -14953,7 +14714,7 @@ var $;
                     control: {
                         cell: () => ({
                             base: $$.$me_panel,
-                            prop: Object.assign({}, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
+                            prop: Object.assign(Object.assign({}, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
                         }),
                     },
                 }),
@@ -14971,7 +14732,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
@@ -15461,7 +15222,7 @@ var $;
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
                                 }),
                             },
                         }),
@@ -15481,7 +15242,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
@@ -15812,7 +15573,7 @@ var $;
             base: $$.$nl_search_panel,
             dispatch: (dispatch_name, dispatch_arg) => {
                 if (dispatch_name == 'get_recs') {
-                    $$.a('.dataWorker').postMessage(Object.assign({}, dispatch_arg, { cmd: 'recs', tag: $$.a('.provider_tag') }));
+                    $$.a('.dataWorker').postMessage(Object.assign(Object.assign({}, dispatch_arg), { cmd: 'recs', tag: $$.a('.provider_tag') }));
                     return true;
                 }
                 else if (dispatch_name == 'recs') {
@@ -17990,6 +17751,63 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_light = {
+            type: '$nl_icon_light',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 26 24",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: () => '#fff', fillRule: () => 'nonzero', stroke: '<.color'
+                        },
+                        sub: [
+                            { tag: 'circle', attr: { cx: () => "13", cy: () => "12", r: () => "6" } },
+                            { tag: 'rect', attr: { width: () => "2", height: () => "4", x: () => "12", rx: () => "1" } },
+                            { tag: 'rect', attr: { width: () => "2", height: () => "4", x: () => "12", y: () => "20", rx: () => "1" } },
+                            { attr: { d: () => "M21.693 3.307a.878.878 0 0 1 0 1.241l-1.862 1.863a.878.878 0 0 1-1.242-1.242l1.863-1.862a.878.878 0 0 1 1.241 0zM7.411 17.589a.878.878 0 0 1 0 1.242l-1.863 1.862a.878.878 0 0 1-1.241-1.241l1.862-1.863a.878.878 0 0 1 1.242 0zM4.307 3.307a.878.878 0 0 1 1.241 0l1.863 1.862A.878.878 0 0 1 6.17 6.411L4.307 4.548a.878.878 0 0 1 0-1.241zM18.589 17.589a.878.878 0 0 1 1.242 0l1.862 1.863a.878.878 0 0 1-1.241 1.241l-1.863-1.862a.878.878 0 0 1 0-1.242zM.706 12c0-.485.393-.878.878-.878h2.634a.878.878 0 0 1 0 1.756H1.584A.878.878 0 0 1 .706 12zM20.904 12c0-.485.393-.878.878-.878h2.634a.878.878 0 0 1 0 1.756h-2.634a.878.878 0 0 1-.878-.878z" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//light.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_dark = {
+            type: '$nl_icon_dark',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 20 21",
+                content: () => [
+                    {
+                        attr: {
+                            fill: () => '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M.442 14.276A8 8 0 1 0 8.126.413a9.957 9.957 0 0 1 6.34 1.143c4.831 2.677 6.576 8.764 3.899 13.594-2.678 4.83-8.764 6.576-13.594 3.898a9.957 9.957 0 0 1-4.33-4.772z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//dark.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_app = (rootElem) => {
             $$.$nl_defaults_init();
             return new $$.$me_atom2_elem({ tail: 'app', cnf: {
@@ -18007,12 +17825,12 @@ var $;
                         background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
-                    prop: Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
+                    prop: Object.assign(Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
                         default: () => false,
                         valid: (val) => typeof val == 'boolean' ?
                             val :
                             null,
-                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro']), { scheme_metro_value: $$.$me_atom2_prop_store({
+                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro'])), { scheme_metro_value: $$.$me_atom2_prop_store({
                             default: () => [],
                             valid: (val) => Array.isArray(val) ? val : null,
                         }), scheme_metro_value_reciever: $$.$me_atom2_prop_store({
@@ -18042,7 +17860,7 @@ var $;
                                 login: $$.$me_atom2_prop_bind('<.login'),
                             },
                         }),
-                        schemeMetro: $$.$me_atom2_prop(['.isShownSchemeMetro'], ({ masters: [isShownSchemeMetro] }) => !isShownSchemeMetro ? null : {
+                        scheme: $$.$me_atom2_prop(['.isShownSchemeMetro'], ({ masters: [isShownSchemeMetro] }) => !isShownSchemeMetro ? null : {
                             base: $$.$nl_scheme_metro,
                             prop: {
                                 scale: '.scale_initial',
@@ -18186,10 +18004,11 @@ var $;
                     path_active: $$.a.get('.isShrinked_animActive').path,
                 })),
                 isShrinked_animActive: $$.$me_atom2_prop([], () => false),
-                '#order': () => ['ear', 'login', 'list'],
+                '#order': () => ['ear', 'login', 'theme_switch', 'list'],
             },
             elem: {
                 login: () => login,
+                theme_switch: () => theme_switch,
                 ear: () => ear,
                 list: () => list,
             },
@@ -18279,6 +18098,68 @@ var $;
                 }),
             },
         };
+        const theme_switch = {
+            prop: {
+                '#ofsVer': '<@login.#height',
+                '#height': () => 38,
+                '#cursor': () => 'pointer',
+                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#474F61' : '#d8dce3'),
+                'caption': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'Светлая тема' : 'Тёмная тема'),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+            },
+            style: {
+                background: '.colorBackground',
+                overflow: () => 'hidden',
+                userSelect: () => 'none',
+            },
+            event: {
+                clickOrTap: () => {
+                    const theme = $$.a('/.theme');
+                    if (theme == $$.$me_theme.light) {
+                        $$.a('/.theme', $$.$me_theme.dark);
+                    }
+                    else {
+                        $$.a('/.theme', $$.$me_theme.light);
+                    }
+                    return true;
+                },
+            },
+            elem: {
+                iconSquare: () => ({
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 26 : 20),
+                        '#height': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 25 : 21),
+                        '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                            to: isShrinked ? 18 : 16
+                        })),
+                        '#alignVer': () => $$.$me_align.center,
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+                    },
+                    elem: {
+                        icon: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? $$.$nl_icon_light : $$.$nl_icon_dark),
+                    },
+                }),
+                text: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsHor': () => 61,
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
+                    },
+                    style: {
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+                        whiteSpace: () => 'nowrap',
+                        overflow: () => 'hidden',
+                        textOverflow: () => 'ellipsis',
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    },
+                }),
+            },
+        };
         const ear = {
             prop: {
                 '#height': '<@login.#height',
@@ -18317,7 +18198,7 @@ var $;
         };
         const list = {
             prop: {
-                '#ofsVer': '<@login.#height',
+                '#ofsVer': $$.$me_atom2_prop(['<@login.#height', '<@theme_switch.#height'], ({ masters: [height1, height2] }) => height1 + height2),
                 '#height': $$.$me_atom2_prop(['.#ofsVer', '<.#height'], ({ masters: [ofsVer, height] }) => height - ofsVer),
                 colorBorder: () => 'blue',
                 items: () => ({
@@ -18468,4 +18349,5 @@ var $;
 /*! modernizr 3.6.0 (Custom Build) | MIT *
  * https://modernizr.com/download/?-prefixed !*/
 !function(e,n,t){function r(e,n){return typeof e===n}function o(){var e,n,t,o,i,s,l;for(var u in h)if(h.hasOwnProperty(u)){if(e=[],n=h[u],n.name&&(e.push(n.name.toLowerCase()),n.options&&n.options.aliases&&n.options.aliases.length))for(t=0;t<n.options.aliases.length;t++)e.push(n.options.aliases[t].toLowerCase());for(o=r(n.fn,"function")?n.fn():n.fn,i=0;i<e.length;i++)s=e[i],l=s.split("."),1===l.length?Modernizr[l[0]]=o:(!Modernizr[l[0]]||Modernizr[l[0]]instanceof Boolean||(Modernizr[l[0]]=new Boolean(Modernizr[l[0]])),Modernizr[l[0]][l[1]]=o),C.push((o?"":"no-")+l.join("-"))}}function i(e){return e.replace(/([a-z])-([a-z])/g,function(e,n,t){return n+t.toUpperCase()}).replace(/^-/,"")}function s(e,n){return function(){return e.apply(n,arguments)}}function l(e,n,t){var o;for(var i in e)if(e[i]in n)return t===!1?e[i]:(o=n[e[i]],r(o,"function")?s(o,t||n):o);return!1}function u(e,n){return!!~(""+e).indexOf(n)}function f(e){return e.replace(/([A-Z])/g,function(e,n){return"-"+n.toLowerCase()}).replace(/^ms-/,"-ms-")}function a(n,t,r){var o;if("getComputedStyle"in e){o=getComputedStyle.call(e,n,t);var i=e.console;if(null!==o)r&&(o=o.getPropertyValue(r));else if(i){var s=i.error?"error":"log";i[s].call(i,"getComputedStyle returning null, its possible modernizr test results are inaccurate")}}else o=!t&&n.currentStyle&&n.currentStyle[r];return o}function p(){return"function"!=typeof n.createElement?n.createElement(arguments[0]):E?n.createElementNS.call(n,"http://www.w3.org/2000/svg",arguments[0]):n.createElement.apply(n,arguments)}function d(){var e=n.body;return e||(e=p(E?"svg":"body"),e.fake=!0),e}function c(e,t,r,o){var i,s,l,u,f="modernizr",a=p("div"),c=d();if(parseInt(r,10))for(;r--;)l=p("div"),l.id=o?o[r]:f+(r+1),a.appendChild(l);return i=p("style"),i.type="text/css",i.id="s"+f,(c.fake?c:a).appendChild(i),c.appendChild(a),i.styleSheet?i.styleSheet.cssText=e:i.appendChild(n.createTextNode(e)),a.id=f,c.fake&&(c.style.background="",c.style.overflow="hidden",u=z.style.overflow,z.style.overflow="hidden",z.appendChild(c)),s=t(a,e),c.fake?(c.parentNode.removeChild(c),z.style.overflow=u,z.offsetHeight):a.parentNode.removeChild(a),!!s}function m(n,r){var o=n.length;if("CSS"in e&&"supports"in e.CSS){for(;o--;)if(e.CSS.supports(f(n[o]),r))return!0;return!1}if("CSSSupportsRule"in e){for(var i=[];o--;)i.push("("+f(n[o])+":"+r+")");return i=i.join(" or "),c("@supports ("+i+") { #modernizr { position: absolute; } }",function(e){return"absolute"==a(e,null,"position")})}return t}function y(e,n,o,s){function l(){a&&(delete P.style,delete P.modElem)}if(s=r(s,"undefined")?!1:s,!r(o,"undefined")){var f=m(e,o);if(!r(f,"undefined"))return f}for(var a,d,c,y,v,h=["modernizr","tspan","samp"];!P.style&&h.length;)a=!0,P.modElem=p(h.shift()),P.style=P.modElem.style;for(c=e.length,d=0;c>d;d++)if(y=e[d],v=P.style[y],u(y,"-")&&(y=i(y)),P.style[y]!==t){if(s||r(o,"undefined"))return l(),"pfx"==n?y:!0;try{P.style[y]=o}catch(g){}if(P.style[y]!=v)return l(),"pfx"==n?y:!0}return l(),!1}function v(e,n,t,o,i){var s=e.charAt(0).toUpperCase()+e.slice(1),u=(e+" "+w.join(s+" ")+s).split(" ");return r(n,"string")||r(n,"undefined")?y(u,n,o,i):(u=(e+" "+_.join(s+" ")+s).split(" "),l(u,n,t))}var h=[],g={_version:"3.6.0",_config:{classPrefix:"",enableClasses:!0,enableJSClass:!0,usePrefixes:!0},_q:[],on:function(e,n){var t=this;setTimeout(function(){n(t[e])},0)},addTest:function(e,n,t){h.push({name:e,fn:n,options:t})},addAsyncTest:function(e){h.push({name:null,fn:e})}},Modernizr=function(){};Modernizr.prototype=g,Modernizr=new Modernizr;var C=[],S="Moz O ms Webkit",w=g._config.usePrefixes?S.split(" "):[];g._cssomPrefixes=w;var x=function(n){var r,o=prefixes.length,i=e.CSSRule;if("undefined"==typeof i)return t;if(!n)return!1;if(n=n.replace(/^@/,""),r=n.replace(/-/g,"_").toUpperCase()+"_RULE",r in i)return"@"+n;for(var s=0;o>s;s++){var l=prefixes[s],u=l.toUpperCase()+"_"+r;if(u in i)return"@-"+l.toLowerCase()+"-"+n}return!1};g.atRule=x;var _=g._config.usePrefixes?S.toLowerCase().split(" "):[];g._domPrefixes=_;var z=n.documentElement,E="svg"===z.nodeName.toLowerCase(),b={elem:p("modernizr")};Modernizr._q.push(function(){delete b.elem});var P={style:b.elem.style};Modernizr._q.unshift(function(){delete P.style}),g.testAllProps=v;g.prefixed=function(e,n,t){return 0===e.indexOf("@")?x(e):(-1!=e.indexOf("-")&&(e=i(e)),n?v(e,n,t):v(e,"pfx"))};o(),delete g.addTest,delete g.addAsyncTest;for(var L=0;L<Modernizr._q.length;L++)Modernizr._q[L]();e.Modernizr=Modernizr}(window,document);
+
 //# sourceMappingURL=web.js.map
