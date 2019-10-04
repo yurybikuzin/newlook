@@ -17764,7 +17764,7 @@ var $;
                 content: () => [
                     {
                         tag: 'g',
-                        attr: { fill: () => '#fff', fillRule: () => 'nonzero', stroke: '<.color'
+                        attr: { fill: () => 'white', fillRule: () => 'nonzero', stroke: '<.color'
                         },
                         sub: [
                             { tag: 'circle', attr: { cx: () => "13", cy: () => "12", r: () => "6" } },
@@ -18107,10 +18107,10 @@ var $;
                 '#ofsVer': '<@login.#height',
                 '#height': () => 38,
                 '#cursor': () => 'pointer',
-                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#474F61' : '#d8dce3'),
+                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? '#474F61' : '#d8dce3'),
                 'caption': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'Светлая тема' : 'Тёмная тема'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'white' : '#313745'),
             },
             style: {
                 background: '.colorBackground',
@@ -18132,8 +18132,8 @@ var $;
             elem: {
                 iconSquare: () => ({
                     prop: {
-                        '#width': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 26 : 20),
-                        '#height': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 25 : 21),
+                        '#width': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 26 : 20),
+                        '#height': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 25 : 21),
                         '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
                             to: isShrinked ? 18 : 16
                         })),
@@ -18141,7 +18141,7 @@ var $;
                         color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
                     },
                     elem: {
-                        icon: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? $$.$nl_icon_light : $$.$nl_icon_dark),
+                        icon: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? $$.$nl_icon_light : $$.$nl_icon_dark),
                     },
                 }),
                 text: () => ({
@@ -18153,7 +18153,7 @@ var $;
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                     },
                     style: {
-                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'white' : '#313745'),
                         whiteSpace: () => 'nowrap',
                         overflow: () => 'hidden',
                         textOverflow: () => 'ellipsis',
