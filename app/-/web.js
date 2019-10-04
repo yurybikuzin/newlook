@@ -17764,7 +17764,7 @@ var $;
                 content: () => [
                     {
                         tag: 'g',
-                        attr: { fill: () => 'white', fillRule: () => 'nonzero', stroke: '<.color'
+                        attr: { fill: '<.color', fillRule: () => 'nonzero', stroke: '<.color'
                         },
                         sub: [
                             { tag: 'circle', attr: { cx: () => "13", cy: () => "12", r: () => "6" } },
@@ -17794,7 +17794,7 @@ var $;
                 content: () => [
                     {
                         attr: {
-                            fill: () => '<.color',
+                            fill: '<.color',
                             fillRule: () => 'nonzero',
                             stroke: '<.color',
                             d: () => "M.442 14.276A8 8 0 1 0 8.126.413a9.957 9.957 0 0 1 6.34 1.143c4.831 2.677 6.576 8.764 3.899 13.594-2.678 4.83-8.764 6.576-13.594 3.898a9.957 9.957 0 0 1-4.33-4.772z",
@@ -18110,7 +18110,7 @@ var $;
                 'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? '#474F61' : '#d8dce3'),
                 'caption': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'Светлая тема' : 'Тёмная тема'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'white' : '#313745'),
+                sunColor: () => 'red',
             },
             style: {
                 background: '.colorBackground',
@@ -18138,7 +18138,7 @@ var $;
                             to: isShrinked ? 18 : 16
                         })),
                         '#alignVer': () => $$.$me_align.center,
-                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'white' : '#313745'),
                     },
                     elem: {
                         icon: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? $$.$nl_icon_light : $$.$nl_icon_dark),
