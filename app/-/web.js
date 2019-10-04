@@ -7024,6 +7024,9 @@ var $;
                                     return result;
                                 };
                                 main();
+                                const codes = $$.a('.will_codes');
+                                codes.clear();
+                                $$.a('.will_codes', codes);
                                 return true;
                             },
                         }),
@@ -7491,6 +7494,7 @@ var $;
                             return true;
                         },
                         touchstart: p => {
+                            return true;
                             const clientX = p.event.touches[0].clientX;
                             const clientY = p.event.touches[0].clientY;
                             if (p.event.touches.length > 1) {
@@ -7635,7 +7639,6 @@ var $;
                                 $$.a('.height_visible_manual_start', $$.a('.height_visible'));
                             }
                             else if ($$.a('.height_visible') < $$.a('<.horModeTreshold')) {
-                                $$.a('.height_visible_manual', $$.$me_atom2_anim({ to: $$.a('<.horModeHeight') }));
                             }
                         }),
                         height_visible_manual: $$.$me_atom2_prop_store({
