@@ -18108,7 +18108,7 @@ var $;
                 '#height': () => 38,
                 '#cursor': () => 'pointer',
                 'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#474F61' : '#d8dce3'),
-                'caption': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'Светлая тема' : 'Тёмная тема'),
+                'caption': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'Светлая тема' : 'Тёмная тема'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
             },
