@@ -7494,7 +7494,6 @@ var $;
                             return true;
                         },
                         touchstart: p => {
-                            return true;
                             const clientX = p.event.touches[0].clientX;
                             const clientY = p.event.touches[0].clientY;
                             if (p.event.touches.length > 1) {
@@ -7559,6 +7558,7 @@ var $;
                             }
                         },
                         touchmove: p => {
+                            console.log('eeeeee');
                             const clientX = p.event.touches[0].clientX;
                             const clientY = p.event.touches[0].clientY;
                             const timer = $$.a('.resizeModeStarter');
@@ -7639,6 +7639,7 @@ var $;
                                 $$.a('.height_visible_manual_start', $$.a('.height_visible'));
                             }
                             else if ($$.a('.height_visible') < $$.a('<.horModeTreshold')) {
+                                $$.a('.height_visible_manual', $$.$me_atom2_anim({ to: $$.a('<.horModeHeight') }));
                             }
                         }),
                         height_visible_manual: $$.$me_atom2_prop_store({
@@ -8218,6 +8219,356 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //metro.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_card = {
+            prop: {
+                '#width': '/.#viewportWidth',
+                '#height': '/.#viewportHeight',
+                isTouch: $$.$me_atom2_prop_store({
+                    default: () => $$.a('/.#isTouch'),
+                    valid: (val) => typeof val == 'boolean' ? val : null,
+                }),
+                horOffset: () => 12,
+            },
+            style: {
+                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
+            },
+            elem: {
+                cross: () => ({
+                    base: $$.$me_cross,
+                    prop: {
+                        size: () => 24,
+                        thick: () => 3,
+                        '#ofsVer': () => 8,
+                        '#ofsHor': () => 16,
+                        '#alignHor': () => $$.$me_align.right,
+                        color: '/.colorText',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('/@app.isShownCard', false);
+                            return true;
+                        },
+                    },
+                }),
+                image: () => ({
+                    node: 'img',
+                    prop: {
+                        '#ofsHor': '<.horOffset',
+                        '#ofsVer': '.em',
+                        '#width': () => 390,
+                        '#height': () => 295,
+                    },
+                    attr: {
+                        src: () => 'https://images.baza-winner.ru//nb47b3215cba802ec8715ed14a183d304_640x480',
+                        draggable: () => false,
+                    },
+                }),
+                pub_dt: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 418,
+                        '#ofsVer': '.em',
+                    },
+                    style: {
+                        fontSize: () => 12,
+                        color: () => '#313745',
+                    },
+                    dom: {
+                        innerText: () => 'Опубликовано: 18.09.2019',
+                    },
+                }),
+                first_pub_dt: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 600,
+                        '#ofsVer': '.em',
+                    },
+                    style: {
+                        fontSize: () => 12,
+                        color: () => '#313745',
+                    },
+                    dom: {
+                        innerText: () => 'Впервые: 15.09.2019',
+                    },
+                }),
+                price: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 418,
+                        '#ofsVer': $$.$me_atom2_prop(['<@pub_dt.#height', '<@pub_dt.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                    },
+                    style: {
+                        fontSize: () => 21,
+                        color: () => '#313745',
+                    },
+                    dom: {
+                        innerText: () => '7 000 000 ₽',
+                    },
+                }),
+                aptp_info: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': $$.$me_atom2_prop(['<@price.#width', '<@price.#ofsHor'], ({ masters: [width, ofs] }) => width + ofs + 10),
+                        '#ofsVer': $$.$me_atom2_prop(['<@pub_dt.#height', '<@pub_dt.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 13),
+                    },
+                    style: {
+                        fontSize: () => 17,
+                        color: () => '#313745',
+                    },
+                    dom: {
+                        innerText: () => '2-комн.кв., 90 м, 2/5 этаж',
+                    },
+                }),
+                station_and_far: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 418,
+                        '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                    },
+                    style: {
+                        fontSize: () => 15,
+                        lineHeight: () => 26,
+                        color: () => '#0070a4',
+                    },
+                    dom: {
+                        innerHTML: () => 'Бульвар Академика Ушакова м., 15 мин пешком<br>Улица Академика Янгеля м., 15 мин пешком,<br>Бирюлево Пассажирская ст., 15 мин пешком',
+                    },
+                }),
+                address: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 418,
+                        '#ofsVer': $$.$me_atom2_prop(['<@station_and_far.#height', '<@station_and_far.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 2),
+                    },
+                    style: {
+                        fontSize: () => 15,
+                        lineHeight: () => 26,
+                        color: () => '#313745',
+                    },
+                    dom: {
+                        innerHTML: () => 'Центральный проезд Хорошевского Серебряного Бора, д.8 корп.1',
+                    },
+                }),
+                contact: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => 250,
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                    },
+                    style: {
+                        fontSize: () => 15,
+                        lineHeight: () => 26,
+                        color: () => '#313745',
+                        background: () => 'gray',
+                    },
+                    dom: {
+                        innerHTML: () => 'Блок контактов',
+                    },
+                }),
+                params: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': $$.$me_atom2_prop(['<.#width', '<@contact.#width', '<@contact.#ofsHor'], ({ masters: [width_total, width, ofs] }) => width_total - 418 - width - ofs * 2),
+                        '#ofsHor': () => 418,
+                        '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                    },
+                    style: {
+                        fontSize: () => 15,
+                        lineHeight: () => 26,
+                        color: () => '#313745',
+                        background: () => 'yellow',
+                    },
+                    dom: {
+                        innerHTML: () => 'Блок параметров',
+                    },
+                }),
+                comment: () => ({
+                    base: comment_control,
+                    prop: {
+                        '#height': () => 214,
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
+                        '#ofsHor': '<.horOffset',
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#height', '<@image.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 16),
+                        text: () => 'Продается квартира от собственника в новом доме. Квартира расположена на третьем этаже, все окна в квартире выходят на лес. Хорошая планировка, большие окна, много света. В квартире выполнен черновой ремонт, в частности выполнены следующие работы: 1. Заменена входная дверь. 2. Выровнены по маякам стены и отштукатурены. 3. Заменены радиаторы отопления на более мощные. 4. Заменены стеклопакеты. 5. Отшпатлеваны оконные и дверные откосы. 6. Установлены подоконники. 7. Разведена электрика по квартире. В доме, на первом этаже расположены фитнес с бассейном, английский детский сад, кофейня, салон красоты. Закрытая территория, большое патио во внутреннем дворе для жителей дома, подземный паркинг, кладовые. До метро 12 мин. пешком. Московская прописка (НЕ АПАРТАМЕНТЫ!), один взрослый собственник, свободная продажа. В квартире никто не зарегистрирован, возможна ипотека. Продается квартира от собственника в новом доме. Квартира расположена на третьем этаже, все окна в квартире выходят на лес. Хорошая планировка, большие окна, много света. В квартире выполнен черновой ремонт, в частности выполнены следующие работы: 1. Заменена входная дверь. 2. Выровнены по маякам стены и отштукатурены. 3. Заменены радиаторы отопления на более мощные. 4. Заменены стеклопакеты. 5. Отшпатлеваны оконные и дверные откосы. 6. Установлены подоконники. 7. Разведена электрика по квартире. В доме, на первом этаже расположены фитнес с бассейном, английский детский сад, кофейня, салон красоты. Закрытая территория, большое патио во внутреннем дворе для жителей дома, подземный паркинг, кладовые. До метро 12 мин. пешком. Московская прописка (НЕ АПАРТАМЕНТЫ!), один взрослый собственник, свободная продажа. В квартире никто не зарегистрирован, возможна ипотека.',
+                        fontSize: () => 15,
+                    },
+                }),
+                map: () => ({
+                    prop: {
+                        '#height': () => 220,
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
+                        '#ofsHor': '<.horOffset',
+                        '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                    },
+                    style: {
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                    },
+                }),
+                price_dynamics: () => ({
+                    prop: {
+                        '#height': () => 210,
+                        '#width': () => 561,
+                        '#ofsHor': '<.horOffset',
+                        '#ofsVer': $$.$me_atom2_prop(['<@map.#height', '<@map.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                    },
+                    style: {
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                    },
+                }),
+                history: () => ({
+                    prop: {
+                        '#height': () => 210,
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@price_dynamics.#width'], ({ masters: [width, ofs, w] }) => width - 3 * ofs - w),
+                        '#ofsHor': $$.$me_atom2_prop(['<.horOffset', '<@price_dynamics.#width'], ({ masters: [ofs, w] }) => ofs * 2 + w),
+                        '#ofsVer': $$.$me_atom2_prop(['<@map.#height', '<@map.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                    },
+                    style: {
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                    },
+                }),
+            },
+        };
+        const comment_control = {
+            prop: {
+                fontSize: $$.$me_atom2_prop_abstract(),
+                text: $$.$me_atom2_prop_abstract(),
+                ofs: () => 5,
+            },
+            style: {
+                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+            },
+            elem: {
+                text: () => ({
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 20),
+                        '#height': () => 140,
+                        fontSize: '<.fontSize',
+                        '#ofsHor': () => 10,
+                        '#ofsVer': () => 10,
+                    },
+                    style: {
+                        overflow: () => 'hidden',
+                    },
+                    dom: {
+                        innerHTML: $$.$me_atom2_prop(['<.text'], ({ masters: [txt] }) => '<b>Примечание: </b>' + txt),
+                    },
+                }),
+                more_link: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#height': () => null,
+                        '#cursor': () => 'pointer',
+                        fontSize: () => 16,
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': () => 10,
+                        '#ofsVer': () => 128,
+                    },
+                    style: {
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                    },
+                    dom: {
+                        innerHTML: () => '&nbsp;&nbsp;Больше ▼'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            return true;
+                        },
+                    },
+                }),
+                block: () => ({
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 20),
+                        '#height': () => 53,
+                        '#alignVer': () => $$.$me_align.bottom,
+                        '#ofsVer': () => 10,
+                        '#ofsHor': () => 10,
+                    },
+                    style: {
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#6b7277'),
+                    },
+                    elem: {
+                        send_comment: () => ({
+                            base: $$.$me_stylesheet,
+                            node: 'textarea',
+                            prop: {
+                                '#ofsHor': () => 10,
+                                '#ofsVer': () => 1,
+                                '#alignVer': () => $$.$me_align.bottom,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - 120 - 20),
+                                '#height': () => 50,
+                                fontSize: () => 14,
+                                styleSheetName: () => 'nl_input',
+                                className: '.styleSheetName',
+                                styleSheet: () => '',
+                                styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
+                                    return (`
+                  .${className}::placeholder {
+                    color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+                  }
+                `);
+                                }),
+                            },
+                            style: {
+                                border: () => 'none',
+                                boxShadow: () => 'none',
+                                boxSizing: () => 'border-box',
+                                '-webkit-appearance': () => 'none',
+                                padding: () => 0,
+                                resize: () => 'none',
+                                outline: () => 'none',
+                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'),
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'),
+                            },
+                            attr: {
+                                placeholder: () => 'Написать комментарий',
+                                rows: () => 3,
+                                cols: () => 27,
+                            },
+                        }),
+                        save_button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 112,
+                                '#height': () => 32,
+                                '#alignVer': () => $$.$me_align.center,
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': () => 10,
+                                caption: () => 'Сохранить',
+                                target: () => '<',
+                                fontSize: () => 16,
+                                cmd: () => ({ some: 'thing' })
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    }
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//card.js.map
 ;
 "use strict";
 var $;
@@ -17837,10 +18188,16 @@ var $;
                         valid: (val) => typeof val == 'boolean' ?
                             val :
                             null,
-                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro'])), { scheme_metro_value: $$.$me_atom2_prop_store({
+                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro', 'isShownCard'])), { scheme_metro_value: $$.$me_atom2_prop_store({
                             default: () => [],
                             valid: (val) => Array.isArray(val) ? val : null,
                         }), scheme_metro_value_reciever: $$.$me_atom2_prop_store({
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val : null,
+                        }), card_value: $$.$me_atom2_prop_store({
+                            default: () => [],
+                            valid: (val) => Array.isArray(val) ? val : null,
+                        }), card_value_reciever: $$.$me_atom2_prop_store({
                             default: () => '',
                             valid: (val) => typeof val == 'string' ? val : null,
                         }), login: $$.$me_atom2_prop_store({
@@ -17886,6 +18243,23 @@ var $;
                                     else {
                                         $$.a.dispatch(scheme_metro_value_reciever, 'close');
                                     }
+                                    return true;
+                                }
+                                return false;
+                            },
+                        }),
+                        card: $$.$me_atom2_prop(['.isShownCard'], ({ masters: [isShownCard] }) => !isShownCard ? null : {
+                            base: $$.$nl_card,
+                            prop: {
+                                scale: '.scale_initial',
+                                ofsHor: '.ofsHor_initial',
+                                ofsVer: '.ofsVer_initial',
+                                value: $$.$me_atom2_prop_bind('/@app.card_value'),
+                                src: () => '',
+                                '#zIndex': () => 1000,
+                            },
+                            dispatch: (dispatch_name, dispatch_arg) => {
+                                if (dispatch_name == 'close') {
                                     return true;
                                 }
                                 return false;
