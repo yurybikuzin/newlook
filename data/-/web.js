@@ -1,5 +1,4 @@
-function require( path ){ return $node[ path ] }
-;
+function require( path ){ return $node[ path ] };
 "use strict";
 var $;
 (function ($) {
@@ -303,4 +302,5 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //data.js.map
+
 //# sourceMappingURL=web.js.map
