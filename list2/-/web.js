@@ -4880,7 +4880,6 @@ var $;
                                 const dispatch = (i, ctxTop, ctxBottom) => $$.a.dispatch('<', 'row', {
                                     ctx,
                                     pixelRatio,
-                                    ctxOfsVer,
                                     ctxOfsHor,
                                     ctxHeight,
                                     ctxWidth,
@@ -4900,6 +4899,8 @@ var $;
                                         saveStart(i, ctxTop);
                                     }
                                 };
+                                if ($$.$me_debug)
+                                    debugger;
                                 const ret = render_helper({
                                     pixelRatio,
                                     ctxHeight,
@@ -5160,36 +5161,20 @@ var $;
                                         }
                                         else {
                                             opened.set(key, new Map());
-                                            const atom = $$.a.get('^canvas.ofsVer_delta');
-                                            $$.a('^canvas.isEnd', false);
-                                            const delta = row_height(idx.length + 1);
-                                            let delta_rem = delta;
-                                            const duration = 100;
-                                            const interval = 8;
-                                            const start = performance.now();
-                                            const timer = setInterval(() => {
-                                                const progress = $$.$me_easing.easeOutQuad(Math.min(1, (performance.now() - start) / duration));
-                                                const delta_target = delta * progress;
-                                                const delta_rem_new = delta - delta_target;
-                                                const gamma = Math.max(0, (delta_rem - delta_rem_new));
-                                                delta_rem = delta_rem_new;
-                                                const value_new = atom.value() + gamma;
-                                                if (value_new)
-                                                    atom.value(value_new);
-                                                if (progress >= 1)
-                                                    clearInterval(timer);
-                                            }, interval);
+                                            const atom_visible_rows = $$.a.get('.visible_rows');
+                                            const row = atom_visible_rows.value().filter(row => row.i == dispatch_arg.i)[0];
+                                            const bottomLim = $$.a('.#height') - $$.a('.lastRowMarginBottom') - row_height(idx.length + 1);
+                                            console.log(row.bottom, bottomLim);
                                         }
                                     }
                                     if (changed) {
                                         $$.a('.needRender', true);
-                                        console.log($$.a('.needRender'));
                                         $$.a('.opened', opened_orig, true);
                                     }
                                     return true;
                                 }
                                 else if (dispatch_name == 'row') {
-                                    const { ctx, pixelRatio, ctxLeft, ctxOfsVer, ctxOfsHor, i, ctxHeight, ctxWidth } = dispatch_arg;
+                                    const { ctx, pixelRatio, ctxLeft, ctxOfsHor, i, ctxHeight, ctxWidth } = dispatch_arg;
                                     const idx = idx_by_i(i, $$.a('.data'), $$.a('.opened'));
                                     if (!idx) {
                                         dispatch_arg.ctxTop = null;
