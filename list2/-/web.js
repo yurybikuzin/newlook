@@ -4768,7 +4768,7 @@ var $;
                 pos: () => ({ i: 0, ofsVer: 0 }),
                 isReadyData: () => false,
                 visible_rows: $$.$me_atom2_prop([], () => []),
-                needRender: () => false,
+                needRender: () => true,
             },
             style: {
                 border: () => '1px solid red',
@@ -4814,119 +4814,146 @@ var $;
                     prop: {
                         '#width': '<.#width',
                         '#height': '<.#height',
-                        ofsVer_delta: () => 0,
-                        ofsHor_delta: () => 0,
-                        isReadyData: '<.isReadyData',
-                        needRender: $$.$me_atom2_prop_bind('<.needRender'),
+                        needRender: $$.$me_atom2_prop(['<.needRender', '.#width', '.#height'], () => true, ({ val }) => {
+                            $$.a('<.needRender', val);
+                        }),
                     },
                     prop_non_render: {
+                        ofsVer_delta: $$.$me_atom2_prop([], () => 0, ({ val }) => {
+                            if (val)
+                                $$.a('.needRender', true);
+                        }),
+                        ofsHor_delta: () => 0,
+                        isReadyData: $$.$me_atom2_prop(['<.isReadyData'], null, ({ val }) => {
+                            if (val)
+                                $$.a('.needRender', true);
+                        }),
                         pos: $$.$me_atom2_prop_bind('<.pos'),
                         isEnd: () => false,
                         isBegin: () => false,
                         visible_rows: $$.$me_atom2_prop_bind('<.visible_rows'),
+                        lastImg: () => null,
+                        last: $$.$me_atom2_prop(['.#width', '.#height', '/.#pixelRatio'], ({ masters: [width, height, pixelRatio] }) => {
+                            const result = document.createElement('canvas');
+                            result.width = width * pixelRatio;
+                            result.height = height * pixelRatio;
+                            return result;
+                        }),
                     },
                     render: p => {
-                        $$.a('.needRender', false);
-                        let visible_rows = [];
-                        if ($$.a('.isReadyData')) {
+                        const start = performance.now();
+                        const { ctx, pixelRatio, ctxHeight, ctxWidth } = p;
+                        const ofsVer_delta = $$.a('.ofsVer_delta');
+                        if (!$$.a('.needRender')) {
+                            const start = performance.now();
+                            const last = $$.a('.last');
+                            ctx.drawImage(last, 0, 0, last.width, last.height);
+                        }
+                        else if ($$.a('.isReadyData')) {
+                            const ofsVer_delta = $$.a('.ofsVer_delta');
                             const pos = $$.a('.pos');
-                            const { ctx, pixelRatio, ctxHeight, ctxWidth } = p;
                             const ofsHor = 0;
                             const ofsHor_delta = $$.a('.ofsHor_delta');
                             const ctxOfsHor = ofsHor * pixelRatio;
-                            const ofsVer_delta = $$.a('.ofsVer_delta');
                             $$.a('.ofsVer_delta', 0);
-                            if ($$.a('.isBegin') && ofsVer_delta < 0 || $$.a('.isEnd') && ofsVer_delta > 0)
-                                return;
-                            const ofsVer_from = pos.ofsVer;
-                            const ofsVer = Math.max(ofsVer_from + ofsVer_delta, 0);
-                            const ctxOfsVer = ofsVer * pixelRatio;
-                            const ctxFirstRowMarginTop = $$.a('<.firstRowMarginTop') * pixelRatio;
-                            const ctxLastRowMarginBottom = $$.a('<.lastRowMarginBottom') * pixelRatio;
-                            let ctxTop_from = ctxFirstRowMarginTop - ofsVer;
-                            let ctxTop_from_from = ctxTop_from;
-                            let i_from = pos.i;
-                            let i_from_from = i_from;
-                            const ctxRowMarginLeft = $$.a('<.rowMarginLeft') * pixelRatio;
-                            let ctxLeft = ctxRowMarginLeft - ctxOfsHor;
-                            let started = false;
-                            const saveStart = (i, ctxTop) => {
-                                $$.a('.pos', {
-                                    i,
-                                    ofsVer: ctxFirstRowMarginTop - ctxTop,
-                                });
-                                started = true;
-                            };
-                            const dispatch = (i, ctxTop, ctxBottom) => $$.a.dispatch('<', 'row', {
-                                ctx,
-                                pixelRatio,
-                                ctxOfsVer,
-                                ctxOfsHor,
-                                ctxHeight,
-                                ctxWidth,
-                                ctxLeft,
-                                i,
-                                ctxTop,
-                                ctxBottom,
-                            });
-                            let need_reverse = ofsVer_delta < 0 && ctxTop_from > 0 && !!i_from;
-                            let after_reverse_fn = (i, ctxTop) => {
-                                ctxTop_from_from = ctxTop;
-                                i_from_from = i;
-                                saveStart(i, ctxTop);
-                            };
-                            let after_fn = (i, ctxTop, ctxBottom) => {
-                                if (ctxBottom >= 0 && !started) {
-                                    saveStart(i, ctxTop);
-                                }
-                            };
-                            const ret = render_helper({
-                                pixelRatio,
-                                ctxHeight,
-                                ctxFirstRowMarginTop,
-                                ctxLastRowMarginBottom,
-                                ctxTop_from,
-                                i_from,
-                                need_reverse,
-                                dispatch,
-                                after_reverse_fn,
-                                after_fn,
-                            });
-                            const { ctxBottom, isEnd, isBegin } = ret;
-                            visible_rows = ret.visible_rows;
-                            $$.a('.isEnd', isEnd);
-                            $$.a('.isBegin', isBegin);
-                            if (isEnd) {
-                                const delta = ctxHeight - ctxLastRowMarginBottom - ctxBottom;
-                                if (delta) {
-                                    ctx.clearRect(0, 0, ctxWidth, ctxHeight);
-                                    ctxTop_from = ctxTop_from_from + delta;
-                                    i_from = i_from_from;
-                                    need_reverse = ctxTop_from > 0;
-                                    after_reverse_fn = (i, ctxTop) => {
-                                        const result = {
-                                            i_from: ctxTop <= 0 ? i : i + 1,
-                                            ctxTop_from: ctxTop <= 0 ? ctxTop : ctxFirstRowMarginTop,
-                                        };
-                                        saveStart(result.i_from, result.ctxTop_from);
-                                        return result;
-                                    };
-                                    const ret = render_helper({
-                                        pixelRatio,
-                                        ctxHeight,
-                                        ctxFirstRowMarginTop,
-                                        ctxLastRowMarginBottom,
-                                        ctxTop_from,
-                                        i_from,
-                                        need_reverse: ctxTop_from > 0,
-                                        dispatch,
-                                        after_reverse_fn,
+                            if (!($$.a('.isBegin') && ofsVer_delta < 0 || $$.a('.isEnd') && ofsVer_delta > 0)) {
+                                let visible_rows = [];
+                                const ofsVer_from = pos.ofsVer;
+                                const ofsVer = Math.max(ofsVer_from + ofsVer_delta, 0);
+                                const ctxOfsVer = ofsVer * pixelRatio;
+                                const ctxFirstRowMarginTop = $$.a('<.firstRowMarginTop') * pixelRatio;
+                                const ctxLastRowMarginBottom = $$.a('<.lastRowMarginBottom') * pixelRatio;
+                                let ctxTop_from = ctxFirstRowMarginTop - ofsVer;
+                                let ctxTop_from_from = ctxTop_from;
+                                let i_from = pos.i;
+                                let i_from_from = i_from;
+                                const ctxRowMarginLeft = $$.a('<.rowMarginLeft') * pixelRatio;
+                                let ctxLeft = ctxRowMarginLeft - ctxOfsHor;
+                                let started = false;
+                                const saveStart = (i, ctxTop) => {
+                                    $$.a('.pos', {
+                                        i,
+                                        ofsVer: ctxFirstRowMarginTop - ctxTop,
                                     });
-                                    visible_rows = ret.visible_rows;
+                                    started = true;
+                                };
+                                const dispatch = (i, ctxTop, ctxBottom) => $$.a.dispatch('<', 'row', {
+                                    ctx,
+                                    pixelRatio,
+                                    ctxOfsVer,
+                                    ctxOfsHor,
+                                    ctxHeight,
+                                    ctxWidth,
+                                    ctxLeft,
+                                    i,
+                                    ctxTop,
+                                    ctxBottom,
+                                });
+                                let need_reverse = ofsVer_delta < 0 && ctxTop_from > 0 && !!i_from;
+                                let after_reverse_fn = (i, ctxTop) => {
+                                    ctxTop_from_from = ctxTop;
+                                    i_from_from = i;
+                                    saveStart(i, ctxTop);
+                                };
+                                let after_fn = (i, ctxTop, ctxBottom) => {
+                                    if (ctxBottom >= 0 && !started) {
+                                        saveStart(i, ctxTop);
+                                    }
+                                };
+                                const ret = render_helper({
+                                    pixelRatio,
+                                    ctxHeight,
+                                    ctxFirstRowMarginTop,
+                                    ctxLastRowMarginBottom,
+                                    ctxTop_from,
+                                    i_from,
+                                    need_reverse,
+                                    dispatch,
+                                    after_reverse_fn,
+                                    after_fn,
+                                });
+                                const { ctxBottom, isEnd, isBegin } = ret;
+                                visible_rows = ret.visible_rows;
+                                $$.a('.isEnd', isEnd);
+                                $$.a('.isBegin', isBegin);
+                                if (isEnd) {
+                                    const delta = ctxHeight - ctxLastRowMarginBottom - ctxBottom;
+                                    if (delta) {
+                                        ctx.clearRect(0, 0, ctxWidth, ctxHeight);
+                                        ctxTop_from = ctxTop_from_from + delta;
+                                        i_from = i_from_from;
+                                        need_reverse = ctxTop_from > 0;
+                                        after_reverse_fn = (i, ctxTop) => {
+                                            const result = {
+                                                i_from: ctxTop <= 0 ? i : i + 1,
+                                                ctxTop_from: ctxTop <= 0 ? ctxTop : ctxFirstRowMarginTop,
+                                            };
+                                            saveStart(result.i_from, result.ctxTop_from);
+                                            return result;
+                                        };
+                                        const ret = render_helper({
+                                            pixelRatio,
+                                            ctxHeight,
+                                            ctxFirstRowMarginTop,
+                                            ctxLastRowMarginBottom,
+                                            ctxTop_from,
+                                            i_from,
+                                            need_reverse: ctxTop_from > 0,
+                                            dispatch,
+                                            after_reverse_fn,
+                                        });
+                                        visible_rows = ret.visible_rows;
+                                    }
                                 }
+                                $$.a('.visible_rows', visible_rows);
+                                const start = performance.now();
+                                const last = $$.a('.last');
+                                const ctxLast = last.getContext('2d');
+                                ctxLast.clearRect(0, 0, ctxWidth, ctxHeight);
+                                ctxLast.drawImage($$.a.get('<').node, 0, 0, ctxWidth, ctxHeight);
                             }
                         }
-                        $$.a('.visible_rows', visible_rows);
+                        $$.a('.needRender', false);
                     },
                 }),
             },
@@ -5059,12 +5086,10 @@ var $;
                                     default: () => new Map(),
                                     valid: (val) => val instanceof Map ? val : null,
                                     toJSON: val => {
-                                        console.log(val);
                                         const mapAsArray = (m) => {
                                             const result = [];
-                                            for (const [key, sub] of [...m]) {
+                                            for (const [key, sub] of [...m])
                                                 result.push([key, mapAsArray(sub)]);
-                                            }
                                             return result;
                                         };
                                         return mapAsArray(val);
@@ -5072,9 +5097,8 @@ var $;
                                     fromJSON: val => {
                                         const arrayAsMap = (arr) => {
                                             const result = new Map();
-                                            for (const [key, sub] of arr) {
+                                            for (const [key, sub] of arr)
                                                 result.set(key, arrayAsMap(sub));
-                                            }
                                             return result;
                                         };
                                         return arrayAsMap(val);
@@ -5101,7 +5125,12 @@ var $;
                                     for (let j = 0; j < visible_rows.length; j++) {
                                         const { top, bottom, i } = visible_rows[j];
                                         if (top <= y && y < bottom) {
-                                            $$.a.dispatch('', 'click', $$.a.dispatch('', 'idx', { i, idx: null }));
+                                            let data = $$.a('.data');
+                                            let opened_orig = $$.a('.opened');
+                                            $$.a.dispatch('', 'click', {
+                                                i,
+                                                idx: idx_by_i(i, $$.a('.data'), $$.a('.opened')),
+                                            });
                                             break;
                                         }
                                     }
@@ -5109,85 +5138,74 @@ var $;
                                 },
                             },
                             dispatch(dispatch_name, dispatch_arg) {
-                                if (dispatch_name == 'idx') {
-                                    const data = $$.a('.data');
-                                    const { i } = dispatch_arg;
-                                    const opened = $$.a('.opened');
-                                    let j = 0;
-                                    let level = [{ from: 0, data }];
-                                    let idx = [0];
-                                    let k = 0;
-                                    while (j < i) {
-                                        const { data } = level[level.length - 1];
-                                        const b = idx[level.length - 1] >= Object.keys(data).length - 1;
-                                        if (b && level.length > 1) {
-                                            level.pop();
-                                            idx.pop();
-                                            const { data } = level[level.length - 1];
-                                            if (idx[level.length - 1] >= Object.keys(data).length - 1) {
-                                                break;
-                                            }
-                                            j++;
-                                            idx[level.length - 1]++;
-                                        }
-                                        else {
-                                            const key = Object.keys(data)[idx[level.length - 1]];
-                                            if (!opened.has(key)) {
-                                                if (b && level.length == 1)
-                                                    break;
-                                                idx[level.length - 1]++;
-                                            }
-                                            else {
-                                                level.push({ from: j, data: data[key] });
-                                                idx.push(0);
-                                            }
-                                            j++;
-                                        }
-                                        if (++k > 5000)
-                                            $$.$me_throw(`k: ${k}`, { i, j, level }, idx);
-                                    }
-                                    dispatch_arg.idx = i != j ? null : idx;
-                                    return true;
-                                }
-                                else if (dispatch_name == 'click') {
+                                if (dispatch_name == 'click') {
                                     const { idx } = dispatch_arg;
-                                    const data = $$.a('.data');
-                                    const opened = $$.a('.opened');
-                                    if (idx.length == 1) {
-                                        const line = Object.keys(data)[idx[0]];
-                                        if (opened.has(line)) {
-                                            opened.delete(line);
+                                    let data = $$.a('.data');
+                                    let opened_orig = $$.a('.opened');
+                                    let opened = opened_orig;
+                                    let changed = false;
+                                    for (let j = 0; j < idx.length && !changed; j++) {
+                                        const key = Object.keys(data)[idx[j]];
+                                        const isTerm = !Object.keys(data[key]).length;
+                                        if (isTerm)
+                                            break;
+                                        const isLast = j == idx.length - 1;
+                                        const isOpened = opened.has(key);
+                                        if (!(changed = !isOpened || isLast)) {
+                                            opened = opened.get(key);
+                                            data = data[key];
+                                        }
+                                        else if (isOpened) {
+                                            opened.delete(key);
                                         }
                                         else {
-                                            opened.set(line, new Map());
+                                            opened.set(key, new Map());
+                                            const atom = $$.a.get('^canvas.ofsVer_delta');
+                                            $$.a('^canvas.isEnd', false);
+                                            const delta = row_height(idx.length + 1);
+                                            let delta_rem = delta;
+                                            const duration = 100;
+                                            const interval = 8;
+                                            const start = performance.now();
+                                            const timer = setInterval(() => {
+                                                const progress = $$.$me_easing.easeOutQuad(Math.min(1, (performance.now() - start) / duration));
+                                                const delta_target = delta * progress;
+                                                const delta_rem_new = delta - delta_target;
+                                                const gamma = Math.max(0, (delta_rem - delta_rem_new));
+                                                delta_rem = delta_rem_new;
+                                                const value_new = atom.value() + gamma;
+                                                if (value_new)
+                                                    atom.value(value_new);
+                                                if (progress >= 1)
+                                                    clearInterval(timer);
+                                            }, interval);
                                         }
+                                    }
+                                    if (changed) {
                                         $$.a('.needRender', true);
-                                        $$.a('.opened', opened, true);
+                                        console.log($$.a('.needRender'));
+                                        $$.a('.opened', opened_orig, true);
                                     }
                                     return true;
                                 }
                                 else if (dispatch_name == 'row') {
                                     const { ctx, pixelRatio, ctxLeft, ctxOfsVer, ctxOfsHor, i, ctxHeight, ctxWidth } = dispatch_arg;
-                                    const idx = $$.a.dispatch('', 'idx', { i, idx: null }).idx;
+                                    const idx = idx_by_i(i, $$.a('.data'), $$.a('.opened'));
                                     if (!idx) {
                                         dispatch_arg.ctxTop = null;
                                         dispatch_arg.ctxBottom = null;
                                         return true;
                                     }
                                     let { ctxTop, ctxBottom } = dispatch_arg;
-                                    const idx_length_max = 3;
-                                    const ctxRowHeightMin = ($$.a('.row_height') - 1 * idx_length_max) * pixelRatio;
-                                    const ctxRowHeight = ($$.a('.row_height') - 1 * idx.length) * pixelRatio;
+                                    const idx_len_max = 3;
+                                    const ctxRowHeightMin = row_height(idx_len_max) * pixelRatio;
+                                    const ctxRowHeight = row_height(idx.length) * pixelRatio;
                                     if (ctxTop == null) {
                                         dispatch_arg.ctxTop = ctxTop = ctxBottom - ctxRowHeight;
                                     }
                                     else {
                                         dispatch_arg.ctxBottom = ctxBottom = ctxTop + ctxRowHeight;
                                     }
-                                    const data = $$.a('.data');
-                                    const text = idx.length == 1 ?
-                                        Object.keys(data)[idx[0]] :
-                                        Object.keys(data[Object.keys(data)[idx[0]]])[idx[1]];
                                     const ctxIndent = 16 * pixelRatio;
                                     $$.$me_atom2_ctx_rect({
                                         ctx,
@@ -5203,13 +5221,23 @@ var $;
                                     ctx.textAlign = 'left';
                                     ctx.textBaseline = 'bottom';
                                     ctx.fillStyle = $$.a('.colorText');
-                                    let ctxFontSize = ($$.a('.fontSize') - 1 * idx.length) * pixelRatio;
+                                    let ctxFontSize = fontSize() * pixelRatio;
                                     ctx.font = $$.a('.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('.fontFamily');
-                                    const line_no = i + ':';
                                     const ctxWidthLineNo = ctx.measureText(i + Math.ceil(ctxHeight / ctxRowHeightMin) + ':').width;
-                                    ctx.fillText(i + ':', ctxLeft + $$.a('.paddingLeft') * pixelRatio, ctxTop + (ctxRowHeight + ctxFontSize) / 2);
-                                    ctxFontSize = ($$.a('.fontSize') - 1 * idx.length) * pixelRatio;
+                                    ctxFontSize = fontSize(idx.length) * pixelRatio;
                                     ctx.font = $$.a('.fontWeight') + ' ' + ctxFontSize + 'px ' + $$.a('.fontFamily');
+                                    ctx.fillText(i + ':', ctxLeft + $$.a('.paddingLeft') * pixelRatio, ctxTop + (ctxRowHeight + ctxFontSize) / 2);
+                                    let data = $$.a('.data');
+                                    let text = '';
+                                    for (let j = 0; j < idx.length; j++) {
+                                        const key = Object.keys(data)[idx[j]];
+                                        if (j < idx.length - 1) {
+                                            data = data[key];
+                                        }
+                                        else {
+                                            text = key;
+                                        }
+                                    }
                                     ctx.fillText(text, ctxLeft + $$.a('.paddingLeft') * pixelRatio + ctxWidthLineNo + ctxIndent * idx.length, ctxTop + (ctxRowHeight + ctxFontSize) / 2);
                                     return true;
                                 }
@@ -5219,24 +5247,60 @@ var $;
                     }
                 } });
         };
-        const idx = window.location.pathname.indexOf('/', 1);
-        const root = window.location.origin.includes('localhost') ? '/nl' : '/newlook';
-        const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
-        const store_key = 'msk-metro-guids';
-        worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
-        worker.onmessage = (event) => {
-            const cmd = event.data.cmd;
-            const data = event.data.data;
-            if (cmd == 'data') {
-                $$.a('/.scheme_metro', data.scheme);
-                $$.a('/.guid2point', data.guid2point);
-                $$.a('/.code2guids', data.code2guids);
-                if (data.guids)
-                    localStorage.setItem(store_key, data.guids);
+        function fontSize(idx_len = 0) {
+            return $$.a('.fontSize') - 1 * (idx_len - 1);
+        }
+        function row_height(idx_len) {
+            return $$.a('.row_height') - 1 * (idx_len - 1);
+        }
+        function idx_by_i(i, data, opened) {
+            let level = [{ data, opened }];
+            let idx = [0];
+            let j = 0;
+            LOOP: for (j = 0; j < i; j++) {
+                let top = level.length - 1;
+                let { data, opened } = level[top];
+                const key = Object.keys(data)[idx[top]];
+                if (opened && opened.has(key)) {
+                    level.push({ data: data[key], opened: opened.get(key) });
+                    idx.push(0);
+                }
+                else {
+                    while (idx[top] >= Object.keys(data).length - 1) {
+                        level.pop();
+                        idx.pop();
+                        if (!level.length)
+                            break LOOP;
+                        data = level[--top].data;
+                    }
+                    idx[top]++;
+                }
             }
-        };
+            const result = i != j ? null : idx;
+            return result;
+        }
         $$.$me_atom2_entity.root().props({
-            'scheme_metro': () => null,
+            'scheme_metro': $$.$me_atom2_prop([], () => 'requires data', ({ val }) => {
+                if (val != 'requires data')
+                    return val;
+                const idx = window.location.pathname.indexOf('/', 1);
+                const root = window.location.origin.includes('localhost') ? '/nl' : '/newlook';
+                const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
+                const store_key = 'msk-metro-guids';
+                worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
+                worker.onmessage = (event) => {
+                    const cmd = event.data.cmd;
+                    const data = event.data.data;
+                    if (cmd == 'data') {
+                        $$.a('/.scheme_metro', data.scheme);
+                        $$.a('/.guid2point', data.guid2point);
+                        $$.a('/.code2guids', data.code2guids);
+                        if (data.guids)
+                            localStorage.setItem(store_key, data.guids);
+                    }
+                };
+                return null;
+            }),
             'guid2point': () => null,
             'code2guids': () => null,
         });
