@@ -4856,14 +4856,16 @@ var $;
                             const ofsHor_delta = $$.a('.ofsHor_delta');
                             const ctxOfsHor = ofsHor * pixelRatio;
                             $$.a('.ofsVer_delta', 0);
-                            if (!($$.a('.isBegin') && ofsVer_delta < 0 || $$.a('.isEnd') && ofsVer_delta > 0)) {
+                            if ($$.a('.isBegin') && ofsVer_delta < 0 || $$.a('.isEnd') && ofsVer_delta > 0) {
+                            }
+                            else {
                                 let visible_rows = [];
                                 const ofsVer_from = pos.ofsVer;
                                 const ofsVer = Math.max(ofsVer_from + ofsVer_delta, 0);
                                 const ctxOfsVer = ofsVer * pixelRatio;
                                 const ctxFirstRowMarginTop = $$.a('<.firstRowMarginTop') * pixelRatio;
                                 const ctxLastRowMarginBottom = $$.a('<.lastRowMarginBottom') * pixelRatio;
-                                let ctxTop_from = ctxFirstRowMarginTop - ofsVer;
+                                let ctxTop_from = ctxFirstRowMarginTop - ctxOfsVer;
                                 let ctxTop_from_from = ctxTop_from;
                                 let i_from = pos.i;
                                 let i_from_from = i_from;
@@ -4873,7 +4875,7 @@ var $;
                                 const saveStart = (i, ctxTop) => {
                                     $$.a('.pos', {
                                         i,
-                                        ofsVer: ctxFirstRowMarginTop - ctxTop,
+                                        ofsVer: (ctxFirstRowMarginTop - ctxTop) / pixelRatio,
                                     });
                                     started = true;
                                 };
@@ -4899,8 +4901,6 @@ var $;
                                         saveStart(i, ctxTop);
                                     }
                                 };
-                                if ($$.$me_debug)
-                                    debugger;
                                 const ret = render_helper({
                                     pixelRatio,
                                     ctxHeight,
@@ -5164,7 +5164,32 @@ var $;
                                             const atom_visible_rows = $$.a.get('.visible_rows');
                                             const row = atom_visible_rows.value().filter(row => row.i == dispatch_arg.i)[0];
                                             const bottomLim = $$.a('.#height') - $$.a('.lastRowMarginBottom') - row_height(idx.length + 1);
-                                            console.log(row.bottom, bottomLim);
+                                            if (row.bottom > bottomLim) {
+                                                const atom = $$.a.get('^canvas.ofsVer_delta');
+                                                $$.a('^canvas.isEnd', false);
+                                                const delta = row.bottom - bottomLim;
+                                                let delta_rem = delta;
+                                                const duration = 100;
+                                                const interval = 20;
+                                                const start = performance.now();
+                                                let gamma_sum = 0;
+                                                const timer = setInterval(() => {
+                                                    const progress = $$.$me_easing.easeOutQuad(Math.min(1, (performance.now() - start) / duration));
+                                                    const delta_target = delta * progress;
+                                                    const delta_rem_new = delta - delta_target;
+                                                    const gamma = Math.max(0, (delta_rem - delta_rem_new));
+                                                    gamma_sum += gamma;
+                                                    delta_rem = delta_rem_new;
+                                                    const value_new = atom.value() + gamma;
+                                                    if (value_new) {
+                                                        atom.value(value_new);
+                                                        $$.$me_debug = true;
+                                                    }
+                                                    if (progress >= 1) {
+                                                        clearInterval(timer);
+                                                    }
+                                                }, interval);
+                                            }
                                         }
                                     }
                                     if (changed) {
