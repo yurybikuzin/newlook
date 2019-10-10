@@ -5806,35 +5806,36 @@ var $;
                                 bounceY(lim, delta_fn, bounceState, isWheelDecelBecame.Y, pos_delta, 'End');
                             }
                             if ($$.a('._visibleLeft') > rowMarginLeft) {
-                                const lim = rowMarginLeft;
+                                console.log($$.a('._visibleLeft'), rowMarginLeft);
                                 const atom_visibleLeft = $$.a.get('._visibleLeft');
-                                const delta_fn = (visible_rows, lim) => Math.max(0, Math.round(atom_visibleLeft.value() - lim));
+                                const delta_fn = () => Math.max(0, Math.round(atom_visibleLeft.value() - rowMarginLeft));
                                 const bounceState = $me_list2_state_enum.bounceLeft;
                                 const atom_state = $$.a.get('.stateX');
                                 const state = atom_state.value();
                                 if (state == $me_list2_state_enum.free) {
-                                    bounceX(lim, delta_fn, bounceState, isWheelDecelBecame.X, pos_delta);
+                                    bounceX(delta_fn, bounceState, isWheelDecelBecame.X, pos_delta);
                                 }
                                 else if (state != $me_list2_state_enum.bounceTop) {
-                                    const delta = delta_fn(visible_rows, lim);
+                                    const delta = delta_fn();
                                     if (delta > 0) {
                                         const path = $$.a.get('').path;
                                         bounceX_helper(delta, $me_list2_state_enum.bounceTop, atom_state, path);
                                     }
                                 }
                             }
-                            else if ($$.a('._visibleRight') < ctxWidth / pixelRatio - rowMarginRight) {
-                                const lim = ctxWidth / pixelRatio - rowMarginRight;
+                            else if ($$.a('._visibleRight') < ctxWidth / pixelRatio - rowMarginRight &&
+                                $$.a('._visibleLeft') < rowMarginLeft) {
                                 const atom_visibleRight = $$.a.get('._visibleRight');
-                                const delta_fn = (visible_rows, lim) => Math.min(0, Math.round(atom_visibleRight.value() - lim));
+                                const atom_visibleLeft = $$.a.get('._visibleLeft');
+                                const delta_fn = () => Math.min(0, Math.max(Math.round(atom_visibleRight.value() - (ctxWidth / pixelRatio - rowMarginRight)), Math.round(atom_visibleLeft.value() - rowMarginLeft)));
                                 const bounceState = $me_list2_state_enum.bounceRight;
                                 const atom_state = $$.a.get('.stateX');
                                 const state = atom_state.value();
                                 if (state == $me_list2_state_enum.free) {
-                                    bounceX(lim, delta_fn, bounceState, isWheelDecelBecame.X, pos_delta);
+                                    bounceX(delta_fn, bounceState, isWheelDecelBecame.X, pos_delta);
                                 }
                                 else if (state != $me_list2_state_enum.bounceTop) {
-                                    const delta = delta_fn(visible_rows, lim);
+                                    const delta = delta_fn();
                                     if (delta > 0) {
                                         const path = $$.a.get('').path;
                                         bounceX_helper(delta, $me_list2_state_enum.bounceTop, atom_state, path);
@@ -5847,9 +5848,9 @@ var $;
                 }),
             },
         };
-        function bounceX(lim, delta_fn, bounceState, isWheelDecelBecame, pos_delta) {
+        function bounceX(delta_fn, bounceState, isWheelDecelBecame, pos_delta) {
             const atom_visible_rows = $$.a.get('.visible_rows');
-            const delta = delta_fn(atom_visible_rows.value(), lim);
+            const delta = delta_fn();
             if (delta * bounceState > 0) {
                 const atom_state = $$.a.get('.stateX');
                 const stateX = atom_state.value();
@@ -5859,7 +5860,7 @@ var $;
                     const bounce_fn = () => {
                         let delta;
                         if (atom_state.value() == $me_list2_state_enum.free &&
-                            (delta = delta_fn(atom_visible_rows.value(), lim)) * bounceState > 0 &&
+                            (delta = delta_fn()) * bounceState > 0 &&
                             true)
                             bounceX_helper(delta, bounceState, atom_state, path);
                     };
