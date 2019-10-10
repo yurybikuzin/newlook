@@ -1153,7 +1153,8 @@ var $;
                 this.accelY = 0;
                 this.timePrevX = null;
                 this.timePrevY = null;
-                this.session = $$.$me_atom2_wheel_session_inc($$.$me_atom2_wheel_session_kind_enum.touch);
+                this.sessionX = $$.$me_atom2_wheel_sessionY_inc($$.$me_atom2_wheel_session_kind_enum.touch);
+                this.sessionY = this.sessionX;
             }
             move(event) {
                 this._last = event;
@@ -1221,7 +1222,7 @@ var $;
                 this.endHelper();
             }
             rafMove(t) {
-                return Object.assign({}, this.rafMoveHeler(t), { start: this._start, last: this._last, end: this._end, clientX: this._start.touches[0].clientX, clientY: this._start.touches[0].clientY, phase: $$.$me_atom2_wheel_phase_enum.accel, session: this.session });
+                return Object.assign({}, this.rafMoveHeler(t), { start: this._start, last: this._last, end: this._end, clientX: this._start.touches[0].clientX, clientY: this._start.touches[0].clientY, phaseX: $$.$me_atom2_wheel_phase_enum.accel, phaseY: $$.$me_atom2_wheel_phase_enum.accel, sessionX: this.sessionX, sessionY: this.sessionY });
             }
             rafEndHelper(t) {
                 const tDelta = t - this.tPrev;
@@ -1246,7 +1247,7 @@ var $;
                 return result;
             }
             rafEnd(t) {
-                return Object.assign({}, this.rafEndHelper(t), { start: this._start, last: this._last, end: this._end, clientX: this._start.touches[0].clientX, clientY: this._start.touches[0].clientY, phase: $$.$me_atom2_wheel_phase_enum.decel, session: this.session });
+                return Object.assign({}, this.rafEndHelper(t), { start: this._start, last: this._last, end: this._end, clientX: this._start.touches[0].clientX, clientY: this._start.touches[0].clientY, phaseX: $$.$me_atom2_wheel_phase_enum.decel, phaseY: $$.$me_atom2_wheel_phase_enum.decel, sessionX: this.sessionX, sessionY: this.sessionY });
             }
         }
         $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
@@ -4588,9 +4589,12 @@ var $;
             return result;
         }
         let wheels = [];
-        let wheel_session;
-        let wheel_phase = $$.$me_atom2_wheel_phase_enum.unknown;
-        let lastCandidates = [];
+        let wheel_sessionY;
+        let wheel_sessionX;
+        let wheel_phaseX = $$.$me_atom2_wheel_phase_enum.unknown;
+        let wheel_phaseY = $$.$me_atom2_wheel_phase_enum.unknown;
+        let lastCandidatesX = [];
+        let lastCandidatesY = [];
         const candidatesCountMin = 3;
         const candidatesCountMax = 3;
         const candidatesLongMax = 400;
@@ -4601,31 +4605,85 @@ var $;
             $me_atom2_wheel_session_kind_enum[$me_atom2_wheel_session_kind_enum["touch"] = 1] = "touch";
             $me_atom2_wheel_session_kind_enum[$me_atom2_wheel_session_kind_enum["drag"] = 2] = "drag";
         })($me_atom2_wheel_session_kind_enum = $$.$me_atom2_wheel_session_kind_enum || ($$.$me_atom2_wheel_session_kind_enum = {}));
-        function $me_atom2_wheel_session_inc(kind = $me_atom2_wheel_session_kind_enum.wheel) {
-            _wheel_session += Object.keys($.$$.$me_atom2_wheel_session_kind_enum).length / 2;
-            if (_wheel_session > Math.pow(2, 31) - 1)
-                wheel_session = 1;
-            return _wheel_session + kind;
+        function $me_atom2_wheel_sessionX_inc(kind = $me_atom2_wheel_session_kind_enum.wheel) {
+            _wheel_sessionX += Object.keys($.$$.$me_atom2_wheel_session_kind_enum).length / 2;
+            if (_wheel_sessionX > Math.pow(2, 31) - 1)
+                _wheel_sessionX = 1;
+            return _wheel_sessionX + kind;
         }
-        $$.$me_atom2_wheel_session_inc = $me_atom2_wheel_session_inc;
-        let _wheel_session = 0;
-        const wheel = (event) => {
+        $$.$me_atom2_wheel_sessionX_inc = $me_atom2_wheel_sessionX_inc;
+        let _wheel_sessionX = 0;
+        function $me_atom2_wheel_sessionY_inc(kind = $me_atom2_wheel_session_kind_enum.wheel) {
+            _wheel_sessionY += Object.keys($.$$.$me_atom2_wheel_session_kind_enum).length / 2;
+            if (_wheel_sessionY > Math.pow(2, 31) - 1)
+                _wheel_sessionY = 1;
+            return _wheel_sessionY + kind;
+        }
+        $$.$me_atom2_wheel_sessionY_inc = $me_atom2_wheel_sessionY_inc;
+        let _wheel_sessionY = 0;
+        function wheel(event) {
             let item = { tm: Math.round(performance.now()), deltaY: event.deltaY, deltaX: event.deltaX };
             wheels = wheels.filter(({ tm }) => tm >= item.tm - candidatesLongMax);
             if (!wheels.length) {
-                wheel_session = $me_atom2_wheel_session_inc();
+                wheel_sessionX = $me_atom2_wheel_sessionX_inc();
+                wheel_sessionY = $me_atom2_wheel_sessionY_inc();
             }
             const medX = wheels_median(wheels, 'deltaX');
             const medY = wheels_median(wheels, 'deltaY');
             wheels.push(item);
             const new_medX = wheels_median(wheels, 'deltaX');
             const new_medY = wheels_median(wheels, 'deltaY');
-            if (medY != null) {
+            let ret = wheel_helper(medX, new_medX, wheel_phaseX, wheel_sessionX, $me_atom2_wheel_sessionX_inc, lastCandidatesX);
+            wheel_phaseX = ret.wheel_phase;
+            wheel_sessionX = ret.wheel_session;
+            lastCandidatesX = ret.lastCandidates;
+            ret = wheel_helper(medY, new_medY, wheel_phaseY, wheel_sessionY, $me_atom2_wheel_sessionY_inc, lastCandidatesY);
+            wheel_phaseY = ret.wheel_phase;
+            wheel_sessionY = ret.wheel_session;
+            lastCandidatesY = ret.lastCandidates;
+            if (!$$.$me_atom2_event_wheel_to_process) {
+                $$.$me_atom2_event_wheel_to_process = {
+                    src: event,
+                    deltaX: event.deltaX,
+                    deltaY: event.deltaY,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    sessionY: wheel_sessionY,
+                    sessionX: wheel_sessionX,
+                    phaseY: wheel_phaseY,
+                    phaseX: wheel_phaseY,
+                };
+            }
+            else {
+                if ($$.$me_atom2_event_wheel_to_process.sessionX != wheel_sessionX ||
+                    $$.$me_atom2_event_wheel_to_process.sessionY != wheel_sessionY) {
+                    $$.$me_atom2_event_wheel_to_process.src = event;
+                    $$.$me_atom2_event_wheel_to_process.clientX = event.clientX;
+                    $$.$me_atom2_event_wheel_to_process.clientY = event.clientY;
+                    $$.$me_atom2_event_wheel_to_process.sessionX = wheel_sessionX;
+                    $$.$me_atom2_event_wheel_to_process.sessionY = wheel_sessionY;
+                }
+                $$.$me_atom2_event_wheel_to_process.phaseX = wheel_phaseX;
+                $$.$me_atom2_event_wheel_to_process.phaseY = wheel_phaseY;
+                $$.$me_atom2_event_wheel_to_process.deltaX = event.deltaX +
+                    (Math.sign($$.$me_atom2_event_wheel_to_process.deltaX) * Math.sign(event.deltaX) < 0 ?
+                        0 :
+                        $$.$me_atom2_event_wheel_to_process.deltaX);
+                $$.$me_atom2_event_wheel_to_process.deltaY = event.deltaY +
+                    (Math.sign($$.$me_atom2_event_wheel_to_process.deltaY) * Math.sign(event.deltaY) < 0 ?
+                        0 :
+                        $$.$me_atom2_event_wheel_to_process.deltaY);
+            }
+            $$.$me_atom2_async();
+            event.preventDefault();
+        }
+        function wheel_helper(med, new_med, wheel_phase, wheel_session, wheel_session_inc, lastCandidates) {
+            if (med != null) {
                 const tm = performance.now();
-                if (Math.abs(new_medY) > Math.abs(medY)) {
+                if (Math.abs(new_med) > Math.abs(med)) {
                     lastCandidates.push({ tm, phase: $$.$me_atom2_wheel_phase_enum.accel });
                 }
-                else if (Math.abs(new_medY) < Math.abs(medY)) {
+                else if (Math.abs(new_med) < Math.abs(med)) {
                     lastCandidates.push({ tm, phase: $$.$me_atom2_wheel_phase_enum.decel });
                 }
                 lastCandidates = lastCandidates.filter(item => item.tm > tm - candidatesLongMax);
@@ -4649,42 +4707,17 @@ var $;
                         wheel_phase == $$.$me_atom2_wheel_phase_enum.decel ||
                         phaseNew == $$.$me_atom2_wheel_phase_enum.unknown &&
                             wheel_phase != $$.$me_atom2_wheel_phase_enum.unknown) {
-                        wheel_session = $me_atom2_wheel_session_inc();
+                        wheel_session = wheel_session_inc();
                     }
                     wheel_phase = phaseNew;
                 }
             }
-            if (!$$.$me_atom2_event_wheel_to_process) {
-                $$.$me_atom2_event_wheel_to_process = {
-                    src: event,
-                    deltaX: event.deltaX,
-                    deltaY: event.deltaY,
-                    clientX: event.clientX,
-                    clientY: event.clientY,
-                    session: wheel_session,
-                    phase: wheel_phase,
-                };
-            }
-            else {
-                if ($$.$me_atom2_event_wheel_to_process.session != wheel_session) {
-                    $$.$me_atom2_event_wheel_to_process.src = event;
-                    $$.$me_atom2_event_wheel_to_process.clientX = event.clientX;
-                    $$.$me_atom2_event_wheel_to_process.clientY = event.clientY;
-                    $$.$me_atom2_event_wheel_to_process.session = wheel_session;
-                }
-                $$.$me_atom2_event_wheel_to_process.phase = wheel_phase;
-                $$.$me_atom2_event_wheel_to_process.deltaX = event.deltaX +
-                    (Math.sign($$.$me_atom2_event_wheel_to_process.deltaX) * Math.sign(event.deltaX) < 0 ?
-                        0 :
-                        $$.$me_atom2_event_wheel_to_process.deltaX);
-                $$.$me_atom2_event_wheel_to_process.deltaY = event.deltaY +
-                    (Math.sign($$.$me_atom2_event_wheel_to_process.deltaY) * Math.sign(event.deltaY) < 0 ?
-                        0 :
-                        $$.$me_atom2_event_wheel_to_process.deltaY);
-            }
-            $$.$me_atom2_async();
-            event.preventDefault();
-        };
+            return {
+                wheel_phase,
+                wheel_session,
+                lastCandidates,
+            };
+        }
         const keydown = (event) => $$.$me_atom2_event_keyboard_process('keydown', event);
         const keyup = (event) => $$.$me_atom2_event_keyboard_process('keyup', event);
         function _settingsInit() {
@@ -5370,7 +5403,9 @@ var $;
         (function ($me_list2_state_enum) {
             $me_list2_state_enum[$me_list2_state_enum["free"] = 0] = "free";
             $me_list2_state_enum[$me_list2_state_enum["bounceTop"] = 1] = "bounceTop";
-            $me_list2_state_enum[$me_list2_state_enum["bounceBottom"] = 2] = "bounceBottom";
+            $me_list2_state_enum[$me_list2_state_enum["bounceBottom"] = -1] = "bounceBottom";
+            $me_list2_state_enum[$me_list2_state_enum["bounceLeft"] = 1] = "bounceLeft";
+            $me_list2_state_enum[$me_list2_state_enum["bounceRight"] = -1] = "bounceRight";
         })($me_list2_state_enum = $$.$me_list2_state_enum || ($$.$me_list2_state_enum = {}));
         $$.$me_list2 = {
             prop: {
@@ -5378,7 +5413,7 @@ var $;
                 lastRowMarginBottom: () => 0,
                 rowMarginLeft: () => 0,
                 rowMarginRight: () => 0,
-                pos: () => ({ i: 0, ofsVer: 0 }),
+                pos: () => ({ i: 0, ofsVer: 0, ofsHor: 0 }),
                 isReadyData: () => false,
                 visible_rows: $$.$me_atom2_prop([], () => []),
                 needRender: () => true,
@@ -5387,7 +5422,7 @@ var $;
                 border: () => '1px solid red',
             },
             dispatch(dispatch_name, dispatch_arg) {
-                if (dispatch_name == 'adjust') {
+                if (dispatch_name == 'adjustY') {
                     $$.a.dispatch('^canvas', dispatch_name, dispatch_arg);
                     return true;
                 }
@@ -5397,42 +5432,46 @@ var $;
                 canvas: () => ({
                     dispatch(dispatch_name, dispatch_arg) {
                         if (dispatch_name == 'wheel') {
-                            const { deltaY, deltaX, clientX, clientY, phase, session } = dispatch_arg.event;
+                            const { clientX, clientY } = dispatch_arg.event;
                             const clientRect = $$.a('.#clientRect');
                             if ($$.$me_point_in_rect(clientX, clientY, clientRect)) {
-                                if ($$.a('.state') == $me_list2_state_enum.free)
-                                    $$.a.update('.pos_delta', val => ({
-                                        source: $me_list_pos_delta_source_enum.wheel,
-                                        phase,
-                                        session,
-                                        deltaY: deltaY + (val.source != $me_list_pos_delta_source_enum.wheel ||
-                                            Math.sign(deltaY) * Math.sign(val.deltaY) > 0 ?
-                                            0 :
-                                            val.deltaY),
-                                        deltaX: deltaX + (val.source != $me_list_pos_delta_source_enum.wheel ||
-                                            Math.sign(deltaX) * Math.sign(val.deltaX) > 0 ?
-                                            0 :
-                                            val.deltaX),
-                                    }));
+                                $$.a.update('.pos_delta', val => {
+                                    const val_new = Object.assign({}, val);
+                                    let changed = false;
+                                    for (const axis of ['X', 'Y']) {
+                                        if ($$.a('.state' + axis) == $me_list2_state_enum.free) {
+                                            val_new['source' + axis] = $me_list_pos_delta_source_enum.wheel;
+                                            val_new['delta' + axis] = dispatch_arg.event['delta' + axis] + (val['source' + axis] != $me_list_pos_delta_source_enum.wheel ||
+                                                Math.sign(dispatch_arg.event['delta' + axis]) * Math.sign(val['delta' + axis]) > 0 ?
+                                                0 :
+                                                val['delta' + axis]);
+                                            val_new['phase' + axis] = dispatch_arg.event['phase' + axis];
+                                            val_new['session' + axis] = dispatch_arg.event['session' + axis];
+                                            changed = true;
+                                        }
+                                    }
+                                    const result = changed ? val_new : val;
+                                    return result;
+                                });
                                 dispatch_arg.ret = true;
                             }
                             return true;
                         }
-                        else if (dispatch_name == 'adjust') {
+                        else if (dispatch_name == 'adjustY') {
                             const { delta, source } = dispatch_arg;
                             let { duration } = dispatch_arg;
                             let delta_rem = delta;
-                            const atom_adjustDurationRemained = $$.a.get('._adjustDurationRemained');
+                            const atom_adjustDurationRemained = $$.a.get('._adjustYDurationRemained');
                             if (duration === void 0)
                                 atom_adjustDurationRemained.value($$.a('.adjustDuration'));
                             if (duration == null)
-                                duration = $$.a('._adjustDurationRemained');
+                                duration = $$.a('._adjustYDurationRemained');
                             const start = performance.now();
                             let gamma_sum = 0;
                             const path = $$.a.get('').path;
                             const atom_pos_delta = $$.a.get('.pos_delta');
-                            const atom_state = $$.a.get('.state');
-                            const atom_adustIntervalTimer = $$.a.get('._adjustIntervalTimer');
+                            const atom_state = $$.a.get('.stateY');
+                            const atom_adustIntervalTimer = $$.a.get('._adjustYIntervalTimer');
                             window.clearInterval(atom_adustIntervalTimer.value());
                             atom_adustIntervalTimer.value(window.setInterval(() => {
                                 if (!delta_rem) {
@@ -5449,12 +5488,51 @@ var $;
                                 gamma_sum += gamma;
                                 delta_rem = delta_rem_new;
                                 const pos_delta = atom_pos_delta.value();
-                                const pos_delta_new = {
-                                    source,
-                                    deltaY: gamma,
-                                    deltaX: 0,
-                                };
+                                const pos_delta_new = Object.assign({}, pos_delta);
+                                pos_delta_new.sourceY = source;
+                                pos_delta_new.deltaY = gamma +
+                                    (pos_delta.sourceY != source ? 0 : pos_delta.deltaY);
                                 if (pos_delta_new.deltaY)
+                                    atom_pos_delta.value(pos_delta_new);
+                            }, $$.a('.adjustInterval')));
+                            return true;
+                        }
+                        else if (dispatch_name == 'adjustX') {
+                            const { delta, source } = dispatch_arg;
+                            let { duration } = dispatch_arg;
+                            let delta_rem = delta;
+                            const atom_adjustDurationRemained = $$.a.get('._adjustXDurationRemained');
+                            if (duration === void 0)
+                                atom_adjustDurationRemained.value($$.a('.adjustDuration'));
+                            if (duration == null)
+                                duration = $$.a('._adjustXDurationRemained');
+                            const start = performance.now();
+                            let gamma_sum = 0;
+                            const path = $$.a.get('').path;
+                            const atom_pos_delta = $$.a.get('.pos_delta');
+                            const atom_state = $$.a.get('.stateX');
+                            const atom_adustIntervalTimer = $$.a.get('._adjustXIntervalTimer');
+                            window.clearInterval(atom_adustIntervalTimer.value());
+                            atom_adustIntervalTimer.value(window.setInterval(() => {
+                                if (!delta_rem) {
+                                    clearInterval(atom_adustIntervalTimer.value());
+                                    atom_state.value($me_list2_state_enum.free);
+                                    return;
+                                }
+                                const duration_spent = Math.min(duration, performance.now() - start);
+                                const progress = $$.$me_easing.easeOutQuad(duration_spent / duration);
+                                atom_adjustDurationRemained.value(duration - duration_spent);
+                                const delta_rem_new = Math.sign(delta) *
+                                    Math.min(Math.abs(delta_rem) - 1, Math.floor(Math.abs(delta) * (1 - progress)));
+                                const gamma = delta_rem - delta_rem_new;
+                                gamma_sum += gamma;
+                                delta_rem = delta_rem_new;
+                                const pos_delta = atom_pos_delta.value();
+                                const pos_delta_new = Object.assign({}, pos_delta);
+                                pos_delta_new.sourceX = source;
+                                pos_delta_new.deltaX = gamma +
+                                    (pos_delta.sourceX != source ? 0 : pos_delta.deltaX);
+                                if (pos_delta_new.deltaX)
                                     atom_pos_delta.value(pos_delta_new);
                             }, $$.a('.adjustInterval')));
                             return true;
@@ -5480,9 +5558,8 @@ var $;
                     },
                     prop_non_render: {
                         pos_delta: $$.$me_atom2_prop([], () => ({ deltaY: 0, deltaX: 0 }), ({ val }) => {
-                            if (val &&
-                                (val.source != $me_list_pos_delta_source_enum.none) &&
-                                (val.deltaY || val.deltaX))
+                            if (val && ((val.sourceX != $me_list_pos_delta_source_enum.none) && val.deltaX ||
+                                (val.sourceY != $me_list_pos_delta_source_enum.none) && val.deltaY))
                                 $$.a('.needRender', true);
                         }),
                         isReadyData: $$.$me_atom2_prop(['<.isReadyData'], null, ({ val }) => {
@@ -5493,6 +5570,22 @@ var $;
                         isEnd: () => false,
                         isBegin: () => false,
                         visible_rows: $$.$me_atom2_prop_bind('<.visible_rows'),
+                        _visibleTop: $$.$me_atom2_prop(['.visible_rows'], ({ masters: [visible_rows] }) => !(visible_rows && visible_rows.length) ?
+                            null :
+                            visible_rows[0].top),
+                        _visibleBottom: $$.$me_atom2_prop(['.visible_rows'], ({ masters: [visible_rows] }) => !(visible_rows && visible_rows.length) ?
+                            null :
+                            visible_rows[visible_rows.length - 1].bottom),
+                        _visibleLeft: $$.$me_atom2_prop(['.visible_rows'], ({ masters: [visible_rows] }) => !visible_rows ?
+                            null :
+                            visible_rows.reduce((result, item) => result != null && result <= item.left ?
+                                result :
+                                item.left, null)),
+                        _visibleRight: $$.$me_atom2_prop(['.visible_rows'], ({ masters: [visible_rows] }) => !visible_rows ?
+                            null :
+                            visible_rows.reduce((result, item) => result != null && result >= item.right ?
+                                result :
+                                item.right, null)),
                         lastImg: () => null,
                         last: $$.$me_atom2_prop(['.#width', '.#height', '/.#pixelRatio'], ({ masters: [width, height, pixelRatio] }) => {
                             const result = document.createElement('canvas');
@@ -5501,61 +5594,113 @@ var $;
                             return result;
                         }),
                         bounceTimeout: () => 200,
-                        _bounceTimer: () => null,
-                        state: () => $me_list2_state_enum.free,
-                        lastWheel: () => null,
-                        wheelSessionToSkip: () => null,
-                        _adjustIntervalTimer: () => null,
+                        _bounceYTimer: () => null,
+                        _bounceXTimer: () => null,
+                        stateY: () => $me_list2_state_enum.free,
+                        stateX: () => $me_list2_state_enum.free,
+                        lastWheelY: () => null,
+                        lastWheelX: () => null,
+                        wheelSessionXToSkip: () => null,
+                        wheelSessionYToSkip: () => null,
+                        _adjustXIntervalTimer: () => null,
+                        _adjustYIntervalTimer: () => null,
+                        _adjustXDurationRemained: '.adjustDuration',
+                        _adjustYDurationRemained: '.adjustDuration',
                         adjustInterval: () => 25,
                         adjustDuration: () => 200,
-                        _adjustDurationRemained: '.adjustDuration',
                     },
                     render: p => {
                         const start = performance.now();
                         const { ctx, pixelRatio, ctxHeight, ctxWidth } = p;
                         const pos_delta = $$.a('.pos_delta');
                         $$.a('.pos_delta', {
-                            source: $me_list_pos_delta_source_enum.none,
+                            sourceY: $me_list_pos_delta_source_enum.none,
+                            sourceX: $me_list_pos_delta_source_enum.none,
                             deltaY: 0,
                             deltaX: 0,
                         });
                         const firstRowMarginTop = $$.a('<.firstRowMarginTop');
                         const lastRowMarginBottom = $$.a('<.lastRowMarginBottom');
-                        let skip = false;
-                        let isWheelDecelBecame = false;
-                        if (pos_delta.source == $me_list_pos_delta_source_enum.wheel) {
-                            $$.a.update('.lastWheel', val => {
-                                isWheelDecelBecame =
-                                    pos_delta.phase == $$.$me_atom2_wheel_phase_enum.decel &&
-                                        val.phase == $$.$me_atom2_wheel_phase_enum.accel;
-                                return {
-                                    session: pos_delta.session,
-                                    phase: pos_delta.phase,
-                                };
-                            });
-                            const wheelSessionToSkip = $$.a('.wheelSessionToSkip');
-                            skip =
-                                $$.a('.state') != $me_list2_state_enum.free ||
-                                    (wheelSessionToSkip != null) && (pos_delta.session == wheelSessionToSkip);
-                            if (!skip) {
-                                const heightNet = ctxHeight / pixelRatio - firstRowMarginTop - lastRowMarginBottom;
-                                const r = pos_delta.deltaY + firstRowMarginTop;
-                                const x_fn = $$.a('.isBegin') && pos_delta.deltaY < 0 ?
-                                    visible_rows => visible_rows[0].top - r :
-                                    $$.a('.isEnd') && pos_delta.deltaY > 0 ?
-                                        visible_rows => heightNet - visible_rows[visible_rows.length - 1].bottom + r :
-                                        null;
-                                if (x_fn) {
-                                    const heightBounce = .1 * heightNet;
-                                    const x = x_fn($$.a('.visible_rows')) / heightBounce;
-                                    const factor = $$.a('/.#isTouch') ? 10 : 20;
-                                    const y = 1 / (10 * x + 1);
-                                    console.log(pos_delta.deltaY, x_fn($$.a('.visible_rows')), { factor, x, y }, pos_delta.deltaY * y);
-                                    pos_delta.deltaY *= y;
+                        const rowMarginLeft = $$.a('<.rowMarginLeft');
+                        const rowMarginRight = $$.a('<.rowMarginRight');
+                        const skip = {
+                            X: false,
+                            Y: false,
+                        };
+                        const isWheelDecelBecame = {
+                            X: false,
+                            Y: false,
+                        };
+                        for (const axis of ['X', 'Y'])
+                            if (pos_delta['source' + axis] == $me_list_pos_delta_source_enum.wheel) {
+                                $$.a.update('.lastWheel' + axis, val => {
+                                    isWheelDecelBecame[axis] =
+                                        val &&
+                                            val.session == pos_delta['session' + axis] &&
+                                            val.phase == $$.$me_atom2_wheel_phase_enum.accel &&
+                                            pos_delta['phase' + axis] == $$.$me_atom2_wheel_phase_enum.decel;
+                                    return {
+                                        session: pos_delta['session' + axis],
+                                        phase: pos_delta['phase' + axis],
+                                    };
+                                });
+                            }
+                        for (const axis of ['X', 'Y'])
+                            if (pos_delta['source' + axis] == $me_list_pos_delta_source_enum.wheel) {
+                                const wheelSessionToSkip = $$.a(`.wheelSession${axis}ToSkip`);
+                                skip[axis] =
+                                    $$.a('.state' + axis) != $me_list2_state_enum.free ||
+                                        (wheelSessionToSkip != null) && (pos_delta['session' + axis] == wheelSessionToSkip);
+                                if (axis == 'X')
+                                    console.warn({ wheelSessionToSkip }, pos_delta['session' + axis], skip.Y);
+                                if (skip[axis])
+                                    continue;
+                                if (axis == 'Y') {
+                                    const heightNet = ctxHeight / pixelRatio - firstRowMarginTop - lastRowMarginBottom;
+                                    const r = pos_delta.deltaY + firstRowMarginTop;
+                                    const x = $$.a('.isBegin') && pos_delta.deltaY < 0 ?
+                                        $$.a('._visibleTop') - r :
+                                        $$.a('.isEnd') && pos_delta.deltaY > 0 ?
+                                            heightNet - $$.a('._visibleBottom') + r :
+                                            null;
+                                    if (x) {
+                                        const heightBounce = .1 * heightNet;
+                                        const factor = $$.a('/.#isTouch') ? 10 : 20;
+                                        const y = 1 / (1 + 10 * x / heightBounce);
+                                        pos_delta.deltaY *= y;
+                                    }
+                                }
+                                else {
+                                    const widthNet = ctxWidth / pixelRatio - rowMarginLeft - rowMarginRight;
+                                    const r = pos_delta.deltaX + rowMarginLeft;
+                                    const x = $$.a('._visibleLeft') >= rowMarginLeft && pos_delta.deltaX < 0 ?
+                                        $$.a('._visibleLeft') - r :
+                                        $$.a('._visibleRight') <= ctxWidth / pixelRatio - rowMarginRight && pos_delta.deltaX > 0 ?
+                                            widthNet - $$.a('._visibleRight') + r :
+                                            null;
+                                    if (x) {
+                                        const widthBounce = .1 * widthNet;
+                                        const factor = $$.a('/.#isTouch') ? 10 : 20;
+                                        const y = 1 / (1 + 10 * x / widthBounce);
+                                        pos_delta.deltaX *= y;
+                                    }
                                 }
                             }
-                        }
-                        if (!$$.a('.needRender') || skip) {
+                        const state = {
+                            X: $$.a('.stateX'),
+                            Y: $$.a('.stateY'),
+                        };
+                        skip.X = skip.X ||
+                            pos_delta.sourceX == $me_list_pos_delta_source_enum.wheel &&
+                                state.X == $me_list2_state_enum.free && ($$.a('._visibleLeft') == 0 && $$.a('._visibleRight') <= ctxWidth / pixelRatio);
+                        skip.Y = skip.Y ||
+                            pos_delta.sourceY == $me_list_pos_delta_source_enum.wheel &&
+                                state.Y == $me_list2_state_enum.free &&
+                                $$.a('.isBegin') && $$.a('.isEnd');
+                        for (const axis of ['X', 'Y'])
+                            if (skip[axis])
+                                pos_delta['delta' + axis] = 0;
+                        if (!$$.a('.needRender') || skip.X && skip.Y) {
                             const start = performance.now();
                             const last = $$.a('.last');
                             ctx.drawImage(last, 0, 0, last.width, last.height);
@@ -5584,6 +5729,7 @@ var $;
                                 ctxHeight,
                                 ctxWidth,
                                 ctxLeft,
+                                ctxRight: ctxWidth,
                                 ctxRowMarginLeft,
                                 ctxRowMarginRight,
                                 ctxFirstRowMarginTop,
@@ -5635,29 +5781,65 @@ var $;
                             ctxLast.clearRect(0, 0, ctxWidth, ctxHeight);
                             ctxLast.drawImage($$.a.get('<').node, 0, 0, ctxWidth, ctxHeight);
                             if (isBegin) {
-                                const lim = ctxFirstRowMarginTop / pixelRatio;
-                                const delta_fn = (visible_rows, lim) => Math.round(visible_rows[0].top - lim);
-                                const sign = 1;
+                                const lim = firstRowMarginTop;
+                                const atom_visibleTop = $$.a.get('._visibleTop');
+                                const delta_fn = (visible_rows, lim) => Math.round(atom_visibleTop.value() - lim);
                                 const bounceState = $me_list2_state_enum.bounceTop;
-                                const atom_state = $$.a.get('.state');
+                                const atom_state = $$.a.get('.stateY');
+                                const stateY = atom_state.value();
+                                if (stateY == $me_list2_state_enum.free) {
+                                    bounceY(lim, delta_fn, bounceState, isWheelDecelBecame.Y, pos_delta, 'Begin');
+                                }
+                                else if (stateY != $me_list2_state_enum.bounceTop) {
+                                    const delta = delta_fn(visible_rows, lim);
+                                    if (delta > 0) {
+                                        const path = $$.a.get('').path;
+                                        bounceY_helper(delta, $me_list2_state_enum.bounceTop, atom_state, path);
+                                    }
+                                }
+                            }
+                            else if (isEnd) {
+                                const lim = ctxHeight / pixelRatio - lastRowMarginBottom;
+                                const atom_visibleBottom = $$.a.get('._visibleBottom');
+                                const delta_fn = (visible_rows, lim) => Math.round(atom_visibleBottom.value() - lim);
+                                const bounceState = $me_list2_state_enum.bounceBottom;
+                                bounceY(lim, delta_fn, bounceState, isWheelDecelBecame.Y, pos_delta, 'End');
+                            }
+                            if ($$.a('._visibleLeft') > rowMarginLeft) {
+                                const lim = rowMarginLeft;
+                                const atom_visibleLeft = $$.a.get('._visibleLeft');
+                                const delta_fn = (visible_rows, lim) => Math.max(0, Math.round(atom_visibleLeft.value() - lim));
+                                const bounceState = $me_list2_state_enum.bounceLeft;
+                                const atom_state = $$.a.get('.stateX');
                                 const state = atom_state.value();
                                 if (state == $me_list2_state_enum.free) {
-                                    bounce(lim, delta_fn, sign, bounceState, isWheelDecelBecame, pos_delta, 'Begin');
+                                    bounceX(lim, delta_fn, bounceState, isWheelDecelBecame.X, pos_delta);
                                 }
                                 else if (state != $me_list2_state_enum.bounceTop) {
                                     const delta = delta_fn(visible_rows, lim);
                                     if (delta > 0) {
                                         const path = $$.a.get('').path;
-                                        bounce_helper(delta, $me_list2_state_enum.bounceTop, atom_state, path);
+                                        bounceX_helper(delta, $me_list2_state_enum.bounceTop, atom_state, path);
                                     }
                                 }
                             }
-                            else if (isEnd) {
-                                const lim = (ctxHeight - ctxLastRowMarginBottom) / pixelRatio;
-                                const delta_fn = (visible_rows, lim) => Math.round(visible_rows[visible_rows.length - 1].bottom - lim);
-                                const sign = -1;
-                                const bounceState = $me_list2_state_enum.bounceBottom;
-                                bounce(lim, delta_fn, sign, bounceState, isWheelDecelBecame, pos_delta, 'End');
+                            else if ($$.a('._visibleRight') < ctxWidth / pixelRatio - rowMarginRight) {
+                                const lim = ctxWidth / pixelRatio - rowMarginRight;
+                                const atom_visibleRight = $$.a.get('._visibleRight');
+                                const delta_fn = (visible_rows, lim) => Math.min(0, Math.round(atom_visibleRight.value() - lim));
+                                const bounceState = $me_list2_state_enum.bounceRight;
+                                const atom_state = $$.a.get('.stateX');
+                                const state = atom_state.value();
+                                if (state == $me_list2_state_enum.free) {
+                                    bounceX(lim, delta_fn, bounceState, isWheelDecelBecame.X, pos_delta);
+                                }
+                                else if (state != $me_list2_state_enum.bounceTop) {
+                                    const delta = delta_fn(visible_rows, lim);
+                                    if (delta > 0) {
+                                        const path = $$.a.get('').path;
+                                        bounceX_helper(delta, $me_list2_state_enum.bounceTop, atom_state, path);
+                                    }
+                                }
                             }
                         }
                         $$.a('.needRender', false);
@@ -5665,31 +5847,29 @@ var $;
                 }),
             },
         };
-        function bounce(lim, delta_fn, sign, bounceState, isWheelDecelBecame, pos_delta, edgeName) {
+        function bounceX(lim, delta_fn, bounceState, isWheelDecelBecame, pos_delta) {
             const atom_visible_rows = $$.a.get('.visible_rows');
             const delta = delta_fn(atom_visible_rows.value(), lim);
-            if (delta * sign > 0) {
-                const atom_state = $$.a.get('.state');
-                const state = atom_state.value();
-                if (state == $me_list2_state_enum.free) {
-                    const atom_isSide = $$.a.get('.is' + edgeName);
-                    const atom_state = $$.a.get('.state');
+            if (delta * bounceState > 0) {
+                const atom_state = $$.a.get('.stateX');
+                const stateX = atom_state.value();
+                if (stateX == $me_list2_state_enum.free) {
+                    const atom_state = $$.a.get('.stateX');
                     const path = $$.a.get('').path;
                     const bounce_fn = () => {
                         let delta;
-                        if (atom_isSide.value() &&
-                            atom_state.value() == $me_list2_state_enum.free &&
-                            (delta = delta_fn(atom_visible_rows.value(), lim)) * sign > 0 &&
+                        if (atom_state.value() == $me_list2_state_enum.free &&
+                            (delta = delta_fn(atom_visible_rows.value(), lim)) * bounceState > 0 &&
                             true)
-                            bounce_helper(delta, bounceState, atom_state, path);
+                            bounceX_helper(delta, bounceState, atom_state, path);
                     };
                     if (isWheelDecelBecame) {
-                        $$.a('.wheelSessionToSkip', pos_delta.session);
-                        clearTimeout($$.a('._bounceTimer'));
-                        bounce_helper(delta, bounceState, atom_state, path);
+                        $$.a('.wheelSessionXToSkip', pos_delta.sessionX);
+                        clearTimeout($$.a('._bounceXTimer'));
+                        bounceX_helper(delta, bounceState, atom_state, path);
                     }
                     else {
-                        $$.a.update('._bounceTimer', timer => {
+                        $$.a.update('._bounceXTimer', timer => {
                             if (timer)
                                 clearTimeout(timer);
                             return setTimeout(bounce_fn, $$.a('.bounceTimeout'));
@@ -5698,15 +5878,55 @@ var $;
                 }
             }
         }
-        function bounce_helper(delta, state, atom_state, path, duration) {
-            atom_state.value(state);
+        function bounceX_helper(delta, stateX, atom_state, path, duration) {
+            atom_state.value(stateX);
             const dispatch_arg = { delta, source: $me_list_pos_delta_source_enum.bounce };
             if (duration !== void 0)
                 dispatch_arg.duration = duration;
-            $$.a.dispatch(path, 'adjust', dispatch_arg);
+            $$.a.dispatch(path, 'adjustX', dispatch_arg);
+        }
+        function bounceY(lim, delta_fn, bounceState, isWheelYDecelBecame, pos_delta, edgeName) {
+            const atom_visible_rows = $$.a.get('.visible_rows');
+            const delta = delta_fn(atom_visible_rows.value(), lim);
+            if (delta * bounceState > 0) {
+                const atom_state = $$.a.get('.stateY');
+                const stateY = atom_state.value();
+                if (stateY == $me_list2_state_enum.free) {
+                    const atom_isEdge = $$.a.get('.is' + edgeName);
+                    const atom_state = $$.a.get('.stateY');
+                    const path = $$.a.get('').path;
+                    const bounce_fn = () => {
+                        let delta;
+                        if (atom_isEdge.value() &&
+                            atom_state.value() == $me_list2_state_enum.free &&
+                            (delta = delta_fn(atom_visible_rows.value(), lim)) * bounceState > 0 &&
+                            true)
+                            bounceY_helper(delta, bounceState, atom_state, path);
+                    };
+                    if (isWheelYDecelBecame) {
+                        $$.a('.wheelSessionYToSkip', pos_delta.sessionY);
+                        clearTimeout($$.a('._bounceYTimer'));
+                        bounceY_helper(delta, bounceState, atom_state, path);
+                    }
+                    else {
+                        $$.a.update('._bounceYTimer', timer => {
+                            if (timer)
+                                clearTimeout(timer);
+                            return setTimeout(bounce_fn, $$.a('.bounceTimeout'));
+                        });
+                    }
+                }
+            }
+        }
+        function bounceY_helper(delta, stateY, atom_state, path, duration) {
+            atom_state.value(stateY);
+            const dispatch_arg = { delta, source: $me_list_pos_delta_source_enum.bounce };
+            if (duration !== void 0)
+                dispatch_arg.duration = duration;
+            $$.a.dispatch(path, 'adjustY', dispatch_arg);
         }
         function render_helper(p) {
-            const { pixelRatio, need_reverse, after_reverse_fn, after_fn, dispatch, ctxHeight, ctxLastRowMarginBottom, ctxFirstRowMarginTop, } = p;
+            const { pixelRatio, need_reverse, after_reverse_fn, dispatch, ctxHeight, ctxLastRowMarginBottom, ctxFirstRowMarginTop, } = p;
             let { ctxTop_from, i_from } = p;
             const visible_rows = [];
             let ctxBottom;
@@ -5716,17 +5936,19 @@ var $;
             if (need_reverse) {
                 i = i_from;
                 while (true) {
-                    const ret = dispatch(i - 1, null, ctxTop).ctxTop;
-                    if (ret == null) {
+                    const ret = dispatch(i - 1, null, ctxTop);
+                    if (ret.ctxTop == null) {
                         isFirstItem = true;
                         break;
                     }
                     i--;
-                    ctxTop = ret;
+                    ctxTop = ret.ctxTop;
                     visible_rows.unshift({
                         i,
                         top: ctxTop / pixelRatio,
                         bottom: ctxBottom / pixelRatio,
+                        left: ret.ctxLeft / pixelRatio,
+                        right: ret.ctxRight / pixelRatio,
                     });
                     if (ctxTop <= 0)
                         break;
@@ -5744,19 +5966,19 @@ var $;
                 ctxTop = ctxTop_from;
                 i = i_from;
                 while (true) {
-                    const ret = dispatch(i, ctxTop, ctxBottom).ctxBottom;
-                    if (ret == null) {
+                    const ret = dispatch(i, ctxTop, ctxBottom);
+                    if (ret.ctxBottom == null) {
                         isLastItem = true;
                         break;
                     }
-                    ctxBottom = ret;
+                    ctxBottom = ret.ctxBottom;
                     visible_rows.push({
                         i,
                         top: ctxTop / pixelRatio,
                         bottom: ctxBottom / pixelRatio,
+                        left: ret.ctxLeft / pixelRatio,
+                        right: ret.ctxRight / pixelRatio,
                     });
-                    if (after_fn)
-                        after_fn(i, ctxTop, ctxBottom);
                     if (ctxBottom > ctxHeight)
                         break;
                     ctxTop = ctxBottom;
@@ -6458,7 +6680,7 @@ var $;
         $$.$me_list2_demo_metro = {
             base: $$.$me_list2,
             prop: {
-                '#width': $$.$me_atom2_prop_either(['.isTouch'], () => 600, () => 300),
+                '#width': $$.$me_atom2_prop_either(['.isTouch'], () => 400, () => 300),
                 '#alignHor': () => $$.$me_align.center,
                 data: $$.$me_atom2_prop(['/.scheme_metro'], ({ masters: [scheme_metro] }) => {
                     let result = {};
@@ -6495,6 +6717,7 @@ var $;
                 fontWeight: () => 400,
                 colorText: () => '#313745',
                 paddingLeft: () => 8,
+                paddingRight: () => 8,
                 opened: $$.$me_atom2_prop_store({
                     default: () => new Map(),
                     valid: (val) => val instanceof Map ? val : null,
@@ -6580,7 +6803,7 @@ var $;
                             if (row.bottom > bottomLim) {
                                 $$.a('^canvas.isEnd', false);
                                 const delta = Math.round(row.bottom - bottomLim);
-                                $$.a.dispatch('', 'adjust', { delta, source: $$.$me_list_pos_delta_source_enum.manual });
+                                $$.a.dispatch('', 'adjustY', { delta, source: $$.$me_list_pos_delta_source_enum.manual });
                             }
                         }
                     }
@@ -6629,9 +6852,10 @@ var $;
                         }
                     }
                     const ctxPaddingLeft = $$.a('.paddingLeft') * pixelRatio;
+                    const ctxPaddingRight = $$.a('.paddingRight') * pixelRatio;
                     const ctxContentOfsHor = ctxPaddingLeft + ctxWidthLineNo + ctxIndent * idx.length;
                     ctx.fillText(text, ctxLeft + ctxContentOfsHor, ctxTop + (ctxRowHeight + ctxFontSize) / 2);
-                    if (ctxLeft < 0) {
+                    if (ctxLeft < ctxRowMarginLeft) {
                         const ctxGradientWidth = ctxPaddingLeft + ctxWidthLineNo + ctxIndent;
                         const gradient = ctx.createLinearGradient(ctxGradientWidth, 0, 0, 0);
                         const rgb = '255,255,255';
@@ -6641,7 +6865,9 @@ var $;
                         ctx.fillStyle = gradient;
                         ctx.fillRect(0, ctxTop, ctxGradientWidth, ctxRowHeight);
                     }
-                    if (ctx.measureText(text).width + ctxLeft + ctxContentOfsHor > ctxWidth - ctxRowMarginRight) {
+                    const ctxRight = Math.ceil(ctx.measureText(text).width + ctxLeft + ctxContentOfsHor + ctxPaddingRight);
+                    dispatch_arg.ctxRight = ctxRight;
+                    if (ctxRight > ctxWidth) {
                         const ctxGradientWidth = ctxRowMarginRight + ctxIndent;
                         const gradient = ctx.createLinearGradient(ctxWidth - ctxGradientWidth, 0, ctxWidth, 0);
                         const rgb = '255,255,255';
