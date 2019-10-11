@@ -9995,8 +9995,8 @@ var $;
                             right += col.width;
                             continue;
                         }
-                        if (data_cache.has(i) && col.fld && col.fn) {
-                            const data = data_cache.get(i);
+                        const data = data_cache.get(i);
+                        if (data && col.fld && col.fn) {
                             const flds = col.fld.map(fld => data[fld]);
                             const text = col.fn(...flds);
                             const ret = $$.$me_label_text_n_ctxLeft({
@@ -10110,36 +10110,59 @@ var $;
                             i_max = i;
                         if (!data_cache.has(i)) {
                             i_to_be_requested.push(i);
+                            data_cache.set(i, null);
                         }
                     }
                     $$.a('.i_min', i_min);
                     $$.a('.i_max', i_max);
+                    const flds = new Set();
+                    for (const col_id of cols) {
+                        const col = colDefs[col_id];
+                        if (col.fld)
+                            for (const fld of col.fld)
+                                flds.add(fld);
+                    }
                     if (i_to_be_requested.length) {
-                        const flds = new Set();
-                        for (const col_id of cols) {
-                            const col = colDefs[col_id];
-                            if (col.fld)
-                                for (const fld of col.fld)
-                                    flds.add(fld);
-                        }
-                        {
-                            const by_idx = {};
-                            for (const i of i_to_be_requested) {
+                        const by_idx = {};
+                        for (const i of i_to_be_requested)
+                            by_idx[i] = flds;
+                        $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
+                        console.log({ requestedFromWorker: Object.keys(by_idx).length });
+                    }
+                    {
+                        let by_idx = {};
+                        const i_min_cache = $$.a('.i_min_cache');
+                        const i_max_cache = $$.a('.i_max_cache');
+                        const page = $$.a('.data_cache_page');
+                        let qt = 0;
+                        for (let i = i_max + 1; i <= i_max_cache; i++)
+                            if (!data_cache.has(i)) {
                                 by_idx[i] = flds;
+                                data_cache.set(i, null);
+                                if (++qt >= page) {
+                                    $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
+                                    by_idx = {};
+                                    qt = 0;
+                                }
                             }
+                        for (let i = i_min_cache; i < i_min; i++)
+                            if (!data_cache.has(i)) {
+                                by_idx[i] = flds;
+                                data_cache.set(i, null);
+                                if (++qt >= page) {
+                                    $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
+                                    by_idx = {};
+                                    qt = 0;
+                                }
+                            }
+                        if (qt >=
+                            Math.min($$.a('.workerAheadRequestThreshold'), Math.max(1, $$.a('.count') - $$.a('.data_cache_margin') - i_max))) {
                             $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
+                            console.log({ requestedFromWorker: Object.keys(by_idx).length });
                         }
-                        {
-                            const by_idx = {};
-                            const i_min_cache = $$.a('.i_min_cache');
-                            const i_max_cache = $$.a('.i_max_cache');
-                            for (let i = i_min_cache; i < i_min; i++)
-                                if (!data_cache.has(i))
-                                    by_idx[i] = flds;
-                            for (let i = i_max + 1; i <= i_max_cache; i++)
-                                if (!data_cache.has(i))
-                                    by_idx[i] = flds;
-                            $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
+                        else {
+                            for (const i in by_idx)
+                                data_cache.delete(+i);
                         }
                     }
                     $$.a('.items_cache', items_new);
@@ -10147,13 +10170,17 @@ var $;
                 }
             },
             prop: {
-                data_cache_capacity: $$.$me_atom2_prop(['/.#viewportHeight', '.row_height'], ({ masters: [viewportHeight, row_height] }) => Math.ceil(3 * (viewportHeight / row_height))),
+                workerAheadRequestThreshold: '.data_cache_page',
+                data_cache_pages: $$.$me_atom2_prop_either(['.isTouch'], () => 11, () => 7),
+                data_cache_page: $$.$me_atom2_prop(['/.#viewportHeight', '.row_height'], ({ masters: [viewportHeight, row_height] }) => Math.ceil(viewportHeight / row_height)),
+                data_cache_capacity: $$.$me_atom2_prop(['.data_cache_page', '.data_cache_pages'], ({ masters: [data_cache_page, data_cache_pages] }) => data_cache_page * data_cache_pages),
+                data_cache_margin: $$.$me_atom2_prop(['.data_cache_page', '.data_cache_pages'], ({ masters: [page, pages] }) => Math.floor(page * (pages - 1) / 2)),
                 data_cache: () => new Map(),
                 canvas_cache: () => null,
                 i_min: () => null,
                 i_max: () => null,
-                i_min_cache: $$.$me_atom2_prop(['.i_min', '.data_cache_capacity'], ({ masters: [i_min, data_cache_capacity] }) => Math.max(0, Math.ceil(i_min - data_cache_capacity / 3))),
-                i_max_cache: $$.$me_atom2_prop(['.i_min_cache', '.data_cache_capacity'], ({ masters: [i_min_cache, data_cache_capacity] }) => i_min_cache + data_cache_capacity),
+                i_min_cache: $$.$me_atom2_prop(['.i_min', '.count', '.data_cache_margin', '.data_cache_capacity'], ({ masters: [i_min, count, margin, capacity] }) => Math.max(0, Math.min(i_min - margin, count - capacity))),
+                i_max_cache: $$.$me_atom2_prop(['.i_max', '.count', '.data_cache_margin', '.data_cache_capacity'], ({ masters: [i_max, count, margin, capacity] }) => Math.min(count - 1, Math.max(i_max + margin, capacity))),
                 items_cache: () => null,
                 items_new: () => null,
                 '#ofsHor': () => 16,
@@ -10190,6 +10217,7 @@ var $;
                             }
                         }
                         else if (cmd == 'recs' && event.data.tag == tag) {
+                            console.log({ recievedFromWorker: Object.keys(event.data.by_idx).length });
                             const by_idx = event.data.by_idx;
                             if (by_idx) {
                                 const data_cache = atom_data_cache.value();
@@ -10197,6 +10225,9 @@ var $;
                                 const i_max_cache = atom_i_max_cache.value();
                                 const i_min = atom_i_min.value();
                                 const i_max = atom_i_max.value();
+                                for (const [i] of data_cache)
+                                    if (i < i_min_cache || i > i_max_cache)
+                                        data_cache.delete(i);
                                 for (const idx in event.data.by_idx) {
                                     const i = +idx;
                                     if (i < i_min_cache || i > i_max_cache)
@@ -10206,6 +10237,7 @@ var $;
                                         continue;
                                     atom_needRender.value(true);
                                 }
+                                console.log({ sizeCache: data_cache.size });
                             }
                         }
                     };
