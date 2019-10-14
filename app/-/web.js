@@ -12140,6 +12140,7 @@ var $;
                 }),
                 station_and_far: () => ({
                     prop: {
+                        '#height': () => 140,
                         '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
                         '#ofsHor': () => 418,
                         '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
@@ -12242,7 +12243,6 @@ var $;
                 comment: () => ({
                     base: comment_control,
                     prop: {
-                        '#height': () => 214,
                         '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
                         '#ofsHor': '<.horOffset',
                         '#ofsVer': $$.$me_atom2_prop(['<@params.#height', '<@params.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 16),
@@ -12293,6 +12293,8 @@ var $;
                 fontSize: $$.$me_atom2_prop_abstract(),
                 text: $$.$me_atom2_prop_abstract(),
                 ofs: () => 5,
+                isMinimized: () => true,
+                '#height': $$.$me_atom2_prop(['.isMinimized'], ({ masters: [isMin] }) => isMin ? 214 : 374),
             },
             style: {
                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
@@ -12301,7 +12303,7 @@ var $;
                 text: () => ({
                     prop: {
                         '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 20),
-                        '#height': () => 140,
+                        '#height': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? 140 : 300),
                         fontSize: '<.fontSize',
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 10,
@@ -12322,17 +12324,20 @@ var $;
                         colorText: '/.colorLink',
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
                         '#alignHor': () => $$.$me_align.right,
+                        '#alignVer': () => $$.$me_align.bottom,
                         '#ofsHor': () => 10,
-                        '#ofsVer': () => 128,
+                        '#ofsVer': () => 65,
+                        caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? '&nbsp;&nbsp;Больше ▼' : '&nbsp;&nbsp;Меньше ▲'),
                     },
                     style: {
                         backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                     dom: {
-                        innerHTML: () => '&nbsp;&nbsp;Больше ▼'
+                        innerHTML: '.caption'
                     },
                     event: {
                         clickOrTap: () => {
+                            $$.a('<.isMinimized', !$$.a('<.isMinimized'));
                             return true;
                         },
                     },
@@ -12421,6 +12426,7 @@ var $;
             style: {
                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
                 lineHeight: () => 14,
+                overflow: () => 'hidden',
             },
             elem: {
                 sq: () => ({
@@ -12428,6 +12434,7 @@ var $;
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#height': () => null,
+                        '#width': () => null,
                     },
                     dom: {
                         innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -12445,6 +12452,7 @@ var $;
                 sq2: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@sq.#height', '<@sq.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
@@ -12456,6 +12464,7 @@ var $;
                 floor: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@sq2.#height', '<@sq2.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
@@ -12475,6 +12484,7 @@ var $;
                 build_type: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@floor.#height', '<@floor.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
@@ -12492,6 +12502,7 @@ var $;
                 sale_type: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@build_type.#height', '<@build_type.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
@@ -12506,6 +12517,7 @@ var $;
                 parking: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@sale_type.#height', '<@sale_type.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
@@ -12520,6 +12532,7 @@ var $;
                 balkony: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsHor': '<.ofs2',
@@ -12534,6 +12547,7 @@ var $;
                 water_closet: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsHor': '<.ofs2',
@@ -12549,6 +12563,7 @@ var $;
                 window_overlook: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsHor': '<.ofs2',
@@ -12564,6 +12579,7 @@ var $;
                 elevator_type: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsHor': '<.ofs2',
@@ -12579,6 +12595,7 @@ var $;
                 build_year: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsHor': '<.ofs2',
@@ -12594,6 +12611,7 @@ var $;
                 territory_type: () => ({
                     prop: {
                         '#height': () => null,
+                        '#width': () => null,
                         fontSize: '<.fontSize',
                         color: '<.color',
                         '#ofsHor': '<.ofs2',
@@ -12661,6 +12679,7 @@ var $;
             prop: {
                 fontSize: $$.$me_atom2_prop_abstract(),
                 stationNumber: $$.$me_atom2_prop_abstract(),
+                '#height': () => null,
                 station_name: $$.$me_atom2_prop(['/@app.card_value', '.stationNumber'], ({ masters: [card, num] }) => {
                     const result = (card && card['geo_cache_subway_station_name_' + num]) ? card['geo_cache_subway_station_name_' + num] : '';
                     return result;
@@ -12674,7 +12693,9 @@ var $;
                     return result;
                 }),
             },
-            style: {},
+            style: {
+                display: $$.$me_atom2_prop(['.station_name'], ({ masters: [name] }) => (!name) ? 'none' : 'block'),
+            },
             elem: {
                 station: () => ({
                     prop: {
