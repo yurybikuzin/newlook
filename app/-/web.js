@@ -12390,6 +12390,7 @@ var $;
             },
             style: {
                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                lineHeight: () => 14,
             },
             elem: {
                 sq: () => ({
@@ -17458,8 +17459,8 @@ var $;
                 personal: () => ({
                     base: $$.$nl_panel,
                     prop: {
-                        '#ofsHor': () => 560,
-                        '#ofsVer': () => 54,
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '.pm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                         '#width': () => 520,
                         '#height': () => 420,
                         inputOfs: () => 130,
@@ -17615,8 +17616,8 @@ var $;
                 profile: () => ({
                     base: $$.$nl_panel,
                     prop: {
-                        '#ofsHor': () => 1100,
-                        '#ofsVer': () => 54,
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@personal.#height', '<@personal.#ofsVer', '.pm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                         '#width': () => 520,
                         '#height': () => 420,
                         inputOfs: () => 171,
