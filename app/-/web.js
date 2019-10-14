@@ -12043,9 +12043,17 @@ var $;
                         '#ofsVer': '.em',
                         '#width': () => 390,
                         '#height': () => 295,
+                        'img': $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                            let result = '?';
+                            if (card && card.photo_list) {
+                                const photo_list = card.photo_list.split(',');
+                                result = 'https://images.baza-winner.ru/' + photo_list[0] + '_640x480';
+                            }
+                            return result;
+                        }),
                     },
                     attr: {
-                        src: () => 'https://images.baza-winner.ru//nb47b3215cba802ec8715ed14a183d304_640x480',
+                        src: '.img',
                         draggable: () => false,
                     },
                 }),

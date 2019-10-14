@@ -75,6 +75,7 @@ var $;
                                     "user_deal_status_id",
                                     "winner_relevance",
                                     "free_mode_relevance",
+                                    "photo_list",
                                     "photo_count",
                                     "video_count",
                                     "price_rub",
