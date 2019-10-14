@@ -77,7 +77,6 @@ var $;
                                     "free_mode_relevance",
                                     "photo_count",
                                     "video_count",
-                                    "geo_cache_street_name",
                                     "price_rub",
                                     'meter_price_rub',
                                     "price_usd",
@@ -85,8 +84,10 @@ var $;
                                     "price_eur",
                                     'meter_price_eur',
                                     "pub_datetime",
+                                    "first_pub_datetime",
                                     "media_id",
                                     "media_name",
+                                    "agent_name",
                                     "broker.short_name",
                                     "broker.url",
                                     "external_url",
@@ -94,7 +95,6 @@ var $;
                                     "phone_list.black_note",
                                     "creation_datetime",
                                     "deal_type_id",
-                                    "geo_cache_building_name",
                                     "storey",
                                     "storeys_count",
                                     "walls_material_type_id",
@@ -144,6 +144,17 @@ var $;
                                     'apartment_condition_type_id',
                                     'elevator_type_id',
                                     'square_explication',
+                                    'geo_cache_state_name',
+                                    'geo_cache_region_name',
+                                    "geo_cache_building_name",
+                                    'geo_cache_town_name_2',
+                                    'geo_cache_settlement_name',
+                                    'geo_cache_estate_object_name',
+                                    'geo_cache_micro_district_name',
+                                    "geo_cache_street_name",
+                                    'geo_cache_street_name_2',
+                                    'is_construction_address',
+                                    'geo_cache_housing_complex_name',
                                 ],
                                 sort: [
                                     { winner_relevance: { order: "desc" } },
@@ -295,6 +306,26 @@ var $;
                     }
                     else {
                         postMessage({ cmd, tag, status: 'warn', message: 'no .by_guid, neither .by_idx' });
+                    }
+                });
+            }
+            else if (event.data.cmd == 'card') {
+                const { cmd, tag } = event.data;
+                const request = event.data;
+                open_idb((idb) => {
+                    const response = {};
+                    const transaction = idb.transaction('adv', 'readonly');
+                    const start = Date.now();
+                    const objectStore = transaction.objectStore('adv');
+                    if (request.guid) {
+                        const objectStoreRequest = objectStore.get(request.guid);
+                        objectStoreRequest.onsuccess = function (event) {
+                            response.item = objectStoreRequest.result;
+                            postMessage(Object.assign(Object.assign({ cmd, tag, status: 'ok' }, response), { timing: Date.now() - start }));
+                        };
+                    }
+                    else {
+                        postMessage({ cmd, tag, status: 'warn', message: 'not found card' });
                     }
                 });
             }
