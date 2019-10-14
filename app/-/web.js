@@ -12140,26 +12140,56 @@ var $;
                 }),
                 station_and_far: () => ({
                     prop: {
-                        '#height': () => 200,
-                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - em),
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
                         '#ofsHor': () => 418,
                         '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
                     },
                     style: {
                         fontSize: () => 15,
-                        lineHeight: () => 26,
-                        color: () => '#0070a4',
                     },
                     elem: {
                         station1: () => ({
                             base: station_info_control,
                             prop: {
-                                '#height': () => null,
-                                '#width': () => null,
+                                '#height': () => 26,
+                                '#width': '<.#width',
                                 '#ofsVer': () => 8,
-                                '#ofsHor': () => 16,
+                                '#ofsHor': () => 0,
                                 fontSize: () => 15,
                                 stationNumber: () => 1,
+                            },
+                        }),
+                        station2: () => ({
+                            base: station_info_control,
+                            prop: {
+                                '#height': () => 26,
+                                '#width': '<.#width',
+                                '#ofsVer': $$.$me_atom2_prop(['<@station1.#height', '<@station1.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
+                                '#ofsHor': () => 0,
+                                fontSize: () => 15,
+                                stationNumber: () => 2,
+                            },
+                        }),
+                        station3: () => ({
+                            base: station_info_control,
+                            prop: {
+                                '#height': () => 26,
+                                '#width': '<.#width',
+                                '#ofsVer': $$.$me_atom2_prop(['<@station2.#height', '<@station2.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
+                                '#ofsHor': () => 0,
+                                fontSize: () => 15,
+                                stationNumber: () => 3,
+                            },
+                        }),
+                        station4: () => ({
+                            base: station_info_control,
+                            prop: {
+                                '#height': () => 26,
+                                '#width': '<.#width',
+                                '#ofsVer': $$.$me_atom2_prop(['<@station3.#height', '<@station3.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
+                                '#ofsHor': () => 0,
+                                fontSize: () => 15,
+                                stationNumber: () => 4,
                             },
                         }),
                     },
@@ -12631,23 +12661,20 @@ var $;
             prop: {
                 fontSize: $$.$me_atom2_prop_abstract(),
                 stationNumber: $$.$me_atom2_prop_abstract(),
-                '#width': () => null,
-                station_name: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                    const result = (card && card.geo_cache_subway_station_name_1) ? card.geo_cache_subway_station_name_1 : '';
+                station_name: $$.$me_atom2_prop(['/@app.card_value', '.stationNumber'], ({ masters: [card, num] }) => {
+                    const result = (card && card['geo_cache_subway_station_name_' + num]) ? card['geo_cache_subway_station_name_' + num] : '';
                     return result;
                 }),
-                t_access: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                    const result = (card && card.transport_access_1) ? card.transport_access_1 : '';
+                t_access: $$.$me_atom2_prop(['/@app.card_value', '.stationNumber'], ({ masters: [card, num] }) => {
+                    const result = (card && card['transport_access_' + num]) ? card['transport_access_' + num] : '';
                     return result;
                 }),
-                w_access: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                    const result = (card && card.walking_access_1) ? card.walking_access_1 : '';
+                w_access: $$.$me_atom2_prop(['/@app.card_value', '.stationNumber'], ({ masters: [card, num] }) => {
+                    const result = (card && card['walking_access_' + num]) ? card['walking_access_' + num] : '';
                     return result;
                 }),
             },
-            style: {
-                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
-            },
+            style: {},
             elem: {
                 station: () => ({
                     prop: {
@@ -12656,6 +12683,9 @@ var $;
                         '#width': () => null,
                         '#height': () => null,
                         '#ofsHor': () => 0,
+                    },
+                    style: {
+                        lineHeight: $$.$me_atom2_prop(['.fontSize'], ({ masters: [size] }) => size + 8),
                     },
                     dom: {
                         innerHTML: '<.station_name',
@@ -12667,7 +12697,7 @@ var $;
                         colorText: '/.colorLink',
                         '#width': () => null,
                         '#height': () => null,
-                        '#ofsHor': $$.$me_atom2_prop(['<@station.#width', '<@station.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width + ofs + ofs2),
+                        '#ofsHor': $$.$me_atom2_prop(['<@station.#width', '<@station.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width + ofs),
                     },
                     style: {
                         lineHeight: $$.$me_atom2_prop(['.fontSize'], ({ masters: [size] }) => size + 8),
@@ -12680,14 +12710,17 @@ var $;
                     node: 'img',
                     prop: {
                         '#width': () => 20,
-                        '#height': () => 20,
-                        '#ofsHor': $$.$me_atom2_prop(['<@far_text.#width', '<@far_text.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width + ofs + ofs2),
+                        '#height': $$.$me_atom2_prop(['<.t_access', '<.w_access'], ({ masters: [t, w] }) => (t > 0) ? 14 : 20),
+                        '#ofsVer': $$.$me_atom2_prop(['<.t_access', '<.w_access'], ({ masters: [t, w] }) => (t > 0) ? 4 : 0),
+                        '#ofsHor': $$.$me_atom2_prop(['<@far_text.#width', '<@far_text.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width + ofs + ofs2 / 2),
                     },
                     attr: {
                         src: $$.$me_atom2_prop(['<.t_access', '<.w_access'], ({ masters: [t, w] }) => (t > 0) ? 'assets/icons-8-car.png' : 'assets/icons-8-i-will-go.png'),
                     },
                     style: {
-                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                            'invert(60%) sepia(41%) saturate(7350%) hue-rotate(188deg) brightness(92%) contrast(85%)' :
+                            'invert(59%) sepia(40%) saturate(2468%) hue-rotate(187deg) brightness(104%) contrast(103%)'),
                     },
                 }),
             }
