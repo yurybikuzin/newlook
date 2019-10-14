@@ -17281,6 +17281,7 @@ var $;
     (function ($$) {
         $$.$nl_settings_workspace = {
             prop: {
+                '#width': '<.#width',
                 sections: () => ({
                     search: {
                         caption: 'Настройка поиска',
@@ -17301,10 +17302,14 @@ var $;
                     valid: (val) => val == $$.a('.sections')[val] ? val : null,
                 }),
             },
+            style: {
+                'overflow-x': () => 'hidden',
+            },
             elem: {
                 tabs: () => ({
                     base: $$.$nl_settings_tabs,
                     prop: {
+                        '#width': () => null,
                         options: '<.sections',
                         selected: $$.$me_atom2_prop_bind('<.selected'),
                         '#height': '/@app@menu@login.#height',
@@ -18881,6 +18886,9 @@ var $;
                                 src: () => '',
                                 '#zIndex': () => 1000,
                             },
+                            style: {
+                                'overflow-x': () => 'hidden',
+                            },
                             dispatch: (dispatch_name, dispatch_arg) => {
                                 if (dispatch_name == 'close') {
                                     return true;
@@ -18998,7 +19006,9 @@ var $;
                     },
                 }),
             },
-            style: {},
+            style: {
+                overflow: () => 'hidden',
+            },
         };
         const menu = {
             prop: {
