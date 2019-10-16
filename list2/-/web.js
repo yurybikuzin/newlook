@@ -7871,9 +7871,9 @@ var $;
                 console.log(window.location.origin);
                 const root = window.location.origin.includes('localhost') ||
                     window.location.origin.match(/^https?:\/\/(\d+\.){3}\d+(:\d+)?$/) ?
-                    '/me/' :
+                    '/me' :
                     '';
-                const worker = new Worker(window.location.origin + root + 'data/grid/-/web.js');
+                const worker = new Worker(window.location.origin + root + '/data/grid/-/web.js');
                 return worker;
             },
         });
