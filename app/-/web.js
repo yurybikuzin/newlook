@@ -8442,10 +8442,24 @@ var $;
                     }
                 }
             }
-            console.log('res', res);
             return res;
         }
         $$.$nl_formatter_object_type = $nl_formatter_object_type;
+        function $nl_formatter_card_title(item) {
+            let res = $nl_formatter_object_type(item);
+            if (item) {
+                if (item['total_square'] > 0) {
+                    res = res + ', ' + item['total_square'] + 'м²';
+                }
+                const storey = (item['storey']) ? item['storey'] : '?';
+                const storeys_count = (item['storeys_count']) ? item['storeys_count'] : '?';
+                if (storey != '?' && storeys_count != '?') {
+                    res = res + ', ' + storey + '/' + storeys_count + ' этаж';
+                }
+            }
+            return res;
+        }
+        $$.$nl_formatter_card_title = $nl_formatter_card_title;
         function $nl_formatter_address(item) {
             let addrArray = [];
             if (item['geo_cache_state_name'] !== 'Москва г.') {
@@ -8604,7 +8618,6 @@ var $;
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
             },
-            style: {},
             elem: {
                 background: () => ({
                     prop: {
@@ -8637,7 +8650,7 @@ var $;
                                 '#ofsVer': () => 8,
                                 '#ofsHor': () => 16,
                                 '#alignHor': () => $$.$me_align.right,
-                                color: '/.colorText',
+                                color: () => '#979aa1',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
                                 '#cursor': () => 'pointer',
                             },
@@ -8678,7 +8691,7 @@ var $;
                             },
                             style: {
                                 fontSize: () => 12,
-                                color: () => '#313745',
+                                color: () => '#979aa1',
                             },
                             dom: {
                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -8700,7 +8713,7 @@ var $;
                             },
                             style: {
                                 fontSize: () => 12,
-                                color: () => '#313745',
+                                color: () => '#979aa1',
                             },
                             dom: {
                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -8722,6 +8735,7 @@ var $;
                             },
                             style: {
                                 fontSize: () => 21,
+                                fontWeight: () => 500,
                                 color: () => '#313745',
                             },
                             dom: {
@@ -8736,7 +8750,7 @@ var $;
                                             x1 = x1.replace(rgx, '$1' + ' ' + '$2');
                                         result = x1 + x2;
                                     }
-                                    return result + ' ₽';
+                                    return result + '<span style="font-size:90%"> ₽</span>';
                                 }),
                             },
                         }),
@@ -8753,17 +8767,28 @@ var $;
                             },
                             dom: {
                                 innerText: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    const result = (card) ? $$.$nl_formatter_object_type(card) : '?';
+                                    const result = (card) ? $$.$nl_formatter_card_title(card) : '';
                                     return result;
                                 }),
                             },
                         }),
                         station_and_far: () => ({
                             prop: {
-                                '#height': () => 140,
+                                '#height': $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                    let result = 0;
+                                    if (card.geo_subway_station_guid_1)
+                                        result = result + 25;
+                                    if (card.geo_subway_station_guid_2)
+                                        result = result + 25;
+                                    if (card.geo_subway_station_guid_3)
+                                        result = result + 25;
+                                    if (card.geo_subway_station_guid_4)
+                                        result = result + 25;
+                                    return result + 15;
+                                }),
                                 '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
                                 '#ofsHor': () => 418,
-                                '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                                '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs),
                             },
                             style: {
                                 fontSize: () => 15,
@@ -8772,7 +8797,7 @@ var $;
                                 station1: () => ({
                                     base: station_info_control,
                                     prop: {
-                                        '#height': () => 26,
+                                        '#height': () => 20,
                                         '#width': '<.#width',
                                         '#ofsVer': () => 8,
                                         '#ofsHor': () => 0,
@@ -8783,7 +8808,7 @@ var $;
                                 station2: () => ({
                                     base: station_info_control,
                                     prop: {
-                                        '#height': () => 26,
+                                        '#height': () => 20,
                                         '#width': '<.#width',
                                         '#ofsVer': $$.$me_atom2_prop(['<@station1.#height', '<@station1.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
                                         '#ofsHor': () => 0,
@@ -8794,7 +8819,7 @@ var $;
                                 station3: () => ({
                                     base: station_info_control,
                                     prop: {
-                                        '#height': () => 26,
+                                        '#height': () => 20,
                                         '#width': '<.#width',
                                         '#ofsVer': $$.$me_atom2_prop(['<@station2.#height', '<@station2.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
                                         '#ofsHor': () => 0,
@@ -8805,7 +8830,7 @@ var $;
                                 station4: () => ({
                                     base: station_info_control,
                                     prop: {
-                                        '#height': () => 26,
+                                        '#height': () => 20,
                                         '#width': '<.#width',
                                         '#ofsVer': $$.$me_atom2_prop(['<@station3.#height', '<@station3.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
                                         '#ofsHor': () => 0,
@@ -8835,10 +8860,10 @@ var $;
                             },
                         }),
                         contact: () => ({
-                            base: contacts_control,
+                            base: card_contacts_control,
                             prop: {
                                 '#height': () => 124,
-                                '#width': () => 250,
+                                '#width': () => 240,
                                 '#alignHor': () => $$.$me_align.right,
                                 '#ofsHor': '.em',
                                 '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
@@ -8846,26 +8871,25 @@ var $;
                             },
                             style: {
                                 color: () => '#313745',
-                                background: () => 'gray',
                             },
                         }),
                         params: () => ({
-                            base: params_control,
+                            base: card_params_control,
                             prop: {
                                 '#height': () => 124,
                                 '#width': $$.$me_atom2_prop(['<.#width', '<@contact.#width', '<@contact.#ofsHor'], ({ masters: [width_total, width, ofs] }) => width_total - 418 - width - ofs * 2),
                                 '#ofsHor': () => 418,
                                 '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                                color: () => '#6a6c74',
                                 fontSize: () => 12,
                             },
-                            style: {},
                         }),
                         comment: () => ({
                             base: comment_control,
                             prop: {
                                 '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
                                 '#ofsHor': '<.horOffset',
-                                '#ofsVer': $$.$me_atom2_prop(['<@params.#height', '<@params.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 16),
+                                '#ofsVer': $$.$me_atom2_prop(['<@params.#height', '<@params.#ofsVer', '<@image.#height', '<@image.#ofsVer'], ({ masters: [height1, ofs1, height2, ofs2] }) => (height1 + ofs1 > height2 + ofs2) ? height1 + ofs1 + 16 : height2 + ofs2 + 16),
                                 text: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
                                     const result = (card.note) ? card.note : '';
                                     return result;
@@ -9037,26 +9061,25 @@ var $;
                 }),
             },
         };
-        const params_control = {
+        const card_params_control = {
             prop: {
                 fontSize: $$.$me_atom2_prop_abstract(),
-                sq: () => 50,
-                color: () => '#6a6c74',
+                color: $$.$me_atom2_prop_abstract(),
                 ofs: () => 8,
                 ofs2: $$.$me_atom2_prop(['.#width'], ({ masters: [width, ofs] }) => width / 2),
+                itemWidth: () => 160,
             },
             style: {
-                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                 lineHeight: () => 14,
                 overflow: () => 'hidden',
+                color: () => '#6a6c74',
             },
             elem: {
                 sq: () => ({
                     prop: {
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                     },
                     dom: {
                         innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -9070,25 +9093,38 @@ var $;
                             return '<b>Площадь: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    }
                 }),
                 sq2: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@sq.#height', '<@sq.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     dom: {
-                        innerHTML: $$.$me_atom2_prop(['<.sq'], ({ masters: [sq] }) => '<b>Площадь комнат: </b>20/10/9'),
+                        innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                            let result = (card && card.square_explication) ? card.square_explication : '?';
+                            return '<b>Площадь комнат: </b>' + result;
+                        }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    }
                 }),
                 floor: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@sq2.#height', '<@sq2.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     dom: {
@@ -9102,13 +9138,18 @@ var $;
                             return '<b>Этаж: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    }
                 }),
                 build_type: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@floor.#height', '<@floor.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     dom: {
@@ -9120,13 +9161,18 @@ var $;
                             return '<b>Тип дома: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    }
                 }),
                 sale_type: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@build_type.#height', '<@build_type.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     dom: {
@@ -9135,13 +9181,18 @@ var $;
                             return '<b>Тип сделки: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    }
                 }),
                 parking: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsVer': $$.$me_atom2_prop(['<@sale_type.#height', '<@sale_type.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     dom: {
@@ -9150,13 +9201,18 @@ var $;
                             return '<b>Парковка: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    }
                 }),
                 balkony: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsHor': '<.ofs2',
                     },
                     dom: {
@@ -9165,13 +9221,18 @@ var $;
                             return '<b>Балкон: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    },
                 }),
                 water_closet: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsHor': '<.ofs2',
                         '#ofsVer': $$.$me_atom2_prop(['<@sq.#height', '<@sq.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
@@ -9181,13 +9242,18 @@ var $;
                             return '<b>Санузел: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    },
                 }),
                 window_overlook: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsHor': '<.ofs2',
                         '#ofsVer': $$.$me_atom2_prop(['<@sq2.#height', '<@sq2.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
@@ -9197,29 +9263,39 @@ var $;
                             return '<b>Окна: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    },
                 }),
                 elevator_type: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsHor': '<.ofs2',
                         '#ofsVer': $$.$me_atom2_prop(['<@floor.#height', '<@floor.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     dom: {
                         innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
                             let result = (card && card.elevator_type_id) ? $$.$nl_dic_fld_value('elevator_type', card.elevator_type_id, 'name', '?') : '?';
-                            return '<b>Лифт: </b>' + result;
+                            return '<b>Лифт: </b><span title="' + result + '">' + result + '</span>';
                         }),
+                    },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
                     },
                 }),
                 build_year: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsHor': '<.ofs2',
                         '#ofsVer': $$.$me_atom2_prop(['<@build_type.#height', '<@build_type.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
@@ -9229,13 +9305,18 @@ var $;
                             return '<b>Год постройки: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    },
                 }),
                 territory_type: () => ({
                     prop: {
                         '#height': () => null,
-                        '#width': () => null,
+                        '#width': '<.itemWidth',
                         fontSize: '<.fontSize',
-                        color: '<.color',
                         '#ofsHor': '<.ofs2',
                         '#ofsVer': $$.$me_atom2_prop(['<@sale_type.#height', '<@sale_type.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
@@ -9245,10 +9326,16 @@ var $;
                             return '<b>Территория: </b>' + result;
                         }),
                     },
+                    style: {
+                        color: '<.color',
+                        textOverflow: () => 'ellipsis',
+                        overflow: () => 'hidden',
+                        whiteSpace: () => 'nowrap',
+                    },
                 }),
             }
         };
-        const contacts_control = {
+        const card_contacts_control = {
             prop: {
                 '#height': () => null,
                 '#width': () => null,
@@ -9262,9 +9349,6 @@ var $;
                     const result = (card && card.phone_list) ? card.phone_list : '?';
                     return result;
                 }),
-            },
-            style: {
-                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
             },
             elem: {
                 agent: () => ({
