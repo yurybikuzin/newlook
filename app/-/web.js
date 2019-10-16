@@ -16595,7 +16595,10 @@ var $;
                 }),
                 comment: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i'], ({ masters: [row_i] }) => ['<<.rec_count', `<<.row_open[${row_i}]`]), ({ masters: [rec_count, row_open] }) => rec_count <= 0 || !row_open ? null : {
                     dom: {
-                        innerText: () => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ornare nisl et tortor euismod, ut consequat nunc vehicula. Integer sit amet quam ante. Integer bibendum ante vel semper auctor. Mauris vitae erat gravida, ultrices libero id, pellentesque enim. Phasellus molestie malesuada tellus, in commodo lectus dictum at. Aliquam malesuada venenatis tellus a feugiat. Ut ac.'
+                        innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                            const result = (card.note) ? card.note : '';
+                            return result;
+                        }),
                     },
                     prop: {
                         '#ofsVer': '<<<.row_height_min',
