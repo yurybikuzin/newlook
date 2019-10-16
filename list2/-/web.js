@@ -7872,7 +7872,7 @@ var $;
                 const root = window.location.origin.includes('localhost') ||
                     window.location.origin.match(/^https?:\/\/(\d+\.){3}\d+(:\d+)?$/) ?
                     '/me' :
-                    '';
+                    '/newlook';
                 const worker = new Worker(window.location.origin + root + '/data/grid/-/web.js');
                 return worker;
             },
