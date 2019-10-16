@@ -8504,10 +8504,10 @@ var $;
                 phone = phone.substring(0, 3) + '-' + phone.substring(3, 7);
             }
             else if ((phone.length == 11) && (phone.substr(0, 1) == '7')) {
-                phone = '8-' + phone.substring(1, 4) + '-' + phone.substring(4, 7) + '-' + phone.substring(7, 9) + '-' + phone.substring(9, 11);
+                phone = '+7 (' + phone.substring(1, 4) + ') ' + phone.substring(4, 7) + '-' + phone.substring(7, 9) + '-' + phone.substring(9, 11);
             }
             else if ((phone.length == 12) && (phone.substr(0, 2) == '+7')) {
-                phone = '8-' + phone.substring(2, 5) + '-' + phone.substring(5, 8) + '-' + phone.substring(8, 10) + '-' + phone.substring(10, 12);
+                phone = '+7 (' + phone.substring(2, 5) + ') ' + phone.substring(5, 8) + '-' + phone.substring(8, 10) + '-' + phone.substring(10, 12);
             }
             return phone;
         }
@@ -8973,7 +8973,7 @@ var $;
                         '#alignVer': () => $$.$me_align.bottom,
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 65,
-                        caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? '&nbsp;&nbsp;Больше ▼' : '&nbsp;&nbsp;Меньше ▲'),
+                        caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? '&nbsp;&nbsp;Больше <span>∨</span>' : '&nbsp;&nbsp;Меньше <span>∧</span>'),
                     },
                     style: {
                         backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
@@ -9020,6 +9020,7 @@ var $;
                   }
                 `);
                                 }),
+                                value: () => 'text'
                             },
                             style: {
                                 border: () => 'none',
@@ -9029,7 +9030,8 @@ var $;
                                 padding: () => 0,
                                 resize: () => 'none',
                                 outline: () => 'none',
-                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'white'),
+                                fontWeight: () => '600',
+                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : 'white'),
                                 background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#666f7f'),
                             },
                             attr: {
@@ -9340,7 +9342,7 @@ var $;
                 '#height': () => null,
                 '#width': () => null,
                 fontSize: $$.$me_atom2_prop_abstract(),
-                ofs: () => 25,
+                ofs: () => 5,
                 agent: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
                     const result = (card && card.agent_name) ? card.agent_name : '';
                     return result;
@@ -9355,7 +9357,7 @@ var $;
                     prop: {
                         '#height': () => null,
                         '#width': () => null,
-                        '#alignHor': () => $$.$me_align.center,
+                        '#alignHor': () => $$.$me_align.left,
                         fontSize: '<.fontSize',
                         color: '<.color',
                     },
@@ -9367,10 +9369,10 @@ var $;
                     prop: {
                         '#height': () => null,
                         '#width': () => null,
-                        '#alignHor': () => $$.$me_align.center,
+                        '#alignHor': () => $$.$me_align.left,
                         fontSize: '<.fontSize',
                         colorText: '/.colorLink',
-                        '#ofsVer': $$.$me_atom2_prop(['<@agent.#height', '<@agent.#ofsVer', '<.ofs'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                        '#ofsVer': $$.$me_atom2_prop(['<@agent.#height', '<@agent.#ofsVer', '<.ofs', '/@app.card_value'], ({ masters: [height, ofs, ofs2, card] }) => (card && card.agent_name) ? height + ofs + ofs2 : ofs),
                     },
                     style: {
                         lineHeight: $$.$me_atom2_prop(['.fontSize'], ({ masters: [size] }) => size + 8),
