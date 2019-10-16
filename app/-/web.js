@@ -4,28 +4,31 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        function $me_easing_value(initial, target, t, fn = $$.$me_easing.linear) {
-            return initial + (target - initial) * fn(t);
-        }
-        $$.$me_easing_value = $me_easing_value;
-        $$.$me_easing = {
-            linear: (t) => t,
-            easeInQuad: (t) => t * t,
-            easeOutQuad: (t) => t * (2 - t),
-            easeInOutQuad: (t) => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
-            easeInCubic: (t) => t * t * t,
-            easeOutCubic: (t) => (--t) * t * t + 1,
-            easeInOutCubic: (t) => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
-            easeInQuart: (t) => t * t * t * t,
-            easeOutQuart: (t) => 1 - (--t) * t * t * t,
-            easeInOutQuart: (t) => t < .5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t,
-            easeInQuint: (t) => t * t * t * t * t,
-            easeOutQuint: (t) => 1 + (--t) * t * t * t * t,
-            easeInOutQuint: (t) => t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t
-        };
+        let $nl_theme;
+        (function ($nl_theme) {
+            $nl_theme[$nl_theme["light"] = 0] = "light";
+            $nl_theme[$nl_theme["dark"] = 1] = "dark";
+        })($nl_theme = $$.$nl_theme || ($$.$nl_theme = {}));
+        let $nl_line_style_type_enum;
+        (function ($nl_line_style_type_enum) {
+            $nl_line_style_type_enum[$nl_line_style_type_enum["solid"] = 0] = "solid";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["dashed"] = 1] = "dashed";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["dotted"] = 2] = "dotted";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["double"] = 3] = "double";
+        })($nl_line_style_type_enum = $$.$nl_line_style_type_enum || ($$.$nl_line_style_type_enum = {}));
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//easing.js.map
+//nl.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_stop = false;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//me.js.map
 ;
 "use strict";
 var $;
@@ -115,24 +118,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        function $me_word_plural(count, word1, word2_4, word5more) {
-            if (word5more === undefined) {
-                word5more = word2_4;
-            }
-            let result = word5more;
-            const decimal = Math.floor(count / 10) % 10;
-            if (decimal != 1) {
-                const unit = count % 10;
-                if (unit == 1) {
-                    result = word1;
-                }
-                else if (unit >= 2 && unit <= 4) {
-                    result = word2_4;
-                }
-            }
-            return result;
-        }
-        $$.$me_word_plural = $me_word_plural;
         $$.$me_throw_silent = false;
         function $me_throw(msg, ...p) {
             if (!$$.$me_throw_silent)
@@ -140,116 +125,94 @@ var $;
             throw new Error(msg);
         }
         $$.$me_throw = $me_throw;
-        $$.$me_stop = false;
-        let $me_theme;
-        (function ($me_theme) {
-            $me_theme[$me_theme["light"] = 0] = "light";
-            $me_theme[$me_theme["dark"] = 1] = "dark";
-        })($me_theme = $$.$me_theme || ($$.$me_theme = {}));
-        function $me_vector_transform(v, dist, from) {
-            const dx = v.to.x - v.from.x;
-            const dy = v.to.y - v.from.y;
-            const len = Math.hypot(dx, dy);
-            if (!from)
-                from = v.from;
-            const result = {
-                from,
-                to: {
-                    x: dx / len * dist + from.x,
-                    y: dy / len * dist + from.y,
-                },
-            };
-            return result;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//throw.js.map
+;
+"use strict";
+//fn.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $me_easing_value(initial, target, t, fn = $$.$me_easing.linear) {
+            return initial + (target - initial) * fn(t);
         }
-        $$.$me_vector_transform = $me_vector_transform;
-        function $me_vector_revert(v) {
-            const result = {
-                from: v.to,
-                to: v.from,
-            };
-            return result;
-        }
-        $$.$me_vector_revert = $me_vector_revert;
+        $$.$me_easing_value = $me_easing_value;
+        $$.$me_easing = {
+            linear: (t) => t,
+            easeInQuad: (t) => t * t,
+            easeOutQuad: (t) => t * (2 - t),
+            easeInOutQuad: (t) => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+            easeInCubic: (t) => t * t * t,
+            easeOutCubic: (t) => (--t) * t * t + 1,
+            easeInOutCubic: (t) => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+            easeInQuart: (t) => t * t * t * t,
+            easeOutQuart: (t) => 1 - (--t) * t * t * t,
+            easeInOutQuart: (t) => t < .5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t,
+            easeInQuint: (t) => t * t * t * t * t,
+            easeOutQuint: (t) => 1 + (--t) * t * t * t * t,
+            easeInOutQuint: (t) => t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//easing.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_rect = () => ({ left: 0, top: 0, right: 0, bottom: 0 });
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
-        $$.$me_pos = () => ({ left: 0, top: 0 });
-        $$.$me_point_in_rect = (x, y, rect, tolerance = 0) => rect.left - tolerance < x && x < rect.right + tolerance &&
-            rect.top - tolerance < y && y < rect.bottom + tolerance;
-        $$.$me_dist_to_rect = (x, y, rect) => $$.$me_point_in_rect(x, y, rect) ? 0 :
+        $$.$me_rect_dist_to = (x, y, rect) => $$.$me_rect_has_point(x, y, rect) ? 0 :
             Math.max(Math.min(Math.abs(rect.left - x), Math.abs(rect.right - x)), Math.min(Math.abs(rect.top - y), Math.abs(rect.bottom - y)));
-        function $me_point_in_rect_offset(x, y, offsetRect, clientRect) {
-            x -= clientRect.left;
-            y -= clientRect.top;
-            const result = offsetRect && clientRect &&
-                offsetRect.left < x && x < offsetRect.right &&
-                offsetRect.top < y && y < offsetRect.bottom &&
-                true;
-            return result;
-        }
-        $$.$me_point_in_rect_offset = $me_point_in_rect_offset;
-        function $me_option_caption(id, options, val) {
-            const isSelected = typeof val == 'string' ? val == id :
-                val instanceof Set ? val.has(id) :
-                    val instanceof Map ? val.has(id) :
-                        false;
-            const caption = typeof options[id].caption == 'function' ?
-                options[id].caption({ val, isSelected }) :
-                options[id].caption;
-            return caption;
-        }
-        $$.$me_option_caption = $me_option_caption;
-        function $me_option_caption_text(id, options, val) {
-            const caption = $me_option_caption(id, options, val);
-            const result = typeof caption == 'string' ? caption :
-                !caption || typeof caption.text != 'string' ? id :
-                    caption.text;
-            return result;
-        }
-        $$.$me_option_caption_text = $me_option_caption_text;
-        $$.$me_enum_names = (val) => {
-            if (_enum_names_cache.has(val))
-                return _enum_names_cache.get(val);
-            const result = Object.keys(val).filter(key => typeof val[key] == 'number');
-            _enum_names_cache.set(val, result);
-            return result;
-        };
-        const _enum_names_cache = new Map();
-        $$.$me_enum_values = (val) => {
-            if (_enum_values_cache.has(val))
-                return _enum_values_cache.get(val);
-            const result = Object.keys(val).reduce((result, key) => {
-                const n = +key;
-                if (Number.isFinite(n))
-                    result.push(n);
-                return result;
-            }, Array());
-            _enum_values_cache.set(val, result);
-            return result;
-        };
-        const _enum_values_cache = new Map();
-        $$.$me_enum_pairs = (val) => {
-            if (_enum_pairs_cache.has(val))
-                return _enum_pairs_cache.get(val);
-            const result = $$.$me_enum_values(val).map(value => [value, val[value]]);
-            _enum_pairs_cache.set(val, result);
-            return result;
-        };
-        const _enum_pairs_cache = new Map();
-        let $me_rect_corners_enum;
-        (function ($me_rect_corners_enum) {
-            $me_rect_corners_enum[$me_rect_corners_enum["leftTop"] = 0] = "leftTop";
-            $me_rect_corners_enum[$me_rect_corners_enum["rightTop"] = 1] = "rightTop";
-            $me_rect_corners_enum[$me_rect_corners_enum["leftBottom"] = 2] = "leftBottom";
-            $me_rect_corners_enum[$me_rect_corners_enum["rightBottom"] = 3] = "rightBottom";
-        })($me_rect_corners_enum = $$.$me_rect_corners_enum || ($$.$me_rect_corners_enum = {}));
-        let $me_rect_sides_enum;
-        (function ($me_rect_sides_enum) {
-            $me_rect_sides_enum[$me_rect_sides_enum["left"] = 0] = "left";
-            $me_rect_sides_enum[$me_rect_sides_enum["top"] = 1] = "top";
-            $me_rect_sides_enum[$me_rect_sides_enum["right"] = 2] = "right";
-            $me_rect_sides_enum[$me_rect_sides_enum["bottom"] = 3] = "bottom";
-        })($me_rect_sides_enum = $$.$me_rect_sides_enum || ($$.$me_rect_sides_enum = {}));
+        $$.$me_rect_has_point = (x, y, rect, tolerance = 0) => rect.left - tolerance < x && x < rect.right + tolerance &&
+            rect.top - tolerance < y && y < rect.bottom + tolerance;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//rect.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $me_rectcorners_enum;
+        (function ($me_rectcorners_enum) {
+            $me_rectcorners_enum[$me_rectcorners_enum["leftTop"] = 0] = "leftTop";
+            $me_rectcorners_enum[$me_rectcorners_enum["rightTop"] = 1] = "rightTop";
+            $me_rectcorners_enum[$me_rectcorners_enum["leftBottom"] = 2] = "leftBottom";
+            $me_rectcorners_enum[$me_rectcorners_enum["rightBottom"] = 3] = "rightBottom";
+        })($me_rectcorners_enum = $$.$me_rectcorners_enum || ($$.$me_rectcorners_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//rectcorners.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $me_pos_enum;
+        (function ($me_pos_enum) {
+            $me_pos_enum[$me_pos_enum["left"] = 0] = "left";
+            $me_pos_enum[$me_pos_enum["top"] = 1] = "top";
+            $me_pos_enum[$me_pos_enum["right"] = 2] = "right";
+            $me_pos_enum[$me_pos_enum["bottom"] = 3] = "bottom";
+        })($me_pos_enum = $$.$me_pos_enum || ($$.$me_pos_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//pos.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         let $me_align;
         (function ($me_align) {
             $me_align[$me_align["left"] = 0] = "left";
@@ -262,16 +225,15 @@ var $;
             return (align == $me_align.left ? 0 : correction() / align);
         }
         $$.$me_align_correction = $me_align_correction;
-        let $me_line_style_type_enum;
-        (function ($me_line_style_type_enum) {
-            $me_line_style_type_enum[$me_line_style_type_enum["solid"] = 0] = "solid";
-            $me_line_style_type_enum[$me_line_style_type_enum["dashed"] = 1] = "dashed";
-            $me_line_style_type_enum[$me_line_style_type_enum["dotted"] = 2] = "dotted";
-            $me_line_style_type_enum[$me_line_style_type_enum["double"] = 3] = "double";
-        })($me_line_style_type_enum = $$.$me_line_style_type_enum || ($$.$me_line_style_type_enum = {}));
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//me.js.map
+//align.js.map
+;
+"use strict";
+//size.js.map
+;
+"use strict";
+//point.js.map
 ;
 "use strict";
 var $;
@@ -1004,7 +966,7 @@ var $;
         $$.$me_atom2_prop_store = (p) => {
             const atom = $me_atom2_prop(!p.condition ? [] : p.condition, ({ atom, masters, prev, len }) => {
                 let val = null;
-                const name = atom.name();
+                const name = nameOfStoreKey(atom);
                 if (len && !masters[0]) {
                     val = masters[1] || prev || null;
                     sessionStorage.removeItem(name);
@@ -1031,7 +993,7 @@ var $;
                 else if (p.is_equal ? p.is_equal(val, dflt) : $$.$me_equal(val, dflt)) {
                     need_remove = true;
                 }
-                const name = atom.name();
+                const name = nameOfStoreKey(atom);
                 if (need_remove) {
                     sessionStorage.removeItem(name);
                 }
@@ -1042,6 +1004,14 @@ var $;
             });
             return atom;
         };
+        function nameOfStoreKey(atom) {
+            let result = atom.name();
+            const parent = atom.parent();
+            const cnf = parent.cnf;
+            if (cnf && cnf.type)
+                result += '::' + cnf.type;
+            return result;
+        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //prop.js.map
@@ -1801,8 +1771,8 @@ var $;
                 this.tPrev = t;
                 const result = {
                     mode: this.mode,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
+                    deltaX: this.scrollAccuX,
+                    deltaY: this.scrollAccuY,
                 };
                 this.scrollAccuX = 0;
                 this.scrollAccuY = 0;
@@ -1842,6 +1812,7 @@ var $;
                 this.accelY = 0;
                 this.timePrevX = null;
                 this.timePrevY = null;
+                this.session = $$.$me_atom2_wheel_session_inc($$.$me_atom2_wheel_session_kind_enum.touch);
             }
             move(event) {
                 this._last = event;
@@ -1909,7 +1880,7 @@ var $;
                 this.endHelper();
             }
             rafMove(t) {
-                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafMoveHeler(t));
+                return Object.assign(Object.assign({}, this.rafMoveHeler(t)), { start: this._start, last: this._last, end: this._end, clientX: this._start.touches[0].clientX, clientY: this._start.touches[0].clientY, phaseX: $$.$me_atom2_wheel_phase_enum.accel, phaseY: $$.$me_atom2_wheel_phase_enum.accel, session: this.session });
             }
             rafEndHelper(t) {
                 const tDelta = t - this.tPrev;
@@ -1917,8 +1888,8 @@ var $;
                 const scrollAccuY = this.accelY * tDelta;
                 const result = {
                     mode: this.mode,
-                    _deltaX: scrollAccuX,
-                    _deltaY: scrollAccuY,
+                    deltaX: scrollAccuX,
+                    deltaY: scrollAccuY,
                 };
                 if (!(Math.abs(scrollAccuX) >= 1 ||
                     Math.abs(scrollAccuY) >= 1)) {
@@ -1934,7 +1905,7 @@ var $;
                 return result;
             }
             rafEnd(t) {
-                return Object.assign({ start: this._start, last: this._last, end: this._end }, this.rafEndHelper(t));
+                return Object.assign(Object.assign({}, this.rafEndHelper(t)), { start: this._start, last: this._last, end: this._end, clientX: this._start.touches[0].clientX, clientY: this._start.touches[0].clientY, phaseX: $$.$me_atom2_wheel_phase_enum.decel, phaseY: $$.$me_atom2_wheel_phase_enum.decel, session: this.session });
             }
         }
         $$.$me_atom2_wheel_touch_class = $me_atom2_wheel_touch_class;
@@ -2027,8 +1998,8 @@ var $;
                     start: this._start,
                     last: this._last,
                     end: this._end,
-                    _deltaX: this.scrollAccuX,
-                    _deltaY: this.scrollAccuY,
+                    deltaX: this.scrollAccuX,
+                    deltaY: this.scrollAccuY,
                 };
                 this.scrollAccuX = 0;
                 this.scrollAccuY = 0;
@@ -2042,8 +2013,8 @@ var $;
                     start: this._start,
                     last: this._last,
                     end: this._end,
-                    _deltaX: scrollAccuX,
-                    _deltaY: scrollAccuY,
+                    deltaX: scrollAccuX,
+                    deltaY: scrollAccuY,
                 };
                 if (!(Math.abs(scrollAccuX) >= 1 ||
                     Math.abs(scrollAccuY) >= 1)) {
@@ -2784,6 +2755,12 @@ var $;
             'clickOutside',
             'tapOutside',
         ];
+        let $me_atom2_wheel_phase_enum;
+        (function ($me_atom2_wheel_phase_enum) {
+            $me_atom2_wheel_phase_enum[$me_atom2_wheel_phase_enum["unknown"] = 0] = "unknown";
+            $me_atom2_wheel_phase_enum[$me_atom2_wheel_phase_enum["accel"] = 1] = "accel";
+            $me_atom2_wheel_phase_enum[$me_atom2_wheel_phase_enum["decel"] = -1] = "decel";
+        })($me_atom2_wheel_phase_enum = $$.$me_atom2_wheel_phase_enum || ($$.$me_atom2_wheel_phase_enum = {}));
         let $me_atom2_wheel_synth_mode;
         (function ($me_atom2_wheel_synth_mode) {
             $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["justStarted"] = 0] = "justStarted";
@@ -2792,8 +2769,8 @@ var $;
             $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["end"] = 3] = "end";
             $me_atom2_wheel_synth_mode[$me_atom2_wheel_synth_mode["fini"] = 4] = "fini";
         })($me_atom2_wheel_synth_mode = $$.$me_atom2_wheel_synth_mode || ($$.$me_atom2_wheel_synth_mode = {}));
-        $$.$me_atom2_event_wheel_y_is = (event) => Math.abs(event._deltaX) < Math.abs(event._deltaY);
-        $$.$me_atom2_event_wheel_x_is = (event) => Math.abs(event._deltaX) > Math.abs(event._deltaY);
+        $$.$me_atom2_event_wheel_y_is = (event) => Math.abs(event.deltaX) < Math.abs(event.deltaY);
+        $$.$me_atom2_event_wheel_x_is = (event) => Math.abs(event.deltaX) > Math.abs(event.deltaY);
         let startClick;
         let startTap;
         let hoverCurr;
@@ -2909,8 +2886,8 @@ var $;
                     const clientRect = ec._entities.prop['#clientRect'].value();
                     if (!clientRect)
                         continue;
-                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
-                    const distToRect = (clientX, clientY) => $$.$me_dist_to_rect(clientX, clientY, clientRect);
+                    const isInRect = (clientX, clientY) => $$.$me_rect_has_point(clientX, clientY, clientRect);
+                    const distToRect = (clientX, clientY) => $$.$me_rect_dist_to(clientX, clientY, clientRect);
                     let done_ec = false;
                     let done_ec_special = false;
                     const prev = $$.a.curr;
@@ -4164,7 +4141,7 @@ var $;
                 if (!anim.fn && typeof anim.to !== 'number')
                     $$.$me_throw('anim.fn must be specified');
                 anim.value = anim.fn ?
-                    anim.fn({ from: anim.from, to: anim.to, easing: anim.easing, progress: anim.progress }) :
+                    anim.fn({ from: anim.from, to: anim.to, prev: anim.value, easing: anim.easing, progress: anim.progress }) :
                     anim.from + (anim.to - anim.from) * anim.easing(anim.progress);
                 if ($$.$me_atom2.is_valid_value(anim.value)) {
                     atom.set_value(anim.value);
@@ -4572,25 +4549,159 @@ var $;
                 $$.$me_atom2_wheel_drag.end(event);
             $$.$me_atom2_event_process('mouseup', event);
         };
-        const wheel = (event) => {
+        function wheels_median(wheels, prop) {
+            let result = null;
+            if (wheels.length)
+                result =
+                    wheels.sort((ia, ib) => ia[prop] - ib[prop]).length % 2 ?
+                        wheels[(wheels.length - 1) / 2][prop] :
+                        (wheels[wheels.length / 2][prop] + wheels[wheels.length / 2 - 1][prop]) / 2;
+            return result;
+        }
+        let wheels = [];
+        let wheel_session;
+        let wheel_phaseX = $$.$me_atom2_wheel_phase_enum.unknown;
+        let wheel_phaseY = $$.$me_atom2_wheel_phase_enum.unknown;
+        let lastCandidatesX = [];
+        let lastCandidatesY = [];
+        const candidatesCountMin = 3;
+        const candidatesCountMax = 3;
+        const candidatesLongMax = 400;
+        const electionThreshold = 2 / 3;
+        let $me_atom2_wheel_session_kind_enum;
+        (function ($me_atom2_wheel_session_kind_enum) {
+            $me_atom2_wheel_session_kind_enum[$me_atom2_wheel_session_kind_enum["wheel"] = 0] = "wheel";
+            $me_atom2_wheel_session_kind_enum[$me_atom2_wheel_session_kind_enum["touch"] = 1] = "touch";
+            $me_atom2_wheel_session_kind_enum[$me_atom2_wheel_session_kind_enum["drag"] = 2] = "drag";
+        })($me_atom2_wheel_session_kind_enum = $$.$me_atom2_wheel_session_kind_enum || ($$.$me_atom2_wheel_session_kind_enum = {}));
+        function $me_atom2_wheel_session_inc(kind = $me_atom2_wheel_session_kind_enum.wheel) {
+            _wheel_session += Object.keys($.$$.$me_atom2_wheel_session_kind_enum).length / 2;
+            if (_wheel_session > Math.pow(2, 31) - 1)
+                _wheel_session = 1;
+            return _wheel_session + kind;
+        }
+        $$.$me_atom2_wheel_session_inc = $me_atom2_wheel_session_inc;
+        let _wheel_session = 0;
+        let trace_wheel = false;
+        function wheel(event) {
+            let item = { tm: Math.round(performance.now()), deltaY: event.deltaY, deltaX: event.deltaX };
+            wheels = wheels.filter(({ tm }) => tm >= item.tm - candidatesLongMax);
+            if (!wheels.length) {
+                wheel_session = $me_atom2_wheel_session_inc();
+                if (trace_wheel)
+                    console.log(`%cwheel_session: ${wheel_session} due to !wheels.length`, 'background:orange');
+            }
+            const medX = wheels_median(wheels, 'deltaX');
+            const medY = wheels_median(wheels, 'deltaY');
+            wheels.push(item);
+            const new_medX = wheels_median(wheels, 'deltaX');
+            const new_medY = wheels_median(wheels, 'deltaY');
+            let ret = wheel_helper(medX, new_medX, wheel_phaseX, lastCandidatesX);
+            const wheel_phaseX_new = ret.wheel_phase;
+            lastCandidatesX = ret.lastCandidates;
+            ret = wheel_helper(medY, new_medY, wheel_phaseY, lastCandidatesY);
+            const wheel_phaseY_new = ret.wheel_phase;
+            lastCandidatesY = ret.lastCandidates;
+            if (trace_wheel)
+                for (const axis of ['X', 'Y']) {
+                    const wheel_phase_new = axis == 'X' ? wheel_phaseX_new : wheel_phaseY_new;
+                    const wheel_phase = axis == 'X' ? wheel_phaseX : wheel_phaseY;
+                    if (wheel_phase == wheel_phase_new)
+                        continue;
+                    if (wheel_phase == $$.$me_atom2_wheel_phase_enum.accel) {
+                        console.log('%caccel' + axis, 'background: green; color: white', { wheel_session });
+                    }
+                    else if (wheel_phase == $$.$me_atom2_wheel_phase_enum.decel) {
+                        console.log('%cdecel' + axis, 'background: red; color: white', { wheel_session });
+                    }
+                    else {
+                        console.log('%cunknown' + axis, 'background: gray; color: white', { wheel_session });
+                    }
+                }
+            if (wheel_phaseX_new == $$.$me_atom2_wheel_phase_enum.accel &&
+                wheel_phaseX != $$.$me_atom2_wheel_phase_enum.accel &&
+                wheel_phaseY != $$.$me_atom2_wheel_phase_enum.accel
+                ||
+                    wheel_phaseY_new == $$.$me_atom2_wheel_phase_enum.accel &&
+                        wheel_phaseY != $$.$me_atom2_wheel_phase_enum.accel &&
+                        wheel_phaseX != $$.$me_atom2_wheel_phase_enum.accel
+                ||
+                    wheel_phaseX_new == $$.$me_atom2_wheel_phase_enum.unknown &&
+                        wheel_phaseX != $$.$me_atom2_wheel_phase_enum.unknown &&
+                        wheel_phaseY == $$.$me_atom2_wheel_phase_enum.unknown
+                ||
+                    wheel_phaseY_new == $$.$me_atom2_wheel_phase_enum.unknown &&
+                        wheel_phaseY != $$.$me_atom2_wheel_phase_enum.unknown &&
+                        wheel_phaseX == $$.$me_atom2_wheel_phase_enum.unknown) {
+                wheel_session = $me_atom2_wheel_session_inc();
+                if (trace_wheel)
+                    console.log(`%cwheel_session: ${wheel_session}`, 'background:orange');
+            }
+            wheel_phaseX = wheel_phaseX_new;
+            wheel_phaseY = wheel_phaseY_new;
             if (!$$.$me_atom2_event_wheel_to_process) {
-                $$.$me_atom2_event_wheel_to_process = event;
-                $$.$me_atom2_event_wheel_to_process._deltaX = event.deltaX;
-                $$.$me_atom2_event_wheel_to_process._deltaY = event.deltaY;
+                $$.$me_atom2_event_wheel_to_process = {
+                    src: event,
+                    deltaX: event.deltaX,
+                    deltaY: event.deltaY,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    session: wheel_session,
+                    phaseX: wheel_phaseX,
+                    phaseY: wheel_phaseY,
+                };
             }
             else {
-                $$.$me_atom2_event_wheel_to_process._deltaX =
-                    event.deltaX + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaX) * Math.sign(event.deltaX) < 0 ?
-                        0 :
-                        $$.$me_atom2_event_wheel_to_process._deltaX);
-                $$.$me_atom2_event_wheel_to_process._deltaY =
-                    event.deltaY + (Math.sign($$.$me_atom2_event_wheel_to_process._deltaY) * Math.sign(event.deltaY) < 0 ?
-                        0 :
-                        $$.$me_atom2_event_wheel_to_process._deltaY);
+                if ($$.$me_atom2_event_wheel_to_process.session != wheel_session) {
+                    $$.$me_atom2_event_wheel_to_process.src = event;
+                    $$.$me_atom2_event_wheel_to_process.clientX = event.clientX;
+                    $$.$me_atom2_event_wheel_to_process.clientY = event.clientY;
+                    $$.$me_atom2_event_wheel_to_process.session = wheel_session;
+                }
+                for (const axis of ['X', 'Y']) {
+                    $$.$me_atom2_event_wheel_to_process['phase' + axis] = axis == 'X' ? wheel_phaseX : wheel_phaseY;
+                    $$.$me_atom2_event_wheel_to_process['delta' + axis] = event['delta' + axis] +
+                        (Math.sign($$.$me_atom2_event_wheel_to_process['delta' + axis]) * Math.sign(event['delta' + axis]) < 0 ?
+                            0 :
+                            $$.$me_atom2_event_wheel_to_process['delta' + axis]);
+                }
             }
             $$.$me_atom2_async();
             event.preventDefault();
-        };
+        }
+        function wheel_helper(med, new_med, wheel_phase, lastCandidates) {
+            if (med != null) {
+                const tm = performance.now();
+                if (Math.abs(new_med) > Math.abs(med)) {
+                    lastCandidates.push({ tm, phase: $$.$me_atom2_wheel_phase_enum.accel });
+                }
+                else if (Math.abs(new_med) < Math.abs(med)) {
+                    lastCandidates.push({ tm, phase: $$.$me_atom2_wheel_phase_enum.decel });
+                }
+                lastCandidates = lastCandidates.filter(item => item.tm > tm - candidatesLongMax);
+                lastCandidates = lastCandidates.slice(-candidatesCountMax);
+                let phaseNew = $$.$me_atom2_wheel_phase_enum.unknown;
+                if (lastCandidates.length >= candidatesCountMin) {
+                    const accelVotes = lastCandidates.filter(item => item.phase == $$.$me_atom2_wheel_phase_enum.accel).length;
+                    const decelVotes = lastCandidates.filter(item => item.phase == $$.$me_atom2_wheel_phase_enum.decel).length;
+                    if (accelVotes / lastCandidates.length >= electionThreshold) {
+                        phaseNew = $$.$me_atom2_wheel_phase_enum.accel;
+                    }
+                    else if (decelVotes / lastCandidates.length >= electionThreshold) {
+                        phaseNew = $$.$me_atom2_wheel_phase_enum.decel;
+                    }
+                    else {
+                        phaseNew = $$.$me_atom2_wheel_phase_enum.unknown;
+                    }
+                }
+                wheel_phase = phaseNew;
+            }
+            const result = {
+                wheel_phase,
+                lastCandidates,
+            };
+            return result;
+        }
         const keydown = (event) => $$.$me_atom2_event_keyboard_process('keydown', event);
         const keyup = (event) => $$.$me_atom2_event_keyboard_process('keyup', event);
         function _settingsInit() {
@@ -4765,17 +4876,17 @@ var $;
             $$.$me_atom2_entity.root().props({
                 em: () => 16,
                 pm: () => 32,
-                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : 'white'),
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
                 theme: $$.$me_atom2_prop_store({
-                    default: () => $$.$me_theme.light,
-                    valid: (val) => val == $$.$me_theme.light || val == $$.$me_theme.dark ? val : null,
+                    default: () => $$.$nl_theme.light,
+                    valid: (val) => val == $$.$nl_theme.light || val == $$.$nl_theme.dark ? val : null,
                 }),
-                colorButton: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorButton: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#0070a4' :
                     '#008ecf'),
-                colorLink: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorLink: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#2b87db' :
                     '#53adff'),
             });
@@ -4900,15 +5011,15 @@ var $;
                 styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
                     return (`
           .${className}::placeholder {
-            color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+            color: ${theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
           }
           .${className} {
-            border: solid 1px ${theme == $$.$me_theme.light ? '#bdc3d1' : '#d8dce3'};
-            background: ${theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'}
+            border: solid 1px ${theme == $$.$nl_theme.light ? '#bdc3d1' : '#d8dce3'};
+            background: ${theme == $$.$nl_theme.light ? '#fcfcfd' : '#666f7f'}
           }
           .${className}:focus {
             outline: none;
-            border: 1px solid ${theme == $$.$me_theme.light ? '#313745' : 'white'};
+            border: 1px solid ${theme == $$.$nl_theme.light ? '#313745' : 'white'};
           }
         `);
                 }),
@@ -4988,14 +5099,14 @@ var $;
     (function ($$) {
         $$.$me_triangle = {
             prop: {
-                direction: () => $$.$me_rect_sides_enum.bottom,
+                direction: () => $$.$me_pos_enum.bottom,
                 size: '.em',
                 color: '.colorText',
                 k: () => 2 / Math.sqrt(3),
-                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_pos_enum.bottom || direction == $$.$me_pos_enum.top ?
                     size :
                     Math.round(size * k)),
-                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_pos_enum.left || direction == $$.$me_pos_enum.right ?
                     size :
                     Math.round(size * k)),
             },
@@ -5006,17 +5117,17 @@ var $;
                         '#height': () => 0,
                     },
                     style: {
-                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
-                            direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_pos_enum.top ? '' :
+                            direction == $$.$me_pos_enum.bottom ? `${height}px solid ${color}` :
                                 `${height / 2}px solid transparent`),
-                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
-                            direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_pos_enum.left ? '' :
+                            direction == $$.$me_pos_enum.right ? `${width}px solid ${color}` :
                                 `${width / 2}px solid transparent`),
-                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
-                            direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_pos_enum.right ? '' :
+                            direction == $$.$me_pos_enum.left ? `${width}px solid ${color}` :
                                 `${width / 2}px solid transparent`),
-                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
-                            direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_pos_enum.bottom ? '' :
+                            direction == $$.$me_pos_enum.top ? `${height}px solid ${color}` :
                                 `${height / 2}px solid transparent`),
                     },
                 }),
@@ -5312,7 +5423,7 @@ var $;
                 boxSize: () => 16,
                 space: () => 8,
                 fontSize: $$.$me_atom2_prop(['.boxSize'], $$.$me_atom2_prop_compute_fn_sum(-2)),
-                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : '#ffffff'),
+                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : '#ffffff'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 '#cursor': () => 'pointer',
                 '#height': '.boxSize',
@@ -5325,18 +5436,18 @@ var $;
           transform: scale(1.2)
         }
         .${className}[checked=false] > svg {
-          ${theme != $$.$me_theme.light ? '' : `border: solid 1px ${colorText};`}
+          ${theme != $$.$nl_theme.light ? '' : `border: solid 1px ${colorText};`}
           background-color: white;
           box-sizing: border-box;
         }
         .${className}[checked=true] > svg {
-          background: ${theme == $$.$me_theme.light ? '#0070a4' : 'white'};
+          background: ${theme == $$.$nl_theme.light ? '#0070a4' : 'white'};
         }
         .${className}[checked=false] > svg > path {
           fill: transparent;
         }
         .${className}[checked=true] > svg > path {
-          fill: ${theme == $$.$me_theme.light ? 'white' : 'black'};
+          fill: ${theme == $$.$nl_theme.light ? 'white' : 'black'};
         }
         .${className} > div {
           white-space: nowrap;
@@ -5629,7 +5740,7 @@ var $;
                     base: $$.$me_triangle,
                     prop: {
                         '#ofsHor': $$.$me_atom2_prop(['.#width'], ({ masters: [width] }) => -width),
-                        direction: () => $$.$me_rect_sides_enum.left,
+                        direction: () => $$.$me_pos_enum.left,
                         size: '.em',
                         color: '<.colorBackground',
                     },
@@ -5711,7 +5822,7 @@ var $;
                             })
                         },
                         style: {
-                            borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                            borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$nl_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$nl_theme.light ? 1 : .5})`),
                             fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
                         },
                     }),
@@ -5807,16 +5918,16 @@ var $;
                 '#width': '/.#viewportWidth',
                 '#height': '/.#viewportHeight',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 10),
-                colorWinnerBlue: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorWinnerBlue: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     $$.$nl_logo_color_blue :
                     'white'),
-                colorWinnerCyan: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorWinnerCyan: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     $$.$nl_logo_color_cyan :
                     'white'),
                 isPassword: () => true,
             },
             style: {
-                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
+                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
             },
             elem: {
                 container: () => ({
@@ -5996,7 +6107,7 @@ var $;
                                 '#height': () => null,
                                 '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(40)),
                                 '#alignHor': () => $$.$me_align.center,
-                                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#6a6c74' : '#d8dce3'),
+                                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#d8dce3'),
                             },
                             style: {
                                 textAlign: () => 'center',
@@ -6064,6 +6175,39 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        function $me_vector_transform(v, dist, from) {
+            const dx = v.to.x - v.from.x;
+            const dy = v.to.y - v.from.y;
+            const len = Math.hypot(dx, dy);
+            if (!from)
+                from = v.from;
+            const result = {
+                from,
+                to: {
+                    x: dx / len * dist + from.x,
+                    y: dy / len * dist + from.y,
+                },
+            };
+            return result;
+        }
+        $$.$me_vector_transform = $me_vector_transform;
+        function $me_vector_revert(v) {
+            const result = {
+                from: v.to,
+                to: v.from,
+            };
+            return result;
+        }
+        $$.$me_vector_revert = $me_vector_revert;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//vector.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         let $nl_scheme_will_action_enum;
         (function ($nl_scheme_will_action_enum) {
             $nl_scheme_will_action_enum[$nl_scheme_will_action_enum["none"] = 0] = "none";
@@ -6117,7 +6261,7 @@ var $;
                                 continue;
                             if (!point_def.visible)
                                 continue;
-                            if (!$$.$me_point_in_rect(point_def.x, point_def.y, rect))
+                            if (!$$.$me_rect_has_point(point_def.x, point_def.y, rect))
                                 continue;
                             codes.add(point_def.code);
                             let guids = code2guids[point_def.code];
@@ -6238,7 +6382,7 @@ var $;
                                 },
                                 wheelDrag: p => {
                                     if (p.event.last && p.event.last.ctrlKey) {
-                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                        handle_move(p.event.deltaX, p.event.deltaY);
                                     }
                                     else {
                                         const { clientX, clientY } = p.event.last;
@@ -6257,7 +6401,7 @@ var $;
                                 },
                                 wheelTouch: p => {
                                     if (p.event.start.touches.length > 1) {
-                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                        handle_move(p.event.deltaX, p.event.deltaY);
                                     }
                                     else {
                                         const { clientX, clientY } = p.event.last.touches[0];
@@ -6275,8 +6419,8 @@ var $;
                                     return false;
                                 },
                                 wheel: p => {
-                                    if (!p.event.ctrlKey) {
-                                        handle_move(p.event._deltaX, p.event._deltaY);
+                                    if (!p.event.src.ctrlKey) {
+                                        handle_move(p.event.deltaX, p.event.deltaY);
                                     }
                                     else {
                                         const clientRect = $$.a('.#clientRect');
@@ -6339,7 +6483,7 @@ var $;
                                         if (label.rects) {
                                             for (const k in label.rects) {
                                                 const rect = label.rects[k];
-                                                if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
+                                                if (rect && $$.$me_rect_has_point(clientX, clientY, rect)) {
                                                     $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
                                                     codes.add(label.code);
                                                     let guids = code2guids[label.code];
@@ -6410,12 +6554,12 @@ var $;
                                             if (label.rects) {
                                                 for (const k in label.rects) {
                                                     const rect = label.rects[k];
-                                                    if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
+                                                    if (rect && $$.$me_rect_has_point(clientX, clientY, rect)) {
                                                         candidate_dist = 0.00000001;
                                                         candidate_guids = code2guids[label.code];
                                                     }
-                                                    else if (rect && $$.$me_dist_to_rect(clientX, clientY, rect) < touchTolerance) {
-                                                        let dist = $$.$me_dist_to_rect(clientX, clientY, rect);
+                                                    else if (rect && $$.$me_rect_dist_to(clientX, clientY, rect) < touchTolerance) {
+                                                        let dist = $$.$me_rect_dist_to(clientX, clientY, rect);
                                                         if (dist < candidate_dist || candidate_dist == 0) {
                                                             candidate_dist = dist;
                                                             candidate_guids = code2guids[label.code];
@@ -6468,7 +6612,7 @@ var $;
                                             if (label.rects) {
                                                 for (const k in label.rects) {
                                                     const rect = label.rects[k];
-                                                    if (rect && $$.$me_point_in_rect(clientX, clientY, rect)) {
+                                                    if (rect && $$.$me_rect_has_point(clientX, clientY, rect)) {
                                                         const guids = code2guids[label.code];
                                                         if (guids) {
                                                             const value_new = $$.a('<<.value').slice();
@@ -6785,7 +6929,7 @@ var $;
                                         line_def.ctxCenterY = p.center.y * pixelRatio;
                                         line_def.ctxRadius = line_def.radius * scale * pixelRatio;
                                         const type = styleType(line_def.style);
-                                        if (type == $$.$me_line_style_type_enum.solid) {
+                                        if (type == $$.$nl_line_style_type_enum.solid) {
                                             $$.$me_atom2_ctx_circle({
                                                 ctx,
                                                 ctxCenterX: line_def.ctxCenterX,
@@ -6794,7 +6938,7 @@ var $;
                                                 stroke: { ctxWidth: thick_line * pixelRatio, style: styleColor(line_def.style) },
                                             });
                                         }
-                                        else if (type == $$.$me_line_style_type_enum.double) {
+                                        else if (type == $$.$nl_line_style_type_enum.double) {
                                             const thickStyle = (line_def.style.thickStyle || thick_line) * scale;
                                             const thickLine = (line_def.style.thickLine || pixelRatio) * scale;
                                             $$.$me_atom2_ctx_circle({
@@ -6813,7 +6957,7 @@ var $;
                                             });
                                         }
                                         else {
-                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$me_line_style_type_enum[type]}`, line_def);
+                                            $$.$me_throw(`${id()}: unsupported style.type ${$$.$nl_line_style_type_enum[type]}`, line_def);
                                         }
                                         const retCircle = {
                                             centerX: line_def.ctxCenterX / pixelRatio,
@@ -7036,8 +7180,8 @@ var $;
         };
         function styleType(style) {
             const result = typeof style == 'string' ?
-                $$.$me_line_style_type_enum.solid :
-                style.type || $$.$me_line_style_type_enum.solid;
+                $$.$nl_line_style_type_enum.solid :
+                style.type || $$.$nl_line_style_type_enum.solid;
             return result;
         }
         function styleColor(style) {
@@ -7335,7 +7479,7 @@ var $;
                                     top: clientRect.top + resizerTop,
                                     bottom: clientRect.top + resizerBottom,
                                 };
-                                dispatch_arg.ret = $$.$me_point_in_rect(clientX, clientY, rect, tolerance);
+                                dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect, tolerance);
                             }
                             return true;
                         }
@@ -7348,7 +7492,7 @@ var $;
                                 right: clientRect.right,
                                 bottom: clientRect.top + $$.a('.height_visible'),
                             };
-                            dispatch_arg.ret = $$.$me_point_in_rect(clientX, clientY, rect);
+                            dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect);
                             return true;
                         }
                         else if (dispatch_name == 'deltaY') {
@@ -7375,10 +7519,10 @@ var $;
                                 const y = clientY - clientRect.top;
                                 const navHorPrevRect = $$.a('.navHorPrevRect');
                                 const navHorNextRect = $$.a('.navHorNextRect');
-                                if (navHorPrevRect && $$.$me_point_in_rect(x, y, navHorPrevRect)) {
+                                if (navHorPrevRect && $$.$me_rect_has_point(x, y, navHorPrevRect)) {
                                     dispatch_arg.ret = 'prev';
                                 }
-                                else if (navHorNextRect && $$.$me_point_in_rect(x, y, navHorNextRect)) {
+                                else if (navHorNextRect && $$.$me_rect_has_point(x, y, navHorNextRect)) {
                                     dispatch_arg.ret = 'next';
                                 }
                                 else {
@@ -7401,7 +7545,7 @@ var $;
                                         });
                                     for (const crumb of crumbs) {
                                         const rect_crumb = rect(crumb);
-                                        if ($$.$me_point_in_rect(ctxX, ctxY, rect_crumb)) {
+                                        if ($$.$me_rect_has_point(ctxX, ctxY, rect_crumb)) {
                                             dispatch_arg.ret = crumb.guid;
                                             break;
                                         }
@@ -7417,8 +7561,8 @@ var $;
                             const result = $$.a.dispatch('', 'wheel', {
                                 clientX: p.event.clientX,
                                 clientY: p.event.clientY,
-                                deltaY: p.event._deltaY,
-                                deltaX: p.event._deltaX,
+                                deltaY: p.event.deltaY,
+                                deltaX: p.event.deltaX,
                                 ret: false,
                             }).ret;
                             return result;
@@ -7427,8 +7571,8 @@ var $;
                             const result = $$.a.dispatch('', 'wheel', {
                                 clientX: p.event.start.touches[0].clientX,
                                 clientY: p.event.start.touches[0].clientY,
-                                deltaY: p.event._deltaY,
-                                deltaX: p.event._deltaX,
+                                deltaY: p.event.deltaY,
+                                deltaX: p.event.deltaX,
                                 ret: false,
                             }).ret;
                             return result;
@@ -7647,11 +7791,11 @@ var $;
                             valid: (val) => typeof val == 'number' ? val : null,
                         }),
                         deleteProgress: () => -1,
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#868e9b'),
-                        backgroundRGB: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '255,255,255' : '70,78,99'),
-                        borderColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'silver' : '#f5f5f5'),
-                        resizerBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#464e63' : '#d8dce3'),
-                        resizerStroke: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D6DAE0' : '#464e63'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#868e9b'),
+                        backgroundRGB: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '255,255,255' : '70,78,99'),
+                        borderColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'silver' : '#f5f5f5'),
+                        resizerBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#464e63' : '#d8dce3'),
+                        resizerStroke: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#D6DAE0' : '#464e63'),
                     },
                     prop_non_render: {
                         deleteDuration: () => 200,
@@ -8134,9 +8278,9 @@ var $;
             base: $$.$nl_scheme_engine,
             prop: {
                 data: '/.scheme_metro',
-                background_station: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
-                background_scheme: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
-                background_text_fill_style: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'rgba(255,255,255,.5)' : '#464f63'),
+                background_station: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
+                background_scheme: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
+                background_text_fill_style: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'rgba(255,255,255,.5)' : '#464f63'),
                 background_station_selected: () => 'red',
                 background_station_will_select: () => '#F8CFD3',
                 background_station_will_deselect: () => '#3F88DE',
@@ -8227,7 +8371,7 @@ var $;
     (function ($$) {
         $$.$nl_panel = {
             style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
                 borderRadius: () => '2px',
                 boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
             },
@@ -8251,6 +8395,61 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $me_word_plural(count, word1, word2_4, word5more) {
+            if (word5more === undefined) {
+                word5more = word2_4;
+            }
+            let result = word5more;
+            const decimal = Math.floor(count / 10) % 10;
+            if (decimal != 1) {
+                const unit = count % 10;
+                if (unit == 1) {
+                    result = word1;
+                }
+                else if (unit >= 2 && unit <= 4) {
+                    result = word2_4;
+                }
+            }
+            return result;
+        }
+        $$.$me_word_plural = $me_word_plural;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//word_plural.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $me_option_caption(id, options, val) {
+            const isSelected = typeof val == 'string' ? val == id :
+                val instanceof Set ? val.has(id) :
+                    val instanceof Map ? val.has(id) :
+                        false;
+            const caption = typeof options[id].caption == 'function' ?
+                options[id].caption({ val, isSelected }) :
+                options[id].caption;
+            return caption;
+        }
+        $$.$me_option_caption = $me_option_caption;
+        function $me_option_caption_text(id, options, val) {
+            const caption = $me_option_caption(id, options, val);
+            const result = typeof caption == 'string' ? caption :
+                !caption || typeof caption.text != 'string' ? id :
+                    caption.text;
+            return result;
+        }
+        $$.$me_option_caption_text = $me_option_caption_text;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//option.js.map
 ;
 "use strict";
 var $;
@@ -8336,7 +8535,19 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        function $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight) {
+        const period_default = '...';
+        function $me_label_text_n_ctxLeft(p) {
+            let { ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor } = p;
+            if (period == null)
+                period = period_default;
+            if (left == null)
+                left = 0;
+            if (paddingLeft == null)
+                paddingLeft = 0;
+            if (paddingRight == null)
+                paddingRight = 0;
+            if (alignHor == null)
+                alignHor = $$.$me_align.left;
             const ctxContentWidth = Math.max(0, width - paddingLeft - paddingRight) * pixelRatio;
             $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
             let ctxTextWidth = ctx.measureText(text).width;
@@ -8353,16 +8564,16 @@ var $;
                 ctxTextWidth = wi + ctxPeriodWidth;
                 text = s + period;
             }
-            ctxLeft += $$.$me_align_correction($$.a('.alignHor'), () => Math.max(0, ctxContentWidth - ctxTextWidth));
+            ctxLeft += $$.$me_align_correction(alignHor, () => Math.max(0, ctxContentWidth - ctxTextWidth));
             return { text, ctxLeft };
         }
         $$.$me_label_text_n_ctxLeft = $me_label_text_n_ctxLeft;
         $$.$me_label = {
             type: '$me_label',
             base: $$.$me_panel,
-            prop: Object.assign(Object.assign(Object.assign(Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => '...' }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer'])), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer'])), { _text_n_ctxLeft: $$.$me_atom2_prop([
-                    '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight'
-                ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] }) => $me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight)), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
+            prop: Object.assign(Object.assign(Object.assign(Object.assign({ text: $$.$me_atom2_prop_abstract(), period: () => period_default }, $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'align', ['alignHor', 'alignVer'])), $$.$me_atom2_prop_cascade(() => $$.$me_align.left, 'ofs', ['ofsHor', 'ofsVer'])), { _text_n_ctxLeft: $$.$me_atom2_prop([
+                    '.#ctx', '.text', '.period', '/.#pixelRatio', '.#width', '.#left', '.paddingLeft', '.paddingRight', '.alignHor'
+                ], ({ masters: [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor] }) => $me_label_text_n_ctxLeft({ ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor })), _ctxLeft: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.ctxLeft), _text: $$.$me_atom2_prop(['._text_n_ctxLeft'], ({ masters: [val] }) => val.text), _textWidth: $$.$me_atom2_prop(['.#ctx', '.text', '/.#pixelRatio', '.fontSize', '.fontWeight', '.fontFamily'], ({ masters: [ctx, text, pixelRatio] }) => {
                     $$.$me_atom2_control.font_prepare(ctx, pixelRatio);
                     const result = Math.ceil(ctx.measureText(text).width / pixelRatio);
                     return result;
@@ -8505,13 +8716,13 @@ var $;
                         idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
                         _ctxLeft: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.no_adjust'], ({ masters: [no_adjust] }) => no_adjust ?
                             ['._text_n_ctxLeft'] :
-                            ['.#ctx', '.text', '.period', '/.#pixelRatio', `<.option_width[${id}]`, `<.option_left[${id}]`, '.paddingLeft', '.paddingRight']), ({ len, masters }) => {
+                            ['.#ctx', '.text', '.period', '/.#pixelRatio', `<.option_width[${id}]`, `<.option_left[${id}]`, '.paddingLeft', '.paddingRight', '.alignHor']), ({ len, masters }) => {
                             if (len == 1) {
                                 return masters[0].ctxLeft;
                             }
                             else {
-                                const [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight] = masters;
-                                return $$.$me_atom2_anim({ to: $$.$me_label_text_n_ctxLeft(ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight).ctxLeft
+                                const [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor] = masters;
+                                return $$.$me_atom2_anim({ to: $$.$me_label_text_n_ctxLeft({ ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor }).ctxLeft
                                 });
                             }
                         }),
@@ -8586,7 +8797,7 @@ var $;
                 colorBorder: () => 'transparent',
                 colorBorderSelected: () => 'transparent',
                 colorBackground: () => 'transparent',
-                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#0070a4' :
                     '#0facf4'),
                 borderRadius: () => 0,
@@ -8594,7 +8805,7 @@ var $;
                 paddingHor: () => 0,
                 option_ids: $$.$me_atom2_prop_keys(['.options']),
                 option_width_min: () => 40,
-                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#0070a4' :
                     'white'),
                 colorTextSelected: () => 'white',
@@ -9055,15 +9266,15 @@ var $;
                 wheel: p => !$$.a('.disabledScroll') &&
                     p.isInRect(p.event.clientX, p.event.clientY) &&
                     $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
+                    wheel(p.event.deltaY),
                 wheelDrag: p => !$$.a('.disabledScroll') &&
                     p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
                     $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
+                    wheel(p.event.deltaY),
                 wheelTouch: p => !$$.a('.disabledScroll') &&
                     p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
                     $$.$me_atom2_event_wheel_y_is(p.event) &&
-                    wheel(p.event._deltaY),
+                    wheel(p.event.deltaY),
             },
         };
         function wheel(deltaY) {
@@ -9742,7 +9953,7 @@ var $;
                         paddingVer: () => 32,
                     },
                     style: {
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
                         boxShadow: () => '0 12px 12px 0 rgba(0, 0, 0, 0.5)',
                     },
                     elem: {
@@ -9810,7 +10021,7 @@ var $;
                                     prop: {
                                         size: () => 15,
                                         thick: () => 2,
-                                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : 'white'),
                                         opacity: () => .5,
                                     },
                                 }),
@@ -9908,7 +10119,7 @@ var $;
                     return result;
                 }),
                 disabledScroll: $$.$me_atom2_prop(['<.moving'], ({ masters: [moving] }) => !!moving),
-                curtain_kind: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'black'),
+                curtain_kind: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : 'black'),
                 row_height_min: '<.row_height',
                 header_height: () => 0,
                 provider_tag: '.source',
@@ -9928,9 +10139,9 @@ var $;
                 header: () => null,
             },
             style: {
-                boxShadow: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.25)'),
-                border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'solid 1px #d8dce3'),
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f0f1f4' : '#878f9b'),
+                boxShadow: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.25)'),
+                border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'solid 1px #d8dce3'),
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f0f1f4' : '#878f9b'),
             },
         };
         const row = {
@@ -9985,7 +10196,7 @@ var $;
         };
         const item = {
             style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581'),
                 border: () => 'solid 1px #adb0b8',
                 boxSizing: () => 'border-box',
                 userSelect: () => 'none',
@@ -10029,7 +10240,7 @@ var $;
                         draggable: () => false,
                     },
                     style: {
-                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                             'brightness(0%) invert(29%) sepia(9%) saturate(1214%) hue-rotate(184deg) brightness(93%) contrast(87%)' :
                             'brightness(0%) invert(94%) sepia(11%) saturate(100%) hue-rotate(182deg) brightness(95%) contrast(89%)'),
                     },
@@ -10267,13 +10478,13 @@ var $;
             event: {
                 wheel: p => !$$.a('@header.colSelected') &&
                     p.isInRect(p.event.clientX, p.event.clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
+                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event.deltaX),
                 wheelDrag: p => !$$.a('@header.colSelected') &&
                     p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
+                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event.deltaX),
                 wheelTouch: p => !$$.a('@header.colSelected') &&
                     p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event._deltaX),
+                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event.deltaX),
             },
             elem: {
                 header: () => ({
@@ -10378,7 +10589,7 @@ var $;
                         '#height': '<<.#height',
                     },
                     style: {
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
                         opacity: '<.colSelectedOpacity',
                     },
                 }),
@@ -10530,7 +10741,7 @@ var $;
                                         text: `<<<<.col_caption[${id}]`,
                                         borderWidth: () => 1,
                                         colorBorder: () => '#adb0b8',
-                                        colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
+                                        colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581'),
                                         align: () => $$.$me_align.center,
                                         fontSize: () => 14,
                                         paddingHor: () => 4,
@@ -10555,7 +10766,7 @@ var $;
                                             borderWidth: () => 1,
                                             colorBorder: () => '#adb0b8',
                                             borderWidthTop: () => 0,
-                                            colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'),
+                                            colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#F5F8F8' : '#878f9b'),
                                             fontSize: () => 14,
                                             paddingHor: () => 4,
                                             alignVer: () => $$.$me_align.center,
@@ -10617,7 +10828,7 @@ var $;
                     control: {
                         cell: () => ({
                             base: $$.$me_panel,
-                            prop: Object.assign(Object.assign({}, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
+                            prop: Object.assign(Object.assign({}, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581') }),
                         }),
                     },
                 }),
@@ -10635,7 +10846,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
                                     prop_non_render: {
                                         '#cursor': () => 'pointer',
                                     },
@@ -10783,7 +10994,7 @@ var $;
                 '#ofsVer': () => -4,
             },
             attr: {
-                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => `assets/stretch-${$$.$me_theme[theme]}@2x.png`),
+                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => `assets/stretch-${$$.$nl_theme[theme]}@2x.png`),
                 draggable: () => false,
             },
             style: {
@@ -10808,6 +11019,7 @@ var $;
                 },
                 touchend: () => resizeFini(),
                 mousedown: p => {
+                    console.log('mousedown');
                     if (!p.isInRect(p.event.clientX, p.event.clientY))
                         return false;
                     resizeStart(p.event.clientX);
@@ -11139,7 +11351,7 @@ var $;
                             control: {
                                 text: () => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign(Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
                                 }),
                             },
                         }),
@@ -11148,6 +11360,7 @@ var $;
                                 '#width': '<<<<<.col_width_sum_actual',
                                 '#ofsHor': '<<<<<.ofsHor',
                                 '#cursor': () => 'pointer',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
                             event: {
                                 clickOrTap: (e) => {
@@ -11165,7 +11378,7 @@ var $;
                             control: {
                                 cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
                                     base: $$.$me_label,
-                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
+                                    prop: Object.assign(Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders), { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
                                 })),
                             },
                         }),
@@ -11294,7 +11507,7 @@ var $;
                 align: $$.$me_align.center,
                 width: 138,
                 fld: ['square_explication'],
-                fn: (square_explication) => square_explication,
+                fn: (square_explication) => square_explication == null ? '?' : square_explication,
             },
             'Ипотека': {
                 width: 41,
@@ -11418,7 +11631,7 @@ var $;
                 width: 85,
                 fld: ['built_year'],
                 fn: (val) => {
-                    return val;
+                    return val == null ? '?' : val;
                 },
             },
             'Источник': {
@@ -11591,7 +11804,7 @@ var $;
                                 '#ofsHor': () => -4,
                             },
                             attr: {
-                                src: $$.$me_atom2_prop(['/.theme', '<<.isZoomed'], ({ masters: [theme, isZoomed] }) => `assets/${$$.$me_theme[theme]}-slide-${isZoomed ? 'downright' : 'upleft'}@2x.png`),
+                                src: $$.$me_atom2_prop(['/.theme', '<<.isZoomed'], ({ masters: [theme, isZoomed] }) => `assets/${$$.$nl_theme[theme]}-slide-${isZoomed ? 'downright' : 'upleft'}@2x.png`),
                             },
                             style: {
                                 userSelect: () => 'none',
@@ -11638,7 +11851,7 @@ var $;
                     },
                     style: {
                         userSelect: () => 'none',
-                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                             'brightness(0%) invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
                             'brightness(0%) invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
                     },
@@ -12014,7 +12227,7 @@ var $;
                 cols: () => $$.$nl_search_panel_result_cols,
             },
             style: {
-                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
+                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
             },
             elem: {
                 cross: () => ({
@@ -12269,7 +12482,7 @@ var $;
                         '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     style: {
-                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                 }),
                 price_dynamics: () => ({
@@ -12280,7 +12493,7 @@ var $;
                         '#ofsVer': $$.$me_atom2_prop(['<@map.#height', '<@map.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     style: {
-                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                 }),
                 history: () => ({
@@ -12291,7 +12504,7 @@ var $;
                         '#ofsVer': $$.$me_atom2_prop(['<@map.#height', '<@map.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                     },
                     style: {
-                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                 }),
             },
@@ -12305,7 +12518,7 @@ var $;
                 '#height': $$.$me_atom2_prop(['.isMinimized'], ({ masters: [isMin] }) => isMin ? 214 : 374),
             },
             style: {
-                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
             },
             elem: {
                 text: () => ({
@@ -12338,7 +12551,7 @@ var $;
                         caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? '&nbsp;&nbsp;Больше ▼' : '&nbsp;&nbsp;Меньше ▲'),
                     },
                     style: {
-                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                     dom: {
                         innerHTML: '.caption'
@@ -12359,7 +12572,7 @@ var $;
                         '#ofsHor': () => 10,
                     },
                     style: {
-                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#6b7277'),
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#6b7277'),
                     },
                     elem: {
                         send_comment: () => ({
@@ -12378,7 +12591,7 @@ var $;
                                 styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
                                     return (`
                   .${className}::placeholder {
-                    color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+                    color: ${theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
                   }
                 `);
                                 }),
@@ -12391,8 +12604,8 @@ var $;
                                 padding: () => 0,
                                 resize: () => 'none',
                                 outline: () => 'none',
-                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'),
-                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'),
+                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'white'),
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#666f7f'),
                             },
                             attr: {
                                 placeholder: () => 'Написать комментарий',
@@ -12432,7 +12645,7 @@ var $;
                 ofs2: $$.$me_atom2_prop(['.#width'], ({ masters: [width, ofs] }) => width / 2),
             },
             style: {
-                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                 lineHeight: () => 14,
                 overflow: () => 'hidden',
             },
@@ -12650,7 +12863,7 @@ var $;
                 }),
             },
             style: {
-                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f5f8f8' : '#6b7277'),
+                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
             },
             elem: {
                 agent: () => ({
@@ -12747,7 +12960,7 @@ var $;
                         src: $$.$me_atom2_prop(['<.t_access', '<.w_access'], ({ masters: [t, w] }) => (t > 0) ? 'assets/icons-8-car.png' : 'assets/icons-8-i-will-go.png'),
                     },
                     style: {
-                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                             'invert(60%) sepia(41%) saturate(7350%) hue-rotate(188deg) brightness(92%) contrast(85%)' :
                             'invert(59%) sepia(40%) saturate(2468%) hue-rotate(187deg) brightness(104%) contrast(103%)'),
                     },
@@ -13327,7 +13540,7 @@ var $;
                         innerText: '<.date'
                     },
                     style: {
-                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#6a6c74' : '#d0d0d0'),
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#d0d0d0'),
                     },
                 }),
             }
@@ -13371,7 +13584,7 @@ var $;
                 paddingLeft: () => 10,
                 paddingRight: () => 10,
                 paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$nl_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$nl_theme.light ? 1 : .5})`),
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
                 fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
             },
@@ -13587,7 +13800,7 @@ var $;
                                     },
                                     style: {
                                         position: () => 'relative',
-                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581'),
                                     },
                                     elem: {
                                         key: () => ({
@@ -13631,7 +13844,7 @@ var $;
                                     },
                                     style: {
                                         position: () => 'relative',
-                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f0f1f4' : '#878f9b'),
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f0f1f4' : '#878f9b'),
                                     },
                                     elem: {
                                         key: () => ({
@@ -13642,7 +13855,7 @@ var $;
                                             style: {
                                                 paddingLeft: () => 8,
                                                 color: () => '#53adff',
-                                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'transparent' : 'rgb(70, 79, 99)'),
+                                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'transparent' : 'rgb(70, 79, 99)'),
                                             },
                                             dom: {
                                                 innerText: () => table_row_key,
@@ -13655,7 +13868,7 @@ var $;
                                             },
                                             style: {
                                                 textAlign: () => 'center',
-                                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#6a6c74' : 'white'),
+                                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : 'white'),
                                                 opacity: `<<<.table_fld_opacity[${col}]`,
                                             },
                                             dom: {
@@ -13698,16 +13911,16 @@ var $;
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
-                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#bdc3d1' :
                     '#d8dce3'),
-                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#008ecf' :
                     '#008ecf'),
-                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     'white' :
                     '#878f9b'),
-                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#f0f1f4' :
                     '#747B89'),
                 borderRadius: () => 4,
@@ -13717,7 +13930,7 @@ var $;
                 '#width': () => 440,
                 '#height': () => 32,
                 option_width_min: () => 40,
-                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$me_theme.light ?
+                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$nl_theme.light ?
                     '#0070a4' :
                     colorText),
                 colorTextSelected: '/.colorText',
@@ -13838,7 +14051,7 @@ var $;
                 '#ofsHor': () => 9,
                 '#alignVer': () => $$.$me_align.center,
                 size: () => 7,
-                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#444956' : 'white'),
+                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#444956' : 'white'),
                 k: () => 9 / 7,
             },
         };
@@ -13883,7 +14096,7 @@ var $;
                             '#height': prop_dropdownHeight.name(),
                             rec_count: $$.$me_atom2_prop([prop_option_ids.name()], ({ masters: [ids] }) => ids.length),
                             row_height_min: prop_row_height_min.name(),
-                            curtain_kind: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'black'),
+                            curtain_kind: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : 'black'),
                             header_height: () => 0,
                             provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
                             rec_idx_selected: $$.$me_atom2_prop([prop_value.name(), prop_option_ids.name()], ({ masters: [value, ids] }) => (typeof value == 'string' ?
@@ -14060,7 +14273,7 @@ var $;
                                 }),
                         },
                         style: {
-                            background: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b'),
+                            background: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b'),
                             boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
                         },
                         event: {
@@ -14118,12 +14331,12 @@ var $;
             style: {
                 borderRadius: () => 3,
                 border: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
-                    (theme == $$.$me_theme.light ? 'solid 1px #bdc3d1' : 'solid 1px #d8dce3') :
-                    (theme == $$.$me_theme.light ? 'solid 1px #313745' : 'solid 1px white'))),
+                    (theme == $$.$nl_theme.light ? 'solid 1px #bdc3d1' : 'solid 1px #d8dce3') :
+                    (theme == $$.$nl_theme.light ? 'solid 1px #313745' : 'solid 1px white'))),
                 boxSizing: () => 'border-box',
                 background: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
-                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b') :
-                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'))),
+                    (theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b') :
+                    (theme == $$.$nl_theme.light ? '#fcfcfd' : '#666f7f'))),
                 userSelect: () => 'none',
             },
             elem: {
@@ -14218,15 +14431,15 @@ var $;
                 arrow_size: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 11)),
                 arrow_ofsHor: $$.$me_atom2_prop(['.k'], ({ masters: [k] }) => Math.round(k * 11)),
                 theme: '/.theme',
-                header_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
-                header_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'white'),
-                content_header_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : '#d8dce3'),
-                content_header_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#878f9b'),
-                content_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
-                content_selected_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f0f1f4' : '#878f9b'),
-                content_selected_background_border: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'solid 1px #008ecf' : 'solid 1px #008ecf'),
-                content_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
-                content_invalid_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#b2b7bf' : '#b2b7bf'),
+                header_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#0070a4' : '#008ecf'),
+                header_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : 'white'),
+                content_header_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : '#d8dce3'),
+                content_header_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#878f9b'),
+                content_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
+                content_selected_background_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f0f1f4' : '#878f9b'),
+                content_selected_background_border: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'solid 1px #008ecf' : 'solid 1px #008ecf'),
+                content_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : 'white'),
+                content_invalid_text_color: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#b2b7bf' : '#b2b7bf'),
                 '#height': $$.$me_atom2_prop(['@header.#height', '.content_height_max'], $$.$me_atom2_prop_compute_fn_sum()),
                 mode: () => $nl_calendar_mode.day,
                 weekdays: () => ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
@@ -14296,7 +14509,7 @@ var $;
                                     '#alignVer': () => $$.$me_align.center,
                                     '#ofsHor': '<<<.arrow_ofsHor',
                                     color: '<<<.header_text_color',
-                                    direction: () => $$.$me_rect_sides_enum[id],
+                                    direction: () => $$.$me_pos_enum[id],
                                     size: '<<<.arrow_size',
                                 },
                             }),
@@ -14611,7 +14824,7 @@ var $;
                 buttonDropdown_width: () => 40,
                 text_margin: () => 16,
                 icon_size: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(28 / 32)),
-                icon_filter: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                icon_filter: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     'invert(65%) sepia(17%) saturate(1025%) hue-rotate(158deg) brightness(84%) contrast(87%)' :
                     'invert(46%) sepia(87%) saturate(371%) hue-rotate(162deg) brightness(93%) contrast(84%)'),
                 isTouch: '/.#isTouch',
@@ -14804,7 +15017,7 @@ var $;
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
             },
             style: {
-                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#414c5f'),
+                background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
                 border: () => '1px solid red',
             },
             elem: {
@@ -15115,7 +15328,7 @@ var $;
                                 src: $$.$me_atom2_prop(['<<.items'], ({ masters: [items] }) => items[id].icon),
                             },
                             style: {
-                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
                             },
                         }),
                         text: () => ({
@@ -15131,7 +15344,7 @@ var $;
                             },
                             style: {
                                 whiteSpace: () => 'nowrap',
-                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#0070a4' : 'white'),
+                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#0070a4' : 'white'),
                             }
                         }),
                         scheme: $$.$me_atom2_prop(['.isShown', '.id'], ({ masters: [isShown, id] }) => (!isShown) ? null : {
@@ -16425,10 +16638,10 @@ var $;
                         '#cursor': id == 'раздел' ? null : () => 'pointer',
                     },
                     style: {
-                        border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                        border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                             'solid 1px #bdc3d1' :
                             'solid 1px #d8dce3'),
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b'),
                         borderRadius: () => 3,
                     },
                     control: {
@@ -16674,7 +16887,7 @@ var $;
                             },
                             style: {
                                 background: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => !isSelected ? 'transparent' :
-                                    theme == $$.$me_theme.light ? '#0070a4' : '#008ecf'),
+                                    theme == $$.$nl_theme.light ? '#0070a4' : '#008ecf'),
                             },
                             elem: {
                                 icon: () => ({
@@ -16692,7 +16905,7 @@ var $;
                                     style: {
                                         filter: $$.$me_atom2_prop(['<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
                                             'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
-                                            theme == $$.$me_theme.light ?
+                                            theme == $$.$nl_theme.light ?
                                                 'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
                                                 'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
                                     },
@@ -16836,7 +17049,7 @@ var $;
                                 '#height': () => 16,
                             },
                             style: {
-                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#88B5CE' : '#5FBDF9'),
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#88B5CE' : '#5FBDF9'),
                                 borderRadius: () => 3,
                             },
                             elem: {
@@ -17216,7 +17429,7 @@ var $;
                                         styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
                                             return (`
                       .${className}::placeholder {
-                        color: ${theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+                        color: ${theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
                       }
                     `);
                                         }),
@@ -17230,8 +17443,8 @@ var $;
                                         padding: () => 12,
                                         resize: () => 'none',
                                         outline: () => 'none',
-                                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'rgba(49,55,69,0.5)' : 'white'),
-                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'),
+                                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'white'),
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#666f7f'),
                                     },
                                     attr: {
                                         placeholder: () => 'Введите новое сообщение',
@@ -17273,7 +17486,7 @@ var $;
                                         src: () => 'assets/icons-8-attach.png',
                                     },
                                     style: {
-                                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
                                     },
                                 }),
                             }
@@ -17327,7 +17540,7 @@ var $;
                 paddingLeft: () => 10,
                 paddingRight: () => 10,
                 paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$nl_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$nl_theme.light ? 1 : .5})`),
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
                 fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
             },
@@ -17846,7 +18059,7 @@ var $;
                 paddingLeft: () => 10,
                 paddingRight: () => 10,
                 paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$me_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$me_theme.light ? 1 : .5})`),
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$nl_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$nl_theme.light ? 1 : .5})`),
                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
                 fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
             },
@@ -18047,16 +18260,16 @@ var $;
             prop: {
                 options: $$.$me_atom2_prop_abstract(),
                 value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
-                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#bdc3d1' :
                     '#d8dce3'),
-                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#008ecf' :
                     '#008ecf'),
-                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     'white' :
                     '#878f9b'),
-                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#f0f1f4' :
                     '#747B89'),
                 borderRadius: () => 4,
@@ -18066,7 +18279,7 @@ var $;
                 '#width': () => 440,
                 '#height': () => 32,
                 option_width_min: () => 40,
-                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$me_theme.light ?
+                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$nl_theme.light ?
                     '#0070a4' :
                     colorText),
                 colorTextSelected: '/.colorText',
@@ -18193,7 +18406,7 @@ var $;
                                 '#height': () => 40,
                             },
                             attr: {
-                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_w.png' : 'assets/payment_w.png'),
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'assets/payment_w.png' : 'assets/payment_w.png'),
                                 draggable: () => false,
                             },
                         }),
@@ -18206,7 +18419,7 @@ var $;
                                 '#height': () => 40,
                             },
                             attr: {
-                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_v.png' : 'assets/payment_v.png'),
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'assets/payment_v.png' : 'assets/payment_v.png'),
                                 draggable: () => false,
                             },
                         }),
@@ -18219,7 +18432,7 @@ var $;
                                 '#height': () => 40,
                             },
                             attr: {
-                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_m.png' : 'assets/payment_m.png'),
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'assets/payment_m.png' : 'assets/payment_m.png'),
                                 draggable: () => false,
                             },
                         }),
@@ -18232,7 +18445,7 @@ var $;
                                 '#height': () => 40,
                             },
                             attr: {
-                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'assets/payment_y.png' : 'assets/payment_y.png'),
+                                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'assets/payment_y.png' : 'assets/payment_y.png'),
                                 draggable: () => false,
                             },
                         }),
@@ -18277,7 +18490,7 @@ var $;
                                 src: () => 'assets/icons-8-conference-call.png',
                             },
                             style: {
-                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
                             },
                         }),
                         label_sum2: () => ({
@@ -18353,7 +18566,7 @@ var $;
                                 src: () => 'assets/icons-8-data-sheet.png',
                             },
                             style: {
-                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
                             },
                         }),
                         label_period: () => ({
@@ -18400,7 +18613,7 @@ var $;
                                 src: () => 'assets/icons-8-apartment.png',
                             },
                             style: {
-                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
                             },
                         }),
                         label_segment: () => ({
@@ -18442,7 +18655,7 @@ var $;
                                 '#ofsVer': () => 313,
                             },
                             style: {
-                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#ffffcc' : '#6b7277'),
+                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#ffffcc' : '#6b7277'),
                             },
                             elem: {
                                 label_1: () => ({
@@ -18866,7 +19079,7 @@ var $;
                     },
                     style: {
                         margin: () => 0,
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#D9DCE2' : '#8C93A4'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#D9DCE2' : '#8C93A4'),
                         touchAction: () => 'none,'
                     },
                     prop: Object.assign(Object.assign({ tapTarget: () => 0 }, $$.$me_atom2_prop_same_def($$.$me_atom2_prop_store({
@@ -19107,7 +19320,7 @@ var $;
             prop: {
                 '#height': () => 54,
                 '#cursor': () => 'pointer',
-                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#474F61' :
                     '#d8dce3'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
@@ -19150,7 +19363,7 @@ var $;
                                 src: $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => 'assets/' + (login ? 'icons-8-user' : 'icons-8-enter-2') + '@2x.png'),
                             },
                             style: {
-                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                                filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                                     'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
                                     'brightness(0%) invert(18%) sepia(11%) saturate(1273%) hue-rotate(184deg) brightness(92%) contrast(86%)'),
                             },
@@ -19166,7 +19379,7 @@ var $;
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                     },
                     style: {
-                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#313745'),
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#313745'),
                         whiteSpace: () => 'nowrap',
                         overflow: () => 'hidden',
                         textOverflow: () => 'ellipsis',
@@ -19182,8 +19395,8 @@ var $;
                 '#ofsVer': '<@login.#height',
                 '#height': () => 38,
                 '#cursor': () => 'pointer',
-                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? '#474F61' : '#d8dce3'),
-                'caption': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'Светлая тема' : 'Тёмная тема'),
+                'colorBackground': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? '#474F61' : '#d8dce3'),
+                'caption': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 'Светлая тема' : 'Тёмная тема'),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 sunColor: () => 'red',
             },
@@ -19195,11 +19408,11 @@ var $;
             event: {
                 clickOrTap: () => {
                     const theme = $$.a('/.theme');
-                    if (theme == $$.$me_theme.light) {
-                        $$.a('/.theme', $$.$me_theme.dark);
+                    if (theme == $$.$nl_theme.light) {
+                        $$.a('/.theme', $$.$nl_theme.dark);
                     }
                     else {
-                        $$.a('/.theme', $$.$me_theme.light);
+                        $$.a('/.theme', $$.$nl_theme.light);
                     }
                     return true;
                 },
@@ -19207,16 +19420,16 @@ var $;
             elem: {
                 iconSquare: () => ({
                     prop: {
-                        '#width': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 26 : 20),
-                        '#height': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 25 : 21),
+                        '#width': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 26 : 20),
+                        '#height': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 25 : 21),
                         '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
                             to: isShrinked ? 18 : 16
                         })),
                         '#alignVer': () => $$.$me_align.center,
-                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'white' : '#313745'),
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 'white' : '#313745'),
                     },
                     elem: {
-                        icon: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? $$.$nl_icon_light : $$.$nl_icon_dark),
+                        icon: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? $$.$nl_icon_light : $$.$nl_icon_dark),
                     },
                 }),
                 text: () => ({
@@ -19228,7 +19441,7 @@ var $;
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                     },
                     style: {
-                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$me_theme.light ? 'white' : '#313745'),
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 'white' : '#313745'),
                         whiteSpace: () => 'nowrap',
                         overflow: () => 'hidden',
                         textOverflow: () => 'ellipsis',
@@ -19263,7 +19476,7 @@ var $;
                         src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive', '/.theme'], ({ masters: [isShrinked, isShrinked_animActive, theme] }) => {
                             if (isShrinked_animActive)
                                 isShrinked = !isShrinked;
-                            return `assets/${$$.$me_theme[theme]}-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
+                            return `assets/${$$.$nl_theme[theme]}-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
                         }),
                     },
                 }),
@@ -19312,7 +19525,7 @@ var $;
                 menu_cursor: () => '',
             },
             style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
             },
             elem: {
                 item: $$.$me_atom2_prop({ keys: ['.item_id'] }, ({ key: [id] }) => ({
@@ -19331,9 +19544,9 @@ var $;
                             const result = ~idx && ids.indexOf(id) == idx + 1;
                             return result;
                         }),
-                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover', '/.theme'], ({ masters: [isSelected, isHover, theme] }) => isSelected ? (theme == $$.$me_theme.light ? '#0070a4' : '#008ecf') :
-                            isHover ? (theme == $$.$me_theme.light ? '#cce2ed' : '#306283') :
-                                (theme == $$.$me_theme.light ? 'white' : '#464f63')),
+                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover', '/.theme'], ({ masters: [isSelected, isHover, theme] }) => isSelected ? (theme == $$.$nl_theme.light ? '#0070a4' : '#008ecf') :
+                            isHover ? (theme == $$.$nl_theme.light ? '#cce2ed' : '#306283') :
+                                (theme == $$.$nl_theme.light ? 'white' : '#464f63')),
                         'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
                         menu_cursor_src: $$.$me_atom2_prop(['/.#isTouch', '.#isHover'], ({ masters: [isTouch, isHover] }) => isTouch || !isHover ? '' : id, ({ atom, val }) => {
                             menu_cursor({ origin: atom, val: val });
@@ -19368,7 +19581,7 @@ var $;
                                     style: {
                                         filter: $$.$me_atom2_prop(['<<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
                                             'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
-                                            theme == $$.$me_theme.light ?
+                                            theme == $$.$nl_theme.light ?
                                                 'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
                                                 'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
                                     },

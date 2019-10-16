@@ -4,6 +4,27 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let $nl_theme;
+        (function ($nl_theme) {
+            $nl_theme[$nl_theme["light"] = 0] = "light";
+            $nl_theme[$nl_theme["dark"] = 1] = "dark";
+        })($nl_theme = $$.$nl_theme || ($$.$nl_theme = {}));
+        let $nl_line_style_type_enum;
+        (function ($nl_line_style_type_enum) {
+            $nl_line_style_type_enum[$nl_line_style_type_enum["solid"] = 0] = "solid";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["dashed"] = 1] = "dashed";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["dotted"] = 2] = "dotted";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["double"] = 3] = "double";
+        })($nl_line_style_type_enum = $$.$nl_line_style_type_enum || ($$.$nl_line_style_type_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//nl.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         const DB_NAME = 'bw';
         const DB_VERSION = 1;
         function open_idb(onsuccess) {
@@ -43,7 +64,7 @@ var $;
                     };
                     openCursor.onsuccess = function (event) {
                         var cursor = event.target.result;
-                        const size = 50;
+                        const size = 500;
                         if (cursor) {
                             count++;
                             cursor.continue();
