@@ -5377,7 +5377,6 @@ var $;
                 rowMarginRight: () => 0,
                 pos: () => ({ i: 0, ofsVer: 0, ofsHor: 0 }),
                 isReadyData: () => false,
-                needRender: () => true,
                 _visible_rows: '^canvas.visible_rows',
                 _isBegin: '^canvas.isBegin',
                 _isEnd: '^canvas.isEnd',
@@ -5388,6 +5387,12 @@ var $;
             dispatch(dispatch_name, dispatch_arg) {
                 if (dispatch_name == 'adjust') {
                     $$.a.dispatch('^canvas', dispatch_name, dispatch_arg);
+                    return true;
+                }
+                else if (dispatch_name == 'render') {
+                    const atom_renderTrigger = $$.a.get('^canvas.renderTrigger');
+                    if (atom_renderTrigger instanceof $$.$me_atom2)
+                        atom_renderTrigger.value((atom_renderTrigger.value() + 1) % 3);
                     return true;
                 }
                 return false;
@@ -5451,19 +5456,17 @@ var $;
                     prop: {
                         '#width': '<.#width',
                         '#height': '<.#height',
-                        needRender: $$.$me_atom2_prop(['<.needRender', '.#width', '.#height'], () => true, ({ val }) => {
-                            $$.a('<.needRender', val);
-                        }),
+                        renderTrigger: () => 0,
                     },
                     prop_non_render: {
                         pos_delta: $$.$me_atom2_prop([], () => ({ deltaY: 0, deltaX: 0 }), ({ val }) => {
                             if (val && ((val.sourceX != $me_list_pos_delta_source_enum.none) && val.deltaX ||
                                 (val.sourceY != $me_list_pos_delta_source_enum.none) && val.deltaY))
-                                $$.a('.needRender', true);
+                                $$.a.update('.renderTrigger', val => (val + 1) % 3);
                         }),
                         isReadyData: $$.$me_atom2_prop(['<.isReadyData'], null, ({ val }) => {
                             if (val)
-                                $$.a('.needRender', true);
+                                $$.a.update('.renderTrigger', val => (val + 1) % 3);
                         }),
                         pos: $$.$me_atom2_prop_bind('<.pos'),
                         isBegin: () => false,
@@ -5588,7 +5591,7 @@ var $;
                                         immedBounce[axis] = true;
                                 }
                             }
-                        if (!$$.a('.needRender') || skip.X && skip.Y) {
+                        if (skip.X && skip.Y) {
                             const start = performance.now();
                             const last = $$.a('.last');
                             ctx.drawImage(last, 0, 0, last.width, last.height);
@@ -5731,7 +5734,6 @@ var $;
                                     atom_isEnd: axis == 'X' ? null : $$.a.get('.isEnd'),
                                 });
                         }
-                        $$.a('.needRender', false);
                     },
                 }),
             },
@@ -6541,6 +6543,219 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_select = {
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                colorBorder: $$.$me_atom2_prop_abstract(),
+                colorBorderSelected: $$.$me_atom2_prop_abstract(),
+                colorText: $$.$me_atom2_prop_abstract(),
+                colorTextSelected: $$.$me_atom2_prop_abstract(),
+                colorBackground: $$.$me_atom2_prop_abstract(),
+                colorBackgroundSelected: $$.$me_atom2_prop_abstract(),
+                borderRadius: $$.$me_atom2_prop_abstract(),
+                borderWidth: $$.$me_atom2_prop_abstract(),
+                paddingHor: $$.$me_atom2_prop_abstract(),
+                '#width': $$.$me_atom2_prop_abstract(),
+                '#height': $$.$me_atom2_prop_abstract(),
+                option_width_min: $$.$me_atom2_prop_abstract(),
+                fontFamily: $$.$me_atom2_prop_abstract(),
+                fontWeight: $$.$me_atom2_prop_abstract(),
+                fontWeightSelected: $$.$me_atom2_prop_abstract(),
+                fontSize: $$.$me_atom2_prop_abstract(),
+                alignVer: () => $$.$me_align.center,
+                ofsVer: () => 0,
+                no_adjust: () => false,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                _option_width: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [option_ids] }) => {
+                    const result = ['.no_adjust', '.option_ids', '.options', '.value', '.#width', '.option_width_min'];
+                    for (const id of option_ids)
+                        result.push(`^option[${id}]._textWidth`, `^option[${id}].paddingLeft`, `^option[${id}].paddingRight`);
+                    return result;
+                }), ({ masters, prev }) => {
+                    const [no_adjust, option_ids, options, value, width_total, option_width_min] = masters;
+                    if (no_adjust && prev)
+                        return prev;
+                    const masters_base = 6;
+                    const width = {};
+                    let width_sum = 0;
+                    let width_excess_base = 0;
+                    const ids = [];
+                    let w;
+                    for (let i = 0; i < option_ids.length; i++) {
+                        const id = option_ids[i];
+                        const caption = $$.$me_option_caption(id, options, value);
+                        const isSpecifiedWidth = typeof caption != 'string' &&
+                            caption &&
+                            typeof caption.width == 'number';
+                        const w = width[id] =
+                            isSpecifiedWidth ?
+                                caption.width :
+                                Math.max(option_width_min, masters[masters_base + i * 3] + masters[masters_base + 1 + i * 3] + masters[masters_base + 2 + i * 3]);
+                        width_sum += w;
+                        if (!isSpecifiedWidth) {
+                            width_excess_base += w;
+                            ids.push(id);
+                        }
+                    }
+                    const width_excess = width_total - width_sum;
+                    for (const id of ids)
+                        width[id] *= (1 + width_excess / width_excess_base);
+                    return width;
+                }),
+                option_width: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['._option_width'] }, ({ key: [id], masters: [width] }) => width[id]),
+                option_left: $$.$me_atom2_prop({
+                    keys: ['.option_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.option_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        const result = [];
+                        if (!idx)
+                            return result;
+                        for (let i = 0; i < idx; i++)
+                            result.push(`.option_width[${ids[i]}]`);
+                        return result;
+                    }),
+                }, $$.$me_atom2_prop_compute_fn_sum()),
+                idx_selected: $$.$me_atom2_prop(['.option_ids', '.value'], ({ masters: [ids, id] }) => typeof id == 'string' ? [ids.indexOf(id)].filter(idx => ~idx) :
+                    id instanceof Set ? [...id].map((id) => ids.indexOf(id)).filter(idx => ~idx) :
+                        []),
+            },
+            event: {},
+            control: {
+                option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                    base: $$.$me_label,
+                    prop: {
+                        fontSize: '<.fontSize',
+                        fontWeight: $$.$me_atom2_prop(['.isSelected', '<.fontWeightSelected', '<.fontWeight'], ({ masters: [isSelected, fontWeightSelected, fontWeight] }) => isSelected ? fontWeightSelected : fontWeight),
+                        fontFamily: '<.fontFamily',
+                        isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set ? value.has(id) : value == id),
+                        paddingHor: '<.paddingHor',
+                        text: $$.$me_atom2_prop(['<.options', '<.value'], ({ masters: [options, value] }) => $$.$me_option_caption_text(id, options, value)),
+                        alignHor: () => $$.$me_align.center,
+                        alignVer: '<.alignVer',
+                        ofsVer: '<.ofsVer',
+                        '#width': $$.$me_atom2_prop([`<.option_width[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
+                        '#height': '<.#height',
+                        '#ofsHor': $$.$me_atom2_prop([`<.option_left[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
+                        idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
+                        _ctxLeft: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.no_adjust'], ({ masters: [no_adjust] }) => no_adjust ?
+                            ['._text_n_ctxLeft'] :
+                            ['.#ctx', '.text', '.period', '/.#pixelRatio', `<.option_width[${id}]`, `<.option_left[${id}]`, '.paddingLeft', '.paddingRight', '.alignHor']), ({ len, masters }) => {
+                            if (len == 1) {
+                                return masters[0].ctxLeft;
+                            }
+                            else {
+                                const [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor] = masters;
+                                return $$.$me_atom2_anim({ to: $$.$me_label_text_n_ctxLeft({ ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor }).ctxLeft
+                                });
+                            }
+                        }),
+                        borderWidthVer: '<.borderWidth',
+                        colorBorderVer: $$.$me_atom2_prop(['.isSelected', '<.colorBorder', '<.colorBorderSelected'], ({ masters: [isSelected, colorBorder, colorBorderSelected] }) => isSelected ? colorBorderSelected : colorBorder),
+                        borderLeft: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
+                            const idx = option_ids.indexOf(id);
+                            const result = ~idx_selected.indexOf(idx) ?
+                                (~idx_selected.indexOf(idx - 1) ? { width: borderWidth, color: 'transparent' } : { width: borderWidth, color: colorBorderSelected }) :
+                                !idx ? { width: borderWidth, color: colorBorder } :
+                                    !idx ? { width: borderWidth, color: colorBorder } : { width: borderWidth, color: 'transparent' };
+                            return result;
+                        }),
+                        colorBorderLeft: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.color || 'transparent'),
+                        borderWidthLeft: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.width || 0),
+                        borderRight: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
+                            const idx = option_ids.indexOf(id);
+                            const result = ~idx_selected.indexOf(idx) ? { width: borderWidth, color: colorBorderSelected } :
+                                idx == option_ids.length - 1 || !~idx_selected.indexOf(idx + 1) ? { width: borderWidth, color: colorBorder } :
+                                    { width: borderWidth, color: 'transparent' };
+                            return result;
+                        }),
+                        colorBorderRight: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.color || 'transparent'),
+                        borderWidthRight: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.width || 0),
+                        borderRadiusLeftTop: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
+                        borderRadiusLeftBottom: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
+                        borderRadiusRightTop: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
+                        borderRadiusRightBottom: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
+                        colorBackground: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected', '<.colorBackground'], ({ masters: [isSelected, colorBackgroundSelected, colorBackground] }) => isSelected ? colorBackgroundSelected : colorBackground),
+                        colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    prop_non_render: {
+                        '#cursor': $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set || value != id ? 'pointer' : null),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            let value = $$.a('<.value');
+                            if (typeof value == 'string' && value == id)
+                                return false;
+                            if (value instanceof Set) {
+                                if (value.has(id)) {
+                                    value.delete(id);
+                                }
+                                else {
+                                    value.add(id);
+                                }
+                            }
+                            else
+                                value = id;
+                            $$.a('<.value', value, true);
+                            return true;
+                        },
+                    },
+                })),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_select = {
+            base: $$.$me_select,
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop(['.option_ids'], ({ masters: [ids] }) => ids[0]),
+                colorBorder: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                    '#bdc3d1' :
+                    '#d8dce3'),
+                colorBorderSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                    '#008ecf' :
+                    '#008ecf'),
+                colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                    'white' :
+                    '#878f9b'),
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                    '#f0f1f4' :
+                    '#747B89'),
+                borderRadius: () => 4,
+                borderWidth: () => 1,
+                paddingHor: () => 0,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                '#width': () => 440,
+                '#height': () => 32,
+                option_width_min: () => 40,
+                colorText: $$.$me_atom2_prop(['/.theme', '/.colorText'], ({ masters: [theme, colorText] }) => theme == $$.$nl_theme.light ?
+                    '#0070a4' :
+                    colorText),
+                colorTextSelected: '/.colorText',
+                fontFamily: '/.fontFamily',
+                fontWeight: '/.fontWeight',
+                fontWeightSelected: '.fontWeight',
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//select.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_list2_demo_metro = {
             base: $$.$me_list2,
             prop: {
@@ -6667,12 +6882,13 @@ var $;
                             if (row.bottom > bottomLim) {
                                 $$.a('._isEnd', false);
                                 const delta = Math.round(row.bottom - bottomLim);
+                                console.warn('on adjust');
                                 $$.a.dispatch('', 'adjust', { axis: 'Y', delta, source: $$.$me_list_pos_delta_source_enum.manual });
                             }
                         }
                     }
                     if (changed) {
-                        $$.a('.needRender', true);
+                        $$.a.update('^canvas.renderTrigger', val => (val + 1) % 3);
                         $$.a('.opened', opened_orig, true);
                     }
                     return true;
@@ -6863,41 +7079,161 @@ var $;
                     },
                     prop: {
                         demo_border: () => 'red',
+                        marginHor: () => 16,
+                        marginVer: () => 16,
+                        isTouch: '/.#isTouch',
+                        spaceHor: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 32 : 16),
+                        spaceVer: $$.$me_atom2_prop(['.isTouch'], ({ masters: [isTouch] }) => isTouch ? 32 : 16),
+                        fontSize: $$.$me_atom2_prop_either(['.isTouch'], () => 18, () => 16),
                     },
                     elem: {
                         picker: () => ({
                             base: $$.$nl_picker,
                             prop: {
                                 options: () => ({
-                                    '$me_list2_demo_metro': {
-                                        caption: 'Метро',
-                                    },
                                     '$me_list2_demo_grid': {
                                         caption: 'Grid',
+                                    },
+                                    '$me_list2_demo_metro': {
+                                        caption: 'Метро',
                                     },
                                 }),
                                 value: $$.$me_atom2_prop_store({
                                     default: () => Object.keys($$.a('.options'))[0],
                                     valid: (val) => $$.a('.options').hasOwnProperty(val) ? val : null,
                                 }),
-                                '#height': () => 32,
+                                '#height': $$.$me_atom2_prop(['<.isTouch'], ({ masters: [isTouch] }) => isTouch ? 44 : 32),
                                 '#width': () => 218,
-                                '#ofsVer': () => 16,
-                                '#ofsHor': () => 16,
+                                '#ofsVer': '<.marginVer',
+                                '#ofsHor': '<.marginHor',
+                                fontSize: '<.fontSize',
                             },
                         }),
+                        select: $$.$me_atom2_prop(['@picker.value'], ({ masters: [pickerValue] }) => pickerValue != '$me_list2_demo_grid' ? null :
+                            {
+                                base: $$.$nl_select,
+                                prop: {
+                                    '#ofsVer': '<@picker.#ofsVer',
+                                    '#ofsHor': $$.$me_atom2_prop([
+                                        '<@picker.#ofsHor',
+                                        '<@picker.#width',
+                                        '<.spaceHor',
+                                    ], $$.$me_atom2_prop_compute_fn_sum()),
+                                    '#width': $$.$me_atom2_prop_either(['<.isTouch'], () => 400, () => 350),
+                                    '#height': '<@picker.#height',
+                                    options: $$.$me_atom2_prop(['<@demo.counts'], ({ masters: [counts] }) => ({
+                                        '0': { caption: `Предложения` + (counts[0] == null ? '' : ` (${numberWithSep(counts[0])})`) },
+                                        '1': { caption: `Сниппеты` + (counts[1] == null ? '' : ` (${numberWithSep(counts[1])})`) },
+                                    })),
+                                    value: $$.$me_atom2_prop_store({
+                                        default: () => '1',
+                                        valid: (val) => ~$$.a('.option_ids').indexOf(val) ? val : null,
+                                    }),
+                                    fontSize: $$.$me_atom2_prop(['<@demo.counts', '<.fontSize'], ({ masters: [counts, fontSize] }) => fontSize - (counts[0] == null && counts[1] == null ? 0 : 2)),
+                                },
+                            }),
+                        rmqt: $$.$me_atom2_prop(['@picker.value'], ({ masters: [pickerValue] }) => pickerValue != '$me_list2_demo_grid' ? null :
+                            {
+                                base: $$.$nl_select,
+                                prop: {
+                                    '#ofsVer': '<@picker.#ofsVer',
+                                    '#ofsHor': $$.$me_atom2_prop([
+                                        '<@select.#ofsHor',
+                                        '<@select.#width',
+                                        '<.spaceHor',
+                                    ], $$.$me_atom2_prop_compute_fn_sum()),
+                                    '#width': $$.$me_atom2_prop(['<.isTouch'], ({ masters: [isTouch] }) => (isTouch ? 50 : 32) * 6),
+                                    '#height': '<@picker.#height',
+                                    options: () => ({
+                                        '1': { caption: '1' },
+                                        '2': { caption: '2' },
+                                        '3': { caption: '3' },
+                                        '4': { caption: '4' },
+                                        '5': { caption: '5' },
+                                        '6+': { caption: '6' },
+                                    }),
+                                    fontSize: '<.fontSize',
+                                    value: $$.$me_atom2_prop_store({
+                                        default: () => new Set(),
+                                        valid: val => {
+                                            let result = null;
+                                            if (val instanceof Set) {
+                                                result = val;
+                                                const valid_ids = new Set($$.a('.option_ids'));
+                                                for (const s of result)
+                                                    if (!valid_ids.has(s))
+                                                        result.delete(s);
+                                            }
+                                            return result;
+                                        },
+                                        toJSON: val => [...val],
+                                        fromJSON: val => !val ? val : new Set(val),
+                                    }),
+                                },
+                            }),
+                        sort: $$.$me_atom2_prop(['@picker.value'], ({ masters: [pickerValue] }) => pickerValue != '$me_list2_demo_grid' ? null :
+                            {
+                                base: $$.$nl_picker,
+                                prop: {
+                                    options: () => ({
+                                        'by_price asc': {
+                                            caption: 'По возрастанию цены',
+                                        },
+                                        'by_price desc': {
+                                            caption: 'По убыванию цены',
+                                        },
+                                    }),
+                                    value: $$.$me_atom2_prop_store({
+                                        default: () => Object.keys($$.a('.options'))[0],
+                                        valid: (val) => $$.a('.options').hasOwnProperty(val) ? val : null,
+                                    }),
+                                    '#height': $$.$me_atom2_prop(['<.isTouch'], ({ masters: [isTouch] }) => isTouch ? 44 : 32),
+                                    '#width': () => 218,
+                                    '#ofsVer': $$.$me_atom2_prop(['<@picker.#ofsVer', '<@picker.#height', '<.spaceVer'], $$.$me_atom2_prop_compute_fn_sum()),
+                                    '#ofsHor': '<.marginHor',
+                                    fontSize: '<.fontSize',
+                                },
+                            }),
+                        avg: $$.$me_atom2_prop(['@picker.value',], ({ masters: [pickerValue, avg_price_rub, avg_meter_price_rub] }) => pickerValue != '$me_list2_demo_grid' ? null :
+                            {
+                                prop: {
+                                    '#width': '<@select.#width',
+                                    '#ofsHor': '<@select.#ofsHor',
+                                    '#ofsVer': '<@sort.#ofsVer',
+                                    '#height': '<@sort.#height',
+                                },
+                                control: {
+                                    label: () => ({
+                                        type: avg_price_rub + '' + avg_meter_price_rub,
+                                        base: $$.$me_label,
+                                        prop: {
+                                            fontSize: '<<.fontSize',
+                                            '#width': '<.#width',
+                                            '#height': '<.#height',
+                                            text: $$.$me_atom2_prop(['<<@demo.avg_price_rub', '<<@demo.avg_meter_price_rub'], ({ masters: [avg_price_rub, avg_meter_price_rub] }) => !(avg_price_rub && avg_meter_price_rub) ? '' :
+                                                `Средние: ${numberWithSep(avg_price_rub, ' ')}₽ / ${numberWithSep(avg_meter_price_rub, ' ')}₽/м²`),
+                                            align: () => $$.$me_align.center,
+                                        },
+                                    }),
+                                },
+                            }),
                         demo: $$.$me_atom2_prop(['@picker.value'], ({ masters: [pickerValue] }) => ({
                             type: pickerValue,
                             base: $.$$[pickerValue],
                             prop: {
                                 marginVer: () => 16,
-                                '#height': $$.$me_atom2_prop(['/.#viewportHeight', '.marginVer', '<@picker.#ofsVer', '<@picker.#height'], ({ masters: [viewportHeight, marginVer, pickerOfsVer, pickerHeight] }) => viewportHeight - pickerOfsVer - pickerHeight - 2 * marginVer),
-                                '#ofsVer': $$.$me_atom2_prop(['<@picker.#ofsVer', '<@picker.#height', '.marginVer'], $$.$me_atom2_prop_compute_fn_sum()),
+                                '#ofsVer': $$.$me_atom2_prop(['<@picker.value', '<@picker.#ofsVer', '<@picker.#height', '<.spaceVer'], ({ masters: [pickerValue, ofsVer, height, spaceVer] }) => ofsVer + (height + spaceVer) * (pickerValue != '$me_list2_demo_grid' ? 1 : 2)),
+                                '#height': $$.$me_atom2_prop(['/.#viewportHeight', '.#ofsVer', '.marginVer'], ({ masters: [viewportHeight, ofsVer, marginVer] }) => viewportHeight - ofsVer - marginVer),
                             },
                         })),
                     }
                 } });
         };
+        function numberWithSep(x, sep = ' ') {
+            const parts = x.toString().split(".");
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+            return parts.join(".");
+        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //demo.js.map
@@ -7199,12 +7535,19 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let grid_mode_enum;
+        (function (grid_mode_enum) {
+            grid_mode_enum[grid_mode_enum["item"] = 0] = "item";
+            grid_mode_enum[grid_mode_enum["snippet"] = 1] = "snippet";
+        })(grid_mode_enum || (grid_mode_enum = {}));
         $$.$me_list2_demo_grid = {
             base: $$.$me_list2,
             init() {
+                console.warn('INIT');
                 $$.a('.worker').addEventListener('message', $$.a('.workerListener'));
             },
             fini() {
+                console.warn('FINI');
                 $$.a('.worker').removeEventListener('message', $$.a('.workerListener'));
             },
             style: {
@@ -7348,72 +7691,39 @@ var $;
                     let i_min;
                     let i_max;
                     const data_cache = $$.a('.data_cache');
-                    const i_to_be_requested = [];
+                    const i_to_be_requested = new Set();
                     for (const [i, item] of items_new) {
                         if (i_min == null || i_min > i)
                             i_min = i;
                         if (i_max == null || i_max < i)
                             i_max = i;
                         if (!data_cache.has(i)) {
-                            i_to_be_requested.push(i);
+                            i_to_be_requested.add(i);
                             data_cache.set(i, null);
                         }
                     }
                     $$.a('.i_min', i_min);
                     $$.a('.i_max', i_max);
-                    const flds = new Set();
-                    for (const col_id of cols) {
-                        const col = colDefs[col_id];
-                        if (col.fld)
-                            for (const fld of col.fld)
-                                flds.add(fld);
-                    }
-                    if (i_to_be_requested.length) {
-                        const by_idx = {};
-                        for (const i of i_to_be_requested)
-                            by_idx[i] = flds;
-                        $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
-                        console.log({ requestedFromWorker: Object.keys(by_idx).length });
-                    }
-                    {
-                        let by_idx = {};
-                        const i_min_cache = $$.a('.i_min_cache');
-                        const i_max_cache = $$.a('.i_max_cache');
-                        const page = $$.a('.data_cache_page');
-                        let qt = 0;
-                        for (let i = i_max + 1; i <= i_max_cache; i++)
-                            if (!data_cache.has(i)) {
-                                by_idx[i] = flds;
-                                data_cache.set(i, null);
-                                if (++qt >= page) {
-                                    $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
-                                    by_idx = {};
-                                    qt = 0;
-                                }
-                            }
-                        for (let i = i_min_cache; i < i_min; i++)
-                            if (!data_cache.has(i)) {
-                                by_idx[i] = flds;
-                                data_cache.set(i, null);
-                                if (++qt >= page) {
-                                    $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
-                                    by_idx = {};
-                                    qt = 0;
-                                }
-                            }
-                        if (qt >=
-                            Math.min($$.a('.workerAheadRequestThreshold'), Math.max(1, $$.a('.count') - $$.a('.data_cache_margin') - i_max))) {
-                            $$.a('.worker').postMessage({ cmd: 'recs', tag: $$.a.curr.name(), by_idx });
-                            console.log({ requestedFromWorker: Object.keys(by_idx).length });
-                        }
-                        else {
-                            for (const i in by_idx)
-                                data_cache.delete(+i);
-                        }
-                    }
+                    $$.a.dispatch('', 'update_idx');
                     $$.a('.items_cache', items_new);
                     return true;
                 }
+                else if (dispatch_name == 'update_idx') {
+                    const i_min_cache = $$.a('.i_min_cache');
+                    const i_max_cache = $$.a('.i_max_cache');
+                    const mode = $$.a('.mode');
+                    const tag = $$.a.curr.name();
+                    const cmd = 'by_idx';
+                    const sort = $$.a('.sort');
+                    $$.a('.worker').postMessage({
+                        cmd, tag, mode, sort,
+                        from: i_min_cache,
+                        size: i_max_cache - i_min_cache + 1,
+                        sent: Date.now(),
+                    });
+                    return true;
+                }
+                return false;
             },
             prop: {
                 workerAheadRequestThreshold: '.data_cache_page',
@@ -7421,7 +7731,17 @@ var $;
                 data_cache_page: $$.$me_atom2_prop(['/.#viewportHeight', '.row_height'], ({ masters: [viewportHeight, row_height] }) => Math.ceil(viewportHeight / row_height)),
                 data_cache_capacity: $$.$me_atom2_prop(['.data_cache_page', '.data_cache_pages'], ({ masters: [data_cache_page, data_cache_pages] }) => data_cache_page * data_cache_pages),
                 data_cache_margin: $$.$me_atom2_prop(['.data_cache_page', '.data_cache_pages'], ({ masters: [page, pages] }) => Math.floor(page * (pages - 1) / 2)),
-                data_cache: () => new Map(),
+                data_caches: () => {
+                    const result = new Map();
+                    result.set(grid_mode_enum.item, new Map());
+                    result.set(grid_mode_enum.snippet, new Map());
+                    return result;
+                },
+                data_cache: $$.$me_atom2_prop(['.data_caches', '.mode'], ({ masters: [data_caches, mode] }) => {
+                    const result = data_caches.get(+mode);
+                    console.log(data_caches, mode, result);
+                    return result;
+                }),
                 canvas_cache: () => null,
                 i_min: () => null,
                 i_max: () => null,
@@ -7431,32 +7751,79 @@ var $;
                 items_new: () => null,
                 '#ofsHor': () => 16,
                 '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.#ofsHor'], ({ masters: [viewportWidth, ofsHor] }) => viewportWidth - 2 * ofsHor),
-                params: () => ({
-                    rmqt: 1,
-                }),
-                count: $$.$me_atom2_prop(['.params', '.worker'], ({ atom, masters: [params, worker] }) => {
-                    const tag = atom.parent().name();
-                    worker.postMessage({ cmd: 'count', tag });
-                    return null;
+                params: $$.$me_atom2_prop(['<@rmqt.value'], ({ masters: [rmqt] }) => ({
+                    conditions: {
+                        "published_days_ago": {
+                            "days": 7
+                        },
+                        "realty_section": {
+                            "code": [
+                                "flat"
+                            ]
+                        },
+                        "deal_type": {
+                            "code": [
+                                "sale"
+                            ]
+                        },
+                        "area": {
+                            "code": [
+                                "msk"
+                            ]
+                        },
+                        "is_deal_actual": true,
+                        "use_strict_conditions": true,
+                        "total_room_count": [...rmqt].map(i => i < 6 ? +i : i),
+                    },
+                    "mixins": {
+                        "is_selected": true
+                    },
+                })),
+                sort: $$.$me_atom2_prop(['<@sort.value'], ({ masters: [sortValue] }) => {
+                    const result = sortValue == 'by_price asc' ? [
+                        { 'price_rub': { order: 'asc' } },
+                    ] : [
+                        { 'price_rub': { order: 'desc' } },
+                    ];
+                    return result;
                 }, ({ val }) => {
-                    $$.a('.isReadyData', val != null);
-                    console.warn({ val });
                 }),
+                counts: $$.$me_atom2_prop(['.params', '.worker'], ({ atom, masters: [params, worker] }) => {
+                    const tag = atom.parent().name();
+                    worker.postMessage({ cmd: 'count', tag, params, sent: Date.now() });
+                    return [null, null];
+                }, ({ val }) => {
+                    $$.a('.isReadyData', val && (val[0] != null && val[1] != null));
+                }),
+                avg_price_rubs: () => [0, 0],
+                avg_meter_price_rubs: () => [0, 0],
+                mode: $$.$me_atom2_prop(['<@select.value'], null, ({ val }) => {
+                    if (val == null)
+                        return;
+                    $$.a.dispatch('', 'render');
+                }),
+                count: $$.$me_atom2_prop(['.counts', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
+                avg_price_rub: $$.$me_atom2_prop(['.avg_price_rubs', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
+                avg_meter_price_rub: $$.$me_atom2_prop(['.avg_meter_price_rubs', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
                 workerListener: $$.$me_atom2_prop([], ({ atom }) => {
                     const tag = atom.parent().name();
-                    const atom_count = $$.a.get('.count');
+                    const atom_counts = $$.a.get('.counts');
+                    const atom_avg_price_rubs = $$.a.get('.avg_price_rubs');
+                    const atom_avg_meter_price_rubs = $$.a.get('.avg_meter_price_rubs');
                     const atom_data_cache = $$.a.get('.data_cache');
                     const atom_i_min_cache = $$.a.get('.i_min_cache');
                     const atom_i_max_cache = $$.a.get('.i_max_cache');
                     const atom_i_min = $$.a.get('.i_min');
                     const atom_i_max = $$.a.get('.i_max');
-                    const atom_needRender = $$.a.get('.needRender');
                     return (event) => {
                         const { cmd } = event.data;
                         if (cmd == 'count' && event.data.tag == tag) {
-                            const { status, count } = event.data;
+                            const { status, counts, avg_price_rubs, avg_meter_price_rubs, timing, sent } = event.data;
                             if (status == 'ok') {
-                                atom_count.value(count);
+                                atom_counts.value(counts);
+                                atom_avg_price_rubs.value(avg_price_rubs);
+                                atom_avg_meter_price_rubs.value(avg_meter_price_rubs);
+                                console.log(counts, { timing, 'message took': Date.now() - sent });
                             }
                             else {
                                 console.error(event.data);
@@ -7481,7 +7848,7 @@ var $;
                                     data_cache.set(i, by_idx[i]);
                                     if (i < i_min || i > i_max)
                                         continue;
-                                    atom_needRender.value(true);
+                                    $$.a.dispatch('', 'render');
                                 }
                                 console.log({ sizeCache: data_cache.size });
                             }
@@ -7500,10 +7867,27 @@ var $;
         const root = $$.$me_atom2_entity.root();
         root.props({
             'gridWorker': () => {
-                const worker = new Worker('data/-/web.js');
+                const idx = window.location.pathname.indexOf('/', 1);
+                console.log(window.location.origin);
+                const root = window.location.origin.includes('localhost') ||
+                    window.location.origin.match(/^https?:\/\/(\d+\.){3}\d+(:\d+)?$/) ?
+                    '/me/' :
+                    '';
+                const worker = new Worker(window.location.origin + root + 'data/grid/-/web.js');
                 return worker;
             },
         });
+        function ab2str(buf) {
+            return String.fromCharCode.apply(null, new Uint16Array(buf));
+        }
+        function str2ab(str) {
+            var buf = new ArrayBuffer(str.length * 2);
+            var bufView = new Uint16Array(buf);
+            for (var i = 0, strLen = str.length; i < strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //grid.js.map
