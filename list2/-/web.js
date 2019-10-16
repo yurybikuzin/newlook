@@ -3150,7 +3150,7 @@ var $;
                 return this._state === $me_atom2_state_enum.valid ? this._apply(this._value, true) : new Error(`this._state is ${this._state}`);
             }
             get 'update()'() {
-                return this.update();
+                return this._update();
             }
             get 'masters()'() {
                 const masters = this._masters();
@@ -3253,10 +3253,17 @@ var $;
                         }
                     }
             }
+            update(fn, force = false) {
+                const val = this.value();
+                const ret = fn(val);
+                if (ret === void 0)
+                    $$.$me_throw(`a('${this.name()}'').update.fn returned undefined for val`, val);
+                return this.value(ret, force);
+            }
             value(val, force = false) {
                 if (val === void 0 && this._state === $me_atom2_state_enum.valid)
                     return this._value;
-                this.update(val, force);
+                this._update(val, force);
                 return (this._state !== $me_atom2_state_enum.valid ?
                     null :
                     this._value);
@@ -3264,7 +3271,7 @@ var $;
             static is_valid_value(val) {
                 return !(val == null || Number.isNaN(val));
             }
-            update(val, force = false) {
+            _update(val, force = false) {
                 if (val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
                     this._state === $me_atom2_state_enum.need_check))
                     return;
@@ -3632,7 +3639,7 @@ var $;
                         to_update.delete(atom);
                         if (atom._active &&
                             atom._state != $me_atom2_state_enum.valid) {
-                            atom.update();
+                            atom._update();
                             count++;
                         }
                     }
@@ -3760,9 +3767,8 @@ var $;
                 const val = atom.value();
                 const ret = fn(val);
                 if (ret === void 0)
-                    $$.$me_throw('update returned undefined for val', val);
-                atom.value(ret, force);
-                return ret;
+                    $$.$me_throw(`a('${atom.name()}'').update.fn returned undefined for val`, val);
+                return atom.value(ret, force);
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -7804,8 +7810,12 @@ var $;
                     $$.a.dispatch('', 'render');
                 }),
                 count: $$.$me_atom2_prop(['.counts', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
-                avg_price_rub: $$.$me_atom2_prop(['.avg_price_rubs', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
-                avg_meter_price_rub: $$.$me_atom2_prop(['.avg_meter_price_rubs', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
+                avg_price_rub: $$.$me_atom2_prop(['.avg_price_rubs', '.mode'], ({ masters: [avg_price_rubs, mode] }) => Math.round(avg_price_rubs[mode])),
+                avg_meter_price_rub: $$.$me_atom2_prop(['.avg_meter_price_rubs', '.mode'], ({ masters: [avg_meter_price_rubs, mode] }) => {
+                    console.log(avg_meter_price_rubs, { mode });
+                    const result = Math.round(avg_meter_price_rubs[mode]);
+                    return result;
+                }),
                 workerListener: $$.$me_atom2_prop([], ({ atom }) => {
                     const tag = atom.parent().name();
                     const atom_counts = $$.a.get('.counts');
@@ -7816,8 +7826,10 @@ var $;
                     const atom_i_max_cache = $$.a.get('.i_max_cache');
                     const atom_i_min = $$.a.get('.i_min');
                     const atom_i_max = $$.a.get('.i_max');
+                    const atom_mode = $$.a.get('.mode');
                     return (event) => {
                         const { cmd } = event.data;
+                        const mode = atom_mode.value();
                         if (cmd == 'count' && event.data.tag == tag) {
                             const { status, counts, avg_price_rubs, avg_meter_price_rubs, timing, sent } = event.data;
                             if (status == 'ok') {
@@ -7828,6 +7840,19 @@ var $;
                             }
                             else {
                                 console.error(event.data);
+                            }
+                        }
+                        else if (cmd == 'by_idx' && event.data.tag == tag && event.data.mode == mode) {
+                            console.log(event.data);
+                            atom_counts.update(val => { val[mode] = event.data.count; return val; });
+                            atom_avg_price_rubs.update(val => { val[mode] = event.data.avg_price_rub; return val; });
+                            atom_avg_meter_price_rubs.update(val => { val[mode] = event.data.avg_meter_price_rub; return val; });
+                            console.log({ mode }, grid_mode_enum.item);
+                            if (mode == grid_mode_enum.item) {
+                                console.log(event.data.items);
+                            }
+                            else {
+                                console.log(event.data.snippets);
                             }
                         }
                         else if (cmd == 'recs' && event.data.tag == tag) {
