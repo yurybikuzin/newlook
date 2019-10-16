@@ -3,28 +3,10 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        function $me_easing_value(initial, target, t, fn = $$.$me_easing.linear) {
-            return initial + (target - initial) * fn(t);
-        }
-        $$.$me_easing_value = $me_easing_value;
-        $$.$me_easing = {
-            linear: (t) => t,
-            easeInQuad: (t) => t * t,
-            easeOutQuad: (t) => t * (2 - t),
-            easeInOutQuad: (t) => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
-            easeInCubic: (t) => t * t * t,
-            easeOutCubic: (t) => (--t) * t * t + 1,
-            easeInOutCubic: (t) => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
-            easeInQuart: (t) => t * t * t * t,
-            easeOutQuart: (t) => 1 - (--t) * t * t * t,
-            easeInOutQuart: (t) => t < .5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t,
-            easeInQuint: (t) => t * t * t * t * t,
-            easeOutQuint: (t) => 1 + (--t) * t * t * t * t,
-            easeInOutQuint: (t) => t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t
-        };
+        $$.$me_stop = false;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//easing.js.map
+//me.js.map
 ;
 "use strict";
 var $;
@@ -114,24 +96,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        function $me_word_plural(count, word1, word2_4, word5more) {
-            if (word5more === undefined) {
-                word5more = word2_4;
-            }
-            let result = word5more;
-            const decimal = Math.floor(count / 10) % 10;
-            if (decimal != 1) {
-                const unit = count % 10;
-                if (unit == 1) {
-                    result = word1;
-                }
-                else if (unit >= 2 && unit <= 4) {
-                    result = word2_4;
-                }
-            }
-            return result;
-        }
-        $$.$me_word_plural = $me_word_plural;
         $$.$me_throw_silent = false;
         function $me_throw(msg, ...p) {
             if (!$$.$me_throw_silent)
@@ -139,116 +103,94 @@ var $;
             throw new Error(msg);
         }
         $$.$me_throw = $me_throw;
-        $$.$me_stop = false;
-        let $me_theme;
-        (function ($me_theme) {
-            $me_theme[$me_theme["light"] = 0] = "light";
-            $me_theme[$me_theme["dark"] = 1] = "dark";
-        })($me_theme = $$.$me_theme || ($$.$me_theme = {}));
-        function $me_vector_transform(v, dist, from) {
-            const dx = v.to.x - v.from.x;
-            const dy = v.to.y - v.from.y;
-            const len = Math.hypot(dx, dy);
-            if (!from)
-                from = v.from;
-            const result = {
-                from,
-                to: {
-                    x: dx / len * dist + from.x,
-                    y: dy / len * dist + from.y,
-                },
-            };
-            return result;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//throw.js.map
+;
+"use strict";
+//fn.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $me_easing_value(initial, target, t, fn = $$.$me_easing.linear) {
+            return initial + (target - initial) * fn(t);
         }
-        $$.$me_vector_transform = $me_vector_transform;
-        function $me_vector_revert(v) {
-            const result = {
-                from: v.to,
-                to: v.from,
-            };
-            return result;
-        }
-        $$.$me_vector_revert = $me_vector_revert;
+        $$.$me_easing_value = $me_easing_value;
+        $$.$me_easing = {
+            linear: (t) => t,
+            easeInQuad: (t) => t * t,
+            easeOutQuad: (t) => t * (2 - t),
+            easeInOutQuad: (t) => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+            easeInCubic: (t) => t * t * t,
+            easeOutCubic: (t) => (--t) * t * t + 1,
+            easeInOutCubic: (t) => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+            easeInQuart: (t) => t * t * t * t,
+            easeOutQuart: (t) => 1 - (--t) * t * t * t,
+            easeInOutQuart: (t) => t < .5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t,
+            easeInQuint: (t) => t * t * t * t * t,
+            easeOutQuint: (t) => 1 + (--t) * t * t * t * t,
+            easeInOutQuint: (t) => t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//easing.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_rect = () => ({ left: 0, top: 0, right: 0, bottom: 0 });
         $$.$me_rect_width = (rect) => rect.right - rect.left;
         $$.$me_rect_height = (rect) => rect.bottom - rect.top;
-        $$.$me_pos = () => ({ left: 0, top: 0 });
-        $$.$me_point_in_rect = (x, y, rect, tolerance = 0) => rect.left - tolerance < x && x < rect.right + tolerance &&
-            rect.top - tolerance < y && y < rect.bottom + tolerance;
-        $$.$me_dist_to_rect = (x, y, rect) => $$.$me_point_in_rect(x, y, rect) ? 0 :
+        $$.$me_rect_dist_to = (x, y, rect) => $$.$me_rect_has_point(x, y, rect) ? 0 :
             Math.max(Math.min(Math.abs(rect.left - x), Math.abs(rect.right - x)), Math.min(Math.abs(rect.top - y), Math.abs(rect.bottom - y)));
-        function $me_point_in_rect_offset(x, y, offsetRect, clientRect) {
-            x -= clientRect.left;
-            y -= clientRect.top;
-            const result = offsetRect && clientRect &&
-                offsetRect.left < x && x < offsetRect.right &&
-                offsetRect.top < y && y < offsetRect.bottom &&
-                true;
-            return result;
-        }
-        $$.$me_point_in_rect_offset = $me_point_in_rect_offset;
-        function $me_option_caption(id, options, val) {
-            const isSelected = typeof val == 'string' ? val == id :
-                val instanceof Set ? val.has(id) :
-                    val instanceof Map ? val.has(id) :
-                        false;
-            const caption = typeof options[id].caption == 'function' ?
-                options[id].caption({ val, isSelected }) :
-                options[id].caption;
-            return caption;
-        }
-        $$.$me_option_caption = $me_option_caption;
-        function $me_option_caption_text(id, options, val) {
-            const caption = $me_option_caption(id, options, val);
-            const result = typeof caption == 'string' ? caption :
-                !caption || typeof caption.text != 'string' ? id :
-                    caption.text;
-            return result;
-        }
-        $$.$me_option_caption_text = $me_option_caption_text;
-        $$.$me_enum_names = (val) => {
-            if (_enum_names_cache.has(val))
-                return _enum_names_cache.get(val);
-            const result = Object.keys(val).filter(key => typeof val[key] == 'number');
-            _enum_names_cache.set(val, result);
-            return result;
-        };
-        const _enum_names_cache = new Map();
-        $$.$me_enum_values = (val) => {
-            if (_enum_values_cache.has(val))
-                return _enum_values_cache.get(val);
-            const result = Object.keys(val).reduce((result, key) => {
-                const n = +key;
-                if (Number.isFinite(n))
-                    result.push(n);
-                return result;
-            }, Array());
-            _enum_values_cache.set(val, result);
-            return result;
-        };
-        const _enum_values_cache = new Map();
-        $$.$me_enum_pairs = (val) => {
-            if (_enum_pairs_cache.has(val))
-                return _enum_pairs_cache.get(val);
-            const result = $$.$me_enum_values(val).map(value => [value, val[value]]);
-            _enum_pairs_cache.set(val, result);
-            return result;
-        };
-        const _enum_pairs_cache = new Map();
-        let $me_rect_corners_enum;
-        (function ($me_rect_corners_enum) {
-            $me_rect_corners_enum[$me_rect_corners_enum["leftTop"] = 0] = "leftTop";
-            $me_rect_corners_enum[$me_rect_corners_enum["rightTop"] = 1] = "rightTop";
-            $me_rect_corners_enum[$me_rect_corners_enum["leftBottom"] = 2] = "leftBottom";
-            $me_rect_corners_enum[$me_rect_corners_enum["rightBottom"] = 3] = "rightBottom";
-        })($me_rect_corners_enum = $$.$me_rect_corners_enum || ($$.$me_rect_corners_enum = {}));
-        let $me_rect_sides_enum;
-        (function ($me_rect_sides_enum) {
-            $me_rect_sides_enum[$me_rect_sides_enum["left"] = 0] = "left";
-            $me_rect_sides_enum[$me_rect_sides_enum["top"] = 1] = "top";
-            $me_rect_sides_enum[$me_rect_sides_enum["right"] = 2] = "right";
-            $me_rect_sides_enum[$me_rect_sides_enum["bottom"] = 3] = "bottom";
-        })($me_rect_sides_enum = $$.$me_rect_sides_enum || ($$.$me_rect_sides_enum = {}));
+        $$.$me_rect_has_point = (x, y, rect, tolerance = 0) => rect.left - tolerance < x && x < rect.right + tolerance &&
+            rect.top - tolerance < y && y < rect.bottom + tolerance;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//rect.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $me_rectcorners_enum;
+        (function ($me_rectcorners_enum) {
+            $me_rectcorners_enum[$me_rectcorners_enum["leftTop"] = 0] = "leftTop";
+            $me_rectcorners_enum[$me_rectcorners_enum["rightTop"] = 1] = "rightTop";
+            $me_rectcorners_enum[$me_rectcorners_enum["leftBottom"] = 2] = "leftBottom";
+            $me_rectcorners_enum[$me_rectcorners_enum["rightBottom"] = 3] = "rightBottom";
+        })($me_rectcorners_enum = $$.$me_rectcorners_enum || ($$.$me_rectcorners_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//rectcorners.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let $me_pos_enum;
+        (function ($me_pos_enum) {
+            $me_pos_enum[$me_pos_enum["left"] = 0] = "left";
+            $me_pos_enum[$me_pos_enum["top"] = 1] = "top";
+            $me_pos_enum[$me_pos_enum["right"] = 2] = "right";
+            $me_pos_enum[$me_pos_enum["bottom"] = 3] = "bottom";
+        })($me_pos_enum = $$.$me_pos_enum || ($$.$me_pos_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//pos.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         let $me_align;
         (function ($me_align) {
             $me_align[$me_align["left"] = 0] = "left";
@@ -261,16 +203,15 @@ var $;
             return (align == $me_align.left ? 0 : correction() / align);
         }
         $$.$me_align_correction = $me_align_correction;
-        let $me_line_style_type_enum;
-        (function ($me_line_style_type_enum) {
-            $me_line_style_type_enum[$me_line_style_type_enum["solid"] = 0] = "solid";
-            $me_line_style_type_enum[$me_line_style_type_enum["dashed"] = 1] = "dashed";
-            $me_line_style_type_enum[$me_line_style_type_enum["dotted"] = 2] = "dotted";
-            $me_line_style_type_enum[$me_line_style_type_enum["double"] = 3] = "double";
-        })($me_line_style_type_enum = $$.$me_line_style_type_enum || ($$.$me_line_style_type_enum = {}));
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//me.js.map
+//align.js.map
+;
+"use strict";
+//size.js.map
+;
+"use strict";
+//point.js.map
 ;
 "use strict";
 var $;
@@ -2923,8 +2864,8 @@ var $;
                     const clientRect = ec._entities.prop['#clientRect'].value();
                     if (!clientRect)
                         continue;
-                    const isInRect = (clientX, clientY) => $$.$me_point_in_rect(clientX, clientY, clientRect);
-                    const distToRect = (clientX, clientY) => $$.$me_dist_to_rect(clientX, clientY, clientRect);
+                    const isInRect = (clientX, clientY) => $$.$me_rect_has_point(clientX, clientY, clientRect);
+                    const distToRect = (clientX, clientY) => $$.$me_rect_dist_to(clientX, clientY, clientRect);
                     let done_ec = false;
                     let done_ec_special = false;
                     const prev = $$.a.curr;
@@ -5457,7 +5398,7 @@ var $;
                         if (dispatch_name == 'wheel') {
                             const { clientX, clientY } = dispatch_arg.event;
                             const clientRect = $$.a('.#clientRect');
-                            if ($$.$me_point_in_rect(clientX, clientY, clientRect)) {
+                            if ($$.$me_rect_has_point(clientX, clientY, clientRect)) {
                                 $$.a.update('.pos_delta', val => {
                                     const val_new = Object.assign({}, val);
                                     let changed = false;
@@ -5859,21 +5800,42 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let $nl_theme;
+        (function ($nl_theme) {
+            $nl_theme[$nl_theme["light"] = 0] = "light";
+            $nl_theme[$nl_theme["dark"] = 1] = "dark";
+        })($nl_theme = $$.$nl_theme || ($$.$nl_theme = {}));
+        let $nl_line_style_type_enum;
+        (function ($nl_line_style_type_enum) {
+            $nl_line_style_type_enum[$nl_line_style_type_enum["solid"] = 0] = "solid";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["dashed"] = 1] = "dashed";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["dotted"] = 2] = "dotted";
+            $nl_line_style_type_enum[$nl_line_style_type_enum["double"] = 3] = "double";
+        })($nl_line_style_type_enum = $$.$nl_line_style_type_enum || ($$.$nl_line_style_type_enum = {}));
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//nl.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         function $nl_defaults_init() {
             $$.$me_atom2_entity.root().props({
                 em: () => 16,
                 pm: () => 32,
-                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
+                colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : 'white'),
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
                 theme: $$.$me_atom2_prop_store({
-                    default: () => $$.$me_theme.light,
-                    valid: (val) => val == $$.$me_theme.light || val == $$.$me_theme.dark ? val : null,
+                    default: () => $$.$nl_theme.light,
+                    valid: (val) => val == $$.$nl_theme.light || val == $$.$nl_theme.dark ? val : null,
                 }),
-                colorButton: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorButton: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#0070a4' :
                     '#008ecf'),
-                colorLink: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
+                colorLink: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#2b87db' :
                     '#53adff'),
             });
@@ -6150,14 +6112,14 @@ var $;
     (function ($$) {
         $$.$me_triangle = {
             prop: {
-                direction: () => $$.$me_rect_sides_enum.bottom,
+                direction: () => $$.$me_pos_enum.bottom,
                 size: '.em',
                 color: '.colorText',
                 k: () => 2 / Math.sqrt(3),
-                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.bottom || direction == $$.$me_rect_sides_enum.top ?
+                '#height': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_pos_enum.bottom || direction == $$.$me_pos_enum.top ?
                     size :
                     Math.round(size * k)),
-                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_rect_sides_enum.left || direction == $$.$me_rect_sides_enum.right ?
+                '#width': $$.$me_atom2_prop(['.direction', '.size', '.k'], ({ masters: [direction, size, k] }) => direction == $$.$me_pos_enum.left || direction == $$.$me_pos_enum.right ?
                     size :
                     Math.round(size * k)),
             },
@@ -6168,17 +6130,17 @@ var $;
                         '#height': () => 0,
                     },
                     style: {
-                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.top ? '' :
-                            direction == $$.$me_rect_sides_enum.bottom ? `${height}px solid ${color}` :
+                        borderTop: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_pos_enum.top ? '' :
+                            direction == $$.$me_pos_enum.bottom ? `${height}px solid ${color}` :
                                 `${height / 2}px solid transparent`),
-                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.left ? '' :
-                            direction == $$.$me_rect_sides_enum.right ? `${width}px solid ${color}` :
+                        borderLeft: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_pos_enum.left ? '' :
+                            direction == $$.$me_pos_enum.right ? `${width}px solid ${color}` :
                                 `${width / 2}px solid transparent`),
-                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_rect_sides_enum.right ? '' :
-                            direction == $$.$me_rect_sides_enum.left ? `${width}px solid ${color}` :
+                        borderRight: $$.$me_atom2_prop(['<.direction', '<.#width', '<.color'], ({ masters: [direction, width, color] }) => direction == $$.$me_pos_enum.right ? '' :
+                            direction == $$.$me_pos_enum.left ? `${width}px solid ${color}` :
                                 `${width / 2}px solid transparent`),
-                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_rect_sides_enum.bottom ? '' :
-                            direction == $$.$me_rect_sides_enum.top ? `${height}px solid ${color}` :
+                        borderBottom: $$.$me_atom2_prop(['<.direction', '<.#height', '<.color'], ({ masters: [direction, height, color] }) => direction == $$.$me_pos_enum.bottom ? '' :
+                            direction == $$.$me_pos_enum.top ? `${height}px solid ${color}` :
                                 `${height / 2}px solid transparent`),
                     },
                 }),
@@ -6200,13 +6162,41 @@ var $;
                 '#ofsHor': () => 9,
                 '#alignVer': () => $$.$me_align.center,
                 size: () => 7,
-                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#444956' : 'white'),
+                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#444956' : 'white'),
                 k: () => 9 / 7,
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        function $me_option_caption(id, options, val) {
+            const isSelected = typeof val == 'string' ? val == id :
+                val instanceof Set ? val.has(id) :
+                    val instanceof Map ? val.has(id) :
+                        false;
+            const caption = typeof options[id].caption == 'function' ?
+                options[id].caption({ val, isSelected }) :
+                options[id].caption;
+            return caption;
+        }
+        $$.$me_option_caption = $me_option_caption;
+        function $me_option_caption_text(id, options, val) {
+            const caption = $me_option_caption(id, options, val);
+            const result = typeof caption == 'string' ? caption :
+                !caption || typeof caption.text != 'string' ? id :
+                    caption.text;
+            return result;
+        }
+        $$.$me_option_caption_text = $me_option_caption_text;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//option.js.map
 ;
 "use strict";
 var $;
@@ -6245,7 +6235,7 @@ var $;
                             '#height': prop_dropdownHeight.name(),
                             rec_count: $$.$me_atom2_prop([prop_option_ids.name()], ({ masters: [ids] }) => ids.length),
                             row_height_min: prop_row_height_min.name(),
-                            curtain_kind: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'black'),
+                            curtain_kind: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : 'black'),
                             header_height: () => 0,
                             provider_tag: $$.$me_atom2_prop([], ({ atom }) => atom.name()),
                             rec_idx_selected: $$.$me_atom2_prop([prop_value.name(), prop_option_ids.name()], ({ masters: [value, ids] }) => (typeof value == 'string' ?
@@ -6422,7 +6412,7 @@ var $;
                                 }),
                         },
                         style: {
-                            background: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b'),
+                            background: $$.$me_atom2_prop([prop_theme.name()], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b'),
                             boxShadow: () => '0 8px 12px 0 rgba(0, 0, 0, 0.5)',
                         },
                         event: {
@@ -6480,12 +6470,12 @@ var $;
             style: {
                 borderRadius: () => 3,
                 border: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
-                    (theme == $$.$me_theme.light ? 'solid 1px #bdc3d1' : 'solid 1px #d8dce3') :
-                    (theme == $$.$me_theme.light ? 'solid 1px #313745' : 'solid 1px white'))),
+                    (theme == $$.$nl_theme.light ? 'solid 1px #bdc3d1' : 'solid 1px #d8dce3') :
+                    (theme == $$.$nl_theme.light ? 'solid 1px #313745' : 'solid 1px white'))),
                 boxSizing: () => 'border-box',
                 background: $$.$me_atom2_prop(['.isDropdown', '/.theme'], ({ masters: [isDropdown, theme] }) => (!isDropdown ?
-                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#878f9b') :
-                    (theme == $$.$me_theme.light ? '#fcfcfd' : '#666f7f'))),
+                    (theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b') :
+                    (theme == $$.$nl_theme.light ? '#fcfcfd' : '#666f7f'))),
                 userSelect: () => 'none',
             },
             elem: {
@@ -6545,3095 +6535,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //picker.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_panel = {
-            style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
-                borderRadius: () => '2px',
-                boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_panel = {
-            base: $$.$nl_panel,
-            prop: {
-                '#ofsHor': '.em',
-                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_select = {
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                colorBorder: $$.$me_atom2_prop_abstract(),
-                colorBorderSelected: $$.$me_atom2_prop_abstract(),
-                colorText: $$.$me_atom2_prop_abstract(),
-                colorTextSelected: $$.$me_atom2_prop_abstract(),
-                colorBackground: $$.$me_atom2_prop_abstract(),
-                colorBackgroundSelected: $$.$me_atom2_prop_abstract(),
-                borderRadius: $$.$me_atom2_prop_abstract(),
-                borderWidth: $$.$me_atom2_prop_abstract(),
-                paddingHor: $$.$me_atom2_prop_abstract(),
-                '#width': $$.$me_atom2_prop_abstract(),
-                '#height': $$.$me_atom2_prop_abstract(),
-                option_width_min: $$.$me_atom2_prop_abstract(),
-                fontFamily: $$.$me_atom2_prop_abstract(),
-                fontWeight: $$.$me_atom2_prop_abstract(),
-                fontWeightSelected: $$.$me_atom2_prop_abstract(),
-                fontSize: $$.$me_atom2_prop_abstract(),
-                alignVer: () => $$.$me_align.center,
-                ofsVer: () => 0,
-                no_adjust: () => false,
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                _option_width: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.option_ids'], ({ masters: [option_ids] }) => {
-                    const result = ['.no_adjust', '.option_ids', '.options', '.value', '.#width', '.option_width_min'];
-                    for (const id of option_ids)
-                        result.push(`^option[${id}]._textWidth`, `^option[${id}].paddingLeft`, `^option[${id}].paddingRight`);
-                    return result;
-                }), ({ masters, prev }) => {
-                    const [no_adjust, option_ids, options, value, width_total, option_width_min] = masters;
-                    if (no_adjust && prev)
-                        return prev;
-                    const masters_base = 6;
-                    const width = {};
-                    let width_sum = 0;
-                    let width_excess_base = 0;
-                    const ids = [];
-                    let w;
-                    for (let i = 0; i < option_ids.length; i++) {
-                        const id = option_ids[i];
-                        const caption = $$.$me_option_caption(id, options, value);
-                        const isSpecifiedWidth = typeof caption != 'string' &&
-                            caption &&
-                            typeof caption.width == 'number';
-                        const w = width[id] =
-                            isSpecifiedWidth ?
-                                caption.width :
-                                Math.max(option_width_min, masters[masters_base + i * 3] + masters[masters_base + 1 + i * 3] + masters[masters_base + 2 + i * 3]);
-                        width_sum += w;
-                        if (!isSpecifiedWidth) {
-                            width_excess_base += w;
-                            ids.push(id);
-                        }
-                    }
-                    const width_excess = width_total - width_sum;
-                    for (const id of ids)
-                        width[id] *= (1 + width_excess / width_excess_base);
-                    return width;
-                }),
-                option_width: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['._option_width'] }, ({ key: [id], masters: [width] }) => width[id]),
-                option_left: $$.$me_atom2_prop({
-                    keys: ['.option_ids'],
-                    masters: $$.$me_atom2_prop_masters(['.option_ids'], ({ key: [id], masters: [ids] }) => {
-                        const idx = ids.indexOf(id);
-                        const result = [];
-                        if (!idx)
-                            return result;
-                        for (let i = 0; i < idx; i++)
-                            result.push(`.option_width[${ids[i]}]`);
-                        return result;
-                    }),
-                }, $$.$me_atom2_prop_compute_fn_sum()),
-                idx_selected: $$.$me_atom2_prop(['.option_ids', '.value'], ({ masters: [ids, id] }) => typeof id == 'string' ? [ids.indexOf(id)].filter(idx => ~idx) :
-                    id instanceof Set ? [...id].map((id) => ids.indexOf(id)).filter(idx => ~idx) :
-                        []),
-            },
-            event: {},
-            control: {
-                option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
-                    base: $$.$me_label,
-                    prop: {
-                        fontSize: '<.fontSize',
-                        fontWeight: $$.$me_atom2_prop(['.isSelected', '<.fontWeightSelected', '<.fontWeight'], ({ masters: [isSelected, fontWeightSelected, fontWeight] }) => isSelected ? fontWeightSelected : fontWeight),
-                        fontFamily: '<.fontFamily',
-                        isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set ? value.has(id) : value == id),
-                        paddingHor: '<.paddingHor',
-                        text: $$.$me_atom2_prop(['<.options', '<.value'], ({ masters: [options, value] }) => $$.$me_option_caption_text(id, options, value)),
-                        alignHor: () => $$.$me_align.center,
-                        alignVer: '<.alignVer',
-                        ofsVer: '<.ofsVer',
-                        '#width': $$.$me_atom2_prop([`<.option_width[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
-                        '#height': '<.#height',
-                        '#ofsHor': $$.$me_atom2_prop([`<.option_left[${id}]`], ({ masters: [to] }) => $$.$me_atom2_anim({ to })),
-                        idx: $$.$me_atom2_prop(['<.option_ids'], ({ masters: [ids] }) => ids.indexOf(id)),
-                        _ctxLeft: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.no_adjust'], ({ masters: [no_adjust] }) => no_adjust ?
-                            ['._text_n_ctxLeft'] :
-                            ['.#ctx', '.text', '.period', '/.#pixelRatio', `<.option_width[${id}]`, `<.option_left[${id}]`, '.paddingLeft', '.paddingRight', '.alignHor']), ({ len, masters }) => {
-                            if (len == 1) {
-                                return masters[0].ctxLeft;
-                            }
-                            else {
-                                const [ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor] = masters;
-                                return $$.$me_atom2_anim({ to: $$.$me_label_text_n_ctxLeft({ ctx, text, period, pixelRatio, width, left, paddingLeft, paddingRight, alignHor }).ctxLeft
-                                });
-                            }
-                        }),
-                        borderWidthVer: '<.borderWidth',
-                        colorBorderVer: $$.$me_atom2_prop(['.isSelected', '<.colorBorder', '<.colorBorderSelected'], ({ masters: [isSelected, colorBorder, colorBorderSelected] }) => isSelected ? colorBorderSelected : colorBorder),
-                        borderLeft: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
-                            const idx = option_ids.indexOf(id);
-                            const result = ~idx_selected.indexOf(idx) ?
-                                (~idx_selected.indexOf(idx - 1) ? { width: borderWidth, color: 'transparent' } : { width: borderWidth, color: colorBorderSelected }) :
-                                !idx ? { width: borderWidth, color: colorBorder } :
-                                    !idx ? { width: borderWidth, color: colorBorder } : { width: borderWidth, color: 'transparent' };
-                            return result;
-                        }),
-                        colorBorderLeft: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.color || 'transparent'),
-                        borderWidthLeft: $$.$me_atom2_prop(['.borderLeft'], ({ masters: [border] }) => border.width || 0),
-                        borderRight: $$.$me_atom2_prop(['<.idx_selected', '<.option_ids', '<.colorBorder', '<.colorBorderSelected', '<.borderWidth'], ({ masters: [idx_selected, option_ids, colorBorder, colorBorderSelected, borderWidth] }) => {
-                            const idx = option_ids.indexOf(id);
-                            const result = ~idx_selected.indexOf(idx) ? { width: borderWidth, color: colorBorderSelected } :
-                                idx == option_ids.length - 1 || !~idx_selected.indexOf(idx + 1) ? { width: borderWidth, color: colorBorder } :
-                                    { width: borderWidth, color: 'transparent' };
-                            return result;
-                        }),
-                        colorBorderRight: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.color || 'transparent'),
-                        borderWidthRight: $$.$me_atom2_prop(['.borderRight'], ({ masters: [border] }) => border.width || 0),
-                        borderRadiusLeftTop: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
-                        borderRadiusLeftBottom: $$.$me_atom2_prop(['.idx', '<.borderRadius'], ({ masters: [idx, borderRadius] }) => idx ? 0 : borderRadius),
-                        borderRadiusRightTop: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
-                        borderRadiusRightBottom: $$.$me_atom2_prop(['.idx', '<.option_ids', '<.borderRadius'], ({ masters: [idx, option_ids, borderRadius] }) => idx != option_ids.length - 1 ? 0 : borderRadius),
-                        colorBackground: $$.$me_atom2_prop(['.isSelected', '<.colorBackgroundSelected', '<.colorBackground'], ({ masters: [isSelected, colorBackgroundSelected, colorBackground] }) => isSelected ? colorBackgroundSelected : colorBackground),
-                        colorText: $$.$me_atom2_prop(['.isSelected', '<.colorTextSelected', '<.colorText'], ({ masters: [isSelected, colorTextSelected, colorText] }) => isSelected ? colorTextSelected : colorText),
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                    },
-                    prop_non_render: {
-                        '#cursor': $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value instanceof Set || value != id ? 'pointer' : null),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            let value = $$.a('<.value');
-                            if (typeof value == 'string' && value == id)
-                                return false;
-                            if (value instanceof Set) {
-                                if (value.has(id)) {
-                                    value.delete(id);
-                                }
-                                else {
-                                    value.add(id);
-                                }
-                            }
-                            else
-                                value = id;
-                            $$.a('<.value', value, true);
-                            return true;
-                        },
-                    },
-                })),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//select.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_switch = {
-            base: $$.$me_select,
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                colorBorder: () => 'transparent',
-                colorBorderSelected: () => 'transparent',
-                colorBackground: () => 'transparent',
-                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
-                    '#0070a4' :
-                    '#0facf4'),
-                borderRadius: () => 0,
-                borderWidth: () => 0,
-                paddingHor: () => 0,
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                option_width_min: () => 40,
-                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
-                    '#0070a4' :
-                    'white'),
-                colorTextSelected: () => 'white',
-                fontFamily: '/.fontFamily',
-                fontWeight: '/.fontWeight',
-                fontWeightSelected: () => 500,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                alignVer: () => $$.$me_align.bottom,
-                ofsVer: $$.$me_atom2_prop_abstract(),
-                no_adjust: () => true,
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//switch.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_stylesheet = {
-            prop: {
-                styleSheetName: $$.$me_atom2_prop_abstract(),
-                styleSheet: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => ''),
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheet'], ({ masters: [styleSheet] }) => ''),
-                instanceId: () => null,
-                styleSheet_apply: $$.$me_atom2_prop(['.styleSheet', '.styleSheetName', '.instanceId'], null, styleSheet_apply_fn),
-                styleSheetCommon_apply: $$.$me_atom2_prop(['.styleSheetCommon', '.styleSheetName'], null, styleSheet_apply_fn),
-                className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
-            },
-            dom: {
-                className: $$.$me_atom2_prop(['.styleSheetName', '.className'], ({ masters: [styleSheetName, className] }) => styleSheetName + ' ' + className),
-            },
-            init: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                if (!instances[styleSheetName])
-                    instances[styleSheetName] = new Map();
-                const ids = [...instances[styleSheetName]].map(([spinner, id]) => id).sort();
-                let id;
-                for (let i = 0; i < ids.length; i++)
-                    if (i != ids[i]) {
-                        id = i;
-                        break;
-                    }
-                if (id === void 0)
-                    id = ids.length;
-                $$.a('.instanceId', id);
-                instances[styleSheetName].set(self, id);
-                const styleSheetCommon = $$.a('.styleSheetCommon');
-                if (!styleSheetCommon)
-                    return;
-                const styleSheetCommonId = styleSheetId(styleSheetName);
-                if (document.getElementById(styleSheetCommonId))
-                    return;
-                let sheet = document.createElement('style');
-                sheet.id = styleSheetCommonId;
-                sheet.innerHTML = styleSheetCommon;
-                let head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(sheet);
-            },
-            fini: (self) => {
-                const styleSheetName = $$.a('.styleSheetName');
-                removeStyleSheet(styleSheetId(styleSheetName, $$.a('.instanceId')));
-                instances[styleSheetName].delete(self);
-                if (instances[styleSheetName].size)
-                    return;
-                instances[styleSheetName] = null;
-                removeStyleSheet(styleSheetId(styleSheetName));
-            },
-        };
-        function styleSheet_apply_fn(p) {
-            const [innerHTML, styleSheetName, instanceId] = p.val;
-            let sheet;
-            const id = styleSheetId(styleSheetName, instanceId);
-            if (!innerHTML) {
-                removeStyleSheet(id);
-            }
-            else if (sheet = document.getElementById(id)) {
-                if (sheet.innerHTML != innerHTML)
-                    sheet.innerHTML = innerHTML;
-            }
-            else {
-                sheet = document.createElement('style');
-                sheet.id = id;
-                sheet.innerHTML = innerHTML;
-                let head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(sheet);
-            }
-        }
-        function removeStyleSheet(styleSheetId) {
-            let sheet = document.getElementById(styleSheetId);
-            if (sheet && sheet.parentElement)
-                sheet.parentElement.removeChild(sheet);
-        }
-        let instances = {};
-        const styleSheetId = (styleSheetName, instanceId) => 'styleSheet-' + styleSheetName + (instanceId === void 0 ? '' : '-' + instanceId);
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//stylesheet.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_spinner = {
-            base: $$.$me_stylesheet,
-            prop: {
-                color: () => 'white',
-                size: () => 64,
-                period: () => 1.2,
-                qt: () => 12,
-                k_height: () => 14 / 32,
-                k_width: () => 5 / 32,
-                '#width': '.size',
-                '#height': '.size',
-                '#align': () => $$.$me_align.center,
-                idx: $$.$me_atom2_prop(['.qt'], ({ masters: [qt] }) => [...Array(Math.floor(qt)).keys()]),
-                styleSheetName: () => 'spinner',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [styleSheetName] }) => `
-        @keyframes ${styleSheetName} {
-          0% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0;
-          }
-        }
-      `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.styleSheetName', '.idx', '.color', '.size', '.qt', '.period', '.k_height', '.k_width'], ({ masters: [className, styleSheetName, idx, color, size, qt, period, k_height, k_width], atom }) => {
-                    const semiSize = Math.round(size / 2);
-                    const top = Math.round(semiSize / 10);
-                    const left = semiSize - top;
-                    const width = Math.round(semiSize * k_width);
-                    const height = Math.round(semiSize * k_height);
-                    const step = period / qt;
-                    return (`
-            .${className} div {
-              transform-origin: ${semiSize}px ${semiSize}px;
-              animation: ${styleSheetName} ${period.toFixed(1)}s linear infinite;
-            }
-            .${className} div:after {
-              content: " ";
-              display: block;
-              position: absolute;
-              top: ${top}px;
-              left: ${left}px;
-              width: ${width}px;
-              height: ${height}px;
-              border-radius: 20%;
-              background: ${color};
-            }
-          ` + idx.map((idx) => `
-            .${className} div:nth-child(${+idx + 1}) {
-              transform: rotate(${Math.round(+idx * 360 / qt)}deg);
-              animation-delay: ${(-period + step * (+idx + 1)).toFixed(2)}s;
-            }
-          `).join(''));
-                }),
-            },
-            elem: {
-                div: $$.$me_atom2_prop({ keys: ['.idx'] }, () => ({})),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//spinner.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_plitka = {
-            base: $$.$me_list,
-            prop: {
-                row_height_min: () => 176 + 12,
-                header_height: () => 0,
-                header_content: () => ({}),
-                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                    base: row,
-                    prop: {
-                        row_i: () => row_i,
-                        rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                        id: $$.$me_atom2_prop(['<<.col_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                            return !~idx || idx >= rec_count ? '' : ids[idx];
-                        }),
-                    },
-                })),
-            },
-            elem: {
-                header: () => null,
-            },
-        };
-        const row = {
-            elem: {
-                inner: () => ({
-                    prop: {
-                        '#height': () => 176,
-                        '#width': $$.$me_atom2_prop(['<.#width'], $$.$me_atom2_prop_compute_fn_sum(-2)),
-                    },
-                    style: {
-                        border: () => '1px solid #989ba2',
-                        borderRadius: () => '4px',
-                    },
-                    elem: {
-                        leftPanel: () => ({
-                            base: leftPanel,
-                            prop: {
-                                '#width': () => 38,
-                            },
-                            style: {
-                                background: () => '#ebedf1',
-                                borderTopLeftRadius: '<.style.borderRadius',
-                                borderBottomLeftRadius: '<.style.borderRadius',
-                            },
-                        }),
-                        photo: () => ({
-                            prop: {
-                                '#width': () => 190,
-                                '#height': () => 160,
-                                '#ofsVer': () => 8,
-                                '#ofsHor': $$.$me_atom2_prop(['<@leftPanel.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
-                            },
-                            style: {
-                                border: () => '1px solid red',
-                            },
-                        }),
-                        h1: () => ({
-                            base: label,
-                            prop: {
-                                '#ofsHor': $$.$me_atom2_prop(['<@photo.#ofsHor', '<@photo.#width'], $$.$me_atom2_prop_compute_fn_sum(16)),
-                                '#ofsVer': () => 18,
-                            },
-                            style: {
-                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(20 / 16)),
-                                fontWeight: () => 'bold',
-                                color: () => '#172a3f',
-                            },
-                            dom: {
-                                innerText: () => '3-комн.кв., 120м², 4/5 этаж',
-                            },
-                        }),
-                        metro: () => ({
-                            base: label,
-                            prop: {
-                                '#ofsHor': $$.$me_atom2_prop(['<@h1.#ofsHor', '<@h1.#width'], $$.$me_atom2_prop_compute_fn_sum(12)),
-                                '#ofsVer': $$.$me_atom2_prop(['<@h1.#ofsVer', '<@h1.#height', '.#height'], ({ masters: [target_ofsVer, target_height, height] }) => target_ofsVer + target_height - height),
-                            },
-                            style: {
-                                color: () => '#0070a4',
-                            },
-                            dom: {
-                                innerText: () => 'Бульвар Дмитрия Донского м.',
-                            },
-                        }),
-                        far: () => ({
-                            base: label,
-                            prop: {
-                                '#ofsHor': $$.$me_atom2_prop(['<@metro.#ofsHor', '<@metro.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
-                                '#ofsVer': '<@metro.#ofsVer',
-                            },
-                            style: {
-                                color: () => '#0070a4',
-                            },
-                            dom: {
-                                innerText: () => '15 мин.пеш.',
-                            },
-                        }),
-                        address: () => ({
-                            base: label,
-                            prop: {
-                                '#ofsHor': '<@h1.#ofsHor',
-                                '#ofsVer': () => 54,
-                            },
-                            style: {
-                                color: () => '#6a6c74',
-                            },
-                            dom: {
-                                innerText: () => 'Улица Двадцати Шести Бакинских Комиссаров. 20 дом 130 П',
-                            },
-                        }),
-                        price: () => ({
-                            base: label,
-                            prop: {
-                                '#ofsHor': $$.$me_atom2_prop(['<@h1.#ofsHor'], $$.$me_atom2_prop_compute_fn_sum(27)),
-                                '#ofsVer': () => 97,
-                            },
-                            style: {
-                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(20 / 16)),
-                                fontWeight: () => 500,
-                            },
-                            dom: {
-                                innerText: () => '8 640 000 ₽',
-                            },
-                        }),
-                        price_per_sq_wrapper: () => ({
-                            prop: {
-                                '#ofsVer': () => 127,
-                                '#ofsHor': '<@price.#ofsHor',
-                                '#width': '<@price.#width',
-                                '#height': () => null,
-                            },
-                            elem: {
-                                price_per_sq: () => ({
-                                    base: label,
-                                    prop: {
-                                        '#alignHor': () => $$.$me_align.center,
-                                    },
-                                    style: {
-                                        opacity: () => .5,
-                                    },
-                                    dom: {
-                                        innerText: () => '7 000 ₽/м²',
-                                    },
-                                }),
-                            },
-                        }),
-                        phone: () => ({
-                            base: label,
-                            prop: {
-                                '#ofsVer': $$.$me_atom2_prop(['<@price.#ofsVer', '<@price.#height', '.#height'], ({ masters: [target_ofsVer, target_height, height] }) => target_ofsVer + target_height - height),
-                                '#ofsHor': $$.$me_atom2_prop(['<@price.#ofsHor', '<@price.#width'], $$.$me_atom2_prop_compute_fn_sum(27)),
-                            },
-                            style: {
-                                color: () => '#0070a4',
-                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                            },
-                            dom: {
-                                innerText: () => '+7 (911) 22-60-222',
-                            },
-                        }),
-                        source_wrapper: () => ({
-                            prop: {
-                                '#ofsVer': () => 127,
-                                '#ofsHor': '<@phone.#ofsHor',
-                                '#width': '<@phone.#width',
-                                '#height': () => null,
-                            },
-                            elem: {
-                                source: () => ({
-                                    base: label,
-                                    prop: {
-                                        '#alignHor': () => $$.$me_align.center,
-                                    },
-                                    style: {
-                                        color: '<<@phone.style.color',
-                                    },
-                                    dom: {
-                                        innerText: () => 'AVITO.RU',
-                                    },
-                                }),
-                            },
-                        }),
-                        group: () => ({
-                            base: group,
-                            prop: {
-                                '#ofsHor': () => 965,
-                                '#ofsVer': () => 24,
-                            },
-                        }),
-                    },
-                }),
-            },
-        };
-        const group = {
-            prop: {
-                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff()),
-                '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
-                def: () => ({
-                    colSpaceHor: 40,
-                    fldSpaceVer: 10,
-                    fldSpaceHor: 5,
-                    cols: [
-                        {
-                            width: () => 80,
-                            flds: {
-                                'Балкон': { value: 'Л' },
-                                'Санузел': { value: 'C' },
-                                'Окна': { value: 'Д+У' },
-                                'Лифт': { value: 'П+Г' },
-                                'Парковка': { value: 'П' },
-                            },
-                        },
-                        {
-                            width: () => 140,
-                            flds: {
-                                'Ипотека': { value: '+' },
-                                'Год постройки': { value: '2000' },
-                                'Площадь': { value: '50.6/29.3/9.1' },
-                                'Ремонт': { value: 'Дизайн.рем.' },
-                                'Территория': { value: 'Охр.' },
-                            },
-                        },
-                    ],
-                }),
-                cols: $$.$me_atom2_prop(['.def'], ({ masters: [def] }) => Array.from(Array(def.cols.length).keys()).map(i => i + '')),
-                flds: $$.$me_atom2_prop({ keys: ['.cols'], masters: ['.def'] }, ({ key: [col], masters: [def] }) => Object.keys(def.cols[col].flds)),
-                value: $$.$me_atom2_prop({ keys: ['.cols', '.flds[]'], masters: ['.def'] }, ({ key: [col, fld], masters: [def] }) => def.cols[col].flds[fld].value),
-            },
-            elem: {
-                col: $$.$me_atom2_prop({ keys: ['.cols'], masters: ['.def', '.cols'] }, ({ key: [col], masters: [def, cols] }) => {
-                    const idx = cols.indexOf(col);
-                    return {
-                        prop: {
-                            '#width': def.cols[col].width,
-                            '#ofsHor': !idx ? null :
-                                $$.$me_atom2_prop([`<@col[${cols[idx - 1]}].#ofsHor`, `<@col[${cols[idx - 1]}].#width`], $$.$me_atom2_prop_compute_fn_sum(def.colSpaceHor)),
-                        },
-                        elem: {
-                            fld: $$.$me_atom2_prop({ keys: [`<.flds[${col}]`], masters: ['<.def', `<.flds[${col}]`] }, ({ key: [fld], masters: [def, flds] }) => {
-                                const idx = flds.indexOf(fld);
-                                return {
-                                    prop: {
-                                        '#height': () => 14,
-                                        '#ofsVer': !idx ? null :
-                                            $$.$me_atom2_prop([`<@fld[${flds[idx - 1]}].#ofsVer`, `<@fld[${flds[idx - 1]}].#height`], $$.$me_atom2_prop_compute_fn_sum(def.fldSpaceVer)),
-                                    },
-                                    elem: {
-                                        label: () => ({
-                                            base: label,
-                                            dom: {
-                                                innerText: () => $$.$me_option_caption_text(fld, def.cols[col].flds),
-                                            },
-                                            style: {
-                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(12 / 16)),
-                                                fontWeight: () => 'bold',
-                                                color: () => '#6a6c74',
-                                            },
-                                        }),
-                                        value: () => ({
-                                            base: label,
-                                            prop: {
-                                                '#ofsHor': $$.$me_atom2_prop(['<@label.#width'], $$.$me_atom2_prop_compute_fn_sum(def.fldSpaceHor)),
-                                            },
-                                            style: {
-                                                fontSize: '<@label.style.fontSize',
-                                            },
-                                            dom: {
-                                                innerText: () => def.cols[col].flds[fld].value,
-                                            },
-                                        }),
-                                        shape: () => ({
-                                            base: shape,
-                                            prop: {
-                                                '#alignHor': () => $$.$me_align.right,
-                                                '#alignVer': () => $$.$me_align.center,
-                                                size: () => 12,
-                                                '#ofsHor': $$.$me_atom2_prop(['.size'], ({ masters: [size] }) => -size),
-                                                color: () => '#0070a4',
-                                            },
-                                        }),
-                                    },
-                                };
-                            }),
-                        },
-                    };
-                }),
-            },
-        };
-        const shape = {
-            prop: {
-                size: $$.$me_atom2_prop_abstract(),
-                color: $$.$me_atom2_prop_abstract(),
-                '#width': '.size',
-                '#height': '.size',
-            },
-            style: {
-                borderRadius: () => '50%',
-                border: $$.$me_atom2_prop(['.color'], ({ masters: [color] }) => `1px solid ${color}`),
-            },
-            elem: {
-                quest: () => ({
-                    base: label,
-                    prop: {
-                        '#align': () => $$.$me_align.center,
-                        '#ofsHor': () => .5,
-                        '#ofsVer': () => .3,
-                    },
-                    dom: {
-                        innerText: () => '?',
-                    },
-                    style: {
-                        color: '<.color',
-                        fontSize: $$.$me_atom2_prop(['<.size'], ({ masters: [size] }) => size * .8),
-                    },
-                }),
-            },
-        };
-        const label = {
-            prop: {
-                '#height': () => null,
-                '#width': () => null,
-            },
-            style: {
-                whiteSpace: () => 'nowrap',
-                overflow: () => 'hidden',
-            },
-        };
-        const leftPanel = {
-            prop: {
-                def: () => ({
-                    mark: {
-                        caption: $$.$me_atom2_prop([], () => 'Пометить'),
-                        editable: () => true,
-                        icon: $$.$me_atom2_prop([], () => ({
-                            style: {
-                                borderRadius: () => '50%',
-                                border: () => '1px solid red',
-                            },
-                        })),
-                    },
-                    fav: {
-                        caption: $$.$me_atom2_prop([], () => 'Поместить в избранное'),
-                        editable: () => true,
-                        icon: $$.$me_atom2_prop([], () => ({
-                            style: {
-                                borderRadius: () => '50%',
-                                border: () => '1px solid red',
-                            },
-                        })),
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//plitka.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_iosmenu = {
-            prop: {
-                target: $$.$me_atom2_prop_abstract(),
-                limitRight: '/.#viewportWidth',
-                limitLeft: () => 0,
-                triangleSize: () => 15,
-                paddingHor: () => 6,
-                borderRadius: () => 8,
-                colorBackground: () => 'black',
-                '#width': () => 0,
-                lambda: () => .5,
-                '#height': () => 34,
-                '#ofsVer': $$.$me_atom2_prop(['.triangleSize', '.#height'], ({ masters: [triangleSize, height] }) => -(triangleSize + height)),
-            },
-            elem: {
-                triangle: () => ({
-                    base: $$.$me_triangle,
-                    prop: {
-                        k: () => 2,
-                        size: '<.triangleSize',
-                        color: '<.colorBackground',
-                        '#ofsVer': '<.#height',
-                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.#width', '<.lambda', '<.paddingHor'], ({ masters: [width_parent, width_own, lambda, paddingHor] }) => paddingHor + Math.round((width_parent - 2 * paddingHor - width_own) * lambda)),
-                    },
-                }),
-                items: () => ({
-                    control: {
-                        item: $$.$me_atom2_prop({ keys: ['<.items'] }, ({ key: [item] }) => ({
-                            base: $$.$me_label,
-                            prop_non_render: {
-                                '#cursor': () => 'pointer',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a.dispatch('<<' + $$.a('<<.target'));
-                                    return true;
-                                },
-                            },
-                            prop: {
-                                '#height': '<.#height',
-                                alignVer: () => $$.$me_align.center,
-                                '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.items'], ({ masters: [items] }) => {
-                                    const idx = items.indexOf(item);
-                                    const result = !idx ? ['<<.paddingHor'] :
-                                        [`<^item[${items[idx - 1]}].#ofsHor`, `<^item[${items[idx - 1]}].#width`
-                                        ];
-                                    return result;
-                                }), ({ len, masters: [left, width, space] }) => len == 1 ? left : left + width),
-                                borderWidthLeft: $$.$me_atom2_prop(['<<.items'], ({ masters: [items] }) => {
-                                    const idx = items.indexOf(item);
-                                    return !idx ? 0 : 1;
-                                }),
-                                colorBorderLeft: () => 'rgba(255,255,255,0.5)',
-                                paddingHor: () => 10,
-                                text: () => item,
-                                fontSize: () => 14,
-                                fontWeight: () => 400,
-                                fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-                                colorText: () => 'white',
-                            },
-                        })),
-                    },
-                }),
-            },
-            init: () => {
-                const items = $$.a('.items');
-                const item_last = items[items.length - 1];
-                const width = $$.a(`@items^item[${item_last}].#ofsHor`) + $$.a(`@items^item[${item_last}].#width`) + $$.a('.paddingHor');
-                const ofsHor = Math.round(($$.a('<.#width') - width) / 2);
-                const clientRect = $$.a('<.#clientRect');
-                const limitRight = $$.a('.limitRight') - clientRect.left - width;
-                const limitLeft = $$.a('.limitLeft') - clientRect.left;
-                const ofsHor_valid = Math.max(limitLeft, Math.min(ofsHor, limitRight));
-                const lambda = .5 + Math.min(.5, (ofsHor - ofsHor_valid) / (width - 2 * $$.a('.paddingHor') - $$.a('@triangle.#width')));
-                $$.a('.#ofsHor', ofsHor_valid);
-                $$.a('.#width', width);
-                $$.a('.lambda', lambda);
-            },
-            style: {
-                background: '.colorBackground',
-                borderRadius: '.borderRadius',
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//iosmenu.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const width_compute_fn = (p) => {
-            const [maxWidth, minWidth, minMarginHor, viewportWidth] = p.masters;
-            return Math.max(minWidth, Math.min(maxWidth, viewportWidth - minMarginHor * 2));
-        };
-        $$.$me_dialog = {
-            prop: {
-                content: $$.$me_atom2_prop_abstract(),
-                target: $$.$me_atom2_prop_abstract(),
-                minMarginVer: () => 50,
-                minMarginHor: () => 50,
-                maxWidth: '/.#viewportWidth',
-                maxHeight: '/.#viewportHeight',
-                minWidth: () => 100,
-                minHeight: () => 100,
-                '#width': '/.#viewportWidth',
-                '#height': '/.#viewportHeight',
-                '#ofsHor': $$.$me_atom2_prop(['<.#clientRect'], ({ masters: [clientRect] }) => -clientRect.left),
-                '#ofsVer': $$.$me_atom2_prop(['<.#clientRect'], ({ masters: [clientRect] }) => -clientRect.top),
-                '#zIndex': () => 10,
-                '#cursor': () => 'not-allowed',
-            },
-            event: {
-                mousemove: () => {
-                    return true;
-                },
-                mousedown: () => {
-                    return true;
-                },
-                touchstart: () => {
-                    return true;
-                },
-            },
-            style: {
-                background: () => 'rgba(0,0,0,.1)'
-            },
-            elem: {
-                wrapper: () => ({
-                    prop: {
-                        '#width': $$.$me_atom2_prop(['<.maxWidth', '<.minWidth', '<.minMarginHor', '<.#width'], width_compute_fn),
-                        '#height': $$.$me_atom2_prop(['<.maxHeight', '<.minHeight', '<.minMarginVer', '<.#height'], width_compute_fn),
-                        '#ofsHor': $$.$me_atom2_prop(['<.#width', '.#width'], ({ masters: [width_upper, width] }) => (width_upper - width) / 2),
-                        '#ofsVer': $$.$me_atom2_prop(['<.#height', '.#height'], ({ masters: [height_upper, height] }) => (height_upper - height) / 2),
-                        '#cursor': () => null,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                    },
-                    elem: {
-                        content: '<.content',
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//dialog.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_cross = {
-            type: '$me_cross',
-            base: $$.$me_stylesheet,
-            prop: {
-                size: $$.$me_atom2_prop_abstract(),
-                thick: $$.$me_atom2_prop_abstract(),
-                color: $$.$me_atom2_prop_abstract(),
-                opacity: () => 1,
-                opacityHover: () => 1,
-                '#width': '.size',
-                '#height': '.size',
-                styleSheetName: () => 'me_cross',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
-        .${className}:before {
-          transform: rotate(45deg);
-        }
-        .${className}:after {
-          transform: rotate(-45deg);
-        }
-      `),
-                styleSheet: $$.$me_atom2_prop(['.className', '.size', '.thick', '.color', '.opacity', '.opacityHover'], ({ masters: [className, size, thick, color, opacity, opacityHover], atom }) => `
-        .${className} {
-          opacity: ${opacity};
-        }
-        .${className}:hover {
-          opacity: ${opacityHover};
-        }
-        .${className}:before, .${className}:after {
-          position: absolute;
-          left: ${(size - thick) / 2}px;
-          content: '';
-          height: ${size}px;
-          width: ${thick}px;
-          background-color: ${color};
-        }
-      `),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//cross.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_button = {
-            type: '$nl_button',
-            base: $$.$me_stylesheet,
-            prop: {
-                caption: $$.$me_atom2_prop_abstract(),
-                target: $$.$me_atom2_prop_abstract(),
-                source: () => null,
-                cmd: () => null,
-                '#width': () => 200,
-                '#height': () => 40,
-                '#cursor': () => 'pointer',
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                styleSheetName: () => 'nl_button',
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheetName'], ({ masters: [className] }) => `
-        .${className} {
-          user-select: none;
-        }
-        .${className} > div {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      `),
-                colorBackground: '/.colorButton',
-                colorText: () => 'white',
-            },
-            elem: {
-                caption: () => ({
-                    prop: {
-                        '#width': () => null,
-                        '#height': () => null,
-                        '#align': () => $$.$me_align.center,
-                        fontSize: '<.fontSize',
-                        colorText: '<.colorText',
-                    },
-                    dom: {
-                        innerText: '<.caption',
-                    },
-                }),
-            },
-            style: {
-                background: '.colorBackground',
-                borderRadius: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(1 / 2)),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a.dispatch($$.a('.target'), $$.a('.source'), $$.a('.cmd'));
-                    return true;
-                },
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//button.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_grid_dialog = {
-            base: $$.$me_dialog,
-            prop: {
-                cols: $$.$me_atom2_prop_abstract(),
-                col_ids_visible: $$.$me_atom2_prop_abstract(),
-                col_ids_invisible: $$.$me_atom2_prop(['.col_ids_visible', '.cols'], ({ masters: [ids, cols] }) => {
-                    const ids_all = Object.keys(cols);
-                    return ids_all.filter(id => !~ids.indexOf(id));
-                }),
-                maxWidth: () => 872,
-                minWidth: () => 600,
-                minHeight: () => 600,
-                content: () => ({
-                    prop: {
-                        listSpace: () => 24,
-                        listWidth: $$.$me_atom2_prop(['.#width', '.paddingHor', '.listSpace'], ({ masters: [width, paddingHor, listSpace] }) => Math.round((width - 2 * paddingHor - listSpace) / 2)),
-                        listOfsVer: () => 94,
-                        headerHeight: () => 30,
-                        listHeight: $$.$me_atom2_prop(['.#height', '.listOfsVer', '.paddingVer', '@buttonApply.#height'], ({ masters: [height, listOfsVer, paddingVer, buttonApplyHeight] }) => height - listOfsVer - 2 * paddingVer - buttonApplyHeight),
-                        row_height: $$.$me_atom2_prop(['.itemHeight', '.itemMarginVer'], ({ masters: [itemHeight, itemMarginVer] }) => itemHeight + 2 * itemMarginVer),
-                        itemMarginTopFirst: $$.$me_atom2_prop(['.itemMarginVer'], $$.$me_atom2_prop_compute_fn_mul(16 / 6)),
-                        itemMarginBottomLast: $$.$me_atom2_prop(['.itemMarginVer'], $$.$me_atom2_prop_compute_fn_mul(16 / 6)),
-                        itemMarginVer: () => 6,
-                        itemHeight: () => 37,
-                        itemSpace: () => 8,
-                        itemMarginHor: () => 16,
-                        moving: () => '',
-                        movingAnim: () => false,
-                        source: () => '',
-                        target: () => '',
-                        ofs_clientX: () => -1,
-                        ofs_clientY: () => -1,
-                        start_clientX: () => -1,
-                        start_clientY: () => -1,
-                        start_ofsHor: () => -1,
-                        start_ofsVer: () => -1,
-                        isRight: () => false,
-                        paddingHor: () => 32,
-                        paddingVer: () => 32,
-                    },
-                    style: {
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
-                        boxShadow: () => '0 12px 12px 0 rgba(0, 0, 0, 0.5)',
-                    },
-                    elem: {
-                        header: () => ({
-                            prop: {
-                                '#ofsHor': '<.paddingHor',
-                                '#ofsVer': '<.paddingVer',
-                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                                '#height': () => 19,
-                            },
-                            control: {
-                                label: () => ({
-                                    base: $$.$me_label,
-                                    prop: {
-                                        '#width': '<.#width',
-                                        '#height': '<.#height',
-                                        text: () => 'Настройка таблицы'.toUpperCase(),
-                                        alignVer: () => $$.$me_align.center,
-                                    },
-                                }),
-                            },
-                        }),
-                        invisibleHeader: () => ({
-                            base: header_list,
-                            prop: {
-                                text: () => 'Скрытые поля',
-                            },
-                        }),
-                        visibleHeader: () => ({
-                            base: header_list,
-                            prop: {
-                                text: () => 'Видимые поля',
-                                '#alignHor': () => $$.$me_align.right,
-                            },
-                        }),
-                        invisible: () => ({
-                            base: list,
-                            prop: {
-                                source: () => 'invisible',
-                                target: () => 'visible',
-                            },
-                        }),
-                        visible: () => ({
-                            base: list,
-                            prop: {
-                                '#alignHor': () => $$.$me_align.right,
-                                source: () => 'visible',
-                                target: () => 'invisible',
-                                isRight: () => true,
-                            },
-                        }),
-                        buttonCancel: () => ({
-                            prop: {
-                                '#alignHor': () => $$.$me_align.right,
-                                '#ofsHor': '<.paddingHor',
-                                '#ofsVer': '<.paddingVer',
-                                '#width': () => 15,
-                                '#height': () => 15,
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': () => 'pointer',
-                            },
-                            elem: {
-                                cross: () => ({
-                                    base: $$.$me_cross,
-                                    prop: {
-                                        size: () => 15,
-                                        thick: () => 2,
-                                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#313745' : 'white'),
-                                        opacity: () => .5,
-                                    },
-                                }),
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a.dispatch('<<<' + $$.a('<<<.target'));
-                                    return true;
-                                },
-                            },
-                        }),
-                        buttonApply: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 200,
-                                '#alignVer': () => $$.$me_align.bottom,
-                                '#alignHor': () => $$.$me_align.center,
-                                '#ofsVer': () => 24,
-                                caption: () => 'Применить',
-                                target: $$.$me_atom2_prop(['<<<.target'], ({ masters: [target] }) => '<<<' + target),
-                            },
-                        }),
-                        moving: $$.$me_atom2_prop(['.moving'], ({ masters: [id] }) => !id ? null : {
-                            base: item,
-                            prop: {
-                                '#ofsHor': '<.start_ofsHor',
-                                '#ofsVer': '<.start_ofsVer',
-                                '#height': '<.itemHeight',
-                                '#width': $$.$me_atom2_prop(['<.listWidth', '<.itemMarginHor'], ({ masters: [width, margin] }) => {
-                                    const result = width - 2 * margin;
-                                    return result;
-                                }),
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex, isMoving] }) => zIndex + 2),
-                                '#cursor': () => 'grabbing',
-                                isRight: '<.isRight',
-                                text: $$.$me_atom2_prop(['<<<.cols'], ({ masters: [cols] }) => {
-                                    return cols[id].caption || id;
-                                }),
-                            },
-                            style: {
-                                boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.35)'
-                            },
-                            event: {
-                                mousemove: p => dragDo(p.event.clientX, p.event.clientY),
-                                mouseup: () => dragEnd(),
-                                touchmove: p => dragDo(p.event.touches[0].clientX, p.event.touches[0].clientY),
-                                touchend: () => dragEnd(),
-                            },
-                        }),
-                    },
-                }),
-            },
-        };
-        const header_list = {
-            prop: {
-                '#width': '<.listWidth',
-                '#height': '<.headerHeight',
-                '#ofsVer': () => 67,
-                '#ofsHor': '<.paddingHor',
-            },
-            control: {
-                label: () => ({
-                    base: $$.$me_label,
-                    prop: {
-                        text: '<.text',
-                        padding: () => 0,
-                        alignVer: () => $$.$me_align.top,
-                        '#height': '<.#height',
-                        '#width': '<.#width',
-                        fontWeight: () => 500,
-                    },
-                }),
-            },
-        };
-        const list = {
-            base: $$.$me_list,
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'row_height_default') {
-                    const idx = dispatch_arg.idx;
-                    dispatch_arg.val = $$.a('.row_height_min') + (0 < idx && idx < $$.a('.rec_count') - 1 ? 0 :
-                        (!idx ? $$.a('<.itemMarginTopFirst') : $$.a('<.itemMarginBottomLast')) - $$.a('<.itemMarginVer'));
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                isRight: () => false,
-                '#width': '<.listWidth',
-                '#height': '<.listHeight',
-                '#ofsVer': '<.listOfsVer',
-                '#ofsHor': '<.paddingHor',
-                col_ids: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.source'], ({ masters: [source] }) => [`<<<.col_ids_${source}`])),
-                rec_count: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => {
-                    const result = ids.length;
-                    return result;
-                }),
-                disabledScroll: $$.$me_atom2_prop(['<.moving'], ({ masters: [moving] }) => !!moving),
-                curtain_kind: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : 'black'),
-                row_height_min: '<.row_height',
-                header_height: () => 0,
-                provider_tag: '.source',
-                header_content: () => ({}),
-                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                    base: row,
-                    prop: {
-                        row_i: () => row_i,
-                        rec_idx: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i', '<<.row_i_min', '<<.row_i_max'], ({ masters: [row_i, row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(row_i, row_i_min, row_i_max) ? [] : [`<<.rec_idx[${row_i}]`]), ({ len, masters: [rec_idx] }) => !len ? -1 : rec_idx),
-                        id: $$.$me_atom2_prop(['<<.col_ids', `.rec_idx`, '<<.rec_count'], ({ masters: [ids, idx, rec_count] }) => {
-                            return !~idx || idx >= rec_count ? '' : ids[idx];
-                        }),
-                    },
-                })),
-            },
-            elem: {
-                header: () => null,
-            },
-            style: {
-                boxShadow: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.25)'),
-                border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '' : 'solid 1px #d8dce3'),
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#f0f1f4' : '#878f9b'),
-            },
-        };
-        const row = {
-            elem: {
-                wrapper: () => ({
-                    prop: {
-                        '#width': $$.$me_atom2_prop(['<.#width', '<<<<.itemMarginHor'], ({ masters: [width, itemMarginHor] }) => width - 2 * itemMarginHor),
-                        '#height': '<<<<.itemHeight',
-                        '#ofsHor': '<<<<.itemMarginHor',
-                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.rec_idx'], ({ masters: [rec_idx] }) => rec_idx ?
-                            ['<<<<.itemMarginVer'] :
-                            ['<<<<.itemMarginTopFirst'])),
-                    },
-                    elem: {
-                        item: () => ({
-                            base: item,
-                            event: {
-                                wheelDrag: p => {
-                                    if ($$.$me_atom2_event_wheel_y_is(p.event))
-                                        return false;
-                                    if (!p.isInRect(p.event.start.clientX, p.event.start.clientY))
-                                        return false;
-                                    return dragStart($$.a('<<.id'), p.event.start.clientX, p.event.start.clientY);
-                                },
-                                wheelTouch: p => {
-                                    if ($$.$me_atom2_event_wheel_y_is(p.event))
-                                        return false;
-                                    const touchTolerance = $$.a('/.#touchTolerance');
-                                    const dist = p.distToRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY);
-                                    if (dist > touchTolerance)
-                                        return false;
-                                    return dragStart($$.a('<<.id'), p.event.start.touches[0].clientX, p.event.start.touches[0].clientY);
-                                },
-                            },
-                            prop: {
-                                isRight: '<<<<.isRight',
-                                '#hidden': $$.$me_atom2_prop(['<.#visible', '<<<<<.moving', '<<.id'], ({ masters: [visible, moving, id] }) => !visible || id == 'stub' || id && id == moving, ({ val, atom }) => {
-                                    if (val == null)
-                                        console.error(atom.name());
-                                }),
-                                '#zIndex': $$.$me_atom2_prop(['<<<<<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                '#cursor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<<.source'], ({ masters: [source] }) => source != 'visible' ? [] : [`<<<<<<<.col_ids_${source}`]), ({ len, masters: [ids] }) => !len || ids.length >= 2 ? 'grab' : 'not-allowed'),
-                                text: $$.$me_atom2_prop(['<<.id', '<<<<<<<.cols'], ({ masters: [id, cols] }) => {
-                                    console.log(cols, id, cols[id]);
-                                    return id && id != 'stub' && (cols[id].caption || id);
-                                }),
-                            },
-                        }),
-                    }
-                }),
-            },
-        };
-        const item = {
-            style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
-                border: () => 'solid 1px #adb0b8',
-                boxSizing: () => 'border-box',
-                userSelect: () => 'none',
-            },
-            elem: {
-                text: () => ({
-                    prop: {
-                        '#height': '<.#height',
-                        '#width': $$.$me_atom2_prop(['<.#width', '<@moveMark.#width', '<@moveMark.#ofsHor'], ({ masters: [width, moveMarkWidth, moveMarkOfsHor] }) => {
-                            const result = width - moveMarkWidth - moveMarkOfsHor;
-                            return result;
-                        }),
-                        '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.isRight'], ({ masters: [isRight] }) => !isRight ? [] : ['<@moveMark.#width', '<@moveMark.#ofsHor']), $$.$me_atom2_prop_compute_fn_sum(0)),
-                    },
-                    control: {
-                        label: () => ({
-                            base: $$.$me_label,
-                            prop: {
-                                text: '<<.text',
-                                paddingHor: () => 12,
-                                alignVer: () => $$.$me_align.center,
-                                alignHor: $$.$me_atom2_prop(['<<.isRight'], ({ masters: [isRight] }) => isRight ? $$.$me_align.right : $$.$me_align.left),
-                                '#height': '<.#height',
-                                '#width': '<.#width',
-                                fontWeight: () => 500,
-                            },
-                        }),
-                    },
-                }),
-                moveMark: () => ({
-                    node: 'img',
-                    prop: {
-                        '#width': () => 9,
-                        '#height': () => 17,
-                        '#alignHor': $$.$me_atom2_prop(['<.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.right : $$.$me_align.left),
-                        '#ofsHor': () => 18,
-                        '#alignVer': () => $$.$me_align.center,
-                    },
-                    attr: {
-                        src: () => 'assets/move@2x.png',
-                        draggable: () => false,
-                    },
-                    style: {
-                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
-                            'brightness(0%) invert(29%) sepia(9%) saturate(1214%) hue-rotate(184deg) brightness(93%) contrast(87%)' :
-                            'brightness(0%) invert(94%) sepia(11%) saturate(100%) hue-rotate(182deg) brightness(95%) contrast(89%)'),
-                    },
-                }),
-            },
-        };
-        function dragStart(id, clientX, clientY) {
-            if ($$.a('<<<<<.moving') || $$.a('<<<<<.movingAnim'))
-                return false;
-            const source = $$.a('<<<<.source');
-            if (source == 'visible' && $$.a(`<<<<<<<.col_ids_${source}`).length < 2)
-                return false;
-            $$.a('<<<<<.moving', id);
-            $$.a('<<<<<.isRight', $$.a('.isRight'));
-            $$.a('<<<<<.source', source);
-            $$.a('<<<<<.target', $$.a('<<<<.target'));
-            $$.a('<<<<<.start_clientX', clientX);
-            $$.a('<<<<<.start_clientY', clientY);
-            const clientRect = $$.a('.#clientRect');
-            $$.a('<<<<<.ofs_clientX', clientRect.left - clientX);
-            $$.a('<<<<<.ofs_clientY', clientRect.top - clientY);
-            const clientRectDialog = $$.a('<<<<<.#clientRect');
-            $$.a('<<<<<.start_ofsHor', clientRect.left - clientRectDialog.left);
-            $$.a('<<<<<.start_ofsVer', clientRect.top - clientRectDialog.top);
-            return true;
-        }
-        function dragDo(clientX, clientY) {
-            if (!$$.a('<.moving'))
-                return false;
-            if ($$.a('<.movingAnim'))
-                return false;
-            $$.a('.#ofsHor', clientX - $$.a('<.start_clientX') + $$.a('<.start_ofsHor'));
-            $$.a('.#ofsVer', clientY - $$.a('<.start_clientY') + $$.a('<.start_ofsVer'));
-            const left = clientX + $$.a('<.ofs_clientX');
-            const right = left + $$.a('.#width');
-            const top = clientY + $$.a('<.ofs_clientY');
-            const bottom = top + $$.a('.#height');
-            const target = $$.a('<.target');
-            const clientRect = $$.a(`<@${target}.#clientRect`);
-            const ids = $$.a(`<<<.col_ids_${target}`);
-            if (intersects(left, right, clientRect.left, clientRect.right) &&
-                intersects(top, bottom, clientRect.top, clientRect.bottom)) {
-                let idx_found = ids.length;
-                $$.a.dispatch(`<@${target}`, 'iterate_rows', (row_i) => {
-                    const clientRect = $$.a(`<@${target}@row[${row_i}].#clientRect`);
-                    if (intersects(top, bottom, clientRect.top, clientRect.bottom)) {
-                        idx_found = $$.a(`<@${target}.rec_idx[${row_i}]`);
-                        if (idx_found == ids.length - 1 && top > clientRect.top)
-                            idx_found++;
-                    }
-                });
-                if (ids[idx_found] != 'stub') {
-                    const ids_new = ids.slice();
-                    const idx = ids.indexOf('stub');
-                    if (~idx) {
-                        ids_new.splice(idx, 1);
-                        if (idx_found > idx)
-                            idx_found--;
-                    }
-                    ids_new.splice(idx_found, 0, 'stub');
-                    $$.a(`<<<.col_ids_${target}`, ids_new);
-                }
-                return true;
-            }
-            const idx = ids.indexOf('stub');
-            if (~idx) {
-                const ids_new = ids.slice();
-                ids_new.splice(idx, 1);
-                $$.a(`<<<.col_ids_${target}`, ids_new);
-            }
-            return true;
-        }
-        function dragEnd() {
-            const id = $$.a('<.moving');
-            if (!id)
-                return false;
-            if ($$.$me_atom2_wheel_drag)
-                $$.$me_atom2_wheel_drag.cancel();
-            if ($$.$me_atom2_wheel_touch)
-                $$.$me_atom2_wheel_touch.cancel();
-            let count = 2;
-            const target = $$.a('<.target');
-            const fini = () => {
-                if (!--count) {
-                    $$.a('<.moving', '');
-                    $$.a('<.movingAnim', false);
-                    const ids = $$.a(`<<<.col_ids_${target}`);
-                    const idx = ids.indexOf('stub');
-                    if (~idx) {
-                        const ids_new = ids.slice();
-                        ids_new.splice(idx, 1, id);
-                        $$.a(`<<<.col_ids_${target}`, ids_new);
-                        {
-                            const source = $$.a('<.source');
-                            const ids = $$.a(`<<<.col_ids_${source}`);
-                            const idx = ids.indexOf(id);
-                            const ids_new = ids.slice();
-                            ids_new.splice(idx, 1);
-                            $$.a(`<<<.col_ids_${source}`, ids_new);
-                        }
-                    }
-                }
-            };
-            $$.a('<.movingAnim', true);
-            let i_found;
-            const list = $$.a.dispatch(`<@${target}`, 'iterate_rows', (row_i) => {
-                if ($$.a(`@row[${row_i}]@content.id`) == 'stub') {
-                    i_found = row_i;
-                    return false;
-                }
-            });
-            let ofsHor;
-            let ofsVer;
-            if (i_found === void 0) {
-                ofsHor = $$.a('<.start_ofsHor');
-                ofsVer = $$.a('<.start_ofsVer');
-            }
-            else {
-                const clientRectDialog = $$.a('<.#clientRect');
-                const clientRectTarget = $$.a(`<@${target}@row[${i_found}]@content@wrapper.#clientRect`);
-                ofsHor = clientRectTarget.left - clientRectDialog.left;
-                ofsVer = clientRectTarget.top - clientRectDialog.top;
-            }
-            $$.a('.#ofsHor', $$.$me_atom2_anim({ to: ofsHor, fini }));
-            $$.a('.#ofsVer', $$.$me_atom2_anim({ to: ofsVer, fini }));
-            return true;
-        }
-        const intersects = (leftA, rightA, leftB, rightB) => leftB <= leftA && leftA <= rightB ||
-            leftB <= rightA && rightA <= rightB ||
-            leftA <= leftB && rightA >= leftB ||
-            leftA <= rightB && rightA >= rightB;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//dialog.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const min_max = (prefix, min = 'min', max = 'max') => [prefix + '_' + min, prefix + '_' + max];
-        let by_idx = {};
-        let timerId;
-        $$.$nl_search_grid = {
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'set_view') {
-                    const val = dispatch_arg || {};
-                    const col_width_store = val.col_width_actual || {};
-                    const col_ids = val.col_ids || (() => {
-                        const cols = $$.a('.cols');
-                        return Object.keys(cols).filter(id => !cols[id].hidden);
-                    })();
-                    const min = $$.a('.#width') - $$.a('.col_width_sum_actual') - $$.a('.col_fixed_width');
-                    const ofsHor = Math.min(0, Math.max(min, val.ofsHor || 0)) + $$.a('.col_fixed_width');
-                    for (const id of $$.a('.col_ids'))
-                        $$.a(`.col_width_actual[${id}]`, null);
-                    $$.a('.col_width_store', col_width_store);
-                    $$.a('.col_ids', col_ids);
-                    $$.a('.ofsHor', ofsHor);
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                influence: $$.$me_atom2_prop(['.cols'], ({ masters: [cols] }) => {
-                    const result = {};
-                    for (const col_id in cols) {
-                        const col = cols[col_id];
-                        const fld = col.fld;
-                        if (!fld)
-                            continue;
-                        for (const s of fld)
-                            (result[s] || (result[s] = new Set())).add(col_id);
-                    }
-                    return result;
-                }),
-                col_width_store: () => ({}),
-                col_ids: () => [],
-                col_id_last: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => !ids.length ? null : ids[ids.length - 1]),
-                col_id_last_prev: $$.$me_atom2_prop(['.col_ids'], ({ masters: [ids] }) => ids.length < 2 ? null : ids[ids.length - 2]),
-                col: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.cols'] }, ({ key: [id], masters: [cols] }) => cols[id]),
-                col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]', '.col_width_store'] }, ({ key: [id], masters: [col, col_width_store] }) => {
-                    return col_width_store[id] || col.width;
-                }),
-                col_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                col_width_excess: $$.$me_atom2_prop(['.#width', '.col_fixed_width', '.col_width_sum'], $$.$me_atom2_prop_compute_fn_diff()),
-                col_width_actual: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.col_width_sum', '.col_width_excess'] }, ({ key: [id], masters: [col_width, col_width_sum, col_width_excess] }) => {
-                    return col_width + (col_width_excess <= 0 ? 0 : col_width / col_width_sum * col_width_excess);
-                }),
-                col_width_sum_actual: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.col_ids'], ({ masters: [col_ids] }) => col_ids.map(id => `.col_width_actual[${id}]`)), $$.$me_atom2_prop_compute_fn_sum()),
-                col_align: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ masters: [col] }) => col.align || $$.$me_align.left),
-                col_width_min: () => 24,
-                col_caption: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col[]'] }, ({ key: [id], masters: [col] }) => col.caption || id),
-                col_fixed_width: () => 37,
-                ofsHor: $$.$me_atom2_prop(['.col_fixed_width'], ({ prev, masters: [col_fixed_width] }) => prev == null ? col_fixed_width : prev),
-                ofsHor_adjust: $$.$me_atom2_prop(['.#width'], null, ({ val, prev }) => {
-                    const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum_actual'), val);
-                    $$.a('.ofsHor', ofsHor_adjusted($$.a('.ofsHor'), min, max));
-                }),
-                col_left: $$.$me_atom2_prop({
-                    keys: ['.col_ids'],
-                    masters: $$.$me_atom2_prop_masters(['.col_ids'], ({ key: [id], masters: [ids] }) => {
-                        const idx = ids.indexOf(id);
-                        return !idx ? [] : [`.col_left[${ids[idx - 1]}]`, `.col_width_actual[${ids[idx - 1]}]`];
-                    }),
-                }, ({ len, masters: [left, width] }) => !len ? 0 : left + width),
-                header_height: () => 32,
-                row_height_min: () => 28,
-                hidden_curtain: $$.$me_atom2_prop(['@header.colSelected'], ({ masters: [colSelected] }) => !!colSelected),
-                width_curtain: () => 40,
-                curtain_kind: () => 'black',
-                curtain: () => ['left', 'right'],
-                curtainVisible: $$.$me_atom2_prop({
-                    keys: ['.curtain'],
-                    masters: $$.$me_atom2_prop_masters([], ({ key: [curtain] }) => {
-                        if (curtain == 'left') {
-                            return ['.ofsHor', '.col_fixed_width'];
-                        }
-                        else {
-                            return ['.ofsHor', '.col_width_sum_actual', '.#width'];
-                        }
-                    }),
-                }, ({ key: [curtain], masters }) => {
-                    if (curtain == 'left') {
-                        const [ofsHor, col_fixed_width] = masters;
-                        return ofsHor < col_fixed_width;
-                    }
-                    else {
-                        const [ofsHor, col_width_sum_actual, width] = masters;
-                        return ofsHor + col_width_sum_actual > width;
-                    }
-                }),
-                '#order': () => ['list', 'cursor', 'header'],
-            },
-            event: {
-                wheel: p => !$$.a('@header.colSelected') &&
-                    p.isInRect(p.event.clientX, p.event.clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event.deltaX),
-                wheelDrag: p => !$$.a('@header.colSelected') &&
-                    p.isInRect(p.event.start.clientX, p.event.start.clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event.deltaX),
-                wheelTouch: p => !$$.a('@header.colSelected') &&
-                    p.isInRect(p.event.start.touches[0].clientX, p.event.start.touches[0].clientY) &&
-                    !$$.$me_atom2_event_wheel_y_is(p.event) && grid_wheel(p.event.deltaX),
-            },
-            elem: {
-                header: () => ({
-                    base: header,
-                    prop: {
-                        '#height': '<.header_height',
-                    },
-                }),
-                list: () => ({
-                    base: list,
-                    prop: {
-                        provider_tag: () => '',
-                        provider: '<.provider',
-                        rec_count: '<.rec_count',
-                        '#ofsVer': '<@header.#height',
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@header.#height'], ({ masters: [height_gross, height_header] }) => height_gross - height_header),
-                        row_height_min: '<.row_height_min',
-                        width_curtain: $$.$me_atom2_prop(['<.ofsHor', '<.col_width_sum_actual', '<.#width'], ({ masters: [ofsHor, col_width_sum_actual, width] }) => Math.min(width, ofsHor + col_width_sum_actual)),
-                    },
-                }),
-                curtain: $$.$me_atom2_prop({ keys: ['.curtain'], masters: ['.hidden_curtain', '.curtainVisible[]'] }, ({ key: [curtain], masters: [hidden_curtain, curtainVisible] }) => hidden_curtain || !curtainVisible ? null : {
-                    prop: {
-                        '#width': '<.width_curtain',
-                        '#height': $$.$me_atom2_prop(['<.header_height', '<@list.curtainVisible[bottom]', '<@list.#height', '<@list.visible_bottom'], ({ masters: [header_height, curtainVisible, height, visible_bottom] }) => {
-                            return header_height + (curtainVisible ? height : visible_bottom);
-                        }),
-                        '#ofsHor': curtain == 'right' ? null : '<.col_fixed_width',
-                        '#alignHor': () => $$.$me_align[curtain],
-                    },
-                    style: {
-                        background: $$.$me_atom2_prop(['<.curtain_kind'], ({ masters: [kind] }) => kind == 'black' ?
-                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(0,0,0,.24) 0%, rgba(0,0,0,.1) 33%, rgba(0,0,0,0) 100%)` :
-                            `linear-gradient(${curtain == 'left' ? 90 : 270}deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%)`),
-                        pointerEvents: () => 'none',
-                    },
-                }),
-            }
-        };
-        const grid_wheel = (deltaX) => {
-            const prop_ofsHor = $$.a.get('.ofsHor');
-            const ofsHor = prop_ofsHor.value() - deltaX;
-            const [min, max] = ofsHor_min_max($$.a('.col_fixed_width'), $$.a('.col_width_sum_actual'), $$.a('.#width'));
-            if (deltaX > 0 && ofsHor >= min ||
-                deltaX < 0 && ofsHor <= max) {
-                prop_ofsHor.value(ofsHor);
-            }
-            else if (deltaX) {
-                $$.$me_ribbon_effect({
-                    id: $$.a.curr.name(),
-                    adjust: '.ofsHor',
-                    from: '.ofsHor',
-                    to: ofsHor > max ? max : min,
-                    delta: deltaX,
-                    fromBack: deltaX < 0,
-                });
-            }
-            return true;
-        };
-        function ofsHor_min_max(col_fixed_width, col_width_sum_actual, width) {
-            const max = col_fixed_width;
-            const min = Math.min(max, width - col_width_sum_actual);
-            return [min, max];
-        }
-        function ofsHor_adjusted(ofsHor, min, max) {
-            return Math.min(max, Math.max(min, ofsHor));
-        }
-        const get_row_open = (idx, _provider, provider_tag) => {
-            return $$.a.dispatch(_provider, 'get_row_open', { idx, tag: provider_tag }).val;
-        };
-        const set_row_open = (idx, _provider, provider_tag, val) => {
-            $$.a.dispatch(_provider, 'set_row_open', { idx, val, tag: provider_tag });
-        };
-        $$.$nl_search_grid_cursor = $$.$me_atom2_async_multi_origin({
-            default: '',
-            raf_order: 100,
-            flush: (row_i, prev, _value) => {
-                _value.origin.by_path_s('<<.row_cursor').value(row_i);
-            },
-        });
-        const header = {
-            prop: {
-                colSelected: $$.$me_atom2_prop([], () => '', ({ val, prev }) => {
-                    $$.a('.colSelectedOpacity', val ? 1 : $$.$me_atom2_anim({ to: 0 }));
-                    if (!val && prev)
-                        $$.a('.colSelectedWas', prev);
-                }),
-                colReplace: () => '',
-                replaceToRight: () => false,
-                col_ids_new: () => [],
-                colSelectedWas: () => '',
-                colSelectedOpacity: () => 0,
-                colSelectedHeaderVisible: $$.$me_atom2_prop(['.colSelectedOpacity'], ({ masters: [opacity] }) => !!opacity),
-                '#order': () => ['wrapper', 'fixed', 'colSelectedStub', 'colResizerLeft', 'colResizerRight', 'colSelected'],
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-            },
-            elem: {
-                colSelectedStub: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
-                    type: id || id_was,
-                    prop: {
-                        '#ofsHor': $$.$me_atom2_prop([`<<.col_left[${id || id_was}]`, '<<.ofsHor', '<<.col_fixed_width'], ({ masters: [left, ofs, min] }) => Math.max(min, left + ofs)),
-                        '#width': $$.$me_atom2_prop([`<<.col_left[${id || id_was}]`, '<<.ofsHor', '<<.col_fixed_width', `<<.col_width_actual[${id || id_was}]`], ({ masters: [left, ofs, min, width] }) => Math.max(0, width + Math.min(0, left + ofs - min))),
-                        '#height': '<<.#height',
-                    },
-                    style: {
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? 'white' : '#464f63'),
-                        opacity: '<.colSelectedOpacity',
-                    },
-                }),
-                colSelected: $$.$me_atom2_prop(['.colSelected', '.colSelectedWas', '.colSelectedHeaderVisible'], ({ masters: [id, id_was, colSelectedHeaderVisible] }) => !id && !colSelectedHeaderVisible ? null : {
-                    type: id || id_was,
-                    prop: {
-                        '#ofsVer': $$.$me_atom2_prop(['<.colSelected'], ({ masters: [id] }) => $$.$me_atom2_anim({
-                            from: id ? 0 : null,
-                            to: id ? -20 : 0,
-                        })),
-                        '#ofsHor': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.isMoving', '.isMovingAnim'], ({ masters: [isMoving, isMovingAnim] }) => isMoving || isMovingAnim ? [] : [`<<.col_left[${id || id_was}]`, '<<.ofsHor']), ({ len, masters: [left, ofs], prev }) => !len ? prev : left + ofs),
-                        '#width': `<<.col_width_actual[${id || id_was}]`,
-                        on_chaned_width: $$.$me_atom2_prop(['.#width'], null),
-                        '#height': '<<.#height',
-                        '#cursor': $$.$me_atom2_prop(['.isMoving'], ({ masters: [isMoving] }) => isMoving ? 'grabbing' : 'grab'),
-                        '#zIndex': () => 3,
-                        last_clientX: () => -1,
-                        ofs: () => -1,
-                        start_clientX: () => -1,
-                        isShownDialog: () => false,
-                        isResizing: () => false,
-                        isMoving: $$.$me_atom2_prop([], () => false, ({ val, prev }) => {
-                            if (!val && prev) {
-                                const id = $$.a('<.colSelected');
-                                const left = $$.a(`<<.col_left[${id}]`);
-                                const prop_ofsHor = $$.a.get('<<.ofsHor');
-                                const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
-                                    $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
-                                    prop_ofsHor.value();
-                                const min = $$.a('<<.col_fixed_width');
-                                const to = Math.max(min, left + ofs);
-                                $$.a('.#ofsHor', $$.$me_atom2_anim({ to, path_active: $$.a.get('.isMovingAnim').path }));
-                            }
-                        }),
-                        isMovingAnim: () => false,
-                        '#order': () => ['colResizerLeft', 'colResizerRight', 'cells', 'header', 'menu'],
-                    },
-                    style: {
-                        background: () => 'rgb(250,250,250)',
-                        opacity: '<.colSelectedOpacity',
-                        pointerEvents: $$.$me_atom2_prop(['.colSelected'], ({ masters: [colSelected] }) => colSelected ? 'auto' : 'none'),
-                        boxShadow: () => '0 4px 8px 0 rgba(0, 0, 0, 0.5)',
-                    },
-                    init: () => {
-                        const left = $$.a(`<<.col_left[${id || id_was}]`);
-                        const prop_ofsHor = $$.a.get('<<.ofsHor');
-                        const ofs = $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
-                            $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
-                            prop_ofsHor.value();
-                        const min = $$.a('<<.col_fixed_width');
-                        const val = Math.max(min, left + ofs);
-                        $$.a('.#ofsHor', val);
-                    },
-                    dispatch: (dispatch_name, dispatch_arg) => {
-                        const s = $$.a.curr.name();
-                        if (!dispatch_name.startsWith(s))
-                            return false;
-                        dispatch_name = dispatch_name.slice(s.length);
-                        if (dispatch_name.startsWith('@menu')) {
-                            if (dispatch_name.endsWith('[Скрыть]')) {
-                                $$.a('<.colSelected', '');
-                                const col_ids = $$.a('<<.col_ids');
-                                const col_ids_new = col_ids.slice();
-                                const idx = col_ids.indexOf(id);
-                                col_ids_new.splice(idx, 1);
-                                $$.a('<<.col_ids', col_ids_new);
-                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a(`<<.col_width_sum_actual`), $$.a('<.#width'));
-                                const to = ofsHor_adjusted($$.a('<<.ofsHor'), min, max);
-                                const prop_isResizing = $$.a.get('.isResizing');
-                                $$.a('<<.ofsHor', $$.$me_atom2_anim({
-                                    to,
-                                    fini: () => {
-                                        prop_isResizing.value(false);
-                                    },
-                                }));
-                            }
-                            else if (dispatch_name.endsWith('[Показать...]')) {
-                                $$.a('.isShownDialog', true);
-                            }
-                            else
-                                return false;
-                            return true;
-                        }
-                        else if (dispatch_name.startsWith('@dialog')) {
-                            console.log(dispatch_name);
-                            if (dispatch_name.endsWith('Apply')) {
-                                $$.a('<.colSelected', '');
-                                $$.a('<<.col_ids', $$.a('@dialog.col_ids_visible'));
-                                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
-                                $$.a('<<.ofsHor', ofsHor_adjusted($$.a('<<.ofsHor'), min, max));
-                            }
-                            $$.a('.isShownDialog', false);
-                            return true;
-                        }
-                        return false;
-                    },
-                    elem: {
-                        colResizerLeft: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '<.colSelectedOpacity'], ({ masters: [isMoving, isMovingAnim, colSelectedOpacity] }) => isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
-                            base: colResizer,
-                            prop: {
-                                id: () => id,
-                                isRight: () => false,
-                            },
-                        }),
-                        colResizerRight: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '<.colSelectedOpacity'], ({ masters: [isMoving, isMovingAnim, colSelectedOpacity] }) => isMoving || isMovingAnim || colSelectedOpacity != 1 ? null : {
-                            base: colResizer,
-                            prop: {
-                                id: () => id,
-                                isRight: () => true,
-                            },
-                        }),
-                        menu: $$.$me_atom2_prop(['.isMoving', '.isMovingAnim', '.isResizing'], ({ masters: [isMoving, isMovingAnim, isResizing] }) => isMoving || isMovingAnim || isResizing ?
-                            null :
-                            {
-                                base: $$.$me_iosmenu,
-                                prop: {
-                                    target: () => '<',
-                                    items: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [col_ids] }) => {
-                                        const result = ['Показать...'];
-                                        if (col_ids.length > 1)
-                                            result.unshift('Скрыть');
-                                        return result;
-                                    }),
-                                    '#zIndex': () => 6,
-                                },
-                            }),
-                        dialog: $$.$me_atom2_prop(['.isShownDialog'], ({ masters: [isShownDialog] }) => !isShownDialog ? null : {
-                            base: $$.$nl_search_grid_dialog,
-                            prop: {
-                                target: () => '<',
-                                cols: '<<<.cols',
-                                col_ids_visible: $$.$me_atom2_prop(['<<<.col_ids'], ({ masters: [ids] }) => ids),
-                                col_ids_invisible: $$.$me_atom2_prop(['<<<.col_ids', '<<<.cols'], ({ masters: [ids, cols] }) => {
-                                    const ids_all = Object.keys(cols);
-                                    return ids_all.filter(id => !~ids.indexOf(id));
-                                }),
-                            },
-                        }),
-                        header: () => ({
-                            prop: {
-                                '#height': $$.$me_atom2_prop(['<<<.header_height'], ({ masters: [height] }) => height + 2),
-                            },
-                            control: {
-                                content: () => ({
-                                    base: $$.$me_label,
-                                    prop: {
-                                        '#width': `<<<<.col_width_actual[${id}]`,
-                                        '#height': '<.#height',
-                                        text: `<<<<.col_caption[${id}]`,
-                                        borderWidth: () => 1,
-                                        colorBorder: () => '#adb0b8',
-                                        colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'),
-                                        align: () => $$.$me_align.center,
-                                        fontSize: () => 14,
-                                        paddingHor: () => 4,
-                                    },
-                                }),
-                            },
-                        }),
-                        cells: () => ({
-                            control: {
-                                cell: $$.$me_atom2_prop({
-                                    keys: ['<<<@list.row_i'],
-                                    masters: ['<<<@list.row_i_min', '<<<@list.row_i_max'],
-                                }, ({ key: [row_i], masters: [row_i_min, row_i_max] }) => $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ?
-                                    null :
-                                    {
-                                        base: $$.$me_label,
-                                        prop: {
-                                            '#ofsVer': $$.$me_atom2_prop(['<<@header.#height', `<<<<@list.row_top[${row_i}]`], ({ masters: [ofs, top] }) => ofs + top),
-                                            '#height': '<<<<@list.row_height_min',
-                                            '#width': '<.#width',
-                                            text: `<<<<@list.cell_text[${row_i}][${id}]`,
-                                            borderWidth: () => 1,
-                                            colorBorder: () => '#adb0b8',
-                                            borderWidthTop: () => 0,
-                                            colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'),
-                                            fontSize: () => 14,
-                                            paddingHor: () => 4,
-                                            alignVer: () => $$.$me_align.center,
-                                            alignHor: `<<<<.col_align[${id}]`,
-                                        },
-                                    }),
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTapOutside: () => {
-                            const colSelected = $$.a('<.colSelected');
-                            if (!colSelected || colSelected != id)
-                                return false;
-                            $$.a('<.colSelected', '');
-                            return true;
-                        },
-                        touchstart: p => {
-                            const touchTolerance = $$.a('/.#touchTolerance');
-                            const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                            if (dist > touchTolerance)
-                                return false;
-                            reorderStart(p.event.touches[0].clientX);
-                            return true;
-                        },
-                        touchend: () => {
-                            reorderEnd();
-                            return true;
-                        },
-                        touchmove: p => {
-                            reorderDo(p.event.touches[0].clientX);
-                            return true;
-                        },
-                        mousedown: p => {
-                            console.log('mousedown');
-                            if (!p.isInRect(p.event.clientX, p.event.clientY))
-                                return false;
-                            reorderStart(p.event.clientX);
-                            return true;
-                        },
-                        mouseup: () => {
-                            reorderEnd();
-                            return true;
-                        },
-                        mousemove: p => {
-                            if (p.event.buttons != 1) {
-                                $$.a('.isMoving', false);
-                                return false;
-                            }
-                            reorderDo(p.event.clientX);
-                            return true;
-                        },
-                    },
-                }),
-                fixed: () => ({
-                    prop: {
-                        '#width': '<<.col_fixed_width',
-                    },
-                    control: {
-                        cell: () => ({
-                            base: $$.$me_panel,
-                            prop: Object.assign({}, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581') }),
-                        }),
-                    },
-                }),
-                wrapper: () => ({
-                    style: {
-                        overflow: () => 'hidden',
-                    },
-                    elem: {
-                        cells: () => ({
-                            prop: {
-                                '#width': '<<<.col_width_sum_actual',
-                                '#ofsHor': '<<<.ofsHor',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                            },
-                            control: {
-                                cell: $$.$me_atom2_prop({ keys: ['<<<.col_ids'] }, ({ key: [id] }) => ({
-                                    base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<.col_left[${id}]`, `<<<<.col_width_actual[${id}]`, `<<<<.col_fixed_width`, `<<<<.#width`, `<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width), '#width': `<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<.col_left[${id}]`, '#height': '<.#height', text: `<<<<.col_caption[${id}]` }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1) }),
-                                    prop_non_render: {
-                                        '#cursor': () => 'pointer',
-                                    },
-                                    event: {
-                                        clickOrTap: () => {
-                                            console.log('here');
-                                            const ofsHor = $$.a('<<<<.ofsHor');
-                                            const left = $$.a(`<<<<.col_left[${id}]`);
-                                            const min = $$.a('<<<<.col_fixed_width') - left;
-                                            const max = $$.a('<<<.#width') - $$.a(`<<<<.col_width_actual[${id}]`) - left;
-                                            const to = Math.max(min, Math.min(max, ofsHor));
-                                            const prop_colSelected = $$.a.get('<<<.colSelected');
-                                            if (to == ofsHor) {
-                                                prop_colSelected.value(id);
-                                            }
-                                            else {
-                                                $$.a('<<<<.ofsHor', $$.$me_atom2_anim({ to,
-                                                    fini: () => {
-                                                        prop_colSelected.value(id);
-                                                    }
-                                                }));
-                                            }
-                                            return true;
-                                        },
-                                    },
-                                })),
-                            },
-                        }),
-                    }
-                }),
-            },
-        };
-        function reorderStart(clientX) {
-            $$.a('.isMoving', true);
-            $$.a('.last_clientX', clientX);
-            $$.a('.ofs', clientX - $$.a('.#clientRect').left);
-            $$.a('.start_clientX', clientX);
-        }
-        function reorderDo(clientX) {
-            const delta = clientX - $$.a('.last_clientX');
-            if (!delta)
-                return;
-            if (!reorderDo_helper(clientX, Math.sign(delta)))
-                return;
-            $$.a('.#ofsHor', $$.a('.#ofsHor') + delta);
-            $$.a('.last_clientX', clientX);
-        }
-        function reorderDo_helper(clientX, sign) {
-            if (!$$.a('.isMoving'))
-                return false;
-            const is_valid_idx = (idx) => 0 <= idx && idx < col_ids.length;
-            const col_ids = $$.a('<<.col_ids');
-            const id = $$.a('<.colSelected');
-            const idx = col_ids.indexOf(id);
-            let idx_replace;
-            let col_ids_new;
-            let ofsHor;
-            let need_reorder = false;
-            if (sign > 0 && idx < col_ids.length - 1 || sign < 0 && idx) {
-                const overlap_border = clientX - $$.a('.ofs') - $$.a(`<@wrapper.#clientRect`).left - $$.a('<<.ofsHor') +
-                    (sign < 0 ? 0 : $$.a(`<<.col_width_actual[${id}]`));
-                let i = 0;
-                const threshold = $$.a('<<.col_width_min') / 2;
-                let overlap;
-                while (is_valid_idx(idx + (i + 1) * sign)) {
-                    const id = col_ids[idx + (i + 1) * sign];
-                    const left = $$.a(`<<.col_left[${id}]`);
-                    const val = (overlap_border - left) * sign + (sign > 0 ? 0 : $$.a(`<<.col_width_actual[${id}]`));
-                    if (val >= threshold) {
-                        i++;
-                        overlap = val;
-                    }
-                    else
-                        break;
-                }
-                if (i) {
-                    idx_replace = idx + i * sign;
-                    const limit = sign > 0 ?
-                        $$.a('<<.#width') - $$.a('<<.ofsHor') - threshold * 2 :
-                        $$.a('<<.col_fixed_width') - $$.a('<<.ofsHor') + threshold * 2;
-                    const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
-                    if (idx_replace == col_ids.length - 1) {
-                        ofsHor = min;
-                    }
-                    else if (idx_replace == 0) {
-                        ofsHor = max;
-                    }
-                    else {
-                        const need_scroll = sign > 0 ?
-                            $$.a(`<<.col_left[${col_ids[idx + i]}]`) + $$.a(`<<.col_width_actual[${col_ids[idx + i]}]`) >= limit :
-                            $$.a(`<<.col_left[${col_ids[idx_replace]}]`) <= limit;
-                        if (need_scroll) {
-                            const prop_ofsHor = $$.a.get('<<.ofsHor');
-                            ofsHor =
-                                $$.$me_atom2.anim_to_play.has(prop_ofsHor.path) ?
-                                    $$.$me_atom2.anim_to_play.get(prop_ofsHor.path).to :
-                                    prop_ofsHor.value();
-                            ofsHor += sign * threshold / 2;
-                            for (let j = idx + sign; j * sign <= (idx_replace) * sign; j += sign)
-                                ofsHor -= sign * $$.a(`<<.col_width_actual[${col_ids[j]}]`);
-                        }
-                    }
-                }
-            }
-            if (idx_replace !== void 0) {
-                col_ids_new = col_ids.slice();
-                col_ids_new.splice(idx, 1);
-                col_ids_new.splice(idx_replace, 0, id);
-                $$.a('<<.col_ids', col_ids_new);
-            }
-            if (ofsHor !== void 0) {
-                const [min, max] = ofsHor_min_max($$.a('<<.col_fixed_width'), $$.a('<<.col_width_sum_actual'), $$.a('<<.#width'));
-                const val = ofsHor_adjusted(ofsHor, min, max);
-                const curr = $$.a.curr;
-                if (val != $$.a('<<.ofsHor')) {
-                    $$.a('<<.ofsHor', $$.$me_atom2_anim({
-                        to: val,
-                        fini: () => {
-                            const prev = $$.a.curr;
-                            $$.a.curr = curr;
-                            reorderDo_helper(clientX, sign);
-                            $$.a.curr = prev;
-                        }
-                    }));
-                }
-            }
-            return true;
-        }
-        function reorderEnd() {
-            $$.a('.isMoving', false);
-        }
-        const colResizer = {
-            node: 'img',
-            prop: {
-                '#width': () => 27,
-                '#height': () => 50,
-                '#cursor': () => 'col-resize',
-                '#zIndex': () => 5,
-                start_clientX: () => -1,
-                start_width_actual: () => -1,
-                start_width: () => -1,
-                start_ofsHor: () => -1,
-                '#alignHor': $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? $$.$me_align.left : $$.$me_align.right),
-                '#ofsHor': () => -19,
-                '#ofsVer': () => -4,
-            },
-            attr: {
-                src: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => `assets/stretch-${$$.$me_theme[theme]}@2x.png`),
-                draggable: () => false,
-            },
-            style: {
-                boxSizing: () => 'border-box',
-                transform: $$.$me_atom2_prop(['.isRight'], ({ masters: [isRight] }) => !isRight ? '' : 'scaleX(-1)'),
-            },
-            event: {
-                touchstart: p => {
-                    const touchTolerance = $$.a('/.#touchTolerance');
-                    const dist = p.distToRect(p.event.touches[0].clientX, p.event.touches[0].clientY);
-                    if (dist > touchTolerance)
-                        return false;
-                    resizeStart(p.event.touches[0].clientX);
-                    return true;
-                },
-                touchmove: p => {
-                    const start_clientX = $$.a('.start_clientX');
-                    if (start_clientX == -1)
-                        return false;
-                    resizeDo(p.event.touches[0].clientX);
-                    return true;
-                },
-                touchend: () => resizeFini(),
-                mousedown: p => {
-                    if (!p.isInRect(p.event.clientX, p.event.clientY))
-                        return false;
-                    resizeStart(p.event.clientX);
-                    return true;
-                },
-                mousemove: p => {
-                    const start_clientX = $$.a('.start_clientX');
-                    const clientX = p.event.clientX;
-                    if (start_clientX == -1)
-                        return false;
-                    if (!p.event.buttons
-                        && start_clientX != clientX) {
-                        return resizeFini(false);
-                    }
-                    resizeDo(p.event.clientX);
-                    return true;
-                },
-                mouseup: () => resizeFini(),
-            },
-        };
-        function resizeStart(clientX) {
-            $$.a('.start_clientX', clientX);
-            const id = $$.a('.id');
-            $$.a('.start_width_actual', $$.a(`<<<.col_width_actual[${id}]`));
-            $$.a('.start_width', $$.a(`<<<.col_width[${id}]`));
-            $$.a(`<<<.col_width_actual[${id}]`);
-            const isRight = $$.a('.isRight');
-            if (!isRight)
-                $$.a('.start_ofsHor', $$.a('<<<.ofsHor'));
-            $$.a('<.isResizing', true);
-        }
-        function resizeDo(clientX) {
-            const start_clientX = $$.a('.start_clientX');
-            const isRight = $$.a('.isRight');
-            const id = $$.a('.id');
-            const start_width_actual = $$.a('.start_width_actual');
-            const max = isRight ?
-                $$.a('<<<.#width') - $$.a(`<<<.col_left[${id}]`) - $$.a('<<<.ofsHor') - start_width_actual :
-                $$.a(`<<<.col_left[${id}]`) + $$.a('.start_ofsHor') - $$.a('<<<.col_fixed_width');
-            const min = $$.a('<<<.col_width_min') - start_width_actual;
-            const delta = Math.min(max, Math.max(min, (clientX - start_clientX) * (isRight ? 1 : -1)));
-            if (!isRight)
-                $$.a('<<<.ofsHor', $$.a('.start_ofsHor') - delta);
-            $$.a(`<<<.col_width_actual[${id}]`, start_width_actual + delta);
-        }
-        function resizeFini(dontSkip = true) {
-            const clientX = $$.a('.start_clientX');
-            if (clientX == -1)
-                return false;
-            if (dontSkip) {
-                const id = $$.a('.id');
-                const col_width_excess = $$.a('<<<.col_width_excess');
-                let width;
-                if (col_width_excess <= 0) {
-                    width = $$.a(`<<<.col_width_actual[${id}]`);
-                }
-                else {
-                    const delta = $$.a(`<<<.col_width_actual[${id}]`) - $$.a('.start_width_actual');
-                    const col_width_sum = $$.a('<<<.col_width_sum');
-                    const col_width = $$.a(`<<<.col_width[${id}]`);
-                    const k = col_width_excess / col_width_sum * col_width + delta;
-                    const gamma = (col_width_sum * k - col_width * col_width_excess) / ((col_width_sum - k) - (col_width - col_width_excess));
-                    width = $$.a('.start_width') + Math.min(gamma, col_width_excess);
-                }
-                $$.a(`<<<.col_width[${id}]`, width);
-                $$.a(`<<<.col_width_actual[${id}]`, null);
-                const [min, max] = ofsHor_min_max($$.a('<<<.col_fixed_width'), $$.a(`<<<.col_width_sum_actual`), $$.a('<<<.#width'));
-                const to = ofsHor_adjusted($$.a('<<<.ofsHor'), min, max);
-                const prop_isResizing = $$.a.get('<.isResizing');
-                $$.a('<<<.ofsHor', $$.$me_atom2_anim({
-                    to,
-                    fini: () => {
-                        prop_isResizing.value(false);
-                    },
-                }));
-            }
-            $$.a('.start_clientX', -1);
-            return dontSkip;
-        }
-        const list = {
-            base: $$.$me_list,
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_row_open') {
-                    const row_opens = $$.a('.row_opens');
-                    dispatch_arg.val = row_opens.has(dispatch_arg.idx);
-                    return true;
-                }
-                else if (dispatch_name == 'set_row_open') {
-                    const row_opens = $$.a('.row_opens');
-                    if (dispatch_arg.val) {
-                        row_opens.add(dispatch_arg.idx);
-                    }
-                    else if (row_opens.has(dispatch_arg.idx)) {
-                        row_opens.delete(dispatch_arg.idx);
-                    }
-                    return true;
-                }
-                if (dispatch_name == 'get_cell_text') {
-                    const { rec_idx, col_id, tag } = dispatch_arg;
-                    const cell_text_store = $$.a('.cell_text_store');
-                    const store_rec = cell_text_store[rec_idx];
-                    if (store_rec) {
-                        const result = store_rec[col_id];
-                        if (result != null) {
-                            dispatch_arg.val = result;
-                            return true;
-                        }
-                    }
-                    const col = $$.a(`<.col[${col_id}]`);
-                    if (col.fld) {
-                        const rec = by_idx[rec_idx] || (by_idx[rec_idx] = new Set());
-                        for (const s of col.fld)
-                            rec.add(s);
-                        const row_count = $$.a('.row_count');
-                        if (timerId == null) {
-                            const path = $$.a('.provider');
-                            const row_count = $$.a('.row_count');
-                            const rec_idx_max = $$.a('.rec_idx_max');
-                            timerId = setTimeout(() => {
-                                timerId = null;
-                                let idx_min, idx_max;
-                                const ss = new Set();
-                                for (const idx in by_idx) {
-                                    if (idx_min == null || idx_min > +idx)
-                                        idx_min = +idx;
-                                    if (idx_max == null || idx_max < +idx)
-                                        idx_max = +idx;
-                                    for (const s of by_idx[idx])
-                                        ss.add(s);
-                                }
-                                const to = Math.min(rec_idx_max, idx_max + Math.max(10, row_count));
-                                for (let idx = Math.max(0, idx_min - Math.max(10, row_count)); idx <= to; idx++)
-                                    by_idx[idx] = ss;
-                                $$.a.dispatch(path, 'get_recs', { by_idx });
-                            });
-                        }
-                    }
-                    dispatch_arg.val = '';
-                    return true;
-                }
-                else if (dispatch_name == 'recs') {
-                    const cell_text_store = $$.a('.cell_text_store');
-                    const rec_fld_store = $$.a('.rec_fld_store');
-                    const influence = $$.a('<.influence');
-                    const by_idx = dispatch_arg.by_idx;
-                    const cols = $$.a('<.cols');
-                    const changed = {};
-                    let changed_did = false;
-                    for (const idx in by_idx) {
-                        const src = by_idx[idx];
-                        const rec = rec_fld_store[idx] || (rec_fld_store[idx] = {});
-                        const influenced = new Set();
-                        for (const s in src) {
-                            if (rec[s] == src[s])
-                                continue;
-                            rec[s] = src[s];
-                            const ss = influence[s];
-                            for (const col_id of ss)
-                                influenced.add(col_id);
-                        }
-                        COL: for (const col_id of influenced) {
-                            const col = cols[col_id];
-                            const fn = col.fn;
-                            if (!fn)
-                                continue;
-                            const masters = [];
-                            for (const s of col.fld) {
-                                const val = rec[s];
-                                masters.push(val);
-                            }
-                            const text = fn(...masters);
-                            if (!text)
-                                continue;
-                            const text_rec = cell_text_store[idx] || (cell_text_store[idx] = {});
-                            if (text_rec[col_id] == text)
-                                continue;
-                            text_rec[col_id] = text;
-                            const rec_changed = changed[idx] || (changed[idx] = new Set());
-                            rec_changed.add(col_id);
-                            changed_did = true;
-                        }
-                    }
-                    if (changed_did) {
-                        let i = 0;
-                        let idx_min, idx_max;
-                        $$.a.dispatch('', 'iterate_rows', (row_i) => {
-                            const idx = $$.a(`.rec_idx[${row_i}]`);
-                            if (idx_min == null || idx_min > +idx)
-                                idx_min = +idx;
-                            if (idx_max == null || idx_max < +idx)
-                                idx_max = +idx;
-                            const rec = changed[idx];
-                            if (!rec)
-                                return;
-                            for (const col_id of rec) {
-                                const text = cell_text_store[idx][col_id];
-                                $$.a(`.cell_text[${row_i}][${col_id}]`, text);
-                            }
-                            if (++i > 50) {
-                                console.error(i);
-                                return false;
-                            }
-                        });
-                        const lim = 2 * Math.max(10, $$.a('.row_count'));
-                        idx_min -= lim;
-                        idx_max += lim;
-                        for (const idx in cell_text_store)
-                            if (+idx < idx_min || +idx > idx_max)
-                                delete cell_text_store[idx];
-                        for (const idx in rec_fld_store)
-                            if (+idx < idx_min || +idx > idx_max)
-                                delete rec_fld_store[idx];
-                    }
-                    return true;
-                }
-                else if (dispatch_name == 'get_card_info') {
-                    const guid = dispatch_arg.guid;
-                    if (guid) {
-                        if (timerId == null) {
-                            const path = $$.a('.provider');
-                            timerId = setTimeout(() => {
-                                timerId = null;
-                                $$.a.dispatch(path, 'get_card', { guid });
-                            });
-                        }
-                    }
-                    dispatch_arg.val = '';
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                rec_fld_store: () => ({}),
-                disabledScroll: '<@header.colSelected',
-                hidden_curtain: '<@header.colSelected',
-                cell_text_store: () => ({}),
-                row_opens_store: () => new Map(),
-                row_opens: $$.$me_atom2_prop(['.provider_tag', '.row_opens_store'], ({ masters: [tag, holder] }) => holder[tag] || (holder[tag] = new Set())),
-                row_count: $$.$me_atom2_prop(['/.#viewportHeight', '.row_height_min', '.header_height', '.rec_count'], ({ masters: [height, row_height_min, header_height, rec_count] }) => rec_count < 0 ? 0 :
-                    2 + Math.min(rec_count, Math.ceil(Math.max(0, height - header_height) / row_height_min)), ({ prev, val }) => {
-                    const result = prev != null && prev > val ? prev : val;
-                    return result;
-                }),
-                row_open: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
-                        [`.rec_idx[${row_i}]`, '._provider', '.provider_tag']),
-                }, ({ len, masters: [rec_idx, _provider, provider_tag] }) => {
-                    const result = !len || !_provider || !provider_tag ? -1 : get_row_open(rec_idx, _provider, provider_tag);
-                    return result;
-                }, ({ key: [row_i], val, prev }) => {
-                    if (val == null || val < 0 ||
-                        +row_i >= $$.a('.row_count') ||
-                        $$.$me_list_row_i_out_of_range_is(+row_i, $$.a('.row_i_min'), $$.a('.row_i_max')))
-                        return;
-                    set_row_open($$.a(`.rec_idx[${row_i}]`), $$.a('._provider'), $$.a('.provider_tag'), val);
-                }),
-                adjust_row_height_source: $$.$me_atom2_prop({
-                    keys: ['.row_i'],
-                    masters: $$.$me_atom2_prop_masters(['.rec_count', '.row_open[]', '.row_i_min', '.row_i_max'], ({ key: [row_i], masters: [rec_count, row_open, row_i_min, row_i_max] }) => rec_count <= 0 || $$.$me_list_row_i_out_of_range_is(+row_i, row_i_min, row_i_max) ? [] :
-                        !row_open ? ['.row_height_min'] :
-                            ['.row_height_min', `@row[${row_i}]@content@comment.#height`]),
-                }, ({ len, masters: [row_height_min, comment_height] }) => !len ? null : len == 1 ? row_height_min : [row_height_min, comment_height], ({ key: [row_i], val, prev }) => {
-                    if (!val)
-                        return;
-                    const height = !Array.isArray(val) ? val : val[0] + val[1];
-                    $$.a(`.row_height_source[${row_i}]`, height);
-                }),
-                cell_text: $$.$me_atom2_prop({ keys: ['.row_i', '<.col_ids'], masters: ['.rec_idx[]', '._provider', '.provider_tag'] }, ({ key: [row_i, col_id], masters: [rec_idx, _provider, tag] }) => {
-                    const dispatch_arg = { tag, rec_idx, col_id };
-                    $$.a.dispatch(_provider, 'get_cell_text', dispatch_arg);
-                    return dispatch_arg.val;
-                }),
-                header_height: () => 0,
-                header_content: () => ({}),
-                row_content: $$.$me_atom2_prop({ keys: ['.row_i'] }, ({ key: [row_i] }) => ({
-                    base: row,
-                    prop: {
-                        row_i: () => row_i,
-                    },
-                })),
-                row_cursor: () => '',
-                '#order': () => ['row', 'cursor'],
-            },
-            elem: {
-                header: () => null,
-                cursor: () => ({
-                    base: cursor,
-                    prop: {
-                        '#hidden': $$.$me_atom2_prop(['<.row_cursor'], ({ masters: [row_i] }) => !row_i),
-                        '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_top[${row_i}]`]), ({ len, masters: [top] }) => !len ? null : top),
-                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.row_cursor'], ({ masters: [row_i] }) => !row_i ? [] : [`<.row_height[${row_i}]`]), ({ len, masters: [val] }) => !len ? null : val),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                    },
-                }),
-            },
-        };
-        const cursor = {
-            prop: {
-                '#ofsHor': () => 2,
-            },
-            style: {
-                boxShadow: () => '0 1px 6px 0 rgba(0, 0, 0, 0.5)',
-                pointerEvents: () => 'none',
-            },
-        };
-        const row = {
-            prop: {
-                '#order': () => ['cell', 'fixed'],
-                '#isHover': () => false,
-                row_cursor_src: $$.$me_atom2_prop(['.#isHover', '.row_i', '<<<@header.colSelected'], ({ masters: [isHover, row_i, colSelected] }) => colSelected || !isHover ? '' : row_i, ({ atom, val }) => {
-                    $$.$nl_search_grid_cursor({ origin: atom, val: val });
-                }),
-            },
-            style: {
-                overflow: () => 'hidden',
-            },
-            elem: {
-                cells: () => ({
-                    prop: {
-                        '#height': '<<<.row_height_min',
-                        '#order': () => ['cells', 'fixed'],
-                    },
-                    elem: {
-                        fixed: () => ({
-                            prop: {
-                                '#width': '<<<<<.col_fixed_width',
-                            },
-                            control: {
-                                text: () => ({
-                                    base: $$.$me_label,
-                                    prop: Object.assign({ '#width': '<.#width', '#height': '<.#height' }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#d8dce3' : '#6e7581'), align: () => $$.$me_align.center, fontSize: () => 14, paddingHor: () => 4, text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.rec_idx[${row_i}]`])) }),
-                                }),
-                            },
-                        }),
-                        cells: () => ({
-                            prop: {
-                                '#width': '<<<<<.col_width_sum_actual',
-                                '#ofsHor': '<<<<<.ofsHor',
-                                '#cursor': () => 'pointer',
-                            },
-                            event: {
-                                clickOrTap: (e) => {
-                                    const row_open = $$.a(`<<<<.row_open[${$$.a('<<.row_i')}]`);
-                                    $$.a(`<<<<.row_open[${$$.a('<<.row_i')}]`, !row_open);
-                                    const rec_fld_store = $$.a('<<<<.rec_fld_store');
-                                    const idx = $$.a('<<.row_i');
-                                    const guid = rec_fld_store[idx].guid;
-                                    const dispatch_arg = { guid };
-                                    const _provider = $$.a('<<<<._provider');
-                                    $$.a.dispatch(_provider, 'get_card_info', dispatch_arg);
-                                    return true;
-                                },
-                            },
-                            control: {
-                                cell: $$.$me_atom2_prop({ keys: ['<<<<<.col_ids'] }, ({ key: [id] }) => ({
-                                    base: $$.$me_label,
-                                    prop: Object.assign({ '#hidden': $$.$me_atom2_prop([`<<<<<<.col_left[${id}]`, `<<<<<<.col_width_actual[${id}]`, `<<<<<<.col_fixed_width`, `<<<<<<.#width`, `<<<<<<.ofsHor`], ({ masters: [col_left, col_width_actual, col_fixed_width, parent_width, ofsHor] }) => ofsHor + col_left > parent_width || ofsHor + col_left + col_width_actual <= col_fixed_width) }, cell_borders, { colorBackground: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ? '#F5F8F8' : '#878f9b'), fontSize: () => 14, paddingHor: () => 4, alignVer: () => $$.$me_align.center, alignHor: `<<<<<<.col_align[${id}]`, '#width': `<<<<<<.col_width_actual[${id}]`, '#ofsHor': `<<<<<<.col_left[${id}]`, '#height': '<<<<<<.row_height_min', text: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<<.row_i'], ({ masters: [row_i] }) => [`<<<<<.cell_text[${row_i}][${id}]`])) }),
-                                })),
-                            },
-                        }),
-                    },
-                }),
-                comment: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.row_i'], ({ masters: [row_i] }) => ['<<.rec_count', `<<.row_open[${row_i}]`]), ({ masters: [rec_count, row_open] }) => rec_count <= 0 || !row_open ? null : {
-                    dom: {
-                        innerText: () => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ornare nisl et tortor euismod, ut consequat nunc vehicula. Integer sit amet quam ante. Integer bibendum ante vel semper auctor. Mauris vitae erat gravida, ultrices libero id, pellentesque enim. Phasellus molestie malesuada tellus, in commodo lectus dictum at. Aliquam malesuada venenatis tellus a feugiat. Ut ac.'
-                    },
-                    prop: {
-                        '#ofsVer': '<<<.row_height_min',
-                        '#height': () => null,
-                        '#width': '<.#width',
-                    },
-                    style: {
-                        fontSize: () => 14,
-                        padding: () => 8,
-                        boxSizing: () => 'border-box',
-                        userSelect: () => 'text',
-                    },
-                }),
-            },
-        };
-        const cell_borders = {
-            borderWidthRight: () => 1,
-            colorBorderRight: () => '#adb0b8',
-            borderWidthBottom: () => 1,
-            colorBorderBottom: () => '#adb0b8',
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//grid.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_panel_result_cols = {
-            'guid': {
-                width: 150,
-                fld: ['guid'],
-                fn: (guid) => guid,
-            },
-            photo: {
-                caption: 'Фото',
-                width: 37,
-            },
-            'Комнат': {
-                align: $$.$me_align.center,
-                width: 42,
-                fld: ['total_room_count', 'offer_room_count'],
-                fn: (total_room_count, offer_room_count) => (!offer_room_count ? '' : offer_room_count + '/') +
-                    (total_room_count == null ? '?' : total_room_count)
-            },
-            'Метро/ЖД': {
-                width: 170,
-                fld: ['geo_cache_subway_station_name_1'],
-                fn: (geo_cache_subway_station_name_1) => geo_cache_subway_station_name_1,
-            },
-            'От станции': {
-                align: $$.$me_align.center,
-                width: 50,
-                fld: ['walking_access_1', 'transport_access_1'],
-                fn: (walking_access_1, transport_access_1) => walking_access_1 ? walking_access_1 + 'п' :
-                    transport_access_1 ? transport_access_1 + 'т' :
-                        '',
-            },
-            'Адрес': {
-                width: 220,
-                fld: ['geo_cache_street_name', 'geo_cache_building_name'],
-                fn: (geo_cache_street_name, geo_cache_building_name) => geo_cache_street_name ? (!geo_cache_building_name ? geo_cache_street_name :
-                    geo_cache_street_name + ', ' + geo_cache_building_name) : geo_cache_building_name ? geo_cache_building_name : ''
-            },
-            'Дом': {
-                width: 64,
-                align: $$.$me_align.center,
-                fld: ['storey', 'storeys_count', 'walls_material_type_id'],
-                fn: (storey, storeys_count, walls_material_type_id) => (!storey ? '?' : storey) + '/' +
-                    (!storeys_count ? '?' : storeys_count) + ' ' +
-                    dic_fld_value('walls_material_type', walls_material_type_id, 'code', '?')
-            },
-            'Балкон': {
-                width: 38,
-                align: $$.$me_align.center,
-                fld: ['balcony_type_id'],
-                fn: (type_id) => dic_fld_value('balcony_type', type_id, 'code', '?'),
-            },
-            'Санузел': {
-                width: 38,
-                fld: ['water_closet_type_id'],
-                fn: (type_id) => dic_fld_value('water_closet_type', type_id, 'code', '?'),
-            },
-            'Парковка': {
-                width: 38,
-                fld: ['parking_type_id'],
-                fn: (type_id) => dic_fld_value('parking_type', type_id, 'code', '?'),
-            },
-            'Территория': {
-                width: 112,
-                fld: ['territory_type_id'],
-                fn: (type_id) => dic_fld_value('territory_type', type_id, 'code', '?'),
-            },
-            'Окна': {
-                width: 41,
-                fld: ['window_overlook_type_id'],
-                fn: (type_id) => dic_fld_value('window_overlook_type', type_id, 'code', '?'),
-            },
-            'Ремонт': {
-                width: 92,
-                fld: ['apartment_condition_type_id'],
-                fn: (type_id) => dic_fld_value('apartment_condition_type', type_id, 'code', '?'),
-            },
-            'Лифт': {
-                width: 41,
-                fld: ['elevator_type_id'],
-                fn: (type_id) => dic_fld_value('elevator_type', type_id, 'code', '?'),
-            },
-            'Площадь': {
-                align: $$.$me_align.center,
-                width: 130,
-                fld: ['total_square', 'life_square', 'kitchen_square'],
-                fn: (total_square, life_square, kitchen_square) => (total_square || '?') + '/' + (life_square || '?') + '/' + (kitchen_square || '?'),
-            },
-            'Площадь комнат': {
-                align: $$.$me_align.center,
-                width: 138,
-                fld: ['square_explication'],
-                fn: (square_explication) => square_explication == null ? '?' : square_explication,
-            },
-            'Ипотека': {
-                width: 41,
-            },
-            'Цена': {
-                align: $$.$me_align.right,
-                caption: 'Цена ₽',
-                width: 96,
-                fld: ['price_rub'],
-                fn: (val) => {
-                    var x = (val + '').split('.');
-                    var x1 = x[0];
-                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                    var rgx = /(\d+)(\d{3})/;
-                    while (rgx.test(x1))
-                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                    return x1 + x2;
-                },
-            },
-            'Цена, $': {
-                hidden: true,
-                align: $$.$me_align.right,
-                caption: 'Цена $',
-                width: 96,
-                fld: ['price_usd'],
-                fn: (val) => {
-                    var x = (val + '').split('.');
-                    var x1 = x[0];
-                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                    var rgx = /(\d+)(\d{3})/;
-                    while (rgx.test(x1))
-                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                    return x1 + x2;
-                },
-            },
-            'Цена, €': {
-                hidden: true,
-                align: $$.$me_align.right,
-                caption: 'Цена €',
-                width: 96,
-                fld: ['price_eur'],
-                fn: (val) => {
-                    var x = (val + '').split('.');
-                    var x1 = x[0];
-                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                    var rgx = /(\d+)(\d{3})/;
-                    while (rgx.test(x1))
-                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                    return x1 + x2;
-                },
-            },
-            'Цена за кв.м.': {
-                align: $$.$me_align.right,
-                caption: '₽/м²',
-                width: 93,
-                fld: ['meter_price_rub'],
-                fn: (meter_price_rub) => {
-                    var x = (Math.round(meter_price_rub) + '').split('.');
-                    var x1 = x[0];
-                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                    var rgx = /(\d+)(\d{3})/;
-                    while (rgx.test(x1))
-                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                    return x1 + x2;
-                },
-            },
-            'Цена $ за кв.м.': {
-                hidden: true,
-                align: $$.$me_align.right,
-                caption: '$/м²',
-                width: 93,
-                fld: ['meter_price_usd'],
-                fn: (val) => {
-                    var x = (Math.round(val) + '').split('.');
-                    var x1 = x[0];
-                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                    var rgx = /(\d+)(\d{3})/;
-                    while (rgx.test(x1))
-                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                    return x1 + x2;
-                },
-            },
-            'Цена € за кв.м.': {
-                hidden: true,
-                align: $$.$me_align.right,
-                caption: '€/м²',
-                width: 93,
-                fld: ['meter_price_eur'],
-                fn: (val) => {
-                    var x = (Math.round(val) + '').split('.');
-                    var x1 = x[0];
-                    var x2 = x.length > 1 ? '.' + x[1] : '';
-                    var rgx = /(\d+)(\d{3})/;
-                    while (rgx.test(x1))
-                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                    return x1 + x2;
-                },
-            },
-            'Дата': {
-                align: $$.$me_align.right,
-                width: 85,
-                fld: ['pub_datetime'],
-                fn: (val) => {
-                    const dt = new Date(val);
-                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                },
-            },
-            'Дата создания': {
-                hidden: true,
-                align: $$.$me_align.right,
-                width: 85,
-                fld: ['creation_datetime'],
-                fn: (val) => {
-                    const dt = new Date(val);
-                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                },
-            },
-            'Год постройки': {
-                hidden: true,
-                align: $$.$me_align.center,
-                width: 85,
-                fld: ['built_year'],
-                fn: (val) => {
-                    return val == null ? '?' : val;
-                },
-            },
-            'Источник': {
-                width: 140,
-                fld: ['broker', 'media_name'],
-                fn: (broker, media_name) => broker && broker.short_name ? broker.short_name : media_name,
-            },
-            'Телефон': {
-                width: 260,
-                fld: ['phone_list'],
-                fn: (phone_list) => !phone_list ? '' : phone_list
-                    .split(/\D+/)
-                    .map(phone => '8-' + phone.slice(1, 4) + '-' + phone.slice(4, 7) + '-' + phone.slice(7, 9) + '-' + phone.slice(9, 11)).join(', ')
-            },
-        };
-        const _dics = new Map();
-        function dic_fld_value(dic_name, id, fld, default_value) {
-            let result;
-            let dic = _dics.get(dic_name);
-            if (!dic) {
-                const dic_def = DICTIONARIES[dic_name];
-                if (dic_def) {
-                    dic = new Map(dic_def.map((item) => [item.id, item]));
-                    _dics.set(dic_name, dic);
-                }
-            }
-            if (dic && dic.has(id)) {
-                const value = dic.get(id);
-                if (value)
-                    result = value[fld];
-            }
-            if (result === void 0 && default_value !== void 0)
-                result = default_value;
-            return result;
-        }
-        const DICTIONARIES = {
-            apartment_condition_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "треб.кап/р", "name": "требуется капитальный ремонт" }, { "id": 3, "code": "без отд.", "name": "без отделки" }, { "id": 4, "code": "треб.рем.", "name": "требуется ремонт" }, { "id": 5, "code": "ср.сост.", "name": "среднее состояние" }, { "id": 6, "code": "хор.сост.", "name": "хорошее состояние" }, { "id": 8, "code": "отл.сост.", "name": "отличное состояние" }, { "id": 9, "code": "евр.рем.", "name": "евроремонт" }, { "id": 10, "code": "дизайн.рем.", "name": "дизайнерский ремонт" }, { "id": 11, "code": "перв.отд.", "name": "первичная отделка" }],
-            building_batch: [{ "id": 0, "name": "" }, { "id": 1, "name": "02/98-НМ" }, { "id": 2, "name": "1385 АР-3" }, { "id": 3, "name": "1605/12" }, { "id": 4, "name": "1605/9" }, { "id": 5, "name": "1605/Б" }, { "id": 6, "name": "17/2004-АС" }, { "id": 7, "name": "1МГ-600" }, { "id": 8, "name": "1МГ-601" }, { "id": 9, "name": "2-71/358" }, { "id": 10, "name": "2548-01-АР" }, { "id": 11, "name": "2548-02-АР" }, { "id": 12, "name": "32/2005-АС" }, { "id": 13, "name": "349/01" }, { "id": 14, "name": "355/24" }, { "id": 15, "name": "7040-01" }, { "id": 16, "name": "I-303" }, { "id": 17, "name": "I-335" }, { "id": 18, "name": "I-447" }, { "id": 19, "name": "I-510" }, { "id": 20, "name": "I-511" }, { "id": 21, "name": "I-513" }, { "id": 22, "name": "I-515" }, { "id": 23, "name": "I605-АМ" }, { "id": 24, "name": "II-04" }, { "id": 25, "name": "II-05" }, { "id": 26, "name": "II-08" }, { "id": 27, "name": "II-18" }, { "id": 28, "name": "II-18-01-МН" }, { "id": 29, "name": "II-18-31/12" }, { "id": 30, "name": "II-29" }, { "id": 31, "name": "II-32" }, { "id": 32, "name": "II-49" }, { "id": 33, "name": "II-57" }, { "id": 34, "name": "II-68-02" }, { "id": 35, "name": "II-68-03" }, { "id": 36, "name": "II-89-01-МН" }, { "id": 37, "name": "III/17" }, { "id": 38, "name": "VI-23" }, { "id": 39, "name": "VII-51" }, { "id": 40, "name": "VII-58" }, { "id": 41, "name": "А-41K" }, { "id": 42, "name": "башня Вулыха" }, { "id": 43, "name": "Бекерон" }, { "id": 44, "name": "БОД-1" }, { "id": 45, "name": "В-2000" }, { "id": 46, "name": "В-2002" }, { "id": 47, "name": "В-2005" }, { "id": 48, "name": "ГМС-1" }, { "id": 49, "name": "ГМС-3" }, { "id": 50, "name": "И-1168 А3" }, { "id": 51, "name": "И-1168 А4" }, { "id": 52, "name": "И-1233" }, { "id": 53, "name": "И-1254" }, { "id": 54, "name": "И-1262А" }, { "id": 55, "name": "И-1429" }, { "id": 56, "name": "И-1430" }, { "id": 57, "name": "И-1459-132" }, { "id": 58, "name": "И-1491-17" }, { "id": 59, "name": "И-1501" }, { "id": 60, "name": "И-155" }, { "id": 61, "name": "И-155МК" }, { "id": 62, "name": "И-155Н" }, { "id": 63, "name": "И-1602" }, { "id": 64, "name": "И-1677" }, { "id": 65, "name": "И-1723" }, { "id": 66, "name": "И-1724" }, { "id": 67, "name": "И-1731" }, { "id": 68, "name": "И-1782/1" }, { "id": 69, "name": "И-1812/1" }, { "id": 70, "name": "И-1834" }, { "id": 71, "name": "И-1836" }, { "id": 72, "name": "И-1838" }, { "id": 73, "name": "И-1839" }, { "id": 74, "name": "И-1849" }, { "id": 75, "name": "И-1932" }, { "id": 76, "name": "И-208" }, { "id": 77, "name": "И-209А" }, { "id": 78, "name": "И-2342" }, { "id": 79, "name": "И-241" }, { "id": 80, "name": "И-491А" }, { "id": 81, "name": "И-515-5М" }, { "id": 82, "name": "И-515/9ш" }, { "id": 83, "name": "И-522" }, { "id": 84, "name": "И-522А" }, { "id": 85, "name": "И-679" }, { "id": 86, "name": "И-700" }, { "id": 87, "name": "И-700А" }, { "id": 88, "name": "И-760А" }, { "id": 89, "name": "И-79-99" }, { "id": 90, "name": "И-99-47/405" }, { "id": 91, "name": "И-99-47/406" }, { "id": 92, "name": "индивидуальный проект" }, { "id": 93, "name": "ИП-46С" }, { "id": 94, "name": "ИШ3/12" }, { "id": 95, "name": "К-7" }, { "id": 96, "name": "КМС-101" }, { "id": 97, "name": "Колос" }, { "id": 98, "name": "КОПЭ" }, { "id": 99, "name": "КОПЭ-М-ПАРУС" }, { "id": 100, "name": "КТЖС" }, { "id": 101, "name": "КТЖС-11/22" }, { "id": 102, "name": "1МГ-300" }, { "id": 103, "name": "МОНОЛИТ" }, { "id": 105, "name": "МЭС-84" }, { "id": 107, "name": "НП-46с" }, { "id": 108, "name": "П-06" }, { "id": 109, "name": "П-111" }, { "id": 110, "name": "П-111М" }, { "id": 111, "name": "П-111МО" }, { "id": 112, "name": "П-12-31/12" }, { "id": 113, "name": "II-14" }, { "id": 114, "name": "П-14/35" }, { "id": 115, "name": "П-18/22" }, { "id": 116, "name": "П-20" }, { "id": 117, "name": "П-21" }, { "id": 118, "name": "П-22" }, { "id": 119, "name": "П-23" }, { "id": 120, "name": "П-28" }, { "id": 121, "name": "П-29" }, { "id": 122, "name": "П-3" }, { "id": 123, "name": "П-3/16" }, { "id": 124, "name": "П-3/17" }, { "id": 125, "name": "П-3/22" }, { "id": 126, "name": "П-30" }, { "id": 127, "name": "П-31" }, { "id": 128, "name": "П-32" }, { "id": 129, "name": "П-321-60" }, { "id": 130, "name": "II-34" }, { "id": 131, "name": "II-35" }, { "id": 132, "name": "П-37" }, { "id": 133, "name": "II-38" }, { "id": 134, "name": "П-39" }, { "id": 135, "name": "П-3М" }, { "id": 136, "name": "П-4" }, { "id": 137, "name": "П-40" }, { "id": 138, "name": "П-41" }, { "id": 139, "name": "П-42" }, { "id": 140, "name": "П-43" }, { "id": 141, "name": "П-44" }, { "id": 142, "name": "П-44К" }, { "id": 143, "name": "П-44М" }, { "id": 144, "name": "П-44Т" }, { "id": 145, "name": "П-44ТМ" }, { "id": 146, "name": "П-45" }, { "id": 147, "name": "П-46" }, { "id": 148, "name": "П-46М" }, { "id": 149, "name": "П-47" }, { "id": 150, "name": "П-49 Д" }, { "id": 151, "name": "П-50" }, { "id": 152, "name": "П-53" }, { "id": 153, "name": "П-55" }, { "id": 154, "name": "П-55М" }, { "id": 155, "name": "II-29-41/37" }, { "id": 156, "name": "II-66" }, { "id": 157, "name": "II-67" }, { "id": 158, "name": "II-68" }, { "id": 159, "name": "ПД-4" }, { "id": 160, "name": "ПД-4/12" }, { "id": 161, "name": "Пд4-1/12Н1" }, { "id": 162, "name": "ПД4-1/8Н1" }, { "id": 163, "name": "ПЗМ-1/14" }, { "id": 164, "name": "ПЗМ-1/16" }, { "id": 165, "name": "ПЗМ-2/16" }, { "id": 166, "name": "ПЗМ-3/16" }, { "id": 167, "name": "ПП-70" }, { "id": 168, "name": "Призма" }, { "id": 169, "name": "РД-90" }, { "id": 170, "name": "С-111М" }, { "id": 171, "name": "С-220" }, { "id": 172, "name": "С-222" }, { "id": 173, "name": "ТИП-441" }, { "id": 174, "name": "ЦВП-4570-II-63" }, { "id": 175, "name": "Юбилейный" }, { "id": 176, "name": "II-02" }, { "id": 177, "name": "II-01" }, { "id": 178, "name": "II-18-01/08" }, { "id": 179, "name": "II-18-01/09" }, { "id": 180, "name": "1605-АМ/9" }, { "id": 181, "name": "1605-АМ/12" }, { "id": 182, "name": "II-49П" }, { "id": 183, "name": "II-49Д" }, { "id": 184, "name": "II-03" }, { "id": 185, "name": "II-18-01/12" }, { "id": 186, "name": "II-18-02/12" }, { "id": 187, "name": "II-18/12" }, { "id": 188, "name": "II-20" }, { "id": 189, "name": "1605-АМ/5" }, { "id": 190, "name": "И-III-3" }, { "id": 191, "name": "II-28" }, { "id": 192, "name": "II-68-02/16М" }, { "id": 193, "name": "КПД-4570" }, { "id": 194, "name": "II-68-01" }, { "id": 195, "name": "1-515/9" }, { "id": 196, "name": "К4/16" }, { "id": 197, "name": "И-155Б" }, { "id": 198, "name": "1-515/5" }, { "id": 199, "name": "II-18-01/12А" }, { "id": 200, "name": "СМ-1 " }, { "id": 201, "name": "П-44ТМ/25" }, { "id": 202, "name": "И-701" }, { "id": 203, "name": "И-155-с" }, { "id": 204, "name": "Айсберг" }, { "id": 205, "name": "II-14/35" }, { "id": 206, "name": "И-99-47/407" }, { "id": 207, "name": "П-101" }, { "id": 208, "name": "1-300" }, { "id": 209, "name": "II-18-01/09К" }, { "id": 210, "name": "И-1900" }, { "id": 211, "name": "М-10" }, { "id": 212, "name": "МПСМ" }, { "id": 213, "name": "ИП-46М" }, { "id": 214, "name": "П-30М" }, { "id": 215, "name": "II-07" }, { "id": 216, "name": "ПБ-01" }, { "id": 217, "name": "И-1414" }, { "id": 218, "name": "И-2111" }, { "id": 219, "name": "1605-АМЛ/5" }, { "id": 220, "name": "1-447С-26" }, { "id": 221, "name": "1-447С-1" }, { "id": 222, "name": "1-447С-36" }, { "id": 223, "name": "1-447С-2" }, { "id": 224, "name": "1-447С-5" }, { "id": 225, "name": "1-446" }, { "id": 226, "name": "ПБ-02" }, { "id": 227, "name": "КПД-4572А" }, { "id": 228, "name": "II-68-04" }, { "id": 229, "name": "124-124-1" }, { "id": 231, "name": "1605-А" }, { "id": 232, "name": "1-439" }, { "id": 233, "name": "Мм1-3" }, { "id": 234, "name": "И-1168" }, { "id": 235, "name": "СМ-06" }, { "id": 236, "name": "СМ-03" }, { "id": 237, "name": "1-419" }, { "id": 238, "name": "1-203" }, { "id": 239, "name": "ЭС-24" }, { "id": 240, "name": "8966" }, { "id": 242, "name": "1-126" }, { "id": 243, "name": "1-225" }, { "id": 244, "name": "1-402" }, { "id": 245, "name": "16/2188" }, { "id": 246, "name": "Т-1" }, { "id": 247, "name": "Т-3" }, { "id": 248, "name": "1-233" }, { "id": 249, "name": "1-260" }, { "id": 250, "name": "К-8-49" }, { "id": 251, "name": "1-255" }, { "id": 252, "name": "КС-8-50" }, { "id": 253, "name": "Д-23" }, { "id": 254, "name": "Д-25Н1" }, { "id": 256, "name": "ПП-83" }, { "id": 258, "name": "К2/16" }, { "id": 259, "name": "К7/16" }, { "id": 260, "name": "К8/16" }, { "id": 262, "name": "1-464А" }, { "id": 263, "name": "КОПЭ-87" }, { "id": 264, "name": "П-121М" }, { "id": 265, "name": "121-041" }, { "id": 266, "name": "121-042" }, { "id": 267, "name": "121-043" }, { "id": 268, "name": "II-29-208" }, { "id": 269, "name": "II-29-3" }, { "id": 270, "name": "II-29-9" }, { "id": 271, "name": "II-29-160" }, { "id": 272, "name": "ПД-1" }, { "id": 273, "name": "И-02/98-НМ" }, { "id": 274, "name": "1-467" }, { "id": 275, "name": "ЭЖРЧС" }, { "id": 276, "name": "П-3МК" }, { "id": 277, "name": "II-18-02/09" }, { "id": 278, "name": "ПД-3" }, { "id": 279, "name": "И-580" }, { "id": 280, "name": "II-18-03/12" }, { "id": 281, "name": "К-14" }, { "id": 282, "name": "И-700Н" }, { "id": 283, "name": "Юникон" }, { "id": 284, "name": "111-121" }, { "id": 285, "name": "1-211" }, { "id": 286, "name": "II-68-01/22" }, { "id": 287, "name": "Лебедь" }, { "id": 288, "name": "И-99-47" }],
-            balcony_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "Б", "name": "балкон" }, { "id": 3, "code": "Л", "name": "лоджия" }, { "id": 4, "code": "БЛ", "name": "балкон + лоджия" }, { "id": 5, "code": "2Б", "name": "два балкона" }, { "id": 6, "code": "2Л", "name": "две лоджии" }, { "id": 7, "code": "3Л", "name": "три лоджии" }, { "id": 8, "code": "4Л", "name": "четыре лоджии" }, { "id": 9, "code": "3Б", "name": "три балкона" }, { "id": 10, "code": "Б2Л", "name": "балкон + две лоджии" }, { "id": 11, "code": "2Б2Л", "name": "два балкона + две лоджии" }, { "id": 12, "code": "Эрк", "name": "эркер" }, { "id": 13, "code": "ЭркЛ", "name": "эркер + лоджия" }, { "id": 14, "code": "*Б", "name": "несколько балконов" }, { "id": 15, "code": "*Л", "name": "несколько лоджий" }],
-            currency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "руб", "name": "RUB" }, { "id": 2, "code": "$", "name": "USD" }, { "id": 3, "code": "€", "name": "EUR" }, { "id": 4, "code": "TL", "name": "TL" }, { "id": 5, "code": "BYR", "name": "BYR" }],
-            deal_status: [{ "id": 1, "code": "продается/арендуется", "name": "продается/арендуется" }, { "id": 2, "code": "аванс/задаток", "name": "аванс/задаток" }, { "id": 3, "code": "продана/арендована", "name": "продана/арендована" }],
-            deal_type: [{ "id": 1, "code": "продажа", "name": "продажа" }, { "id": 2, "code": "аренда", "name": "аренда" }],
-            location_type: [{ "id": 13, "code": "ГСК", "name": "ГСК" }, { "id": 14, "code": "ГК", "name": "ГК" }, { "id": 15, "code": "ЖК", "name": "ЖК" }, { "id": 16, "code": "двор", "name": "двор" }, { "id": 17, "code": "паркинг", "name": "паркинг" }],
-            electricity_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "220В", "name": "220В" }, { "id": 4, "code": "380В", "name": "380В" }, { "id": 5, "code": "П", "name": "в перспективе" }, { "id": 6, "code": "ГУ", "name": "по границе" }, { "id": 7, "code": "10кВ", "name": "10кВ" }, { "id": 8, "code": "И", "name": "иное" }],
-            elevator_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "пасс.", "name": "лифт пассажирский" }, { "id": 2, "code": "груз.", "name": "лифт грузовой" }, { "id": 3, "code": "пасс.+ груз.", "name": "лифт пассажирский и лифт грузовой" }, { "id": 4, "code": "нет", "name": "нет лифта" }, { "id": 5, "code": "есть", "name": "есть лифт" }],
-            floor_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "полы не настелены", "master_realty_type_id": 1 }, { "id": 2, "code": "Д", "name": "дерево", "master_realty_type_id": 1 }, { "id": 3, "code": "п/д", "name": "паркетная доска", "master_realty_type_id": 1 }, { "id": 4, "code": "ЛМ", "name": "ламинат", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "ковролин", "master_realty_type_id": 1 }, { "id": 6, "code": "П", "name": "паркет", "master_realty_type_id": 1 }, { "id": 7, "code": "ЛН", "name": "линолеум", "master_realty_type_id": 1 }, { "id": 8, "code": "Стяж", "name": "стяжка", "master_realty_type_id": 1 }, { "id": 9, "code": "асфальт", "name": "асфальт", "master_realty_type_id": 4 }, { "id": 10, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 11, "code": "грунт", "name": "грунт", "master_realty_type_id": 4 }, { "id": 12, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 13, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 14, "code": "полимерное покрытие", "name": "полимерное покрытие", "master_realty_type_id": 4 }],
-            gas_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ГУ", "name": "по границе" }, { "id": 4, "code": "П", "name": "перспектива" }, { "id": 5, "code": "Р", "name": "рядом" }, { "id": 6, "code": "Б", "name": "баллоны" }, { "id": 7, "code": "М", "name": "магистральный" }, { "id": 8, "code": "И", "name": "иное" }, { "id": 9, "code": "Ц", "name": "центральный" }],
-            habit_class: [{ "id": 1, "name": "эконом" }, { "id": 2, "name": "комфорт" }, { "id": 3, "name": "бизнес" }, { "id": 4, "name": "элитный" }],
-            heating_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ЭК", "name": "электрокотел" }, { "id": 4, "code": "ГК", "name": "газовый котел" }, { "id": 5, "code": "ЖТК", "name": "жидкотопливный котел" }, { "id": 6, "code": "АГВ", "name": "автоматический газовый водонагреватель" }, { "id": 7, "code": "П", "name": "печь" }, { "id": 8, "code": "Ц", "name": "центральное" }, { "id": 9, "code": "И", "name": "иное" }],
-            media: [{ "id": 0, "name": "Прочие", "is_active": 1, "order_number": 1000 }, { "id": 1, "name": "Руки", "is_active": 1, "order_number": 50 }, { "id": 3, "name": "WinNER (зелёная зона)", "is_active": 1, "order_number": 10 }, { "id": 4, "name": "Крис", "is_active": 0, "order_number": 140 }, { "id": 5, "name": "Realty.dmir.ru", "is_active": 0, "order_number": 60 }, { "id": 6, "name": "БН", "is_active": 1, "order_number": 130 }, { "id": 7, "name": "Навигатор", "is_active": 0, "order_number": 1000 }, { "id": 8, "name": "БКН", "is_active": 1, "order_number": 120 }, { "id": 9, "name": "Собственники", "is_active": 0, "order_number": 900 }, { "id": 11, "name": "Приан", "is_active": 0, "order_number": 150 }, { "id": 12, "name": "eip.ru", "is_active": 0, "order_number": 110 }, { "id": 15, "name": "Sob.ru", "is_active": 1, "order_number": 20 }, { "id": 17, "name": "cian.ru", "is_active": 1, "order_number": 40 }, { "id": 20, "name": "A.baza-winner", "is_active": 0, "order_number": 15 }, { "id": 21, "name": "AVITO.ru", "is_active": 1, "order_number": 30 }, { "id": 22, "name": "WinNER Lite", "is_active": 1, "order_number": 16 }, { "id": 23, "name": "Яндекс", "is_active": 1, "order_number": 70 }, { "id": 24, "name": "WinNER (белая зона)", "is_active": 1, "order_number": 15 }],
-            office_class: [{ "id": 2, "name": "A+" }, { "id": 3, "name": "A" }, { "id": 4, "name": "B+" }, { "id": 5, "name": "B" }, { "id": 6, "name": "C+" }, { "id": 7, "name": "C" }, { "id": 8, "name": "D+" }, { "id": 9, "name": "D" }],
-            fire_alarm_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "name": "пожарная сигнализация", "code": "пожарная сигнализация" }, { "id": 2, "name": "система пожаротушения", "code": "система пожаротушения" }],
-            ownership_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "купля/продажа", "name": "купля/продажа" }, { "id": 2, "code": "ЖСК", "name": "ЖСК" }, { "id": 3, "code": "приватиз.", "name": "приватизация" }, { "id": 4, "code": "дар.", "name": "дарение" }, { "id": 5, "code": "наслед.", "name": "наследство" }, { "id": 6, "code": "мена", "name": "мена" }, { "id": 7, "code": "инвест.", "name": "инвестирование" }, { "id": 8, "code": "рента", "name": "рента" }, { "id": 9, "code": "реш.суда", "name": "решение суда" }, { "id": 10, "code": "залог(ипотека)", "name": "залог (ипотека)" }, { "id": 11, "code": "иное", "name": "иное" }, { "id": 12, "code": "кооператив", "name": "кооператив" }, { "id": 13, "code": "собственность", "name": "собственность" }, { "id": 14, "code": "по доверенности", "name": "по доверенности" }, { "id": 15, "code": "ДДУ", "name": "договор долевого участия" }, { "id": 16, "code": "ДУ", "name": "договор уступки прав требования" }, { "id": 17, "code": "ПДДК", "name": "предварительный договор купли-продажи" }],
-            parking_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "о", "name": "охраняемая" }, { "id": 4, "code": "п", "name": "подземная" }, { "id": 5, "code": "с", "name": "стихийная" }, { "id": 6, "code": "з", "name": "закрепленное место" }],
-            pay_period_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "в год", "name": "в год" }, { "id": 2, "code": "в мес.", "name": "в месяц" }, { "id": 3, "code": "в кв.", "name": "в квартал" }, { "id": 4, "code": "в сут.", "name": "в сутки" }],
-            plumbing_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "С", "name": "скважина" }, { "id": 4, "code": "К", "name": "колодец" }, { "id": 5, "code": "М", "name": "магистральный" }, { "id": 6, "code": "И", "name": "иное" }, { "id": 7, "code": "Ц", "name": "центральный" }, { "id": 8, "code": "Л", "name": "летний" }],
-            price_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "вся площадь", "name": "за всю площадь" }, { "id": 2, "code": "сотка", "name": "за сотку" }, { "id": 3, "code": "кв.м.", "name": "за кв.м." }],
-            realty_type: [{ "id": 1, "code": "кв.", "name": "квартира", "master_realty_type_id": 1 }, { "id": 2, "code": "комн.", "name": "комната", "master_realty_type_id": 1 }, { "id": 3, "code": "дом", "name": "дом", "master_realty_type_id": 2 }, { "id": 4, "code": "ЗУ", "name": "земельный участок", "master_realty_type_id": 2 }, { "id": 5, "code": "дача", "name": "дача", "master_realty_type_id": 2 }, { "id": 6, "code": "дуплекс", "name": "дуплекс", "master_realty_type_id": 2 }, { "id": 7, "code": "квадрохаус", "name": "квадрохаус", "master_realty_type_id": 2 }, { "id": 8, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 2 }, { "id": 9, "code": "коттедж в КП", "name": "коттедж в КП", "master_realty_type_id": 2 }, { "id": 10, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 2 }, { "id": 11, "code": "усадьба", "name": "усадьба", "master_realty_type_id": 2 }, { "id": 12, "code": "часть дома", "name": "часть дома", "master_realty_type_id": 2 }, { "id": 15, "code": "офис", "name": "офис", "master_realty_type_id": 3 }, { "id": 16, "code": "маг", "name": "магазин", "master_realty_type_id": 3 }, { "id": 17, "code": "склад", "name": "склад", "master_realty_type_id": 3 }, { "id": 18, "code": "другое", "name": "другое", "master_realty_type_id": 3 }, { "id": 19, "code": "БЦ", "name": "бизнес-центр", "master_realty_type_id": 3 }, { "id": 20, "code": "ТЦ", "name": "торговый центр", "master_realty_type_id": 3 }, { "id": 21, "code": "ППП", "name": "произв.-пром помещение", "master_realty_type_id": 3 }, { "id": 22, "code": "ПП", "name": "предприятие питания", "master_realty_type_id": 3 }, { "id": 23, "code": "ПСН", "name": "помещ.свободного назначения", "master_realty_type_id": 3 }, { "id": 24, "code": "ОСЗ", "name": "отдельно стоящее здание", "master_realty_type_id": 3 }, { "id": 25, "code": "гостиница/отель", "name": "гостиница/отель", "master_realty_type_id": 3 }, { "id": 26, "code": "КЗУ", "name": "ком.земельный участок", "master_realty_type_id": 3 }, { "id": 27, "code": "гар", "name": "гараж", "master_realty_type_id": 3 }, { "id": 28, "code": "автомойка", "name": "автомойка", "master_realty_type_id": 3 }, { "id": 29, "code": "автосервис", "name": "автосервис", "master_realty_type_id": 3 }, { "id": 30, "code": "ателье", "name": "ателье", "master_realty_type_id": 3 }, { "id": 31, "code": "гараж.комплекс", "name": "гараж.комплекс", "master_realty_type_id": 3 }, { "id": 32, "code": "медцентр", "name": "медцентр", "master_realty_type_id": 3 }, { "id": 33, "code": "парикмахерская", "name": "парикмахерская", "master_realty_type_id": 3 }, { "id": 34, "code": "стоматология", "name": "стоматология", "master_realty_type_id": 3 }, { "id": 35, "code": "турфирма", "name": "турфирма", "master_realty_type_id": 3 }, { "id": 36, "code": "учеб.цели", "name": "учеб.цели", "master_realty_type_id": 3 }, { "id": 37, "code": "фотоателье", "name": "фотоателье", "master_realty_type_id": 3 }, { "id": 38, "code": "химчистка", "name": "химчистка", "master_realty_type_id": 3 }, { "id": 39, "code": "офисное здание", "name": "офисное здание", "master_realty_type_id": 3 }, { "id": 40, "code": "торг.площадь", "name": "торговая площадь", "master_realty_type_id": 3 }, { "id": 41, "code": "пром.земли", "name": "промышленные земли", "master_realty_type_id": 3 }, { "id": 42, "code": "сельхоз.земли", "name": "сельхоз.земли", "master_realty_type_id": 3 }, { "id": 43, "code": "банк", "name": "банк", "master_realty_type_id": 3 }, { "id": 44, "code": "кафе/ресторан", "name": "кафе/ресторан", "master_realty_type_id": 3 }, { "id": 45, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 3 }, { "id": 46, "code": "инвест.проект", "name": "инвестиционный проект", "master_realty_type_id": 3 }, { "id": 47, "code": "готовый бизнес", "name": "готовый бизнес", "master_realty_type_id": 3 }, { "id": 48, "code": "база отдыха/лагерь", "name": "база отдыха/лагерь", "master_realty_type_id": 3 }, { "id": 49, "code": "ферма", "name": "ферма", "master_realty_type_id": 3 }, { "id": 50, "code": "бизнес-проект", "name": "бизнес-проект", "master_realty_type_id": 3 }, { "id": 51, "code": "доходный дом", "name": "доходный дом", "master_realty_type_id": 3 }, { "id": 52, "code": "фабрика/завод", "name": "фабрика/завод", "master_realty_type_id": 3 }, { "id": 53, "code": "курортный комплекс", "name": "курортный комплекс", "master_realty_type_id": 3 }, { "id": 54, "code": "апартаменты", "name": "апартаменты", "master_realty_type_id": 1 }, { "id": 55, "code": "пентхаус", "name": "пентхаус", "master_realty_type_id": 1 }, { "id": 56, "code": "дом", "name": "дом", "master_realty_type_id": 1 }, { "id": 57, "code": "элит.недвижимость(поместье, замок, особняк)", "name": "элитная недвижимость(поместье, замок, особняк)", "master_realty_type_id": 1 }, { "id": 59, "code": "гараж", "name": "гараж", "master_realty_type_id": 4 }, { "id": 60, "code": "бокс", "name": "бокс", "master_realty_type_id": 4 }, { "id": 61, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 4 }, { "id": 62, "code": "доля", "name": "доля", "master_realty_type_id": 1 }, { "id": 63, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 1 }, { "id": 64, "code": "вилла", "name": "вилла", "master_realty_type_id": 1 }, { "id": 65, "code": "бунгало", "name": "бунгало", "master_realty_type_id": 1 }, { "id": 66, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 1 }, { "id": 67, "code": "квартира", "name": "квартира", "master_realty_type_id": 5 }],
-            rent_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "любой срок", "name": "любой срок" }, { "id": 2, "code": "длительный срок", "name": "длительный срок" }, { "id": 3, "code": "посуточно", "name": "посуточно" }, { "id": 4, "code": "от месяца и более", "name": "от месяца и более" }, { "id": 5, "code": "сезонная сдача", "name": "сезонная сдача" }],
-            security_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }],
-            sewerage_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ВД", "name": "вне дома" }, { "id": 4, "code": "С", "name": "септик" }, { "id": 5, "code": "Ц", "name": "центральная" }, { "id": 6, "code": "И", "name": "иное" }],
-            territory_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "огорож.", "name": "огороженная" }, { "id": 2, "code": "огорож.+охран.", "name": "огороженная и охраняемая" }, { "id": 3, "code": "не огорож.", "name": "не огорожена" }],
-            walls_material_type: [{ "id": 0, "code": "", "name": "", "master_realty_type_id": null }, { "id": 1, "code": "П", "name": "панельный", "master_realty_type_id": 1 }, { "id": 2, "code": "Б", "name": "блочный", "master_realty_type_id": 1 }, { "id": 3, "code": "М", "name": "монолитный", "master_realty_type_id": 1 }, { "id": 4, "code": "М-К", "name": "монолитно-кирпичный", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "кирпичный", "master_realty_type_id": 1 }, { "id": 6, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 1 }, { "id": 9, "code": "Шлакоблок", "name": "шлакоблоки/шлакобетон", "master_realty_type_id": 1 }, { "id": 11, "code": "Ж-б", "name": "железобетон", "master_realty_type_id": 1 }, { "id": 18, "code": "Стал.", "name": "сталинский", "master_realty_type_id": 1 }, { "id": 19, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 20, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 21, "code": "кирпич", "name": "кирпич", "master_realty_type_id": 4 }, { "id": 22, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 23, "code": "пластик", "name": "пластик", "master_realty_type_id": 4 }, { "id": 24, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 2 }, { "id": 25, "code": "Газоблок.", "name": "газоблочный", "master_realty_type_id": 2 }, { "id": 26, "code": "Кам.", "name": "каменный", "master_realty_type_id": 2 }, { "id": 27, "code": "Каркас.", "name": "каркасный", "master_realty_type_id": 2 }, { "id": 28, "code": "Кирп.", "name": "кирпичный", "master_realty_type_id": 2 }, { "id": 29, "code": "Легкобетон.", "name": "легкобетонный", "master_realty_type_id": 2 }, { "id": 30, "code": "Многослой.", "name": "многослойный", "master_realty_type_id": 2 }, { "id": 31, "code": "Монолит.", "name": "монолитный", "master_realty_type_id": 2 }, { "id": 32, "code": "Щит.", "name": "щитовой", "master_realty_type_id": 2 }],
-            water_closet_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "отсутствует" }, { "id": 2, "code": "С", "name": "совмещенный" }, { "id": 3, "code": "Р", "name": "раздельный" }, { "id": 4, "code": "2", "name": "два санузла" }, { "id": 5, "code": "3", "name": "три санузла" }, { "id": 6, "code": "4", "name": "четыре санузла" }, { "id": 7, "code": "2С", "name": "два совмещенных санузла" }, { "id": 8, "code": "2Р", "name": "два раздельных санузла" }, { "id": 9, "code": "3С", "name": "три совмещенных санузла" }, { "id": 10, "code": "3Р", "name": "три раздельных санузла" }, { "id": 11, "code": "4С", "name": "четыре совмещенных санузла" }, { "id": 12, "code": "4Р", "name": "четыре раздельных санузла" }, { "id": 13, "code": "+", "name": "есть санузел" }],
-            window_overlook_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "на улицу", "name": "окна на улицу" }, { "id": 2, "code": "во двор", "name": "окна во двор" }, { "id": 3, "code": "во двор и на улицу", "name": "окна во двор и на улицу" }],
-            rooms_adjacency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "С", "name": "смежные" }, { "id": 2, "code": "Р", "name": "раздельные" }, { "id": 3, "code": "С+Р", "name": "смежные+раздельные" }],
-            sale_type: [{ "id": 0, "name": "" }, { "id": 9, "name": "прямая продажа" }, { "id": 10, "name": "альтернатива" }],
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//cols.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        let _dataWorker;
-        $$.$nl_search_panel_result = {
-            base: $$.$nl_search_panel,
-            dispatch: (dispatch_name, dispatch_arg) => {
-                if (dispatch_name == 'get_recs') {
-                    $$.a('.dataWorker').postMessage(Object.assign({}, dispatch_arg, { cmd: 'recs', tag: $$.a('.provider_tag') }));
-                    return true;
-                }
-                else if (dispatch_name == 'get_card') {
-                    $$.a('.dataWorker').postMessage(Object.assign({}, dispatch_arg, { cmd: 'card', tag: $$.a('.provider_tag') }));
-                    return true;
-                }
-                else if (dispatch_name == 'recs') {
-                    $$.a.dispatch('@grid@list', dispatch_name, dispatch_arg);
-                    return true;
-                }
-                else if (dispatch_name == 'card') {
-                    if (dispatch_arg.item) {
-                        $$.a.update('/@app.card_value', val => { return dispatch_arg.item; });
-                        $$.a('/@app.isShownCard', true);
-                    }
-                    else {
-                        console.warn('cannot read card data', dispatch_arg);
-                    }
-                    return true;
-                }
-                return false;
-            },
-            prop: {
-                _provider: () => $$.a.curr.parent(true).path,
-                provider_tag: () => null,
-                on_order_changed: $$.$me_atom2_prop(['.order'], null, ({ val }) => {
-                    $$.a('.provider_tag', val.id);
-                }),
-                isZoomed: '/@app.isZoomed',
-                count: $$.$me_atom2_prop(['.provider_tag'], ({ masters: [tag] }) => {
-                    $$.a('.dataWorker').postMessage({ cmd: 'count', tag });
-                    return -1;
-                }),
-                dataWorker: () => {
-                    if (!_dataWorker) {
-                        const base = window.location.href.slice(0, -window.location.search.length);
-                        _dataWorker = new Worker(base + 'data/-/web.js');
-                        const curr = $$.a.curr;
-                        _dataWorker.onmessage = (event) => {
-                            const prev = $$.a.curr;
-                            $$.a.curr = curr;
-                            if (event.data.tag != $$.a('.provider_tag')) {
-                                console.warn({ tag: event.data.tag, provider_tag: $$.a('.provider_tag') }, event.data);
-                            }
-                            else if (event.data.status != 'ok') {
-                                console.error(event.data);
-                            }
-                            else if (event.data.cmd == 'count') {
-                                $$.a('.count', event.data.count);
-                            }
-                            else if (event.data.cmd == 'recs') {
-                                $$.a.dispatch('', event.data.cmd, event.data);
-                            }
-                            else if (event.data.cmd == 'card') {
-                                $$.a.dispatch('', event.data.cmd, event.data);
-                            }
-                            else {
-                                console.error(event.data);
-                            }
-                            $$.a.curr = prev;
-                        };
-                    }
-                    return _dataWorker;
-                },
-            },
-            event: {
-                clickOrTap: () => true,
-            },
-            style: {
-                userSelect: () => 'none',
-            },
-            elem: {
-                resizer: () => ({
-                    prop: {
-                        '#width': () => 44,
-                        '#height': () => 44,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
-                        '#cursor': () => 'pointer',
-                    },
-                    elem: {
-                        img: () => ({
-                            node: 'img',
-                            prop: {
-                                '#height': $$.$me_atom2_prop(['<<.isZoomed'], ({ masters: [isZoomed] }) => isZoomed ? 68 : 34),
-                                '#width': $$.$me_atom2_prop(['<<.isZoomed'], ({ masters: [isZoomed] }) => isZoomed ? 68 : 34),
-                                '#ofsVer': () => -2,
-                                '#ofsHor': () => -4,
-                            },
-                            attr: {
-                                src: $$.$me_atom2_prop(['/.theme', '<<.isZoomed'], ({ masters: [theme, isZoomed] }) => `assets/${$$.$me_theme[theme]}-slide-${isZoomed ? 'downright' : 'upleft'}@2x.png`),
-                            },
-                            style: {
-                                userSelect: () => 'none',
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            $$.a('/@app.isZoomed', !$$.a('/@app.isZoomed'));
-                            return true;
-                        },
-                    },
-                }),
-                shown: () => ({
-                    node: 'span',
-                    prop: {
-                        '#height': () => null,
-                        '#width': () => null,
-                        '#ofsHor': $$.$me_atom2_prop(['.em', '<.isZoomed'], ({ masters: [ofs, isZoomed] }) => isZoomed ? 3 * ofs : ofs),
-                        '#ofsVer': $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(19 / 16)),
-                    },
-                    style: {
-                        position: () => 'relative',
-                        fontWeight: () => 500,
-                        userSelect: () => 'none',
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['<.count'], ({ masters: [count] }) => (count < 0 ?
-                            `Загрузка предложений` :
-                            `Показано ${count} ` + $$.$me_word_plural(count, 'предложение', 'предложения', 'предложений')).toUpperCase()),
-                    },
-                }),
-                filter: () => ({
-                    node: 'img',
-                    prop: {
-                        '#height': () => 18,
-                        '#width': () => 18,
-                        '#ofsVer': () => 18,
-                        '#ofsHor': $$.$me_atom2_prop(['<@shown.#ofsHor', '<@shown.#width'], $$.$me_atom2_prop_compute_fn_sum(8)),
-                        '#cursor': () => 'pointer',
-                    },
-                    attr: {
-                        src: () => 'assets/icons-8-filter@2x.png'
-                    },
-                    style: {
-                        userSelect: () => 'none',
-                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$me_theme.light ?
-                            'brightness(0%) invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
-                            'brightness(0%) invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            console.log('filter');
-                            return true;
-                        },
-                    },
-                }),
-                mode_switcher: () => ({
-                    base: $$.$nl_switch,
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#width': () => 265,
-                        '#height': () => 40,
-                        ofsVer: () => 5,
-                        options: () => ({
-                            'ТАБЛИЦА': {},
-                            'ПЛИТКА': {},
-                            'КАРТА': {},
-                        }),
-                        value: $$.$me_atom2_prop([`<.mode`], null, ({ val }) => {
-                            $$.a('<.mode', val);
-                        }),
-                        paddingHor: () => 16,
-                    },
-                }),
-                spinner: $$.$me_atom2_prop(['.count'], ({ masters: [count] }) => count >= 0 ? null : {
-                    base: $$.$me_spinner,
-                    prop: {
-                        color: () => '#D9DCE2',
-                    },
-                }),
-                grid: () => ({
-                    base: grid,
-                    prop: {
-                        provider: () => $$.a.get('<').path,
-                        order: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
-                            $$.a('<.order', val, true);
-                        }),
-                        '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'ТАБЛИЦА'),
-                        '#ofsHor': '.em',
-                        '#ofsVer': () => 56,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                        '#height': $$.$me_atom2_prop(['<.height_target', '<.height_anim_is', '.#ofsVer', '.em'], ({ masters: [height, height_anim_is, ofsVer, em], prev }) => {
-                            const val = height - ofsVer - em;
-                            const result = prev == null || val > prev || !height_anim_is ? val : prev;
-                            return result;
-                        }),
-                        provider_tag: () => '',
-                        rec_count: '<.count',
-                    },
-                }),
-                plitka: () => ({
-                    base: plitka,
-                    prop: {
-                        provider: () => $$.a.get('<').path,
-                        provider_tag: () => 'some',
-                        rec_count: '<.count',
-                        order: $$.$me_atom2_prop(['<.order'], null, ({ val }) => {
-                            $$.a('<.order', val, true);
-                        }),
-                        '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'ПЛИТКА'),
-                        '#ofsHor': '.em',
-                        '#ofsVer': () => 56,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                        '#height': $$.$me_atom2_prop(['<.height_target', '<.height_anim_is', '.#ofsVer'], ({ masters: [height, height_anim_is, ofsVer], prev }) => {
-                            const val = height - ofsVer;
-                            const result = prev == null || val > prev || !height_anim_is ? val : prev;
-                            return result;
-                        }),
-                    },
-                }),
-            },
-        };
-        const plitka = {
-            base: $$.$nl_plitka,
-        };
-        const grid = {
-            base: $$.$nl_search_grid,
-            prop: {
-                row_opens: $$.$me_atom2_prop(['.order'], ({ masters: [order] }) => order.row_opens || (order.row_opens = new Set())),
-                on_order_changed: $$.$me_atom2_prop(['.order'], null, ({ val }) => {
-                    if (!val)
-                        return;
-                    const order = val;
-                    $$.a.dispatch('', 'set_view', order);
-                }),
-                on_order_changed_and_ready: $$.$me_atom2_prop(['.order', '.rec_count'], ({ masters: [order, rec_count] }) => rec_count < 0 ? null : [order, rec_count], ({ val }) => {
-                    if (!val)
-                        return;
-                    const [order, rec_count] = val;
-                    $$.a.dispatch('@list', 'set_view', order);
-                }),
-                on_change_col_ids: $$.$me_atom2_prop(['.col_ids', '.order'], null, ({ val: [col_ids, order] }) => {
-                    order.col_ids = col_ids;
-                }),
-                on_change_ofsHor: $$.$me_atom2_prop(['.ofsHor', '.col_fixed_width', '.order'], null, ({ val: [ofsHor, col_fixed_width, order] }) => {
-                    order.ofsHor = ofsHor - col_fixed_width;
-                }),
-                on_change_col_width: $$.$me_atom2_prop({ keys: ['.col_ids'], masters: ['.col_width[]', '.cols', '.order'] }, null, ({ key: [id], val }) => {
-                    if (val == null)
-                        return;
-                    const [width, cols, order] = val;
-                    if (width != cols[id].width) {
-                        if (!order.col_width)
-                            order.col_width = {};
-                        order.col_width[id] = width;
-                    }
-                }),
-                on_change_row_i_min: $$.$me_atom2_prop(['@list.row_i_min', '.order', '.rec_count'], null, ({ val: [row_i_min, order, rec_count] }) => {
-                    if (rec_count < 0)
-                        return;
-                    order.row_i_min = row_i_min;
-                }),
-                on_change_visible_idx_min: $$.$me_atom2_prop(['@list.visible_idx_min', '.order', '.rec_count'], null, ({ val: [visible_idx_min, order, rec_count] }) => {
-                    if (rec_count < 0)
-                        return;
-                    order.visible_idx_min = visible_idx_min;
-                }),
-                on_change_visible_top: $$.$me_atom2_prop(['@list.visible_top', '.order', '.rec_count'], null, ({ val: [visible_top, order, rec_count] }) => {
-                    if (rec_count < 0)
-                        return;
-                    order.visible_top = visible_top;
-                }),
-                cols: () => $$.$nl_search_panel_result_cols,
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//result.js.map
 ;
 "use strict";
 var $;
@@ -9953,6 +6854,351 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$me_list2_demo = (rootElem) => {
+            $$.$nl_defaults_init();
+            return new $$.$me_atom2_elem({ tail: 'app', cnf: {
+                    node: rootElem,
+                    style: {
+                        margin: () => 0,
+                    },
+                    prop: {
+                        demo_border: () => 'red',
+                    },
+                    elem: {
+                        picker: () => ({
+                            base: $$.$nl_picker,
+                            prop: {
+                                options: () => ({
+                                    '$me_list2_demo_metro': {
+                                        caption: 'Метро',
+                                    },
+                                    '$me_list2_demo_grid': {
+                                        caption: 'Grid',
+                                    },
+                                }),
+                                value: $$.$me_atom2_prop_store({
+                                    default: () => Object.keys($$.a('.options'))[0],
+                                    valid: (val) => $$.a('.options').hasOwnProperty(val) ? val : null,
+                                }),
+                                '#height': () => 32,
+                                '#width': () => 218,
+                                '#ofsVer': () => 16,
+                                '#ofsHor': () => 16,
+                            },
+                        }),
+                        demo: $$.$me_atom2_prop(['@picker.value'], ({ masters: [pickerValue] }) => ({
+                            type: pickerValue,
+                            base: $.$$[pickerValue],
+                            prop: {
+                                marginVer: () => 16,
+                                '#height': $$.$me_atom2_prop(['/.#viewportHeight', '.marginVer', '<@picker.#ofsVer', '<@picker.#height'], ({ masters: [viewportHeight, marginVer, pickerOfsVer, pickerHeight] }) => viewportHeight - pickerOfsVer - pickerHeight - 2 * marginVer),
+                                '#ofsVer': $$.$me_atom2_prop(['<@picker.#ofsVer', '<@picker.#height', '.marginVer'], $$.$me_atom2_prop_compute_fn_sum()),
+                            },
+                        })),
+                    }
+                } });
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//demo.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$me_list2_demo_grid_cols = {
+            'guid': {
+                width: 150,
+                fld: ['guid'],
+                fn: (guid) => guid,
+            },
+            photo: {
+                caption: 'Фото',
+                width: 37,
+            },
+            'Комнат': {
+                align: $$.$me_align.center,
+                width: 42,
+                fld: ['total_room_count', 'offer_room_count'],
+                fn: (total_room_count, offer_room_count) => (!offer_room_count ? '' : offer_room_count + '/') +
+                    (total_room_count == null ? '?' : total_room_count)
+            },
+            'Метро/ЖД': {
+                width: 170,
+                fld: ['geo_cache_subway_station_name_1'],
+                fn: (geo_cache_subway_station_name_1) => geo_cache_subway_station_name_1,
+            },
+            'От станции': {
+                align: $$.$me_align.center,
+                width: 50,
+                fld: ['walking_access_1', 'transport_access_1'],
+                fn: (walking_access_1, transport_access_1) => walking_access_1 ? walking_access_1 + 'п' :
+                    transport_access_1 ? transport_access_1 + 'т' :
+                        '',
+            },
+            'Адрес': {
+                width: 220,
+                fld: ['geo_cache_street_name', 'geo_cache_building_name'],
+                fn: (geo_cache_street_name, geo_cache_building_name) => geo_cache_street_name ? (!geo_cache_building_name ? geo_cache_street_name :
+                    geo_cache_street_name + ', ' + geo_cache_building_name) : geo_cache_building_name ? geo_cache_building_name : ''
+            },
+            'Дом': {
+                width: 64,
+                align: $$.$me_align.center,
+                fld: ['storey', 'storeys_count', 'walls_material_type_id'],
+                fn: (storey, storeys_count, walls_material_type_id) => (!storey ? '?' : storey) + '/' +
+                    (!storeys_count ? '?' : storeys_count) + ' ' +
+                    dic_fld_value('walls_material_type', walls_material_type_id, 'code', '?')
+            },
+            'Балкон': {
+                width: 38,
+                align: $$.$me_align.center,
+                fld: ['balcony_type_id'],
+                fn: (type_id) => dic_fld_value('balcony_type', type_id, 'code', '?'),
+            },
+            'Санузел': {
+                width: 38,
+                fld: ['water_closet_type_id'],
+                fn: (type_id) => dic_fld_value('water_closet_type', type_id, 'code', '?'),
+            },
+            'Парковка': {
+                width: 38,
+                fld: ['parking_type_id'],
+                fn: (type_id) => dic_fld_value('parking_type', type_id, 'code', '?'),
+            },
+            'Территория': {
+                width: 112,
+                fld: ['territory_type_id'],
+                fn: (type_id) => dic_fld_value('territory_type', type_id, 'code', '?'),
+            },
+            'Окна': {
+                width: 41,
+                fld: ['window_overlook_type_id'],
+                fn: (type_id) => dic_fld_value('window_overlook_type', type_id, 'code', '?'),
+            },
+            'Ремонт': {
+                width: 92,
+                fld: ['apartment_condition_type_id'],
+                fn: (type_id) => dic_fld_value('apartment_condition_type', type_id, 'code', '?'),
+            },
+            'Лифт': {
+                width: 41,
+                fld: ['elevator_type_id'],
+                fn: (type_id) => dic_fld_value('elevator_type', type_id, 'code', '?'),
+            },
+            'Площадь': {
+                align: $$.$me_align.center,
+                width: 130,
+                fld: ['total_square', 'life_square', 'kitchen_square'],
+                fn: (total_square, life_square, kitchen_square) => (total_square || '?') + '/' + (life_square || '?') + '/' + (kitchen_square || '?'),
+            },
+            'Площадь комнат': {
+                align: $$.$me_align.center,
+                width: 138,
+                fld: ['square_explication'],
+                fn: (square_explication) => square_explication == null ? '?' : square_explication,
+            },
+            'Ипотека': {
+                width: 41,
+            },
+            'Цена': {
+                align: $$.$me_align.right,
+                caption: 'Цена ₽',
+                width: 96,
+                fld: ['price_rub'],
+                fn: (val) => {
+                    var x = (val + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена, $': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: 'Цена $',
+                width: 96,
+                fld: ['price_usd'],
+                fn: (val) => {
+                    var x = (val + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена, €': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: 'Цена €',
+                width: 96,
+                fld: ['price_eur'],
+                fn: (val) => {
+                    var x = (val + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена за кв.м.': {
+                align: $$.$me_align.right,
+                caption: '₽/м²',
+                width: 93,
+                fld: ['meter_price_rub'],
+                fn: (meter_price_rub) => {
+                    var x = (Math.round(meter_price_rub) + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена $ за кв.м.': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: '$/м²',
+                width: 93,
+                fld: ['meter_price_usd'],
+                fn: (val) => {
+                    var x = (Math.round(val) + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Цена € за кв.м.': {
+                hidden: true,
+                align: $$.$me_align.right,
+                caption: '€/м²',
+                width: 93,
+                fld: ['meter_price_eur'],
+                fn: (val) => {
+                    var x = (Math.round(val) + '').split('.');
+                    var x1 = x[0];
+                    var x2 = x.length > 1 ? '.' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1))
+                        x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                    return x1 + x2;
+                },
+            },
+            'Дата': {
+                align: $$.$me_align.right,
+                width: 85,
+                fld: ['pub_datetime'],
+                fn: (val) => {
+                    const dt = new Date(val);
+                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                },
+            },
+            'Дата создания': {
+                hidden: true,
+                align: $$.$me_align.right,
+                width: 85,
+                fld: ['creation_datetime'],
+                fn: (val) => {
+                    const dt = new Date(val);
+                    return dt.getDate() + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                },
+            },
+            'Год постройки': {
+                hidden: true,
+                align: $$.$me_align.center,
+                width: 85,
+                fld: ['built_year'],
+                fn: (val) => {
+                    return val == null ? '?' : val;
+                },
+            },
+            'Источник': {
+                width: 140,
+                fld: ['broker', 'media_name'],
+                fn: (broker, media_name) => broker && broker.short_name ? broker.short_name : media_name,
+            },
+            'Телефон': {
+                width: 260,
+                fld: ['phone_list'],
+                fn: (phone_list) => !phone_list ? '' : phone_list
+                    .split(/\D+/)
+                    .map(phone => '8-' + phone.slice(1, 4) + '-' + phone.slice(4, 7) + '-' + phone.slice(7, 9) + '-' + phone.slice(9, 11)).join(', ')
+            },
+        };
+        const _dics = new Map();
+        function dic_fld_value(dic_name, id, fld, default_value) {
+            let result;
+            let dic = _dics.get(dic_name);
+            if (!dic) {
+                const dic_def = DICTIONARIES[dic_name];
+                if (dic_def) {
+                    dic = new Map(dic_def.map((item) => [item.id, item]));
+                    _dics.set(dic_name, dic);
+                }
+            }
+            if (dic && dic.has(id)) {
+                const value = dic.get(id);
+                if (value)
+                    result = value[fld];
+            }
+            if (result === void 0 && default_value !== void 0)
+                result = default_value;
+            return result;
+        }
+        const DICTIONARIES = {
+            apartment_condition_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "треб.кап/р", "name": "требуется капитальный ремонт" }, { "id": 3, "code": "без отд.", "name": "без отделки" }, { "id": 4, "code": "треб.рем.", "name": "требуется ремонт" }, { "id": 5, "code": "ср.сост.", "name": "среднее состояние" }, { "id": 6, "code": "хор.сост.", "name": "хорошее состояние" }, { "id": 8, "code": "отл.сост.", "name": "отличное состояние" }, { "id": 9, "code": "евр.рем.", "name": "евроремонт" }, { "id": 10, "code": "дизайн.рем.", "name": "дизайнерский ремонт" }, { "id": 11, "code": "перв.отд.", "name": "первичная отделка" }],
+            building_batch: [{ "id": 0, "name": "" }, { "id": 1, "name": "02/98-НМ" }, { "id": 2, "name": "1385 АР-3" }, { "id": 3, "name": "1605/12" }, { "id": 4, "name": "1605/9" }, { "id": 5, "name": "1605/Б" }, { "id": 6, "name": "17/2004-АС" }, { "id": 7, "name": "1МГ-600" }, { "id": 8, "name": "1МГ-601" }, { "id": 9, "name": "2-71/358" }, { "id": 10, "name": "2548-01-АР" }, { "id": 11, "name": "2548-02-АР" }, { "id": 12, "name": "32/2005-АС" }, { "id": 13, "name": "349/01" }, { "id": 14, "name": "355/24" }, { "id": 15, "name": "7040-01" }, { "id": 16, "name": "I-303" }, { "id": 17, "name": "I-335" }, { "id": 18, "name": "I-447" }, { "id": 19, "name": "I-510" }, { "id": 20, "name": "I-511" }, { "id": 21, "name": "I-513" }, { "id": 22, "name": "I-515" }, { "id": 23, "name": "I605-АМ" }, { "id": 24, "name": "II-04" }, { "id": 25, "name": "II-05" }, { "id": 26, "name": "II-08" }, { "id": 27, "name": "II-18" }, { "id": 28, "name": "II-18-01-МН" }, { "id": 29, "name": "II-18-31/12" }, { "id": 30, "name": "II-29" }, { "id": 31, "name": "II-32" }, { "id": 32, "name": "II-49" }, { "id": 33, "name": "II-57" }, { "id": 34, "name": "II-68-02" }, { "id": 35, "name": "II-68-03" }, { "id": 36, "name": "II-89-01-МН" }, { "id": 37, "name": "III/17" }, { "id": 38, "name": "VI-23" }, { "id": 39, "name": "VII-51" }, { "id": 40, "name": "VII-58" }, { "id": 41, "name": "А-41K" }, { "id": 42, "name": "башня Вулыха" }, { "id": 43, "name": "Бекерон" }, { "id": 44, "name": "БОД-1" }, { "id": 45, "name": "В-2000" }, { "id": 46, "name": "В-2002" }, { "id": 47, "name": "В-2005" }, { "id": 48, "name": "ГМС-1" }, { "id": 49, "name": "ГМС-3" }, { "id": 50, "name": "И-1168 А3" }, { "id": 51, "name": "И-1168 А4" }, { "id": 52, "name": "И-1233" }, { "id": 53, "name": "И-1254" }, { "id": 54, "name": "И-1262А" }, { "id": 55, "name": "И-1429" }, { "id": 56, "name": "И-1430" }, { "id": 57, "name": "И-1459-132" }, { "id": 58, "name": "И-1491-17" }, { "id": 59, "name": "И-1501" }, { "id": 60, "name": "И-155" }, { "id": 61, "name": "И-155МК" }, { "id": 62, "name": "И-155Н" }, { "id": 63, "name": "И-1602" }, { "id": 64, "name": "И-1677" }, { "id": 65, "name": "И-1723" }, { "id": 66, "name": "И-1724" }, { "id": 67, "name": "И-1731" }, { "id": 68, "name": "И-1782/1" }, { "id": 69, "name": "И-1812/1" }, { "id": 70, "name": "И-1834" }, { "id": 71, "name": "И-1836" }, { "id": 72, "name": "И-1838" }, { "id": 73, "name": "И-1839" }, { "id": 74, "name": "И-1849" }, { "id": 75, "name": "И-1932" }, { "id": 76, "name": "И-208" }, { "id": 77, "name": "И-209А" }, { "id": 78, "name": "И-2342" }, { "id": 79, "name": "И-241" }, { "id": 80, "name": "И-491А" }, { "id": 81, "name": "И-515-5М" }, { "id": 82, "name": "И-515/9ш" }, { "id": 83, "name": "И-522" }, { "id": 84, "name": "И-522А" }, { "id": 85, "name": "И-679" }, { "id": 86, "name": "И-700" }, { "id": 87, "name": "И-700А" }, { "id": 88, "name": "И-760А" }, { "id": 89, "name": "И-79-99" }, { "id": 90, "name": "И-99-47/405" }, { "id": 91, "name": "И-99-47/406" }, { "id": 92, "name": "индивидуальный проект" }, { "id": 93, "name": "ИП-46С" }, { "id": 94, "name": "ИШ3/12" }, { "id": 95, "name": "К-7" }, { "id": 96, "name": "КМС-101" }, { "id": 97, "name": "Колос" }, { "id": 98, "name": "КОПЭ" }, { "id": 99, "name": "КОПЭ-М-ПАРУС" }, { "id": 100, "name": "КТЖС" }, { "id": 101, "name": "КТЖС-11/22" }, { "id": 102, "name": "1МГ-300" }, { "id": 103, "name": "МОНОЛИТ" }, { "id": 105, "name": "МЭС-84" }, { "id": 107, "name": "НП-46с" }, { "id": 108, "name": "П-06" }, { "id": 109, "name": "П-111" }, { "id": 110, "name": "П-111М" }, { "id": 111, "name": "П-111МО" }, { "id": 112, "name": "П-12-31/12" }, { "id": 113, "name": "II-14" }, { "id": 114, "name": "П-14/35" }, { "id": 115, "name": "П-18/22" }, { "id": 116, "name": "П-20" }, { "id": 117, "name": "П-21" }, { "id": 118, "name": "П-22" }, { "id": 119, "name": "П-23" }, { "id": 120, "name": "П-28" }, { "id": 121, "name": "П-29" }, { "id": 122, "name": "П-3" }, { "id": 123, "name": "П-3/16" }, { "id": 124, "name": "П-3/17" }, { "id": 125, "name": "П-3/22" }, { "id": 126, "name": "П-30" }, { "id": 127, "name": "П-31" }, { "id": 128, "name": "П-32" }, { "id": 129, "name": "П-321-60" }, { "id": 130, "name": "II-34" }, { "id": 131, "name": "II-35" }, { "id": 132, "name": "П-37" }, { "id": 133, "name": "II-38" }, { "id": 134, "name": "П-39" }, { "id": 135, "name": "П-3М" }, { "id": 136, "name": "П-4" }, { "id": 137, "name": "П-40" }, { "id": 138, "name": "П-41" }, { "id": 139, "name": "П-42" }, { "id": 140, "name": "П-43" }, { "id": 141, "name": "П-44" }, { "id": 142, "name": "П-44К" }, { "id": 143, "name": "П-44М" }, { "id": 144, "name": "П-44Т" }, { "id": 145, "name": "П-44ТМ" }, { "id": 146, "name": "П-45" }, { "id": 147, "name": "П-46" }, { "id": 148, "name": "П-46М" }, { "id": 149, "name": "П-47" }, { "id": 150, "name": "П-49 Д" }, { "id": 151, "name": "П-50" }, { "id": 152, "name": "П-53" }, { "id": 153, "name": "П-55" }, { "id": 154, "name": "П-55М" }, { "id": 155, "name": "II-29-41/37" }, { "id": 156, "name": "II-66" }, { "id": 157, "name": "II-67" }, { "id": 158, "name": "II-68" }, { "id": 159, "name": "ПД-4" }, { "id": 160, "name": "ПД-4/12" }, { "id": 161, "name": "Пд4-1/12Н1" }, { "id": 162, "name": "ПД4-1/8Н1" }, { "id": 163, "name": "ПЗМ-1/14" }, { "id": 164, "name": "ПЗМ-1/16" }, { "id": 165, "name": "ПЗМ-2/16" }, { "id": 166, "name": "ПЗМ-3/16" }, { "id": 167, "name": "ПП-70" }, { "id": 168, "name": "Призма" }, { "id": 169, "name": "РД-90" }, { "id": 170, "name": "С-111М" }, { "id": 171, "name": "С-220" }, { "id": 172, "name": "С-222" }, { "id": 173, "name": "ТИП-441" }, { "id": 174, "name": "ЦВП-4570-II-63" }, { "id": 175, "name": "Юбилейный" }, { "id": 176, "name": "II-02" }, { "id": 177, "name": "II-01" }, { "id": 178, "name": "II-18-01/08" }, { "id": 179, "name": "II-18-01/09" }, { "id": 180, "name": "1605-АМ/9" }, { "id": 181, "name": "1605-АМ/12" }, { "id": 182, "name": "II-49П" }, { "id": 183, "name": "II-49Д" }, { "id": 184, "name": "II-03" }, { "id": 185, "name": "II-18-01/12" }, { "id": 186, "name": "II-18-02/12" }, { "id": 187, "name": "II-18/12" }, { "id": 188, "name": "II-20" }, { "id": 189, "name": "1605-АМ/5" }, { "id": 190, "name": "И-III-3" }, { "id": 191, "name": "II-28" }, { "id": 192, "name": "II-68-02/16М" }, { "id": 193, "name": "КПД-4570" }, { "id": 194, "name": "II-68-01" }, { "id": 195, "name": "1-515/9" }, { "id": 196, "name": "К4/16" }, { "id": 197, "name": "И-155Б" }, { "id": 198, "name": "1-515/5" }, { "id": 199, "name": "II-18-01/12А" }, { "id": 200, "name": "СМ-1 " }, { "id": 201, "name": "П-44ТМ/25" }, { "id": 202, "name": "И-701" }, { "id": 203, "name": "И-155-с" }, { "id": 204, "name": "Айсберг" }, { "id": 205, "name": "II-14/35" }, { "id": 206, "name": "И-99-47/407" }, { "id": 207, "name": "П-101" }, { "id": 208, "name": "1-300" }, { "id": 209, "name": "II-18-01/09К" }, { "id": 210, "name": "И-1900" }, { "id": 211, "name": "М-10" }, { "id": 212, "name": "МПСМ" }, { "id": 213, "name": "ИП-46М" }, { "id": 214, "name": "П-30М" }, { "id": 215, "name": "II-07" }, { "id": 216, "name": "ПБ-01" }, { "id": 217, "name": "И-1414" }, { "id": 218, "name": "И-2111" }, { "id": 219, "name": "1605-АМЛ/5" }, { "id": 220, "name": "1-447С-26" }, { "id": 221, "name": "1-447С-1" }, { "id": 222, "name": "1-447С-36" }, { "id": 223, "name": "1-447С-2" }, { "id": 224, "name": "1-447С-5" }, { "id": 225, "name": "1-446" }, { "id": 226, "name": "ПБ-02" }, { "id": 227, "name": "КПД-4572А" }, { "id": 228, "name": "II-68-04" }, { "id": 229, "name": "124-124-1" }, { "id": 231, "name": "1605-А" }, { "id": 232, "name": "1-439" }, { "id": 233, "name": "Мм1-3" }, { "id": 234, "name": "И-1168" }, { "id": 235, "name": "СМ-06" }, { "id": 236, "name": "СМ-03" }, { "id": 237, "name": "1-419" }, { "id": 238, "name": "1-203" }, { "id": 239, "name": "ЭС-24" }, { "id": 240, "name": "8966" }, { "id": 242, "name": "1-126" }, { "id": 243, "name": "1-225" }, { "id": 244, "name": "1-402" }, { "id": 245, "name": "16/2188" }, { "id": 246, "name": "Т-1" }, { "id": 247, "name": "Т-3" }, { "id": 248, "name": "1-233" }, { "id": 249, "name": "1-260" }, { "id": 250, "name": "К-8-49" }, { "id": 251, "name": "1-255" }, { "id": 252, "name": "КС-8-50" }, { "id": 253, "name": "Д-23" }, { "id": 254, "name": "Д-25Н1" }, { "id": 256, "name": "ПП-83" }, { "id": 258, "name": "К2/16" }, { "id": 259, "name": "К7/16" }, { "id": 260, "name": "К8/16" }, { "id": 262, "name": "1-464А" }, { "id": 263, "name": "КОПЭ-87" }, { "id": 264, "name": "П-121М" }, { "id": 265, "name": "121-041" }, { "id": 266, "name": "121-042" }, { "id": 267, "name": "121-043" }, { "id": 268, "name": "II-29-208" }, { "id": 269, "name": "II-29-3" }, { "id": 270, "name": "II-29-9" }, { "id": 271, "name": "II-29-160" }, { "id": 272, "name": "ПД-1" }, { "id": 273, "name": "И-02/98-НМ" }, { "id": 274, "name": "1-467" }, { "id": 275, "name": "ЭЖРЧС" }, { "id": 276, "name": "П-3МК" }, { "id": 277, "name": "II-18-02/09" }, { "id": 278, "name": "ПД-3" }, { "id": 279, "name": "И-580" }, { "id": 280, "name": "II-18-03/12" }, { "id": 281, "name": "К-14" }, { "id": 282, "name": "И-700Н" }, { "id": 283, "name": "Юникон" }, { "id": 284, "name": "111-121" }, { "id": 285, "name": "1-211" }, { "id": 286, "name": "II-68-01/22" }, { "id": 287, "name": "Лебедь" }, { "id": 288, "name": "И-99-47" }],
+            balcony_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "Б", "name": "балкон" }, { "id": 3, "code": "Л", "name": "лоджия" }, { "id": 4, "code": "БЛ", "name": "балкон + лоджия" }, { "id": 5, "code": "2Б", "name": "два балкона" }, { "id": 6, "code": "2Л", "name": "две лоджии" }, { "id": 7, "code": "3Л", "name": "три лоджии" }, { "id": 8, "code": "4Л", "name": "четыре лоджии" }, { "id": 9, "code": "3Б", "name": "три балкона" }, { "id": 10, "code": "Б2Л", "name": "балкон + две лоджии" }, { "id": 11, "code": "2Б2Л", "name": "два балкона + две лоджии" }, { "id": 12, "code": "Эрк", "name": "эркер" }, { "id": 13, "code": "ЭркЛ", "name": "эркер + лоджия" }, { "id": 14, "code": "*Б", "name": "несколько балконов" }, { "id": 15, "code": "*Л", "name": "несколько лоджий" }],
+            currency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "руб", "name": "RUB" }, { "id": 2, "code": "$", "name": "USD" }, { "id": 3, "code": "€", "name": "EUR" }, { "id": 4, "code": "TL", "name": "TL" }, { "id": 5, "code": "BYR", "name": "BYR" }],
+            deal_status: [{ "id": 1, "code": "продается/арендуется", "name": "продается/арендуется" }, { "id": 2, "code": "аванс/задаток", "name": "аванс/задаток" }, { "id": 3, "code": "продана/арендована", "name": "продана/арендована" }],
+            deal_type: [{ "id": 1, "code": "продажа", "name": "продажа" }, { "id": 2, "code": "аренда", "name": "аренда" }],
+            location_type: [{ "id": 13, "code": "ГСК", "name": "ГСК" }, { "id": 14, "code": "ГК", "name": "ГК" }, { "id": 15, "code": "ЖК", "name": "ЖК" }, { "id": 16, "code": "двор", "name": "двор" }, { "id": 17, "code": "паркинг", "name": "паркинг" }],
+            electricity_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "220В", "name": "220В" }, { "id": 4, "code": "380В", "name": "380В" }, { "id": 5, "code": "П", "name": "в перспективе" }, { "id": 6, "code": "ГУ", "name": "по границе" }, { "id": 7, "code": "10кВ", "name": "10кВ" }, { "id": 8, "code": "И", "name": "иное" }],
+            elevator_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "пасс.", "name": "лифт пассажирский" }, { "id": 2, "code": "груз.", "name": "лифт грузовой" }, { "id": 3, "code": "пасс.+ груз.", "name": "лифт пассажирский и лифт грузовой" }, { "id": 4, "code": "нет", "name": "нет лифта" }, { "id": 5, "code": "есть", "name": "есть лифт" }],
+            floor_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "полы не настелены", "master_realty_type_id": 1 }, { "id": 2, "code": "Д", "name": "дерево", "master_realty_type_id": 1 }, { "id": 3, "code": "п/д", "name": "паркетная доска", "master_realty_type_id": 1 }, { "id": 4, "code": "ЛМ", "name": "ламинат", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "ковролин", "master_realty_type_id": 1 }, { "id": 6, "code": "П", "name": "паркет", "master_realty_type_id": 1 }, { "id": 7, "code": "ЛН", "name": "линолеум", "master_realty_type_id": 1 }, { "id": 8, "code": "Стяж", "name": "стяжка", "master_realty_type_id": 1 }, { "id": 9, "code": "асфальт", "name": "асфальт", "master_realty_type_id": 4 }, { "id": 10, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 11, "code": "грунт", "name": "грунт", "master_realty_type_id": 4 }, { "id": 12, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 13, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 14, "code": "полимерное покрытие", "name": "полимерное покрытие", "master_realty_type_id": 4 }],
+            gas_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ГУ", "name": "по границе" }, { "id": 4, "code": "П", "name": "перспектива" }, { "id": 5, "code": "Р", "name": "рядом" }, { "id": 6, "code": "Б", "name": "баллоны" }, { "id": 7, "code": "М", "name": "магистральный" }, { "id": 8, "code": "И", "name": "иное" }, { "id": 9, "code": "Ц", "name": "центральный" }],
+            habit_class: [{ "id": 1, "name": "эконом" }, { "id": 2, "name": "комфорт" }, { "id": 3, "name": "бизнес" }, { "id": 4, "name": "элитный" }],
+            heating_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ЭК", "name": "электрокотел" }, { "id": 4, "code": "ГК", "name": "газовый котел" }, { "id": 5, "code": "ЖТК", "name": "жидкотопливный котел" }, { "id": 6, "code": "АГВ", "name": "автоматический газовый водонагреватель" }, { "id": 7, "code": "П", "name": "печь" }, { "id": 8, "code": "Ц", "name": "центральное" }, { "id": 9, "code": "И", "name": "иное" }],
+            media: [{ "id": 0, "name": "Прочие", "is_active": 1, "order_number": 1000 }, { "id": 1, "name": "Руки", "is_active": 1, "order_number": 50 }, { "id": 3, "name": "WinNER (зелёная зона)", "is_active": 1, "order_number": 10 }, { "id": 4, "name": "Крис", "is_active": 0, "order_number": 140 }, { "id": 5, "name": "Realty.dmir.ru", "is_active": 0, "order_number": 60 }, { "id": 6, "name": "БН", "is_active": 1, "order_number": 130 }, { "id": 7, "name": "Навигатор", "is_active": 0, "order_number": 1000 }, { "id": 8, "name": "БКН", "is_active": 1, "order_number": 120 }, { "id": 9, "name": "Собственники", "is_active": 0, "order_number": 900 }, { "id": 11, "name": "Приан", "is_active": 0, "order_number": 150 }, { "id": 12, "name": "eip.ru", "is_active": 0, "order_number": 110 }, { "id": 15, "name": "Sob.ru", "is_active": 1, "order_number": 20 }, { "id": 17, "name": "cian.ru", "is_active": 1, "order_number": 40 }, { "id": 20, "name": "A.baza-winner", "is_active": 0, "order_number": 15 }, { "id": 21, "name": "AVITO.ru", "is_active": 1, "order_number": 30 }, { "id": 22, "name": "WinNER Lite", "is_active": 1, "order_number": 16 }, { "id": 23, "name": "Яндекс", "is_active": 1, "order_number": 70 }, { "id": 24, "name": "WinNER (белая зона)", "is_active": 1, "order_number": 15 }],
+            office_class: [{ "id": 2, "name": "A+" }, { "id": 3, "name": "A" }, { "id": 4, "name": "B+" }, { "id": 5, "name": "B" }, { "id": 6, "name": "C+" }, { "id": 7, "name": "C" }, { "id": 8, "name": "D+" }, { "id": 9, "name": "D" }],
+            fire_alarm_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "name": "пожарная сигнализация", "code": "пожарная сигнализация" }, { "id": 2, "name": "система пожаротушения", "code": "система пожаротушения" }],
+            ownership_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "купля/продажа", "name": "купля/продажа" }, { "id": 2, "code": "ЖСК", "name": "ЖСК" }, { "id": 3, "code": "приватиз.", "name": "приватизация" }, { "id": 4, "code": "дар.", "name": "дарение" }, { "id": 5, "code": "наслед.", "name": "наследство" }, { "id": 6, "code": "мена", "name": "мена" }, { "id": 7, "code": "инвест.", "name": "инвестирование" }, { "id": 8, "code": "рента", "name": "рента" }, { "id": 9, "code": "реш.суда", "name": "решение суда" }, { "id": 10, "code": "залог(ипотека)", "name": "залог (ипотека)" }, { "id": 11, "code": "иное", "name": "иное" }, { "id": 12, "code": "кооператив", "name": "кооператив" }, { "id": 13, "code": "собственность", "name": "собственность" }, { "id": 14, "code": "по доверенности", "name": "по доверенности" }, { "id": 15, "code": "ДДУ", "name": "договор долевого участия" }, { "id": 16, "code": "ДУ", "name": "договор уступки прав требования" }, { "id": 17, "code": "ПДДК", "name": "предварительный договор купли-продажи" }],
+            parking_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "о", "name": "охраняемая" }, { "id": 4, "code": "п", "name": "подземная" }, { "id": 5, "code": "с", "name": "стихийная" }, { "id": 6, "code": "з", "name": "закрепленное место" }],
+            pay_period_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "в год", "name": "в год" }, { "id": 2, "code": "в мес.", "name": "в месяц" }, { "id": 3, "code": "в кв.", "name": "в квартал" }, { "id": 4, "code": "в сут.", "name": "в сутки" }],
+            plumbing_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "С", "name": "скважина" }, { "id": 4, "code": "К", "name": "колодец" }, { "id": 5, "code": "М", "name": "магистральный" }, { "id": 6, "code": "И", "name": "иное" }, { "id": 7, "code": "Ц", "name": "центральный" }, { "id": 8, "code": "Л", "name": "летний" }],
+            price_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "вся площадь", "name": "за всю площадь" }, { "id": 2, "code": "сотка", "name": "за сотку" }, { "id": 3, "code": "кв.м.", "name": "за кв.м." }],
+            realty_type: [{ "id": 1, "code": "кв.", "name": "квартира", "master_realty_type_id": 1 }, { "id": 2, "code": "комн.", "name": "комната", "master_realty_type_id": 1 }, { "id": 3, "code": "дом", "name": "дом", "master_realty_type_id": 2 }, { "id": 4, "code": "ЗУ", "name": "земельный участок", "master_realty_type_id": 2 }, { "id": 5, "code": "дача", "name": "дача", "master_realty_type_id": 2 }, { "id": 6, "code": "дуплекс", "name": "дуплекс", "master_realty_type_id": 2 }, { "id": 7, "code": "квадрохаус", "name": "квадрохаус", "master_realty_type_id": 2 }, { "id": 8, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 2 }, { "id": 9, "code": "коттедж в КП", "name": "коттедж в КП", "master_realty_type_id": 2 }, { "id": 10, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 2 }, { "id": 11, "code": "усадьба", "name": "усадьба", "master_realty_type_id": 2 }, { "id": 12, "code": "часть дома", "name": "часть дома", "master_realty_type_id": 2 }, { "id": 15, "code": "офис", "name": "офис", "master_realty_type_id": 3 }, { "id": 16, "code": "маг", "name": "магазин", "master_realty_type_id": 3 }, { "id": 17, "code": "склад", "name": "склад", "master_realty_type_id": 3 }, { "id": 18, "code": "другое", "name": "другое", "master_realty_type_id": 3 }, { "id": 19, "code": "БЦ", "name": "бизнес-центр", "master_realty_type_id": 3 }, { "id": 20, "code": "ТЦ", "name": "торговый центр", "master_realty_type_id": 3 }, { "id": 21, "code": "ППП", "name": "произв.-пром помещение", "master_realty_type_id": 3 }, { "id": 22, "code": "ПП", "name": "предприятие питания", "master_realty_type_id": 3 }, { "id": 23, "code": "ПСН", "name": "помещ.свободного назначения", "master_realty_type_id": 3 }, { "id": 24, "code": "ОСЗ", "name": "отдельно стоящее здание", "master_realty_type_id": 3 }, { "id": 25, "code": "гостиница/отель", "name": "гостиница/отель", "master_realty_type_id": 3 }, { "id": 26, "code": "КЗУ", "name": "ком.земельный участок", "master_realty_type_id": 3 }, { "id": 27, "code": "гар", "name": "гараж", "master_realty_type_id": 3 }, { "id": 28, "code": "автомойка", "name": "автомойка", "master_realty_type_id": 3 }, { "id": 29, "code": "автосервис", "name": "автосервис", "master_realty_type_id": 3 }, { "id": 30, "code": "ателье", "name": "ателье", "master_realty_type_id": 3 }, { "id": 31, "code": "гараж.комплекс", "name": "гараж.комплекс", "master_realty_type_id": 3 }, { "id": 32, "code": "медцентр", "name": "медцентр", "master_realty_type_id": 3 }, { "id": 33, "code": "парикмахерская", "name": "парикмахерская", "master_realty_type_id": 3 }, { "id": 34, "code": "стоматология", "name": "стоматология", "master_realty_type_id": 3 }, { "id": 35, "code": "турфирма", "name": "турфирма", "master_realty_type_id": 3 }, { "id": 36, "code": "учеб.цели", "name": "учеб.цели", "master_realty_type_id": 3 }, { "id": 37, "code": "фотоателье", "name": "фотоателье", "master_realty_type_id": 3 }, { "id": 38, "code": "химчистка", "name": "химчистка", "master_realty_type_id": 3 }, { "id": 39, "code": "офисное здание", "name": "офисное здание", "master_realty_type_id": 3 }, { "id": 40, "code": "торг.площадь", "name": "торговая площадь", "master_realty_type_id": 3 }, { "id": 41, "code": "пром.земли", "name": "промышленные земли", "master_realty_type_id": 3 }, { "id": 42, "code": "сельхоз.земли", "name": "сельхоз.земли", "master_realty_type_id": 3 }, { "id": 43, "code": "банк", "name": "банк", "master_realty_type_id": 3 }, { "id": 44, "code": "кафе/ресторан", "name": "кафе/ресторан", "master_realty_type_id": 3 }, { "id": 45, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 3 }, { "id": 46, "code": "инвест.проект", "name": "инвестиционный проект", "master_realty_type_id": 3 }, { "id": 47, "code": "готовый бизнес", "name": "готовый бизнес", "master_realty_type_id": 3 }, { "id": 48, "code": "база отдыха/лагерь", "name": "база отдыха/лагерь", "master_realty_type_id": 3 }, { "id": 49, "code": "ферма", "name": "ферма", "master_realty_type_id": 3 }, { "id": 50, "code": "бизнес-проект", "name": "бизнес-проект", "master_realty_type_id": 3 }, { "id": 51, "code": "доходный дом", "name": "доходный дом", "master_realty_type_id": 3 }, { "id": 52, "code": "фабрика/завод", "name": "фабрика/завод", "master_realty_type_id": 3 }, { "id": 53, "code": "курортный комплекс", "name": "курортный комплекс", "master_realty_type_id": 3 }, { "id": 54, "code": "апартаменты", "name": "апартаменты", "master_realty_type_id": 1 }, { "id": 55, "code": "пентхаус", "name": "пентхаус", "master_realty_type_id": 1 }, { "id": 56, "code": "дом", "name": "дом", "master_realty_type_id": 1 }, { "id": 57, "code": "элит.недвижимость(поместье, замок, особняк)", "name": "элитная недвижимость(поместье, замок, особняк)", "master_realty_type_id": 1 }, { "id": 59, "code": "гараж", "name": "гараж", "master_realty_type_id": 4 }, { "id": 60, "code": "бокс", "name": "бокс", "master_realty_type_id": 4 }, { "id": 61, "code": "машиноместо", "name": "машиноместо", "master_realty_type_id": 4 }, { "id": 62, "code": "доля", "name": "доля", "master_realty_type_id": 1 }, { "id": 63, "code": "коттедж", "name": "коттедж", "master_realty_type_id": 1 }, { "id": 64, "code": "вилла", "name": "вилла", "master_realty_type_id": 1 }, { "id": 65, "code": "бунгало", "name": "бунгало", "master_realty_type_id": 1 }, { "id": 66, "code": "таунхаус", "name": "таунхаус", "master_realty_type_id": 1 }, { "id": 67, "code": "квартира", "name": "квартира", "master_realty_type_id": 5 }],
+            rent_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "любой срок", "name": "любой срок" }, { "id": 2, "code": "длительный срок", "name": "длительный срок" }, { "id": 3, "code": "посуточно", "name": "посуточно" }, { "id": 4, "code": "от месяца и более", "name": "от месяца и более" }, { "id": 5, "code": "сезонная сдача", "name": "сезонная сдача" }],
+            security_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }],
+            sewerage_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "нет" }, { "id": 2, "code": "+", "name": "есть" }, { "id": 3, "code": "ВД", "name": "вне дома" }, { "id": 4, "code": "С", "name": "септик" }, { "id": 5, "code": "Ц", "name": "центральная" }, { "id": 6, "code": "И", "name": "иное" }],
+            territory_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "огорож.", "name": "огороженная" }, { "id": 2, "code": "огорож.+охран.", "name": "огороженная и охраняемая" }, { "id": 3, "code": "не огорож.", "name": "не огорожена" }],
+            walls_material_type: [{ "id": 0, "code": "", "name": "", "master_realty_type_id": null }, { "id": 1, "code": "П", "name": "панельный", "master_realty_type_id": 1 }, { "id": 2, "code": "Б", "name": "блочный", "master_realty_type_id": 1 }, { "id": 3, "code": "М", "name": "монолитный", "master_realty_type_id": 1 }, { "id": 4, "code": "М-К", "name": "монолитно-кирпичный", "master_realty_type_id": 1 }, { "id": 5, "code": "К", "name": "кирпичный", "master_realty_type_id": 1 }, { "id": 6, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 1 }, { "id": 9, "code": "Шлакоблок", "name": "шлакоблоки/шлакобетон", "master_realty_type_id": 1 }, { "id": 11, "code": "Ж-б", "name": "железобетон", "master_realty_type_id": 1 }, { "id": 18, "code": "Стал.", "name": "сталинский", "master_realty_type_id": 1 }, { "id": 19, "code": "бетон", "name": "бетон", "master_realty_type_id": 4 }, { "id": 20, "code": "дерево", "name": "дерево", "master_realty_type_id": 4 }, { "id": 21, "code": "кирпич", "name": "кирпич", "master_realty_type_id": 4 }, { "id": 22, "code": "металл", "name": "металл", "master_realty_type_id": 4 }, { "id": 23, "code": "пластик", "name": "пластик", "master_realty_type_id": 4 }, { "id": 24, "code": "Дер.", "name": "деревянный", "master_realty_type_id": 2 }, { "id": 25, "code": "Газоблок.", "name": "газоблочный", "master_realty_type_id": 2 }, { "id": 26, "code": "Кам.", "name": "каменный", "master_realty_type_id": 2 }, { "id": 27, "code": "Каркас.", "name": "каркасный", "master_realty_type_id": 2 }, { "id": 28, "code": "Кирп.", "name": "кирпичный", "master_realty_type_id": 2 }, { "id": 29, "code": "Легкобетон.", "name": "легкобетонный", "master_realty_type_id": 2 }, { "id": 30, "code": "Многослой.", "name": "многослойный", "master_realty_type_id": 2 }, { "id": 31, "code": "Монолит.", "name": "монолитный", "master_realty_type_id": 2 }, { "id": 32, "code": "Щит.", "name": "щитовой", "master_realty_type_id": 2 }],
+            water_closet_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "-", "name": "отсутствует" }, { "id": 2, "code": "С", "name": "совмещенный" }, { "id": 3, "code": "Р", "name": "раздельный" }, { "id": 4, "code": "2", "name": "два санузла" }, { "id": 5, "code": "3", "name": "три санузла" }, { "id": 6, "code": "4", "name": "четыре санузла" }, { "id": 7, "code": "2С", "name": "два совмещенных санузла" }, { "id": 8, "code": "2Р", "name": "два раздельных санузла" }, { "id": 9, "code": "3С", "name": "три совмещенных санузла" }, { "id": 10, "code": "3Р", "name": "три раздельных санузла" }, { "id": 11, "code": "4С", "name": "четыре совмещенных санузла" }, { "id": 12, "code": "4Р", "name": "четыре раздельных санузла" }, { "id": 13, "code": "+", "name": "есть санузел" }],
+            window_overlook_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "на улицу", "name": "окна на улицу" }, { "id": 2, "code": "во двор", "name": "окна во двор" }, { "id": 3, "code": "во двор и на улицу", "name": "окна во двор и на улицу" }],
+            rooms_adjacency_type: [{ "id": 0, "code": "", "name": "" }, { "id": 1, "code": "С", "name": "смежные" }, { "id": 2, "code": "Р", "name": "раздельные" }, { "id": 3, "code": "С+Р", "name": "смежные+раздельные" }],
+            sale_type: [{ "id": 0, "name": "" }, { "id": 9, "name": "прямая продажа" }, { "id": 10, "name": "альтернатива" }],
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//cols.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_list2_demo_grid = {
             base: $$.$me_list2,
             init() {
@@ -10247,77 +7493,18 @@ var $;
                 row_height: $$.$me_atom2_prop_either(['.isTouch'], () => 44, () => 32),
                 fontSize: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 14),
                 firstRowMarginTop: '.row_height',
-                colDefs: () => $$.$nl_search_panel_result_cols,
+                colDefs: () => $$.$me_list2_demo_grid_cols,
                 cols: () => ['Комнат', 'Метро/ЖД', 'От станции', 'Адрес', 'Дом', 'Балкон', 'Санузел', 'Парковка', 'Территория', 'Окна', 'Ремонт', 'Площадь', 'Площадь комнат', 'Ипотека', 'Цена', 'Цена за кв.м.', 'Дата', 'Дата создания', 'Год постройки', 'Источник', 'Телефон'],
             },
         };
         const root = $$.$me_atom2_entity.root();
         root.props({
             'gridWorker': () => {
-                const idx = window.location.pathname.indexOf('/', 1);
-                console.log(window.location.origin);
-                const root = window.location.origin.includes('localhost') ||
-                    window.location.origin.match(/^https?:\/\/(\d+\.){3}\d+(:\d+)?$/) ?
-                    '/nl' :
-                    '/newlook';
-                const worker = new Worker(window.location.origin + root + '/data/-/web.js');
+                const worker = new Worker('data/-/web.js');
                 return worker;
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //grid.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$me_list2_demo = (rootElem) => {
-            $$.$nl_defaults_init();
-            return new $$.$me_atom2_elem({ tail: 'app', cnf: {
-                    node: rootElem,
-                    style: {
-                        margin: () => 0,
-                    },
-                    prop: {
-                        demo_border: () => 'red',
-                    },
-                    elem: {
-                        picker: () => ({
-                            base: $$.$nl_picker,
-                            prop: {
-                                options: () => ({
-                                    '$me_list2_demo_metro': {
-                                        caption: 'Метро',
-                                    },
-                                    '$me_list2_demo_grid': {
-                                        caption: 'Grid',
-                                    },
-                                }),
-                                value: $$.$me_atom2_prop_store({
-                                    default: () => Object.keys($$.a('.options'))[0],
-                                    valid: (val) => $$.a('.options').hasOwnProperty(val) ? val : null,
-                                }),
-                                '#height': () => 32,
-                                '#width': () => 218,
-                                '#ofsVer': () => 16,
-                                '#ofsHor': () => 16,
-                            },
-                        }),
-                        demo: $$.$me_atom2_prop(['@picker.value'], ({ masters: [pickerValue] }) => ({
-                            type: pickerValue,
-                            base: $.$$[pickerValue],
-                            prop: {
-                                marginVer: () => 16,
-                                '#height': $$.$me_atom2_prop(['/.#viewportHeight', '.marginVer', '<@picker.#ofsVer', '<@picker.#height'], ({ masters: [viewportHeight, marginVer, pickerOfsVer, pickerHeight] }) => viewportHeight - pickerOfsVer - pickerHeight - 2 * marginVer),
-                                '#ofsVer': $$.$me_atom2_prop(['<@picker.#ofsVer', '<@picker.#height', '.marginVer'], $$.$me_atom2_prop_compute_fn_sum()),
-                            },
-                        })),
-                    }
-                } });
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//demo.js.map
 //# sourceMappingURL=web.js.map
