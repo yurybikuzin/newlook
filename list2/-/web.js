@@ -6999,6 +6999,24 @@ var $;
                 }
                 return false;
             },
+            init() {
+                const worker = $$.a('/.metroWorker');
+                if (!worker.onmessage) {
+                    const store_key = 'msk-metro-guids';
+                    worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
+                    worker.onmessage = (event) => {
+                        const cmd = event.data.cmd;
+                        const data = event.data.data;
+                        if (cmd == 'data') {
+                            $$.a('/.scheme_metro', data.scheme);
+                            $$.a('/.guid2point', data.guid2point);
+                            $$.a('/.code2guids', data.code2guids);
+                            if (data.guids)
+                                localStorage.setItem(store_key, data.guids);
+                        }
+                    };
+                }
+            },
         };
         function fontSize(idx_len = 0) {
             return $$.a('.fontSize') - 1 * (idx_len - 1);
@@ -7033,31 +7051,16 @@ var $;
             return result;
         }
         $$.$me_atom2_entity.root().props({
-            'scheme_metro': $$.$me_atom2_prop([], () => 'requires data', ({ val }) => {
-                if (val != 'requires data')
-                    return val;
+            'metroWorker': () => {
                 const idx = window.location.pathname.indexOf('/', 1);
-                console.log(window.location.origin);
                 const root = window.location.origin.includes('localhost') ||
                     window.location.origin.match(/^https?:\/\/(\d+\.){3}\d+(:\d+)?$/) ?
                     '/nl' :
                     '/newlook';
                 const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
-                const store_key = 'msk-metro-guids';
-                worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
-                worker.onmessage = (event) => {
-                    const cmd = event.data.cmd;
-                    const data = event.data.data;
-                    if (cmd == 'data') {
-                        $$.a('/.scheme_metro', data.scheme);
-                        $$.a('/.guid2point', data.guid2point);
-                        $$.a('/.code2guids', data.code2guids);
-                        if (data.guids)
-                            localStorage.setItem(store_key, data.guids);
-                    }
-                };
-                return null;
-            }),
+                return worker;
+            },
+            'scheme_metro': () => null,
             'guid2point': () => null,
             'code2guids': () => null,
         });
@@ -7543,11 +7546,9 @@ var $;
         $$.$me_list2_demo_grid = {
             base: $$.$me_list2,
             init() {
-                console.warn('INIT');
                 $$.a('.worker').addEventListener('message', $$.a('.workerListener'));
             },
             fini() {
-                console.warn('FINI');
                 $$.a('.worker').removeEventListener('message', $$.a('.workerListener'));
             },
             style: {
@@ -7877,17 +7878,6 @@ var $;
                 return worker;
             },
         });
-        function ab2str(buf) {
-            return String.fromCharCode.apply(null, new Uint16Array(buf));
-        }
-        function str2ab(str) {
-            var buf = new ArrayBuffer(str.length * 2);
-            var bufView = new Uint16Array(buf);
-            for (var i = 0, strLen = str.length; i < strLen; i++) {
-                bufView[i] = str.charCodeAt(i);
-            }
-            return buf;
-        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //grid.js.map
