@@ -9524,7 +9524,7 @@ var $;
                             else if (guid) {
                                 for (const crumb of crumbs) {
                                     if (crumb.guid == guid) {
-                                        console.log('вы кликнули по станции ', crumb.text);
+                                        console.log('вы кликнули по телефону ', crumb.text);
                                         break;
                                     }
                                 }
