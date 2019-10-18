@@ -8704,6 +8704,7 @@ var $;
                             return result;
                         },
                         clickOrTap: p => {
+                            console.log('shit');
                             let clientX;
                             let clientY;
                             if (p.event.start instanceof MouseEvent) {
@@ -8719,19 +8720,6 @@ var $;
                             }).ret)
                                 return false;
                             const clientRect = $$.a('.#clientRect');
-                            const deltaY = $$.a.dispatch('', 'deltaY', {
-                                clientX,
-                                clientY,
-                                ret: false,
-                                tolerance: p.event.start instanceof MouseEvent ? 0 : $$.a('/.#touchTolerance'),
-                            }).ret;
-                            if (deltaY) {
-                                $$.a.update('.ofsVer', val => {
-                                    const to = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
-                                    return $$.$me_atom2_anim({ to });
-                                });
-                                return true;
-                            }
                             const crumbs = $$.a('.crumbs');
                             if (!crumbs)
                                 return false;
@@ -9464,19 +9452,6 @@ var $;
                             }).ret)
                                 return false;
                             const clientRect = $$.a('.#clientRect');
-                            const deltaY = $$.a.dispatch('', 'deltaY', {
-                                clientX,
-                                clientY,
-                                ret: false,
-                                tolerance: p.event.start instanceof MouseEvent ? 0 : $$.a('/.#touchTolerance'),
-                            }).ret;
-                            if (deltaY) {
-                                $$.a.update('.ofsVer', val => {
-                                    const to = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
-                                    return $$.$me_atom2_anim({ to });
-                                });
-                                return true;
-                            }
                             const crumbs = $$.a('.crumbs');
                             if (!crumbs)
                                 return false;
