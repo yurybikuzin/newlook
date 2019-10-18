@@ -9964,6 +9964,11 @@ var $;
                         background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
                         'overflow-x': () => 'hidden',
                     },
+                    event: {
+                        clickOrTap: () => {
+                            return true;
+                        },
+                    },
                     elem: {
                         cross: () => ({
                             base: $$.$me_cross,
@@ -10352,7 +10357,7 @@ var $;
                 color: $$.$me_atom2_prop_abstract(),
                 ofs: () => 8,
                 ofs2: $$.$me_atom2_prop(['.#width'], ({ masters: [width, ofs] }) => width / 2),
-                itemWidth: () => 270,
+                itemWidth: () => 280,
             },
             style: {
                 lineHeight: () => 14,
