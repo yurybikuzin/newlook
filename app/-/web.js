@@ -10650,7 +10650,7 @@ var $;
                         color: '<.color',
                     },
                     style: {
-                        lineHeight: () => 24,
+                        lineHeight: () => 23,
                     },
                     dom: {
                         innerText: '<.agent',
