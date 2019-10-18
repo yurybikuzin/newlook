@@ -8607,7 +8607,6 @@ var $;
                             dispatch_arg.ret = deltaX < 0 ?
                                 Math.max(val + deltaX, 0) :
                                 Math.min(val + deltaX, $$.a('.width_content') - $$.a('.width_visible'));
-                            console.log('dispatch_arg.ret', dispatch_arg.ret);
                             return true;
                         }
                         else if (dispatch_name == 'isInVisible') {
@@ -9026,7 +9025,6 @@ var $;
                                     navHorNextCount++;
                             }
                             const ctxRight_fn = (crumb) => crumb.ctxLeftHor + crumb.ctxWidth;
-                            console.log('navHorNextCount', navHorNextCount);
                             if (navHorNextCount) {
                                 let nextText = nextText_fn(navHorNextCount);
                                 let ctxNavNextWidth = ctxNavWidth(nextText);
@@ -9220,28 +9218,6 @@ var $;
                 }),
             },
         };
-        const g2p = $$.a.get('/.guid2point');
-        if (g2p == '/.guid2point') {
-            const idx = window.location.pathname.indexOf('/', 1);
-            const root = !~idx ?
-                window.location.pathname :
-                window.location.pathname.slice(0, idx);
-            const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
-            const store_key = 'msk-metro-guids';
-            worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
-            worker.onmessage = (event) => {
-                const cmd = event.data.cmd;
-                const data = event.data.data;
-                if (cmd == 'data') {
-                    $$.a('/.guid2point', data.guid2point);
-                    if (data.guids)
-                        localStorage.setItem(store_key, data.guids);
-                }
-            };
-            $$.$me_atom2_entity.root().props({
-                'guid2point': () => null,
-            });
-        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //stations.js.map
@@ -10122,7 +10098,7 @@ var $;
                         station_and_far: () => ({
                             base: $$.$nl_stations,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
+                                '#width': () => 590,
                                 '#height': () => 25,
                                 '#ofsHor': () => 415,
                                 '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
