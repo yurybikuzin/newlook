@@ -9989,8 +9989,8 @@ var $;
                             prop: {
                                 '#ofsHor': '<.horOffset',
                                 '#ofsVer': '.em',
-                                '#width': () => 390,
-                                '#height': () => 295,
+                                '#width': () => 365,
+                                '#height': () => 275,
                                 'img': $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
                                     let result = '?';
                                     if (card && card.photo_list) {
@@ -10643,6 +10643,9 @@ var $;
                         '#alignHor': () => $$.$me_align.left,
                         fontSize: '<.fontSize',
                         color: '<.color',
+                    },
+                    style: {
+                        lineHeight: () => 24,
                     },
                     dom: {
                         innerText: '<.agent',
