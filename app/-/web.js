@@ -10009,7 +10009,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': () => 418,
+                                '#ofsHor': () => 393,
                                 '#ofsVer': '.em',
                             },
                             style: {
@@ -10053,7 +10053,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': () => 418,
+                                '#ofsHor': () => 393,
                                 '#ofsVer': $$.$me_atom2_prop(['<@pub_dt.#height', '<@pub_dt.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
                             },
                             style: {
@@ -10100,7 +10100,7 @@ var $;
                             prop: {
                                 '#width': () => 590,
                                 '#height': () => 25,
-                                '#ofsHor': () => 415,
+                                '#ofsHor': () => 390,
                                 '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
                                 data: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
                                     let result = [];
@@ -10120,7 +10120,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': () => 418,
+                                '#ofsHor': () => 393,
                                 '#ofsVer': $$.$me_atom2_prop(['<@station_and_far.#height', '<@station_and_far.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 4),
                             },
                             style: {
@@ -10140,7 +10140,7 @@ var $;
                             prop: {
                                 '#height': () => 25,
                                 '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
-                                '#ofsHor': () => 418,
+                                '#ofsHor': () => 393,
                                 '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
                                 fontSize: () => 17,
                             },
@@ -10151,7 +10151,7 @@ var $;
                         params: () => ({
                             base: card_params_control,
                             prop: {
-                                '#ofsHor': () => 418,
+                                '#ofsHor': () => 393,
                                 '#ofsVer': $$.$me_atom2_prop(['<@contact.#height', '<@contact.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
                                 '#height': () => 124,
                                 '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.em'], ({ masters: [width_total, ofs, ofs2] }) => width_total - ofs - ofs2 * 2),
