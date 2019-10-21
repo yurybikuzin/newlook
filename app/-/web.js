@@ -8585,7 +8585,7 @@ var $;
                                         return result;
                                     });
                                 }
-                                else {
+                                else if ($$.a('.width_content') > $$.a('.width_visible')) {
                                     $$.a.update('.ofsHor', val => {
                                         const result = $$.a.dispatch('', 'ofsHor', { val, deltaX, ret: 0 }).ret;
                                         return result;
@@ -9318,7 +9318,7 @@ var $;
                                         return result;
                                     });
                                 }
-                                else {
+                                else if ($$.a('.width_content') > $$.a('.width_visible')) {
                                     $$.a.update('.ofsHor', val => {
                                         const result = $$.a.dispatch('', 'ofsHor', { val, deltaX, ret: 0 }).ret;
                                         return result;
@@ -9483,14 +9483,13 @@ var $;
                             return true;
                         },
                         touchstart: p => {
+                            console.log('touchstart');
                             const clientX = p.event.touches[0].clientX;
                             const clientY = p.event.touches[0].clientY;
                             if (p.event.touches.length > 1) {
+                                console.log('p.event.touches.length', p.event.touches.length);
                                 return false;
                             }
-                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false, tolerance: $$.a('/.#touchTolerance') }).ret;
-                            if (deltaY)
-                                return false;
                             if ($$.a.dispatch('', 'isInVisible', {
                                 clientX, clientY, ret: false
                             }).ret)
@@ -9511,6 +9510,7 @@ var $;
                             return false;
                         },
                         pinch: p => {
+                            console.log('pinch');
                             if ($$.a.dispatch('', 'isInVisible', {
                                 clientX: p.event.start.touches[0].clientX,
                                 clientY: p.event.start.touches[0].clientY,
@@ -9532,11 +9532,6 @@ var $;
                                 clientX, clientY, ret: false
                             }).ret)
                                 return false;
-                            const deltaY = $$.a.dispatch('', 'deltaY', { clientX, clientY, ret: false }).ret;
-                            if (deltaY) {
-                                $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
-                                return true;
-                            }
                             const guid = $$.a.dispatch('', 'guid', { clientX, clientY, ret: '' }).ret;
                             if (guid) {
                                 $$.$me_atom2_ec_body_cursor({ origin: $$.a.curr.path, val: 'pointer' });
@@ -10078,7 +10073,7 @@ var $;
                         station_and_far: () => ({
                             base: $$.$nl_stations,
                             prop: {
-                                '#width': () => 590,
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
                                 '#height': () => 25,
                                 '#ofsHor': () => 390,
                                 '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
