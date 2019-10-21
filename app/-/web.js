@@ -17792,7 +17792,6 @@ var $;
                     },
                     event: {
                         clickOrTap: (e) => {
-                            console.log('click on comment');
                             $$.a('/@app.isShownCard', true);
                             return true;
                         },
