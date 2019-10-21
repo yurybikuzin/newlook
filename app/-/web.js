@@ -17781,6 +17781,8 @@ var $;
                         '#ofsVer': '<<<.row_height_min',
                         '#height': () => null,
                         '#width': '<.#width',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': () => 'pointer',
                     },
                     style: {
                         fontSize: () => 14,
@@ -17788,6 +17790,13 @@ var $;
                         boxSizing: () => 'border-box',
                         userSelect: () => 'text',
                     },
+                    event: {
+                        clickOrTap: (e) => {
+                            console.log('click on comment');
+                            $$.a('/@app.isShownCard', true);
+                            return true;
+                        },
+                    }
                 }),
             },
         };
@@ -18117,7 +18126,6 @@ var $;
                 else if (dispatch_name == 'card') {
                     if (dispatch_arg.item) {
                         $$.a.update('/@app.card_value', val => { return dispatch_arg.item; });
-                        $$.a('/@app.isShownCard', true);
                     }
                     else {
                         console.warn('cannot read card data', dispatch_arg);
