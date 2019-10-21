@@ -10208,17 +10208,27 @@ var $;
                 text: () => ({
                     prop: {
                         '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 20),
-                        '#height': () => null,
+                        '#height': $$.$me_atom2_prop(['<.isMinimized', '@textSrc.#height'], ({ masters: [isMin, z] }) => isMin ? 140 : z),
                         fontSize: '<.fontSize',
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 10,
                     },
                     style: {
-                        overflow: () => 'hidden',
+                        'overflow-x': () => 'hidden',
+                        'overflow-y': () => 'auto',
                     },
-                    dom: {
-                        innerHTML: $$.$me_atom2_prop(['<.text'], ({ masters: [txt] }) => '<b>Примечание: </b>' + txt),
-                    },
+                    elem: {
+                        textSrc: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                fontSize: '<.fontSize',
+                            },
+                            dom: {
+                                innerHTML: $$.$me_atom2_prop(['<<.text'], ({ masters: [txt] }) => '<b>Примечание: </b>' + txt),
+                            },
+                        })
+                    }
                 }),
                 more_link: () => ({
                     prop: {
@@ -10230,12 +10240,15 @@ var $;
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
                         '#alignHor': () => $$.$me_align.right,
                         '#alignVer': () => $$.$me_align.bottom,
-                        '#ofsHor': () => 10,
+                        '#ofsHor': () => 30,
                         '#ofsVer': () => 65,
                         caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? '&nbsp;&nbsp;Больше <span>∨</span>' : '&nbsp;&nbsp;Меньше <span>∧</span>'),
+                        '#hidden': $$.$me_atom2_prop(['<@text@textSrc.#height'], ({ masters: [h] }) => {
+                            const result = h <= 140;
+                            return result;
+                        }),
                     },
                     style: {
-                        display: $$.$me_atom2_prop(['<@text.#height'], ({ masters: [h] }) => (h + 90) < 214 ? 'none' : 'block'),
                         backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                     dom: {
@@ -10246,17 +10259,6 @@ var $;
                             $$.a('<.isMinimized', !$$.a('<.isMinimized'));
                             return true;
                         },
-                    },
-                }),
-                cover: () => ({
-                    prop: {
-                        '#height': () => 53 + 16,
-                        '#alignVer': () => $$.$me_align.bottom,
-                        '#ofsVer': () => 0,
-                        '#ofsHor': () => 0,
-                    },
-                    style: {
-                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                 }),
                 block: () => ({
