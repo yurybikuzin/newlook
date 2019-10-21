@@ -10073,7 +10073,7 @@ var $;
                         station_and_far: () => ({
                             base: $$.$nl_stations,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
+                                '#width': () => 615,
                                 '#height': () => 25,
                                 '#ofsHor': () => 390,
                                 '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
@@ -10202,12 +10202,13 @@ var $;
             },
             style: {
                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
+                overflow: () => 'hidden',
             },
             elem: {
                 text: () => ({
                     prop: {
                         '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 20),
-                        '#height': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? 140 : null),
+                        '#height': () => null,
                         fontSize: '<.fontSize',
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 10,
@@ -10234,6 +10235,7 @@ var $;
                         caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? '&nbsp;&nbsp;Больше <span>∨</span>' : '&nbsp;&nbsp;Меньше <span>∧</span>'),
                     },
                     style: {
+                        display: $$.$me_atom2_prop(['<@text.#height'], ({ masters: [h] }) => (h + 90) < 214 ? 'none' : 'block'),
                         backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                     dom: {
@@ -10244,6 +10246,17 @@ var $;
                             $$.a('<.isMinimized', !$$.a('<.isMinimized'));
                             return true;
                         },
+                    },
+                }),
+                cover: () => ({
+                    prop: {
+                        '#height': () => 53 + 16,
+                        '#alignVer': () => $$.$me_align.bottom,
+                        '#ofsVer': () => 0,
+                        '#ofsHor': () => 0,
+                    },
+                    style: {
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                     },
                 }),
                 block: () => ({
