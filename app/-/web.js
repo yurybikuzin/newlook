@@ -10198,7 +10198,7 @@ var $;
                 text: $$.$me_atom2_prop_abstract(),
                 ofs: () => 5,
                 isMinimized: () => true,
-                '#height': $$.$me_atom2_prop(['.isMinimized'], ({ masters: [isMin] }) => isMin ? 214 : 374),
+                '#height': $$.$me_atom2_prop(['.isMinimized', '@text.#height'], ({ masters: [isMin, h] }) => isMin ? 214 : (h + 90) < 214 ? 214 : h + 90),
             },
             style: {
                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
@@ -10207,7 +10207,7 @@ var $;
                 text: () => ({
                     prop: {
                         '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 20),
-                        '#height': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? 140 : 300),
+                        '#height': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? 140 : null),
                         fontSize: '<.fontSize',
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 10,
