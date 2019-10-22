@@ -10182,6 +10182,14 @@ var $;
                     }
                 })
             },
+            event: {
+                wheelTouch: p => {
+                    return true;
+                },
+                wheel: p => {
+                    return true;
+                },
+            }
         };
         const comment_control = {
             prop: {
