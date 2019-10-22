@@ -10744,7 +10744,7 @@ var $;
                     prop: {
                         '#ofsHor': '.em',
                         '#ofsVer': '.em',
-                        '#width': () => 600,
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '<@alpha.#width'], ({ masters: [width, em, width2] }) => width - 3 * em - width2),
                         '#height': () => 87,
                     },
                     elem: {
