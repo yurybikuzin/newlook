@@ -9929,6 +9929,8 @@ var $;
                         '#alignHor': () => $$.$me_align.center,
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                         horOffset: () => 12,
+                        grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
+                        grayColor2: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#c1c1c1'),
                     },
                     style: {
                         background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
@@ -9948,7 +9950,7 @@ var $;
                                 '#ofsVer': () => 8,
                                 '#ofsHor': () => 16,
                                 '#alignHor': () => $$.$me_align.right,
-                                color: () => '#979aa1',
+                                color: '<.grayColor',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
                                 '#cursor': () => 'pointer',
                             },
@@ -9989,7 +9991,7 @@ var $;
                             },
                             style: {
                                 fontSize: () => 12,
-                                color: () => '#979aa1',
+                                color: '<.grayColor',
                             },
                             dom: {
                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -10008,10 +10010,10 @@ var $;
                                 '#width': () => null,
                                 '#ofsHor': () => 600,
                                 '#ofsVer': '.em',
+                                color: '<.grayColor',
                             },
                             style: {
                                 fontSize: () => 12,
-                                color: () => '#979aa1',
                             },
                             dom: {
                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -10034,7 +10036,6 @@ var $;
                             style: {
                                 fontSize: () => 21,
                                 fontWeight: () => 500,
-                                color: () => '#313745',
                             },
                             dom: {
                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -10061,7 +10062,6 @@ var $;
                             },
                             style: {
                                 fontSize: () => 17,
-                                color: () => '#313745',
                             },
                             dom: {
                                 innerText: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -10101,7 +10101,6 @@ var $;
                             style: {
                                 fontSize: () => 15,
                                 lineHeight: () => 26,
-                                color: () => '#313745',
                             },
                             dom: {
                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -10130,7 +10129,7 @@ var $;
                                 '#ofsVer': $$.$me_atom2_prop(['<@contact.#height', '<@contact.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
                                 '#height': () => 124,
                                 '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.em'], ({ masters: [width_total, ofs, ofs2] }) => width_total - ofs - ofs2 * 2),
-                                color: () => '#6a6c74',
+                                color: '<.grayColor2',
                                 fontSize: () => 12,
                             },
                         }),
@@ -10211,7 +10210,7 @@ var $;
                         '#height': $$.$me_atom2_prop(['<.isMinimized', '@textSrc.#height'], ({ masters: [isMin, z] }) => isMin ? 140 : z),
                         fontSize: '<.fontSize',
                         '#ofsHor': () => 10,
-                        '#ofsVer': () => 10,
+                        '#ofsVer': () => 9,
                     },
                     style: {
                         'overflow-x': () => 'hidden',
@@ -10266,11 +10265,11 @@ var $;
                         '#width': $$.$me_atom2_prop(['<.#width'], ({ masters: [width] }) => width - 20),
                         '#height': () => 53,
                         '#alignVer': () => $$.$me_align.bottom,
-                        '#ofsVer': () => 10,
+                        '#ofsVer': () => 8,
                         '#ofsHor': () => 10,
                     },
                     style: {
-                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#6b7277'),
+                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
                     },
                     elem: {
                         send_comment: () => ({
@@ -10289,23 +10288,22 @@ var $;
                                 styleSheetCommon: $$.$me_atom2_prop(['.className', '/.theme'], ({ masters: [className, theme] }) => {
                                     return (`
                   .${className}::placeholder {
-                    color: ${theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'white'};
+                    color: ${theme == $$.$nl_theme.light ? 'rgba(49,55,69,0.5)' : 'rgba(208,208,208,0.5)'};
                   }
                 `);
                                 }),
-                                value: () => 'text'
                             },
                             style: {
                                 border: () => 'none',
                                 boxShadow: () => 'none',
                                 boxSizing: () => 'border-box',
                                 '-webkit-appearance': () => 'none',
-                                padding: () => 0,
+                                padding: () => '5px 0 5px 0',
                                 resize: () => 'none',
                                 outline: () => 'none',
                                 fontWeight: () => '600',
                                 color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : 'white'),
-                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#666f7f'),
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#414c5f'),
                             },
                             attr: {
                                 placeholder: () => 'Написать комментарий',
