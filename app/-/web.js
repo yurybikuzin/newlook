@@ -10216,6 +10216,25 @@ var $;
                         'overflow-x': () => 'hidden',
                         'overflow-y': () => 'auto',
                     },
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'wheel') {
+                            const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
+                            $$.a.update('@textSrc.#ofsVer', val => {
+                                const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
+                                console.warn(43, { result });
+                                return result;
+                            });
+                            dispatch_arg.ret = true;
+                            return true;
+                        }
+                        else if (dispatch_name == 'ofsVer') {
+                            const { val, deltaY } = dispatch_arg;
+                            dispatch_arg.ret = deltaY < 0 ?
+                                Math.max(val + deltaY, 0) :
+                                Math.min(val + deltaY, $$.a('@textSrc.#height') - $$.a('.#height'));
+                            return true;
+                        }
+                    },
                     elem: {
                         textSrc: () => ({
                             prop: {
@@ -10227,6 +10246,19 @@ var $;
                                 innerHTML: $$.$me_atom2_prop(['<<.text'], ({ masters: [txt] }) => '<b>Примечание: </b>' + txt),
                             },
                         })
+                    },
+                    event: {
+                        wheelTouch: p => {
+                            console.log('eeeeeee', p.event.deltaY);
+                            const result = $$.a.dispatch('', 'wheel', {
+                                clientX: p.event.start.touches[0].clientX,
+                                clientY: p.event.start.touches[0].clientY,
+                                deltaY: p.event.deltaY,
+                                deltaX: p.event.deltaX,
+                                ret: false,
+                            }).ret;
+                            return result;
+                        },
                     }
                 }),
                 more_link: () => ({
