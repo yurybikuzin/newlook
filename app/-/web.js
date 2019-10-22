@@ -10743,8 +10743,8 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
-                        '#ofsVer': () => 54,
-                        '#width': () => 619,
+                        '#ofsVer': '.em',
+                        '#width': () => 600,
                         '#height': () => 87,
                     },
                     elem: {
@@ -10806,7 +10806,7 @@ var $;
                     prop: {
                         '#ofsHor': '.em',
                         '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
-                        '#width': () => 619,
+                        '#width': '<@promo.#width',
                         '#height': () => 300,
                         news_items: $$.$me_atom2_prop([], ({ atom }) => {
                             const store_key = 'news';
@@ -10902,7 +10902,7 @@ var $;
                     prop: {
                         '#ofsHor': '.em',
                         '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em', '<@news.#height',], ({ masters: [ofs, height, ofs2, height2] }) => ofs + height + ofs2 + height2 + ofs2),
-                        '#width': () => 619,
+                        '#width': '<@promo.#width',
                         '#height': () => 135,
                     },
                     elem: {
@@ -10946,7 +10946,8 @@ var $;
                 alpha: () => ({
                     base: $$.$nl_panel,
                     prop: {
-                        '#ofsVer': () => 54,
+                        '': () => 54,
+                        '#ofsVer': '<@promo.#ofsVer',
                         '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
                         '#width': () => 179,
                         '#height': () => 142,
