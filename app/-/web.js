@@ -20616,7 +20616,7 @@ var $;
                     path_active: $$.a.get('.isShrinked_animActive').path,
                 })),
                 isShrinked_animActive: $$.$me_atom2_prop([], () => false),
-                '#order': () => ['ear', 'login', 'theme_switch', 'list'],
+                '#order': () => ['login', 'ear', 'theme_switch', 'list'],
             },
             elem: {
                 login: () => login,
@@ -20667,7 +20667,7 @@ var $;
                         '#width': () => 28,
                         '#height': () => 28,
                         '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? 18 : 16
+                            to: isShrinked ? 6 : 16
                         })),
                         '#alignVer': () => $$.$me_align.center,
                     },
@@ -20779,9 +20779,10 @@ var $;
                 '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive] }) => {
                     if (isHover)
                         isShrinked = !isShrinked;
-                    return width + (isShrinked ? 0 : 2);
+                    return width + (isShrinked ? 0 : 2) - 21;
                 }),
                 '#cursor': () => 'pointer',
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
             },
             elem: {
                 img: () => ({
@@ -20803,6 +20804,7 @@ var $;
             },
             event: {
                 clickOrTap: () => {
+                    console.log('eeeeee');
                     $$.a('<.isShrinked', !$$.a('<.isShrinked'));
                     return true;
                 },
