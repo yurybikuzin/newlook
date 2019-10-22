@@ -177,6 +177,7 @@ var $;
                                     'geo_cache_street_name_2',
                                     'is_construction_address',
                                     'geo_cache_housing_complex_name',
+                                    'location',
                                 ],
                                 sort: [
                                     { winner_relevance: { order: "desc" } },

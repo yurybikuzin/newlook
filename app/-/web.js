@@ -10156,6 +10156,18 @@ var $;
                             style: {
                                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                             },
+                            dom: {
+                                innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                    let result = '';
+                                    if (card) {
+                                        const lat = (card.location.lat) ? card.location.lat : 0;
+                                        const lon = (card.location.lon) ? card.location.lon : 0;
+                                        const addr = $$.$nl_formatter_address(card);
+                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/map?lon=' + lon + '&lat=' + lat + '&addr=' + addr + '">';
+                                    }
+                                    return result;
+                                }),
+                            },
                         }),
                         price_dynamics: () => ({
                             prop: {
