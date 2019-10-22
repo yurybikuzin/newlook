@@ -20649,6 +20649,8 @@ var $;
                 background: '.colorBackground',
                 overflow: () => 'hidden',
                 userSelect: () => 'none',
+                borderTopRightRadius: $$.$me_atom2_prop(['/.newmenu'], ({ masters: [newmenu] }) => (newmenu) ? 5 : 0),
+                borderBottomRightRadius: $$.$me_atom2_prop(['/.newmenu'], ({ masters: [newmenu] }) => (newmenu) ? 5 : 0)
             },
             event: {
                 clickOrTap: () => {
@@ -20666,8 +20668,8 @@ var $;
                     prop: {
                         '#width': () => 28,
                         '#height': () => 28,
-                        '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? 6 : 16
+                        '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked', '/.newmenu'], ({ masters: [isShrinked, newmenu] }) => $$.$me_atom2_anim({
+                            to: isShrinked ? ((newmenu ? 6 : 18)) : 16
                         })),
                         '#alignVer': () => $$.$me_align.center,
                     },
@@ -20776,10 +20778,10 @@ var $;
             prop: {
                 '#height': '<@login.#height',
                 '#width': () => 17,
-                '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive] }) => {
+                '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive', '/.newmenu'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive, newmenu] }) => {
                     if (isHover)
                         isShrinked = !isShrinked;
-                    return width + (isShrinked ? 0 : 2) - 21;
+                    return width + (isShrinked ? 0 : 2) - ((newmenu) ? 18 : 0);
                 }),
                 '#cursor': () => 'pointer',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
@@ -20804,7 +20806,6 @@ var $;
             },
             event: {
                 clickOrTap: () => {
-                    console.log('eeeeee');
                     $$.a('<.isShrinked', !$$.a('<.isShrinked'));
                     return true;
                 },
@@ -20955,6 +20956,10 @@ var $;
             flush: (id, prev, _value) => {
                 _value.origin.by_path_s('<.menu_cursor').value(id);
             },
+        });
+        const root = $$.$me_atom2_entity.root();
+        root.props({
+            'newmenu': () => 1
         });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
