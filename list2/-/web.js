@@ -3150,7 +3150,7 @@ var $;
                 return this._state === $me_atom2_state_enum.valid ? this._apply(this._value, true) : new Error(`this._state is ${this._state}`);
             }
             get 'update()'() {
-                return this._update();
+                return this.update();
             }
             get 'masters()'() {
                 const masters = this._masters();
@@ -3253,17 +3253,10 @@ var $;
                         }
                     }
             }
-            update(fn, force = false) {
-                const val = this.value();
-                const ret = fn(val);
-                if (ret === void 0)
-                    $$.$me_throw(`a('${this.name()}'').update.fn returned undefined for val`, val);
-                return this.value(ret, force);
-            }
             value(val, force = false) {
                 if (val === void 0 && this._state === $me_atom2_state_enum.valid)
                     return this._value;
-                this._update(val, force);
+                this.update(val, force);
                 return (this._state !== $me_atom2_state_enum.valid ?
                     null :
                     this._value);
@@ -3271,7 +3264,7 @@ var $;
             static is_valid_value(val) {
                 return !(val == null || Number.isNaN(val));
             }
-            _update(val, force = false) {
+            update(val, force = false) {
                 if (val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
                     this._state === $me_atom2_state_enum.need_check))
                     return;
@@ -3639,7 +3632,7 @@ var $;
                         to_update.delete(atom);
                         if (atom._active &&
                             atom._state != $me_atom2_state_enum.valid) {
-                            atom._update();
+                            atom.update();
                             count++;
                         }
                     }
@@ -3767,8 +3760,9 @@ var $;
                 const val = atom.value();
                 const ret = fn(val);
                 if (ret === void 0)
-                    $$.$me_throw(`a('${atom.name()}'').update.fn returned undefined for val`, val);
-                return atom.value(ret, force);
+                    $$.$me_throw('update returned undefined for val', val);
+                atom.value(ret, force);
+                return ret;
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -7005,24 +6999,6 @@ var $;
                 }
                 return false;
             },
-            init() {
-                const worker = $$.a('/.metroWorker');
-                if (!worker.onmessage) {
-                    const store_key = 'msk-metro-guids';
-                    worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
-                    worker.onmessage = (event) => {
-                        const cmd = event.data.cmd;
-                        const data = event.data.data;
-                        if (cmd == 'data') {
-                            $$.a('/.scheme_metro', data.scheme);
-                            $$.a('/.guid2point', data.guid2point);
-                            $$.a('/.code2guids', data.code2guids);
-                            if (data.guids)
-                                localStorage.setItem(store_key, data.guids);
-                        }
-                    };
-                }
-            },
         };
         function fontSize(idx_len = 0) {
             return $$.a('.fontSize') - 1 * (idx_len - 1);
@@ -7057,16 +7033,31 @@ var $;
             return result;
         }
         $$.$me_atom2_entity.root().props({
-            'metroWorker': () => {
+            'scheme_metro': $$.$me_atom2_prop([], () => 'requires data', ({ val }) => {
+                if (val != 'requires data')
+                    return val;
                 const idx = window.location.pathname.indexOf('/', 1);
+                console.log(window.location.origin);
                 const root = window.location.origin.includes('localhost') ||
                     window.location.origin.match(/^https?:\/\/(\d+\.){3}\d+(:\d+)?$/) ?
                     '/nl' :
                     '/newlook';
                 const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
-                return worker;
-            },
-            'scheme_metro': () => null,
+                const store_key = 'msk-metro-guids';
+                worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
+                worker.onmessage = (event) => {
+                    const cmd = event.data.cmd;
+                    const data = event.data.data;
+                    if (cmd == 'data') {
+                        $$.a('/.scheme_metro', data.scheme);
+                        $$.a('/.guid2point', data.guid2point);
+                        $$.a('/.code2guids', data.code2guids);
+                        if (data.guids)
+                            localStorage.setItem(store_key, data.guids);
+                    }
+                };
+                return null;
+            }),
             'guid2point': () => null,
             'code2guids': () => null,
         });
@@ -7552,9 +7543,11 @@ var $;
         $$.$me_list2_demo_grid = {
             base: $$.$me_list2,
             init() {
+                console.warn('INIT');
                 $$.a('.worker').addEventListener('message', $$.a('.workerListener'));
             },
             fini() {
+                console.warn('FINI');
                 $$.a('.worker').removeEventListener('message', $$.a('.workerListener'));
             },
             style: {
@@ -7810,12 +7803,8 @@ var $;
                     $$.a.dispatch('', 'render');
                 }),
                 count: $$.$me_atom2_prop(['.counts', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
-                avg_price_rub: $$.$me_atom2_prop(['.avg_price_rubs', '.mode'], ({ masters: [avg_price_rubs, mode] }) => Math.round(avg_price_rubs[mode])),
-                avg_meter_price_rub: $$.$me_atom2_prop(['.avg_meter_price_rubs', '.mode'], ({ masters: [avg_meter_price_rubs, mode] }) => {
-                    console.log(avg_meter_price_rubs, { mode });
-                    const result = Math.round(avg_meter_price_rubs[mode]);
-                    return result;
-                }),
+                avg_price_rub: $$.$me_atom2_prop(['.avg_price_rubs', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
+                avg_meter_price_rub: $$.$me_atom2_prop(['.avg_meter_price_rubs', '.mode'], ({ masters: [counts, mode] }) => counts[mode]),
                 workerListener: $$.$me_atom2_prop([], ({ atom }) => {
                     const tag = atom.parent().name();
                     const atom_counts = $$.a.get('.counts');
@@ -7826,10 +7815,8 @@ var $;
                     const atom_i_max_cache = $$.a.get('.i_max_cache');
                     const atom_i_min = $$.a.get('.i_min');
                     const atom_i_max = $$.a.get('.i_max');
-                    const atom_mode = $$.a.get('.mode');
                     return (event) => {
                         const { cmd } = event.data;
-                        const mode = atom_mode.value();
                         if (cmd == 'count' && event.data.tag == tag) {
                             const { status, counts, avg_price_rubs, avg_meter_price_rubs, timing, sent } = event.data;
                             if (status == 'ok') {
@@ -7840,19 +7827,6 @@ var $;
                             }
                             else {
                                 console.error(event.data);
-                            }
-                        }
-                        else if (cmd == 'by_idx' && event.data.tag == tag && event.data.mode == mode) {
-                            console.log(event.data);
-                            atom_counts.update(val => { val[mode] = event.data.count; return val; });
-                            atom_avg_price_rubs.update(val => { val[mode] = event.data.avg_price_rub; return val; });
-                            atom_avg_meter_price_rubs.update(val => { val[mode] = event.data.avg_meter_price_rub; return val; });
-                            console.log({ mode }, grid_mode_enum.item);
-                            if (mode == grid_mode_enum.item) {
-                                console.log(event.data.items);
-                            }
-                            else {
-                                console.log(event.data.snippets);
                             }
                         }
                         else if (cmd == 'recs' && event.data.tag == tag) {
@@ -7897,12 +7871,23 @@ var $;
                 console.log(window.location.origin);
                 const root = window.location.origin.includes('localhost') ||
                     window.location.origin.match(/^https?:\/\/(\d+\.){3}\d+(:\d+)?$/) ?
-                    '/me' :
-                    '/newlook/list2';
-                const worker = new Worker(window.location.origin + root + '/data/grid/-/web.js');
+                    '/me/' :
+                    '';
+                const worker = new Worker(window.location.origin + root + 'data/grid/-/web.js');
                 return worker;
             },
         });
+        function ab2str(buf) {
+            return String.fromCharCode.apply(null, new Uint16Array(buf));
+        }
+        function str2ab(str) {
+            var buf = new ArrayBuffer(str.length * 2);
+            var bufView = new Uint16Array(buf);
+            for (var i = 0, strLen = str.length; i < strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //grid.js.map
