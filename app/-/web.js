@@ -10198,6 +10198,7 @@ var $;
                 ofs: () => 5,
                 isMinimized: () => true,
                 '#height': $$.$me_atom2_prop(['.isMinimized', '@text.#height'], ({ masters: [isMin, h] }) => isMin ? 214 : (h + 90) < 214 ? 214 : h + 90),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
             },
             style: {
                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
@@ -10211,6 +10212,7 @@ var $;
                         fontSize: '<.fontSize',
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 9,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
                     style: {
                         'overflow-x': () => 'hidden',
