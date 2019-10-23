@@ -10253,6 +10253,7 @@ var $;
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 9,
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        'clientY': () => null,
                     },
                     style: {
                         'overflow-x': () => 'hidden',
@@ -10271,7 +10272,28 @@ var $;
                             },
                         })
                     },
-                    event: {}
+                    event: {
+                        touchstart: p => {
+                            console.log('5');
+                            const clientY = p.event.touches[0].clientY;
+                            $$.a('.clientY', clientY);
+                            return true;
+                        },
+                        touchmove: p => {
+                            const clientY = $$.a('.clientY');
+                            const deltaY = clientY - p.event.touches[0].clientY;
+                            if (!deltaY)
+                                return;
+                            const elem = $$.a.get('<@text');
+                            elem.node.scrollTop = elem.node.scrollTop + deltaY;
+                            console.log('6', p);
+                            return true;
+                        },
+                        touchend: p => {
+                            console.log('7');
+                            return true;
+                        },
+                    }
                 }),
                 more_link: () => ({
                     prop: {
@@ -20553,8 +20575,12 @@ var $;
                                     return true;
                                 },
                                 touchmove: p => {
-                                    console.log('6666');
+                                    console.log('6666', p);
                                     return false;
+                                },
+                                touchend: p => {
+                                    console.log('7777');
+                                    return true;
                                 },
                             }
                         }),
