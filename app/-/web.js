@@ -9172,7 +9172,6 @@ var $;
                 iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
                 iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
                 crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 22 + 1, () => 16),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 data: () => [],
                 crumbs: $$.$me_atom2_prop(['.data', '/.guid2point'], ({ masters: [data, guid2point] }) => {
                     const result = [];
@@ -9875,7 +9874,6 @@ var $;
                 iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
                 iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
                 crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 22 + 1, () => 16),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 data: () => [],
                 crumbs: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => {
                     const result = [];
@@ -9905,18 +9903,17 @@ var $;
             prop: {
                 '#width': '/.#viewportWidth',
                 '#height': '/.#viewportHeight',
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 isTouch: $$.$me_atom2_prop_store({
                     default: () => $$.a('/.#isTouch'),
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
+                'overflow-y': () => 'scroll',
             },
             elem: {
                 background: () => ({
                     prop: {
                         '#height': '<.#height',
                         '#width': '<.#width',
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
                     style: {
                         background: () => 'rgba(0, 0, 0, .4)',
@@ -9927,309 +9924,363 @@ var $;
                         '#height': '<.#height',
                         '#width': () => 1024,
                         '#alignHor': () => $$.$me_align.center,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        horOffset: () => 12,
-                        grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
-                        grayColor2: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#c1c1c1'),
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
                     },
                     style: {
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
                         'overflow-x': () => 'hidden',
                     },
-                    event: {
-                        clickOrTap: () => {
-                            return true;
-                        },
-                    },
                     elem: {
-                        cross: () => ({
-                            base: $$.$me_cross,
+                        wrapper2: () => ({
                             prop: {
-                                size: () => 24,
-                                thick: () => 3,
-                                '#ofsVer': () => 10,
-                                '#ofsHor': () => 16,
-                                '#alignHor': () => $$.$me_align.right,
-                                color: '<.grayColor',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
-                                '#cursor': () => 'pointer',
+                                '#width': () => 1024,
+                                '#alignHor': () => $$.$me_align.center,
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                horOffset: () => 12,
+                                grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
+                                grayColor2: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#c1c1c1'),
+                                'clientY': () => null,
+                            },
+                            style: {
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
+                                'overflow-x': () => 'hidden',
                             },
                             event: {
-                                clickOrTap: () => {
-                                    $$.a('/@app.isShownCard', false);
+                                touchstart: p => {
+                                    console.log('1aaaa');
+                                    const clientY = p.event.touches[0].clientY;
+                                    $$.a('.clientY', clientY);
+                                    return true;
+                                },
+                                touchmove: p => {
+                                    console.log('2aaaa');
+                                    const clientY = $$.a('.clientY');
+                                    const deltaY = clientY - p.event.touches[0].clientY;
+                                    if (!deltaY)
+                                        return;
+                                    const elem = $$.a.get('<@wrapper2');
+                                    elem.node.scrollTop = elem.node.scrollTop + deltaY;
+                                    return true;
+                                },
+                                touchend: p => {
                                     return true;
                                 },
                             },
-                        }),
-                        image: () => ({
-                            node: 'img',
-                            prop: {
-                                '#ofsHor': '<.horOffset',
-                                '#ofsVer': '.em',
-                                '#width': () => 365,
-                                '#height': () => 275,
-                                'img': $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    let result = '?';
-                                    if (card && card.photo_list) {
-                                        const photo_list = card.photo_list.split(',');
-                                        result = 'https://images.baza-winner.ru/' + photo_list[0] + '_640x480';
-                                    }
-                                    return result;
-                                }),
-                            },
-                            attr: {
-                                src: '.img',
-                                draggable: () => false,
-                            },
-                        }),
-                        pub_dt: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 393,
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                fontSize: () => 12,
-                                color: '<.grayColor',
-                            },
-                            dom: {
-                                innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    let result = '?';
-                                    if (card && card.pub_datetime) {
-                                        const dt = new Date(card.pub_datetime);
-                                        result = (dt.getDate() + '').padStart(2, '0') + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                                    }
-                                    return 'Опубликовано: ' + result;
-                                }),
-                            },
-                        }),
-                        first_pub_dt: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 600,
-                                '#ofsVer': '.em',
-                                color: '<.grayColor',
-                            },
-                            style: {
-                                fontSize: () => 12,
-                            },
-                            dom: {
-                                innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    let result = '?';
-                                    if (card && card.first_pub_datetime) {
-                                        const dt = new Date(card.first_pub_datetime);
-                                        result = (dt.getDate() + '').padStart(2, '0') + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
-                                    }
-                                    return 'Впервые: ' + result;
-                                }),
-                            },
-                        }),
-                        price: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 393,
-                                '#ofsVer': $$.$me_atom2_prop(['<@pub_dt.#height', '<@pub_dt.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
-                            },
-                            style: {
-                                fontSize: () => 21,
-                                fontWeight: () => 500,
-                            },
-                            dom: {
-                                innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    let result = '?';
-                                    if (card && card.price_rub) {
-                                        var x = (card.price_rub + '').split('.');
-                                        var x1 = x[0];
-                                        var x2 = x.length > 1 ? '.' + x[1] : '';
-                                        var rgx = /(\d+)(\d{3})/;
-                                        while (rgx.test(x1))
-                                            x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                                        result = x1 + x2;
-                                    }
-                                    return result + '<span style="font-size:90%"> ₽</span>';
-                                }),
-                            },
-                        }),
-                        aptp_info: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': $$.$me_atom2_prop(['<@price.#width', '<@price.#ofsHor'], ({ masters: [width, ofs] }) => width + ofs + 10),
-                                '#ofsVer': $$.$me_atom2_prop(['<@pub_dt.#height', '<@pub_dt.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 13),
-                            },
-                            style: {
-                                fontSize: () => 17,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    const result = (card) ? $$.$nl_formatter_card_title(card) : '';
-                                    return result;
-                                }),
-                            },
-                        }),
-                        station_and_far: () => ({
-                            base: $$.$nl_stations,
-                            prop: {
-                                '#width': () => 615,
-                                '#height': () => 25,
-                                '#ofsHor': () => 390,
-                                '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
-                                data: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    let result = [];
-                                    if (card.geo_subway_station_guid_1)
-                                        result.push({ guid: card.geo_subway_station_guid_1, walking_access: card.walking_access_1, transport_access: card.transport_access_1 });
-                                    if (card.geo_subway_station_guid_2)
-                                        result.push({ guid: card.geo_subway_station_guid_2, walking_access: card.walking_access_2, transport_access: card.transport_access_2 });
-                                    if (card.geo_subway_station_guid_3)
-                                        result.push({ guid: card.geo_subway_station_guid_3, walking_access: card.walking_access_3, transport_access: card.transport_access_3 });
-                                    if (card.geo_subway_station_guid_4)
-                                        result.push({ guid: card.geo_subway_station_guid_4, walking_access: card.walking_access_4, transport_access: card.transport_access_4 });
-                                    return result;
-                                }),
-                            }
-                        }),
-                        address: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 393,
-                                '#ofsVer': $$.$me_atom2_prop(['<@station_and_far.#height', '<@station_and_far.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 4),
-                            },
-                            style: {
-                                fontSize: () => 15,
-                                lineHeight: () => 26,
-                            },
-                            dom: {
-                                innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    const result = $$.$nl_formatter_address(card);
-                                    return result;
-                                }),
-                            },
-                        }),
-                        contact: () => ({
-                            base: card_contacts_control,
-                            prop: {
-                                '#height': () => 25,
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
-                                '#ofsHor': () => 393,
-                                '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
-                                fontSize: () => 17,
-                            },
-                            style: {
-                                color: () => '#313745',
-                            },
-                        }),
-                        params: () => ({
-                            base: card_params_control,
-                            prop: {
-                                '#ofsHor': () => 393,
-                                '#ofsVer': $$.$me_atom2_prop(['<@contact.#height', '<@contact.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
-                                '#height': () => 124,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.em'], ({ masters: [width_total, ofs, ofs2] }) => width_total - ofs - ofs2 * 2),
-                                color: '<.grayColor2',
-                                fontSize: () => 12,
-                            },
-                        }),
-                        comment: () => ({
-                            base: comment_control,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
-                                '#ofsHor': '<.horOffset',
-                                '#ofsVer': $$.$me_atom2_prop(['<@params.#height', '<@params.#ofsVer', '<@image.#height', '<@image.#ofsVer'], ({ masters: [height1, ofs1, height2, ofs2] }) => (height1 + ofs1 > height2 + ofs2) ? height1 + ofs1 + 16 : height2 + ofs2 + 16),
-                                text: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    const result = (card.note) ? card.note : '';
-                                    return result;
-                                }),
-                                fontSize: () => 15,
-                            },
-                        }),
-                        price_dynamics: () => ({
-                            prop: {
-                                '#height': () => 210,
-                                '#width': () => 561,
-                                '#ofsHor': '<.horOffset',
-                                '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + 220 + 2 * ofs2),
-                            },
-                            style: {
-                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
-                            },
-                        }),
-                        history: () => ({
-                            prop: {
-                                '#height': () => 210,
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@price_dynamics.#width'], ({ masters: [width, ofs, w] }) => width - 3 * ofs - w),
-                                '#ofsHor': $$.$me_atom2_prop(['<.horOffset', '<@price_dynamics.#width'], ({ masters: [ofs, w] }) => ofs * 2 + w),
-                                '#ofsVer': '<@price_dynamics.#ofsVer',
-                            },
-                            style: {
-                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
-                            },
-                        }),
-                        map: () => ({
-                            dispatch(dispatch_name, dispatch_arg) {
-                                console.log('eeee', dispatch_name, dispatch_arg);
-                                return true;
-                            },
-                            prop: {
-                                isMinimized: () => true,
-                                '#height': $$.$me_atom2_prop(['<.#height', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 220 : height - 2 * ofs),
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
-                                '#ofsHor': '<.horOffset',
-                                '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, ofs2, isMin] }) => (isMin) ? height + ofs + ofs2 : ofs2),
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
-                            },
-                            style: {
-                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
-                            },
                             elem: {
-                                area: () => ({
+                                cross: () => ({
+                                    base: $$.$me_cross,
                                     prop: {
-                                        '#height': '<.#height',
-                                        '#width': '<.#width',
+                                        size: () => 24,
+                                        thick: () => 3,
+                                        '#ofsVer': () => 10,
+                                        '#ofsHor': () => 16,
+                                        '#alignHor': () => $$.$me_align.right,
+                                        color: '<.grayColor',
+                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                                        '#cursor': () => 'pointer',
                                     },
-                                    dom: {
-                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.isMinimized', '<.#height'], ({ masters: [card, isMin, h] }) => {
-                                            let result = '';
-                                            if (card) {
-                                                const lat = (card.location.lat) ? card.location.lat : 0;
-                                                const lon = (card.location.lon) ? card.location.lon : 0;
-                                                const addr = $$.$nl_formatter_address(card);
-                                                const height = (isMin) ? 220 : h;
-                                                result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/map?lon=' + lon + '&lat=' + lat + '&height=' + height + '&addr=' + addr + '">';
+                                    event: {
+                                        clickOrTap: () => {
+                                            $$.a('/@app.isShownCard', false);
+                                            return true;
+                                        },
+                                    },
+                                }),
+                                image: () => ({
+                                    node: 'img',
+                                    prop: {
+                                        '#ofsHor': '<.horOffset',
+                                        '#ofsVer': '.em',
+                                        '#width': () => 365,
+                                        '#height': () => 275,
+                                        'img': $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            let result = '?';
+                                            if (card && card.photo_list) {
+                                                const photo_list = card.photo_list.split(',');
+                                                result = 'https://images.baza-winner.ru/' + photo_list[0] + '_640x480';
                                             }
                                             return result;
                                         }),
                                     },
+                                    attr: {
+                                        src: '.img',
+                                        draggable: () => false,
+                                    },
                                 }),
-                                size_button: () => ({
+                                pub_dt: () => ({
                                     prop: {
-                                        '#width': () => 30,
-                                        '#height': () => 30,
-                                        '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
-                                        '#ofsHor': () => 10,
-                                        '#alignHor': () => $$.$me_align.right,
-                                        caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
-                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                        '#cursor': () => 'pointer',
+                                        '#height': () => null,
+                                        '#width': () => null,
+                                        '#ofsHor': () => 393,
+                                        '#ofsVer': '.em',
                                     },
                                     style: {
-                                        background: () => 'transparent',
+                                        fontSize: () => 12,
+                                        color: '<.grayColor',
                                     },
-                                    event: {
-                                        clickOrTap: (e) => {
-                                            $$.a('<.isMinimized', !$$.a('<.isMinimized'));
-                                            return true;
-                                        },
+                                    dom: {
+                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            let result = '?';
+                                            if (card && card.pub_datetime) {
+                                                const dt = new Date(card.pub_datetime);
+                                                result = (dt.getDate() + '').padStart(2, '0') + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                                            }
+                                            return 'Опубликовано: ' + result;
+                                        }),
+                                    },
+                                }),
+                                first_pub_dt: () => ({
+                                    prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
+                                        '#ofsHor': () => 600,
+                                        '#ofsVer': '.em',
+                                        color: '<.grayColor',
+                                    },
+                                    style: {
+                                        fontSize: () => 12,
+                                    },
+                                    dom: {
+                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            let result = '?';
+                                            if (card && card.first_pub_datetime) {
+                                                const dt = new Date(card.first_pub_datetime);
+                                                result = (dt.getDate() + '').padStart(2, '0') + '.' + (dt.getMonth() + 1 + '').padStart(2, '0') + '.' + dt.getFullYear();
+                                            }
+                                            return 'Впервые: ' + result;
+                                        }),
+                                    },
+                                }),
+                                price: () => ({
+                                    prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
+                                        '#ofsHor': () => 393,
+                                        '#ofsVer': $$.$me_atom2_prop(['<@pub_dt.#height', '<@pub_dt.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                                    },
+                                    style: {
+                                        fontSize: () => 21,
+                                        fontWeight: () => 500,
+                                    },
+                                    dom: {
+                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            let result = '?';
+                                            if (card && card.price_rub) {
+                                                var x = (card.price_rub + '').split('.');
+                                                var x1 = x[0];
+                                                var x2 = x.length > 1 ? '.' + x[1] : '';
+                                                var rgx = /(\d+)(\d{3})/;
+                                                while (rgx.test(x1))
+                                                    x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                                                result = x1 + x2;
+                                            }
+                                            return result + '<span style="font-size:90%"> ₽</span>';
+                                        }),
+                                    },
+                                }),
+                                aptp_info: () => ({
+                                    prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
+                                        '#ofsHor': $$.$me_atom2_prop(['<@price.#width', '<@price.#ofsHor'], ({ masters: [width, ofs] }) => width + ofs + 10),
+                                        '#ofsVer': $$.$me_atom2_prop(['<@pub_dt.#height', '<@pub_dt.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 13),
+                                    },
+                                    style: {
+                                        fontSize: () => 17,
+                                    },
+                                    dom: {
+                                        innerText: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            const result = (card) ? $$.$nl_formatter_card_title(card) : '';
+                                            return result;
+                                        }),
+                                    },
+                                }),
+                                station_and_far: () => ({
+                                    base: $$.$nl_stations,
+                                    prop: {
+                                        '#width': () => 615,
+                                        '#height': () => 25,
+                                        '#ofsHor': () => 390,
+                                        '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
+                                        data: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            let result = [];
+                                            if (card.geo_subway_station_guid_1)
+                                                result.push({ guid: card.geo_subway_station_guid_1, walking_access: card.walking_access_1, transport_access: card.transport_access_1 });
+                                            if (card.geo_subway_station_guid_2)
+                                                result.push({ guid: card.geo_subway_station_guid_2, walking_access: card.walking_access_2, transport_access: card.transport_access_2 });
+                                            if (card.geo_subway_station_guid_3)
+                                                result.push({ guid: card.geo_subway_station_guid_3, walking_access: card.walking_access_3, transport_access: card.transport_access_3 });
+                                            if (card.geo_subway_station_guid_4)
+                                                result.push({ guid: card.geo_subway_station_guid_4, walking_access: card.walking_access_4, transport_access: card.transport_access_4 });
+                                            return result;
+                                        }),
                                     }
                                 }),
-                            }
+                                address: () => ({
+                                    prop: {
+                                        '#height': () => null,
+                                        '#width': () => null,
+                                        '#ofsHor': () => 393,
+                                        '#ofsVer': $$.$me_atom2_prop(['<@station_and_far.#height', '<@station_and_far.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 4),
+                                    },
+                                    style: {
+                                        fontSize: () => 15,
+                                        lineHeight: () => 26,
+                                    },
+                                    dom: {
+                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            const result = $$.$nl_formatter_address(card);
+                                            return result;
+                                        }),
+                                    },
+                                }),
+                                contact: () => ({
+                                    base: card_contacts_control,
+                                    prop: {
+                                        '#height': () => 25,
+                                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
+                                        '#ofsHor': () => 393,
+                                        '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
+                                        fontSize: () => 17,
+                                    },
+                                    style: {
+                                        color: () => '#313745',
+                                    },
+                                }),
+                                params: () => ({
+                                    base: card_params_control,
+                                    prop: {
+                                        '#ofsHor': () => 393,
+                                        '#ofsVer': $$.$me_atom2_prop(['<@contact.#height', '<@contact.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 9),
+                                        '#height': () => 124,
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor', '.em'], ({ masters: [width_total, ofs, ofs2] }) => width_total - ofs - ofs2 * 2),
+                                        color: '<.grayColor2',
+                                        fontSize: () => 12,
+                                    },
+                                }),
+                                comment: () => ({
+                                    base: comment_control,
+                                    prop: {
+                                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
+                                        '#ofsHor': '<.horOffset',
+                                        '#ofsVer': $$.$me_atom2_prop(['<@params.#height', '<@params.#ofsVer', '<@image.#height', '<@image.#ofsVer'], ({ masters: [height1, ofs1, height2, ofs2] }) => (height1 + ofs1 > height2 + ofs2) ? height1 + ofs1 + 16 : height2 + ofs2 + 16),
+                                        text: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
+                                            const result = (card.note) ? card.note : '';
+                                            return result;
+                                        }),
+                                        fontSize: () => 15,
+                                    },
+                                }),
+                                price_dynamics: () => ({
+                                    prop: {
+                                        '#height': () => 210,
+                                        '#width': () => 561,
+                                        '#ofsHor': '<.horOffset',
+                                        '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset'], ({ masters: [height, ofs, ofs2] }) => height + ofs + 220 + 2 * ofs2),
+                                    },
+                                    style: {
+                                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
+                                    },
+                                }),
+                                history: () => ({
+                                    prop: {
+                                        '#height': () => 210,
+                                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@price_dynamics.#width'], ({ masters: [width, ofs, w] }) => width - 3 * ofs - w),
+                                        '#ofsHor': $$.$me_atom2_prop(['<.horOffset', '<@price_dynamics.#width'], ({ masters: [ofs, w] }) => ofs * 2 + w),
+                                        '#ofsVer': '<@price_dynamics.#ofsVer',
+                                    },
+                                    style: {
+                                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
+                                    },
+                                }),
+                                map: () => ({
+                                    dispatch(dispatch_name, dispatch_arg) {
+                                        console.log('eeee', dispatch_name, dispatch_arg);
+                                        return true;
+                                    },
+                                    prop: {
+                                        isMinimized: () => true,
+                                        '#height': $$.$me_atom2_prop(['<.#height', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 220 : height - 2 * ofs),
+                                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
+                                        '#ofsHor': '<.horOffset',
+                                        '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, ofs2, isMin] }) => (isMin) ? height + ofs + ofs2 : ofs2),
+                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
+                                    },
+                                    style: {
+                                        backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
+                                    },
+                                    elem: {
+                                        area: () => ({
+                                            prop: {
+                                                '#height': '<.#height',
+                                                '#width': '<.#width',
+                                            },
+                                            dom: {
+                                                innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.isMinimized', '<.#height'], ({ masters: [card, isMin, h] }) => {
+                                                    let result = '';
+                                                    if (card) {
+                                                        const lat = (card.location.lat) ? card.location.lat : 0;
+                                                        const lon = (card.location.lon) ? card.location.lon : 0;
+                                                        const addr = $$.$nl_formatter_address(card);
+                                                        const height = (isMin) ? 220 : h;
+                                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/map?lon=' + lon + '&lat=' + lat + '&height=' + height + '&addr=' + addr + '">';
+                                                    }
+                                                    return result;
+                                                }),
+                                            },
+                                        }),
+                                        size_button: () => ({
+                                            prop: {
+                                                '#width': () => 30,
+                                                '#height': () => 30,
+                                                '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
+                                                '#ofsHor': () => 10,
+                                                '#alignHor': () => $$.$me_align.right,
+                                                caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
+                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 10),
+                                                '#cursor': () => 'pointer',
+                                            },
+                                            style: {
+                                                background: () => 'transparent',
+                                            },
+                                            event: {
+                                                clickOrTap: (e) => {
+                                                    $$.a('<.isMinimized', !$$.a('<.isMinimized'));
+                                                    return true;
+                                                },
+                                            }
+                                        }),
+                                    }
+                                }),
+                            },
                         }),
                     }
                 })
             },
+            event: {
+                clickOrTap: p => {
+                    console.log('wrapper tap!', p);
+                    return true;
+                },
+                touchstart: p => {
+                    console.log('1e');
+                    const clientY = p.event.touches[0].clientY;
+                    $$.a('.clientY', clientY);
+                    return true;
+                },
+                touchmove: p => {
+                    console.log('2e');
+                    const clientY = $$.a('.clientY');
+                    const deltaY = clientY - p.event.touches[0].clientY;
+                    if (!deltaY)
+                        return;
+                    const elem = $$.a.get('<@wrapper@wrapper2');
+                    elem.node.scrollTop = elem.node.scrollTop + deltaY;
+                    return true;
+                },
+                touchend: p => {
+                    return true;
+                },
+            }
         };
         const comment_control = {
             prop: {
@@ -10238,7 +10289,6 @@ var $;
                 ofs: () => 5,
                 isMinimized: () => true,
                 '#height': $$.$me_atom2_prop(['.isMinimized', '@text.#height'], ({ masters: [isMin, h] }) => isMin ? 214 : (h + 90) < 214 ? 214 : h + 90),
-                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
             },
             style: {
                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
@@ -10253,12 +10303,12 @@ var $;
                         '#ofsHor': () => 10,
                         '#ofsVer': () => 9,
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        'clientX': () => null,
                         'clientY': () => null,
                     },
                     style: {
                         'overflow-x': () => 'hidden',
                         'overflow-y': () => 'scroll',
-                        '-webkit-overflow-scrolling': () => 'touch',
                     },
                     elem: {
                         textSrc: () => ({
@@ -10274,23 +10324,31 @@ var $;
                     },
                     event: {
                         touchstart: p => {
-                            console.log('5');
+                            const clientX = p.event.touches[0].clientX;
                             const clientY = p.event.touches[0].clientY;
+                            if (!p.isInRect(clientX, clientY))
+                                return false;
                             $$.a('.clientY', clientY);
+                            $$.a('.clientX', clientX);
                             return true;
                         },
                         touchmove: p => {
+                            console.log('touchmove text');
+                            const clientX = $$.a('.clientY');
                             const clientY = $$.a('.clientY');
+                            if (!p.isInRect(clientX, clientY))
+                                return false;
+                            console.log('touchmove text in rect');
                             const deltaY = clientY - p.event.touches[0].clientY;
                             if (!deltaY)
                                 return;
                             const elem = $$.a.get('<@text');
                             elem.node.scrollTop = elem.node.scrollTop + deltaY;
-                            console.log('6', p);
                             return true;
                         },
                         touchend: p => {
-                            console.log('7');
+                            $$.a('.clientY', 0);
+                            $$.a('.clientX', 0);
                             return true;
                         },
                     }
@@ -10336,6 +10394,10 @@ var $;
                     },
                     style: {
                         backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
+                    },
+                    dispatch(dispatch_name, dispatch_arg) {
+                        console.log('dispatch save button', dispatch_name, dispatch_arg);
+                        return true;
                     },
                     elem: {
                         send_comment: () => ({
@@ -20563,7 +20625,7 @@ var $;
                                     return true;
                                 },
                                 clickOrTap: p => {
-                                    console.log('3333');
+                                    console.log('3333', p);
                                     return true;
                                 },
                                 wheelDrag: p => {
@@ -20580,6 +20642,10 @@ var $;
                                 },
                                 touchend: p => {
                                     console.log('7777');
+                                    return true;
+                                },
+                                mousemove: p => {
+                                    console.log('8888');
                                     return true;
                                 },
                             }
@@ -21052,7 +21118,7 @@ var $;
         });
         const root = $$.$me_atom2_entity.root();
         root.props({
-            'newmenu': () => 1
+            'newmenu': () => 0
         });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
