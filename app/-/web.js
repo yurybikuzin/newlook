@@ -10205,7 +10205,6 @@ var $;
                                     },
                                 }),
                                 size_button: () => ({
-                                    base: $$.$nl_button,
                                     prop: {
                                         '#width': () => 30,
                                         '#height': () => 30,
@@ -10213,14 +10212,15 @@ var $;
                                         '#ofsHor': () => 10,
                                         '#alignHor': () => $$.$me_align.right,
                                         caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
-                                        target: () => '<',
-                                        fontSize: () => 20,
-                                        cmd: () => ({ some: 'thing' })
+                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                        '#cursor': () => 'pointer',
+                                    },
+                                    style: {
+                                        background: () => 'transparent',
                                     },
                                     event: {
-                                        clickOrTap: () => {
+                                        clickOrTap: (e) => {
                                             $$.a('<.isMinimized', !$$.a('<.isMinimized'));
-                                            console.log('eeeeee');
                                             return true;
                                         },
                                     }
