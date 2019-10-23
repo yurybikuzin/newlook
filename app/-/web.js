@@ -10230,14 +10230,6 @@ var $;
                     }
                 })
             },
-            event: {
-                wheelTouch: p => {
-                    return true;
-                },
-                wheel: p => {
-                    return true;
-                },
-            }
         };
         const comment_control = {
             prop: {
@@ -20539,6 +20531,32 @@ var $;
                                 }
                                 return false;
                             },
+                            event: {
+                                wheelTouch: p => {
+                                    console.log('1111');
+                                    return true;
+                                },
+                                wheel: p => {
+                                    console.log('2222');
+                                    return true;
+                                },
+                                clickOrTap: p => {
+                                    console.log('3333');
+                                    return true;
+                                },
+                                wheelDrag: p => {
+                                    console.log('4444');
+                                    return true;
+                                },
+                                touchstart: p => {
+                                    console.log('5555');
+                                    return true;
+                                },
+                                touchmove: p => {
+                                    console.log('6666');
+                                    return false;
+                                },
+                            }
                         }),
                         tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
                             if (!tapTarget)
