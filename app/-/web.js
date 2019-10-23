@@ -9947,7 +9947,7 @@ var $;
                             prop: {
                                 size: () => 24,
                                 thick: () => 3,
-                                '#ofsVer': () => 8,
+                                '#ofsVer': () => 10,
                                 '#ofsHor': () => 16,
                                 '#alignHor': () => $$.$me_align.right,
                                 color: '<.grayColor',
@@ -10146,35 +10146,12 @@ var $;
                                 fontSize: () => 15,
                             },
                         }),
-                        map: () => ({
-                            prop: {
-                                '#height': () => 220,
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
-                                '#ofsHor': '<.horOffset',
-                                '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
-                            },
-                            style: {
-                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
-                            },
-                            dom: {
-                                innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                    let result = '';
-                                    if (card) {
-                                        const lat = (card.location.lat) ? card.location.lat : 0;
-                                        const lon = (card.location.lon) ? card.location.lon : 0;
-                                        const addr = $$.$nl_formatter_address(card);
-                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/map?lon=' + lon + '&lat=' + lat + '&addr=' + addr + '">';
-                                    }
-                                    return result;
-                                }),
-                            },
-                        }),
                         price_dynamics: () => ({
                             prop: {
                                 '#height': () => 210,
                                 '#width': () => 561,
                                 '#ofsHor': '<.horOffset',
-                                '#ofsVer': $$.$me_atom2_prop(['<@map.#height', '<@map.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                                '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + 220 + 2 * ofs2),
                             },
                             style: {
                                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
@@ -10185,11 +10162,70 @@ var $;
                                 '#height': () => 210,
                                 '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@price_dynamics.#width'], ({ masters: [width, ofs, w] }) => width - 3 * ofs - w),
                                 '#ofsHor': $$.$me_atom2_prop(['<.horOffset', '<@price_dynamics.#width'], ({ masters: [ofs, w] }) => ofs * 2 + w),
-                                '#ofsVer': $$.$me_atom2_prop(['<@map.#height', '<@map.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                                '#ofsVer': '<@price_dynamics.#ofsVer',
                             },
                             style: {
                                 backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                             },
+                        }),
+                        map: () => ({
+                            dispatch(dispatch_name, dispatch_arg) {
+                                console.log('eeee', dispatch_name, dispatch_arg);
+                                return true;
+                            },
+                            prop: {
+                                isMinimized: () => true,
+                                '#height': $$.$me_atom2_prop(['<.#height', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 220 : height - 2 * ofs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
+                                '#ofsHor': '<.horOffset',
+                                '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, ofs2, isMin] }) => (isMin) ? height + ofs + ofs2 : ofs2),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
+                            },
+                            style: {
+                                backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
+                            },
+                            elem: {
+                                area: () => ({
+                                    prop: {
+                                        '#height': '<.#height',
+                                        '#width': '<.#width',
+                                    },
+                                    dom: {
+                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.isMinimized', '<.#height'], ({ masters: [card, isMin, h] }) => {
+                                            let result = '';
+                                            if (card) {
+                                                const lat = (card.location.lat) ? card.location.lat : 0;
+                                                const lon = (card.location.lon) ? card.location.lon : 0;
+                                                const addr = $$.$nl_formatter_address(card);
+                                                const height = (isMin) ? 220 : h;
+                                                result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/map?lon=' + lon + '&lat=' + lat + '&height=' + height + '&addr=' + addr + '">';
+                                            }
+                                            return result;
+                                        }),
+                                    },
+                                }),
+                                size_button: () => ({
+                                    base: $$.$nl_button,
+                                    prop: {
+                                        '#width': () => 30,
+                                        '#height': () => 30,
+                                        '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
+                                        '#ofsHor': () => 10,
+                                        '#alignHor': () => $$.$me_align.right,
+                                        caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
+                                        target: () => '<',
+                                        fontSize: () => 20,
+                                        cmd: () => ({ some: 'thing' })
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            $$.a('<.isMinimized', !$$.a('<.isMinimized'));
+                                            console.log('eeeeee');
+                                            return true;
+                                        },
+                                    }
+                                }),
+                            }
                         }),
                     }
                 })
