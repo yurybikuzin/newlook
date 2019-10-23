@@ -18667,9 +18667,9 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
-                        '#ofsVer': () => 54,
+                        '#ofsVer': '.em',
                         '#width': () => 620,
-                        '#height': () => 800,
+                        '#height': $$.$me_atom2_prop(['<.#height', '.em'], ({ masters: [height, em] }) => height - 2 * em),
                     },
                     elem: {
                         title: () => ({
