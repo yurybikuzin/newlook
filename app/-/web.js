@@ -10264,7 +10264,7 @@ var $;
                     },
                     style: {
                         'overflow-x': () => 'hidden',
-                        'overflow-y': () => 'auto',
+                        'overflow-y': () => 'scroll',
                         '-webkit-overflow-scrolling': () => 'touch',
                     },
                     elem: {
