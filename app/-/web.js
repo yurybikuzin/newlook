@@ -10867,7 +10867,7 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
-                        '#ofsVer': '.em',
+                        '#ofsVer': () => 56 + 16,
                         '#width': $$.$me_atom2_prop(['<.#width', '.em', '<@alpha.#width'], ({ masters: [width, em, width2] }) => width - 3 * em - width2),
                         '#height': () => 87,
                     },
