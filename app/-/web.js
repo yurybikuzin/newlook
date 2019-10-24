@@ -8753,6 +8753,8 @@ var $;
                         touchstart: p => {
                             const clientX = p.event.touches[0].clientX;
                             const clientY = p.event.touches[0].clientY;
+                            if (!p.isInRect(clientX, clientY))
+                                return false;
                             if (p.event.touches.length > 1) {
                                 return false;
                             }
@@ -8763,7 +8765,7 @@ var $;
                                 clientX, clientY, ret: false
                             }).ret)
                                 return true;
-                            return false;
+                            return;
                         },
                         mousedown: p => {
                             return false;
@@ -9079,7 +9081,7 @@ var $;
                                     ctxTop,
                                     ctxWidth: ctxNavPrevWidth,
                                     ctxHeight: crumbHeight * pixelRatio,
-                                    ctxBorderRadius: 0,
+                                    ctxBorderRadius: crumbBorderRadius * pixelRatio,
                                     stroke: {
                                         ctxWidth: crumbBorderWidth * pixelRatio,
                                         style: crumbBorderColor,
@@ -9806,7 +9808,7 @@ var $;
                                     ctxTop,
                                     ctxWidth: ctxNavPrevWidth,
                                     ctxHeight: crumbHeight * pixelRatio,
-                                    ctxBorderRadius: 0,
+                                    ctxBorderRadius: crumbBorderRadius * pixelRatio,
                                     stroke: {
                                         ctxWidth: crumbBorderWidth * pixelRatio,
                                         style: crumbBorderColor,
