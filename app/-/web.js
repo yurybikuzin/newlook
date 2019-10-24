@@ -9172,6 +9172,7 @@ var $;
                 iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
                 iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
                 crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 22 + 1, () => 16),
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 data: () => [],
                 crumbs: $$.$me_atom2_prop(['.data', '/.guid2point'], ({ masters: [data, guid2point] }) => {
                     const result = [];
@@ -9943,6 +9944,7 @@ var $;
                             style: {
                                 background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
                                 'overflow-x': () => 'hidden',
+                                '-webkit-overflow-scrolling': () => 'touch',
                             },
                             event: {
                                 touchstart: p => {
@@ -9986,24 +9988,23 @@ var $;
                                     },
                                 }),
                                 image: () => ({
-                                    node: 'img',
                                     prop: {
                                         '#ofsHor': '<.horOffset',
                                         '#ofsVer': '.em',
                                         '#width': () => 365,
                                         '#height': () => 275,
-                                        'img': $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
-                                            let result = '?';
-                                            if (card && card.photo_list) {
-                                                const photo_list = card.photo_list.split(',');
-                                                result = 'https://images.baza-winner.ru/' + photo_list[0] + '_640x480';
+                                    },
+                                    dom: {
+                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.#height'], ({ masters: [card, h] }) => {
+                                            let result = '';
+                                            if (card) {
+                                                const photo_list = (card.photo_list) ? card.photo_list : '';
+                                                const video_list = (card.video_list) ? card.video_list : '';
+                                                const height = 275;
+                                                result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/gallery?photo_list=' + photo_list + '&video_list=' + video_list + '&height=' + height + '">';
                                             }
                                             return result;
                                         }),
-                                    },
-                                    attr: {
-                                        src: '.img',
-                                        draggable: () => false,
                                     },
                                 }),
                                 pub_dt: () => ({
@@ -10256,31 +10257,6 @@ var $;
                     }
                 })
             },
-            event: {
-                clickOrTap: p => {
-                    console.log('wrapper tap!', p);
-                    return true;
-                },
-                touchstart: p => {
-                    console.log('1e');
-                    const clientY = p.event.touches[0].clientY;
-                    $$.a('.clientY', clientY);
-                    return true;
-                },
-                touchmove: p => {
-                    console.log('2e');
-                    const clientY = $$.a('.clientY');
-                    const deltaY = clientY - p.event.touches[0].clientY;
-                    if (!deltaY)
-                        return;
-                    const elem = $$.a.get('<@wrapper@wrapper2');
-                    elem.node.scrollTop = elem.node.scrollTop + deltaY;
-                    return true;
-                },
-                touchend: p => {
-                    return true;
-                },
-            }
         };
         const comment_control = {
             prop: {
@@ -10309,6 +10285,7 @@ var $;
                     style: {
                         'overflow-x': () => 'hidden',
                         'overflow-y': () => 'scroll',
+                        '-webkit-overflow-scrolling': () => 'touch',
                     },
                     elem: {
                         textSrc: () => ({
@@ -10333,12 +10310,10 @@ var $;
                             return true;
                         },
                         touchmove: p => {
-                            console.log('touchmove text');
                             const clientX = $$.a('.clientY');
                             const clientY = $$.a('.clientY');
                             if (!p.isInRect(clientX, clientY))
                                 return false;
-                            console.log('touchmove text in rect');
                             const deltaY = clientY - p.event.touches[0].clientY;
                             if (!deltaY)
                                 return;
