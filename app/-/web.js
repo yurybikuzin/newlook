@@ -9986,8 +9986,8 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.clientX,
                                         clientY: p.event.clientY,
-                                        deltaY: p.event.deltaY,
-                                        deltaX: p.event.deltaX,
+                                        deltaY: 0 - p.event.deltaY,
+                                        deltaX: 0 - p.event.deltaX,
                                         ret: false,
                                     }).ret;
                                     return result;
@@ -9996,8 +9996,8 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.start.touches[0].clientX,
                                         clientY: p.event.start.touches[0].clientY,
-                                        deltaY: p.event.deltaY,
-                                        deltaX: p.event.deltaX,
+                                        deltaY: 0 - p.event.deltaY,
+                                        deltaX: 0 - p.event.deltaX,
                                         ret: false,
                                     }).ret;
                                     return result;
