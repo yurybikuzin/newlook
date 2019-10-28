@@ -10004,16 +10004,6 @@ var $;
                                     }).ret;
                                     return result;
                                 },
-                                touchstart: p => {
-                                    const clientX = p.event.touches[0].clientX;
-                                    const clientY = p.event.touches[0].clientY;
-                                    if (!p.isInRect(clientX, clientY))
-                                        return false;
-                                    if (p.event.touches.length > 1) {
-                                        return false;
-                                    }
-                                    return false;
-                                },
                                 pinch: p => {
                                     if ($$.a.dispatch('', 'isInVisible', {
                                         clientX: p.event.start.touches[0].clientX,
@@ -10263,10 +10253,10 @@ var $;
                                     },
                                     prop: {
                                         isMinimized: () => true,
-                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 220 : height - 2 * ofs),
-                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w, width, ofs, isMin] }) => (isMin) ? width - 2 * ofs : w - 2 * ofs),
-                                        '#ofsHor': '<.horOffset',
-                                        '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, ofs2, isMin] }) => (isMin) ? height + ofs + ofs2 : ofs2),
+                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 220 : height),
+                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w, width, ofs, isMin] }) => (isMin) ? width - 2 * ofs : w),
+                                        '#ofsHor': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w1, w2, ofs, isMin] }) => (isMin) ? ofs : 0 - (w1 - w2) / 2),
+                                        '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset', '.isMinimized', '<.#ofsVer'], ({ masters: [height, ofs, ofs2, isMin, ofs3] }) => (isMin) ? height + ofs + ofs2 : 0 - ofs3),
                                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
                                     },
                                     style: {
@@ -10367,6 +10357,7 @@ var $;
                                     if ($$.a.dispatch('', 'isInVisible', {
                                         clientX, clientY, ret: false
                                     }).ret) {
+                                        console.log(41, deltaY, dispatch_arg);
                                         $$.a.update('.#ofsVer', val => {
                                             const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
                                             return result;
@@ -10415,16 +10406,6 @@ var $;
                                         ret: false,
                                     }).ret;
                                     return result;
-                                },
-                                touchstart: p => {
-                                    const clientX = p.event.touches[0].clientX;
-                                    const clientY = p.event.touches[0].clientY;
-                                    if (!p.isInRect(clientX, clientY))
-                                        return false;
-                                    if (p.event.touches.length > 1) {
-                                        return false;
-                                    }
-                                    return false;
                                 },
                             },
                         })
@@ -20693,32 +20674,7 @@ var $;
                                 }
                                 return false;
                             },
-                            event: {
-                                wheelTouch: p => {
-                                    return true;
-                                },
-                                wheel: p => {
-                                    return true;
-                                },
-                                clickOrTap: p => {
-                                    return true;
-                                },
-                                wheelDrag: p => {
-                                    return true;
-                                },
-                                touchstart: p => {
-                                    return true;
-                                },
-                                touchmove: p => {
-                                    return false;
-                                },
-                                touchend: p => {
-                                    return true;
-                                },
-                                mousemove: p => {
-                                    return true;
-                                },
-                            }
+                            event: {}
                         }),
                         tapEffect: $$.$me_atom2_prop(['.tapTarget'], ({ masters: [tapTarget] }) => {
                             if (!tapTarget)
