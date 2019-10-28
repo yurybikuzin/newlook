@@ -8888,8 +8888,8 @@ var $;
                         let height_content;
                         let width_content;
                         const clientRect = $$.a('.#clientRect');
-                        const ctxRightLimitFirstRow = 660;
-                        console.log('ctxRightLimitFirstRow', ctxRightLimitFirstRow, $$.a('<.#ofsHor'), clientRect);
+                        const ctxRightLimitFirstRow = (600) * pixelRatio;
+                        console.log('ctxRightLimitFirstRow', ctxRightLimitFirstRow, $$.a('<.#ofsHor'), clientRect, pixelRatio);
                         $$.a('.rightLimitFirstRow', ctxRightLimitFirstRow / pixelRatio);
                         if (!$$.a('.needReposCrumbs')) {
                             height_content = $$.a('.height_content');
@@ -9937,7 +9937,7 @@ var $;
                                 horOffset: () => 12,
                                 grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
                                 grayColor2: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#c1c1c1'),
-                                '#height': () => 1100,
+                                '#height': () => 1010,
                                 height_visible: '<.#height',
                                 clickableBottom: () => 0,
                                 clickableTop: () => 0,
@@ -9955,6 +9955,7 @@ var $;
                                     }).ret) {
                                         $$.a.update('.#ofsVer', val => {
                                             const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
+                                            console.warn(43, { result });
                                             return result;
                                         });
                                         dispatch_arg.ret = true;
@@ -9986,8 +9987,8 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.clientX,
                                         clientY: p.event.clientY,
-                                        deltaY: 0 - p.event.deltaY,
-                                        deltaX: 0 - p.event.deltaX,
+                                        deltaY: p.event.deltaY,
+                                        deltaX: p.event.deltaX,
                                         ret: false,
                                     }).ret;
                                     return result;
@@ -9996,8 +9997,8 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.start.touches[0].clientX,
                                         clientY: p.event.start.touches[0].clientY,
-                                        deltaY: 0 - p.event.deltaY,
-                                        deltaX: 0 - p.event.deltaX,
+                                        deltaY: p.event.deltaY,
+                                        deltaX: p.event.deltaX,
                                         ret: false,
                                     }).ret;
                                     return result;
@@ -10393,7 +10394,6 @@ var $;
                                     if ($$.a.dispatch('', 'isInVisible', {
                                         clientX, clientY, ret: false
                                     }).ret) {
-                                        console.log(41, deltaY, dispatch_arg);
                                         $$.a.update('.#ofsVer', val => {
                                             const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
                                             return result;
@@ -10424,6 +10424,10 @@ var $;
                             },
                             event: {
                                 wheel: p => {
+                                    const isMin = $$.a('<<.isMinimized');
+                                    const h = $$.a('.#height');
+                                    if (!isMin || h <= 140)
+                                        return false;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.clientX,
                                         clientY: p.event.clientY,
@@ -10434,6 +10438,10 @@ var $;
                                     return result;
                                 },
                                 wheelTouch: p => {
+                                    const isMin = $$.a('<<.isMinimized');
+                                    const h = $$.a('.#height');
+                                    if (!isMin || h <= 140)
+                                        return false;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.start.touches[0].clientX,
                                         clientY: p.event.start.touches[0].clientY,
