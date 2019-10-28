@@ -8566,7 +8566,6 @@ var $;
                 iconScale: () => .7 * 24 / 32,
                 iconMarginLeft: () => 4,
                 iconMarginRight: () => 4,
-                crossMargin: () => 16,
                 curtainHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbsMarginVer'], $$.$me_atom2_prop_compute_fn_sum()),
                 horModeHeight: $$.$me_atom2_prop(['.crumb_height', '.crumbsMarginVer'], ({ masters: [crumb_height, crumbsMarginVer] }) => crumb_height + 2 * crumbsMarginVer),
                 horModeTreshold: $$.$me_atom2_prop(['.crumb_height', '.crumbsMarginVer'], ({ masters: [crumb_height, crumbsMarginVer] }) => 2 * crumb_height + 3 * crumbsMarginVer),
@@ -8878,7 +8877,6 @@ var $;
                         const crumbBackground = $$.a('.background');
                         const backgroundRGB = $$.a('.backgroundRGB');
                         const crumbTextColor = $$.a('/.colorText');
-                        const crossMargin = $$.a('<.crossMargin');
                         const nextText_fn = (n) => 'ещё ' + n + ' >>';
                         const prevText_fn = (n) => '<< ещё ' + n;
                         const ctxNavWidth = (text) => pixelRatio * 2 * navHorPaddingLeft +
@@ -8890,7 +8888,8 @@ var $;
                         let height_content;
                         let width_content;
                         const clientRect = $$.a('.#clientRect');
-                        const ctxRightLimitFirstRow = (clientRect.right - crossMargin - $$.a('<.#ofsHor') + 16) * pixelRatio;
+                        const ctxRightLimitFirstRow = 660;
+                        console.log('ctxRightLimitFirstRow', ctxRightLimitFirstRow, $$.a('<.#ofsHor'), clientRect);
                         $$.a('.rightLimitFirstRow', ctxRightLimitFirstRow / pixelRatio);
                         if (!$$.a('.needReposCrumbs')) {
                             height_content = $$.a('.height_content');
@@ -10042,23 +10041,57 @@ var $;
                                 }),
                                 image: () => ({
                                     prop: {
-                                        '#ofsHor': '<.horOffset',
-                                        '#ofsVer': '.em',
-                                        '#width': () => 365,
-                                        '#height': () => 275,
+                                        isMinimized: () => true,
+                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 275 : height),
+                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.isMinimized'], ({ masters: [w, isMin] }) => (isMin) ? 365 : w),
+                                        '#ofsHor': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w1, w2, ofs, isMin] }) => (isMin) ? ofs : 0 - (w1 - w2) / 2),
+                                        '#ofsVer': $$.$me_atom2_prop(['.isMinimized', '.em', '<.#ofsVer'], ({ masters: [isMin, ofs, ofs2] }) => (isMin) ? ofs : 0 - ofs2),
+                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
                                     },
-                                    dom: {
-                                        innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.#height'], ({ masters: [card, h] }) => {
-                                            let result = '';
-                                            if (card) {
-                                                const photo_list = (card.photo_list) ? card.photo_list : '';
-                                                const video_list = (card.video_list) ? card.video_list : '';
-                                                const height = 275;
-                                                result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/gallery?photo_list=' + photo_list + '&video_list=' + video_list + '&height=' + height + '">';
+                                    style: {},
+                                    elem: {
+                                        area: () => ({
+                                            prop: {
+                                                '#height': '<.#height',
+                                                '#width': '<.#width',
+                                            },
+                                            dom: {
+                                                innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.#height', '<.#width', '<.isMinimized'], ({ masters: [card, h, w, isMin] }) => {
+                                                    let result = '';
+                                                    if (card) {
+                                                        const photo_list = (card.photo_list) ? card.photo_list : '';
+                                                        const video_list = (card.video_list) ? card.video_list : '';
+                                                        const height = h;
+                                                        const width = w;
+                                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/gallery?photo_list=' + photo_list + '&video_list=' + video_list + '&height=' + height + '&width=' + width + '">';
+                                                    }
+                                                    return result;
+                                                }),
+                                            },
+                                        }),
+                                        size_button: () => ({
+                                            prop: {
+                                                '#width': () => 30,
+                                                '#height': () => 30,
+                                                '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
+                                                '#ofsHor': () => 10,
+                                                '#alignHor': () => $$.$me_align.right,
+                                                caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
+                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 100),
+                                                '#cursor': () => 'pointer',
+                                            },
+                                            style: {
+                                                background: () => 'red',
+                                            },
+                                            event: {
+                                                clickOrTap: (e) => {
+                                                    $$.a('<.isMinimized', !$$.a('<.isMinimized'));
+                                                    return true;
+                                                },
                                             }
-                                            return result;
                                         }),
                                     },
+                                    event: {}
                                 }),
                                 pub_dt: () => ({
                                     prop: {
@@ -10151,7 +10184,7 @@ var $;
                                 station_and_far: () => ({
                                     base: $$.$nl_stations,
                                     prop: {
-                                        '#width': () => 615,
+                                        '#width': () => 600,
                                         '#height': () => 25,
                                         '#ofsHor': () => 390,
                                         '#ofsVer': $$.$me_atom2_prop(['<@price.#height', '<@price.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
@@ -10167,6 +10200,10 @@ var $;
                                                 result.push({ guid: card.geo_subway_station_guid_4, walking_access: card.walking_access_4, transport_access: card.transport_access_4 });
                                             return result;
                                         }),
+                                    },
+                                    style: {
+                                        margin: () => 0,
+                                        padding: () => 0,
                                     }
                                 }),
                                 address: () => ({
@@ -10191,7 +10228,7 @@ var $;
                                     base: card_contacts_control,
                                     prop: {
                                         '#height': () => 25,
-                                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset', '<@image.#width', '.em'], ({ masters: [width, ofs, w, em] }) => width - ofs - w - 2 * em),
+                                        '#width': () => 600,
                                         '#ofsHor': () => 393,
                                         '#ofsVer': $$.$me_atom2_prop(['<@address.#height', '<@address.#ofsVer'], ({ masters: [height, ofs] }) => height + ofs + 8),
                                         fontSize: () => 17,
