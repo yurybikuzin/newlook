@@ -9172,7 +9172,6 @@ var $;
                 iconScale: $$.$me_atom2_prop_either(['.isTouch'], () => .7, () => .7 * 24 / 32),
                 iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
                 iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
-                crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 22 + 1, () => 16),
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 data: () => [],
                 crumbs: $$.$me_atom2_prop(['.data', '/.guid2point'], ({ masters: [data, guid2point] }) => {
@@ -10026,7 +10025,7 @@ var $;
                                         size: () => 24,
                                         thick: () => 3,
                                         '#ofsVer': () => 10,
-                                        '#ofsHor': () => 16,
+                                        '#ofsHor': () => 12,
                                         '#alignHor': () => $$.$me_align.right,
                                         color: '<.grayColor',
                                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
