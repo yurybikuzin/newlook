@@ -9910,7 +9910,6 @@ var $;
                     default: () => $$.a('/.#isTouch'),
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
-                'overflow-y': () => 'scroll',
             },
             elem: {
                 background: () => ({
@@ -9929,44 +9928,106 @@ var $;
                         '#alignHor': () => $$.$me_align.center,
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
                     },
-                    style: {
-                        'overflow-x': () => 'hidden',
-                    },
+                    style: {},
                     elem: {
                         wrapper2: () => ({
                             prop: {
                                 '#width': () => 1024,
                                 '#alignHor': () => $$.$me_align.center,
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                '#ofsVer': () => 0,
                                 horOffset: () => 12,
                                 grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
                                 grayColor2: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#c1c1c1'),
-                                'clientY': () => null,
+                                '#height': () => 1100,
+                                height_visible: '<.#height',
+                                clickableBottom: () => 0,
+                                clickableTop: () => 0,
+                                curtainHeight: () => 0,
+                                height_content: '.#height',
                             },
                             style: {
                                 background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
-                                'overflow-x': () => 'hidden',
-                                '-webkit-overflow-scrolling': () => 'touch',
+                            },
+                            dispatch(dispatch_name, dispatch_arg) {
+                                if (dispatch_name == 'wheel') {
+                                    const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
+                                    if ($$.a.dispatch('', 'isInVisible', {
+                                        clientX, clientY, ret: false
+                                    }).ret) {
+                                        $$.a.update('.#ofsVer', val => {
+                                            const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
+                                            return result;
+                                        });
+                                        dispatch_arg.ret = true;
+                                    }
+                                    return true;
+                                }
+                                else if (dispatch_name == 'ofsVer') {
+                                    const delta_v = $$.a('.height_visible') - $$.a('.height_content');
+                                    const { val, deltaY } = dispatch_arg;
+                                    dispatch_arg.ret = deltaY < 0 ? Math.max(val + deltaY, delta_v) : Math.min(val + deltaY, 0);
+                                    return true;
+                                }
+                                else if (dispatch_name == 'isInVisible') {
+                                    const { clientX, clientY } = dispatch_arg;
+                                    const clientRect = $$.a('.#clientRect');
+                                    const rect = {
+                                        left: clientRect.left,
+                                        top: clientRect.top,
+                                        right: clientRect.right,
+                                        bottom: clientRect.top + $$.a('.height_visible'),
+                                    };
+                                    dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect);
+                                    return true;
+                                }
+                                return false;
                             },
                             event: {
+                                wheel: p => {
+                                    const result = $$.a.dispatch('', 'wheel', {
+                                        clientX: p.event.clientX,
+                                        clientY: p.event.clientY,
+                                        deltaY: p.event.deltaY,
+                                        deltaX: p.event.deltaX,
+                                        ret: false,
+                                    }).ret;
+                                    return result;
+                                },
+                                wheelTouch: p => {
+                                    const result = $$.a.dispatch('', 'wheel', {
+                                        clientX: p.event.start.touches[0].clientX,
+                                        clientY: p.event.start.touches[0].clientY,
+                                        deltaY: p.event.deltaY,
+                                        deltaX: p.event.deltaX,
+                                        ret: false,
+                                    }).ret;
+                                    return result;
+                                },
                                 touchstart: p => {
-                                    console.log('1aaaa');
+                                    const clientX = p.event.touches[0].clientX;
                                     const clientY = p.event.touches[0].clientY;
-                                    $$.a('.clientY', clientY);
-                                    return true;
+                                    if (!p.isInRect(clientX, clientY))
+                                        return false;
+                                    if (p.event.touches.length > 1) {
+                                        return false;
+                                    }
+                                    return false;
                                 },
-                                touchmove: p => {
-                                    console.log('2aaaa');
-                                    const clientY = $$.a('.clientY');
-                                    const deltaY = clientY - p.event.touches[0].clientY;
-                                    if (!deltaY)
-                                        return;
-                                    const elem = $$.a.get('<@wrapper2');
-                                    elem.node.scrollTop = elem.node.scrollTop + deltaY;
-                                    return true;
-                                },
-                                touchend: p => {
-                                    return true;
+                                pinch: p => {
+                                    if ($$.a.dispatch('', 'isInVisible', {
+                                        clientX: p.event.start.touches[0].clientX,
+                                        clientY: p.event.start.touches[0].clientY,
+                                        ret: false
+                                    }).ret ||
+                                        $$.a.dispatch('', 'isInVisible', {
+                                            clientX: p.event.start.touches[1].clientX,
+                                            clientY: p.event.start.touches[1].clientY,
+                                            ret: false
+                                        }).ret ||
+                                        false)
+                                        return true;
+                                    return false;
                                 },
                             },
                             elem: {
@@ -10202,8 +10263,8 @@ var $;
                                     },
                                     prop: {
                                         isMinimized: () => true,
-                                        '#height': $$.$me_atom2_prop(['<.#height', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 220 : height - 2 * ofs),
-                                        '#width': $$.$me_atom2_prop(['<.#width', '<.horOffset'], ({ masters: [width, ofs] }) => width - 2 * ofs),
+                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 220 : height - 2 * ofs),
+                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w, width, ofs, isMin] }) => (isMin) ? width - 2 * ofs : w - 2 * ofs),
                                         '#ofsHor': '<.horOffset',
                                         '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, ofs2, isMin] }) => (isMin) ? height + ofs + ofs2 : ofs2),
                                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
@@ -10284,51 +10345,91 @@ var $;
                         'clientX': () => null,
                         'clientY': () => null,
                     },
-                    style: {
-                        'overflow-x': () => 'hidden',
-                        'overflow-y': () => 'scroll',
-                        '-webkit-overflow-scrolling': () => 'touch',
-                    },
+                    style: {},
                     elem: {
                         textSrc: () => ({
                             prop: {
                                 '#width': () => null,
                                 '#height': () => null,
                                 fontSize: '<.fontSize',
+                                height_visible: '<.#height',
+                                clickableBottom: () => 0,
+                                clickableTop: () => 0,
+                                curtainHeight: () => 0,
+                                height_content: '.#height',
                             },
                             dom: {
                                 innerHTML: $$.$me_atom2_prop(['<<.text'], ({ masters: [txt] }) => '<b>Примечание: </b>' + txt),
                             },
+                            dispatch(dispatch_name, dispatch_arg) {
+                                if (dispatch_name == 'wheel') {
+                                    const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
+                                    if ($$.a.dispatch('', 'isInVisible', {
+                                        clientX, clientY, ret: false
+                                    }).ret) {
+                                        $$.a.update('.#ofsVer', val => {
+                                            const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
+                                            return result;
+                                        });
+                                        dispatch_arg.ret = true;
+                                    }
+                                    return true;
+                                }
+                                else if (dispatch_name == 'ofsVer') {
+                                    const delta_v = $$.a('.height_visible') - $$.a('.height_content');
+                                    const { val, deltaY } = dispatch_arg;
+                                    dispatch_arg.ret = deltaY < 0 ? Math.max(val + deltaY, delta_v) : Math.min(val + deltaY, 0);
+                                    return true;
+                                }
+                                else if (dispatch_name == 'isInVisible') {
+                                    const { clientX, clientY } = dispatch_arg;
+                                    const clientRect = $$.a('.#clientRect');
+                                    const rect = {
+                                        left: clientRect.left,
+                                        top: clientRect.top,
+                                        right: clientRect.right,
+                                        bottom: clientRect.top + $$.a('.height_visible'),
+                                    };
+                                    dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect);
+                                    return true;
+                                }
+                                return false;
+                            },
+                            event: {
+                                wheel: p => {
+                                    const result = $$.a.dispatch('', 'wheel', {
+                                        clientX: p.event.clientX,
+                                        clientY: p.event.clientY,
+                                        deltaY: p.event.deltaY,
+                                        deltaX: p.event.deltaX,
+                                        ret: false,
+                                    }).ret;
+                                    return result;
+                                },
+                                wheelTouch: p => {
+                                    const result = $$.a.dispatch('', 'wheel', {
+                                        clientX: p.event.start.touches[0].clientX,
+                                        clientY: p.event.start.touches[0].clientY,
+                                        deltaY: p.event.deltaY,
+                                        deltaX: p.event.deltaX,
+                                        ret: false,
+                                    }).ret;
+                                    return result;
+                                },
+                                touchstart: p => {
+                                    const clientX = p.event.touches[0].clientX;
+                                    const clientY = p.event.touches[0].clientY;
+                                    if (!p.isInRect(clientX, clientY))
+                                        return false;
+                                    if (p.event.touches.length > 1) {
+                                        return false;
+                                    }
+                                    return false;
+                                },
+                            },
                         })
                     },
-                    event: {
-                        touchstart: p => {
-                            const clientX = p.event.touches[0].clientX;
-                            const clientY = p.event.touches[0].clientY;
-                            if (!p.isInRect(clientX, clientY))
-                                return false;
-                            $$.a('.clientY', clientY);
-                            $$.a('.clientX', clientX);
-                            return true;
-                        },
-                        touchmove: p => {
-                            const clientX = $$.a('.clientY');
-                            const clientY = $$.a('.clientY');
-                            if (!p.isInRect(clientX, clientY))
-                                return false;
-                            const deltaY = clientY - p.event.touches[0].clientY;
-                            if (!deltaY)
-                                return;
-                            const elem = $$.a.get('<@text');
-                            elem.node.scrollTop = elem.node.scrollTop + deltaY;
-                            return true;
-                        },
-                        touchend: p => {
-                            $$.a('.clientY', 0);
-                            $$.a('.clientX', 0);
-                            return true;
-                        },
-                    }
+                    event: {}
                 }),
                 more_link: () => ({
                     prop: {
@@ -20594,35 +20695,27 @@ var $;
                             },
                             event: {
                                 wheelTouch: p => {
-                                    console.log('1111');
                                     return true;
                                 },
                                 wheel: p => {
-                                    console.log('2222');
                                     return true;
                                 },
                                 clickOrTap: p => {
-                                    console.log('3333', p);
                                     return true;
                                 },
                                 wheelDrag: p => {
-                                    console.log('4444');
                                     return true;
                                 },
                                 touchstart: p => {
-                                    console.log('5555');
                                     return true;
                                 },
                                 touchmove: p => {
-                                    console.log('6666', p);
                                     return false;
                                 },
                                 touchend: p => {
-                                    console.log('7777');
                                     return true;
                                 },
                                 mousemove: p => {
-                                    console.log('8888');
                                     return true;
                                 },
                             }
