@@ -8888,8 +8888,7 @@ var $;
                         let height_content;
                         let width_content;
                         const clientRect = $$.a('.#clientRect');
-                        const ctxRightLimitFirstRow = (600) * pixelRatio;
-                        console.log('ctxRightLimitFirstRow', ctxRightLimitFirstRow, $$.a('<.#ofsHor'), clientRect, pixelRatio);
+                        const ctxRightLimitFirstRow = ($$.a('<.#width')) * pixelRatio;
                         $$.a('.rightLimitFirstRow', ctxRightLimitFirstRow / pixelRatio);
                         if (!$$.a('.needReposCrumbs')) {
                             height_content = $$.a('.height_content');
@@ -9987,7 +9986,7 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.clientX,
                                         clientY: p.event.clientY,
-                                        deltaY: p.event.deltaY,
+                                        deltaY: 0 - p.event.deltaY,
                                         deltaX: p.event.deltaX,
                                         ret: false,
                                     }).ret;
@@ -9997,7 +9996,7 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.start.touches[0].clientX,
                                         clientY: p.event.start.touches[0].clientY,
-                                        deltaY: p.event.deltaY,
+                                        deltaY: 0 - p.event.deltaY,
                                         deltaX: p.event.deltaX,
                                         ret: false,
                                     }).ret;
@@ -10099,6 +10098,7 @@ var $;
                                         '#width': () => null,
                                         '#ofsHor': () => 393,
                                         '#ofsVer': '.em',
+                                        '#zIndex': '<.#zIndex',
                                     },
                                     style: {
                                         fontSize: () => 12,
@@ -10121,10 +10121,10 @@ var $;
                                         '#width': () => null,
                                         '#ofsHor': () => 600,
                                         '#ofsVer': '.em',
-                                        color: '<.grayColor',
                                     },
                                     style: {
                                         fontSize: () => 12,
+                                        color: '<.grayColor',
                                     },
                                     dom: {
                                         innerHTML: $$.$me_atom2_prop(['/@app.card_value'], ({ masters: [card] }) => {
@@ -10572,6 +10572,7 @@ var $;
                 ofs: () => 8,
                 ofs2: $$.$me_atom2_prop(['.#width'], ({ masters: [width, ofs] }) => width / 2),
                 itemWidth: () => 280,
+                '#zIndex': '<.#zIndex',
             },
             style: {
                 lineHeight: () => 14,
