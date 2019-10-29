@@ -9614,7 +9614,7 @@ var $;
                         let height_content;
                         let width_content;
                         const clientRect = $$.a('.#clientRect');
-                        const ctxRightLimitFirstRow = (clientRect.right - crossMargin - $$.a('<.#ofsHor') + 16) * pixelRatio;
+                        const ctxRightLimitFirstRow = ($$.a('<.#width')) * pixelRatio;
                         $$.a('.rightLimitFirstRow', ctxRightLimitFirstRow / pixelRatio);
                         if (!$$.a('.needReposCrumbs')) {
                             height_content = $$.a('.height_content');
@@ -9871,9 +9871,9 @@ var $;
                 crumbSpaceVer: $$.$me_atom2_prop_either(['.isTouch'], () => 16, () => 8),
                 crumbBorderRadius: $$.$me_atom2_prop_either(['.isTouch'], () => 5, () => 3),
                 iconScale: $$.$me_atom2_prop_either(['.isTouch'], () => .7, () => .7 * 24 / 32),
-                iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
-                iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 6, () => 4),
-                crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 22 + 1, () => 16),
+                iconMarginLeft: $$.$me_atom2_prop_either(['.isTouch'], () => 0, () => 0),
+                iconMarginRight: $$.$me_atom2_prop_either(['.isTouch'], () => 0, () => 0),
+                crossMargin: $$.$me_atom2_prop_either(['.isTouch'], () => 0, () => 0),
                 data: () => [],
                 crumbs: $$.$me_atom2_prop(['.data'], ({ masters: [data] }) => {
                     const result = [];
@@ -9930,13 +9930,13 @@ var $;
                         wrapper2: () => ({
                             prop: {
                                 '#width': () => 1024,
+                                '#height': () => 1010,
                                 '#alignHor': () => $$.$me_align.center,
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                                 '#ofsVer': () => 0,
                                 horOffset: () => 12,
                                 grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
                                 grayColor2: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#c1c1c1'),
-                                '#height': () => 1010,
                                 height_visible: '<.#height',
                                 clickableBottom: () => 0,
                                 clickableTop: () => 0,
@@ -9949,12 +9949,9 @@ var $;
                             dispatch(dispatch_name, dispatch_arg) {
                                 if (dispatch_name == 'wheel') {
                                     const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
-                                    if ($$.a.dispatch('', 'isInVisible', {
-                                        clientX, clientY, ret: false
-                                    }).ret) {
+                                    if ($$.a.dispatch('', 'isInVisible', { clientX, clientY, ret: false }).ret) {
                                         $$.a.update('.#ofsVer', val => {
                                             const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
-                                            console.warn(43, { result });
                                             return result;
                                         });
                                         dispatch_arg.ret = true;
@@ -10037,60 +10034,6 @@ var $;
                                             return true;
                                         },
                                     },
-                                }),
-                                image: () => ({
-                                    prop: {
-                                        isMinimized: () => true,
-                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 275 : height),
-                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.isMinimized'], ({ masters: [w, isMin] }) => (isMin) ? 365 : w),
-                                        '#ofsHor': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w1, w2, ofs, isMin] }) => (isMin) ? ofs : 0 - (w1 - w2) / 2),
-                                        '#ofsVer': $$.$me_atom2_prop(['.isMinimized', '.em', '<.#ofsVer'], ({ masters: [isMin, ofs, ofs2] }) => (isMin) ? ofs : 0 - ofs2),
-                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
-                                    },
-                                    style: {},
-                                    elem: {
-                                        area: () => ({
-                                            prop: {
-                                                '#height': '<.#height',
-                                                '#width': '<.#width',
-                                            },
-                                            dom: {
-                                                innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.#height', '<.#width', '<.isMinimized'], ({ masters: [card, h, w, isMin] }) => {
-                                                    let result = '';
-                                                    if (card) {
-                                                        const photo_list = (card.photo_list) ? card.photo_list : '';
-                                                        const video_list = (card.video_list) ? card.video_list : '';
-                                                        const height = h;
-                                                        const width = w;
-                                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/gallery?photo_list=' + photo_list + '&video_list=' + video_list + '&height=' + height + '&width=' + width + '">';
-                                                    }
-                                                    return result;
-                                                }),
-                                            },
-                                        }),
-                                        size_button: () => ({
-                                            prop: {
-                                                '#width': () => 30,
-                                                '#height': () => 30,
-                                                '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
-                                                '#ofsHor': () => 10,
-                                                '#alignHor': () => $$.$me_align.right,
-                                                caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
-                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 100),
-                                                '#cursor': () => 'pointer',
-                                            },
-                                            style: {
-                                                background: () => 'red',
-                                            },
-                                            event: {
-                                                clickOrTap: (e) => {
-                                                    $$.a('<.isMinimized', !$$.a('<.isMinimized'));
-                                                    return true;
-                                                },
-                                            }
-                                        }),
-                                    },
-                                    event: {}
                                 }),
                                 pub_dt: () => ({
                                     prop: {
@@ -10235,6 +10178,8 @@ var $;
                                     },
                                     style: {
                                         color: () => '#313745',
+                                        margin: () => 0,
+                                        padding: () => 0,
                                     },
                                 }),
                                 params: () => ({
@@ -10342,6 +10287,60 @@ var $;
                                         }),
                                     }
                                 }),
+                                image: () => ({
+                                    prop: {
+                                        isMinimized: () => true,
+                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 275 : height),
+                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.isMinimized'], ({ masters: [w, isMin] }) => (isMin) ? 365 : w),
+                                        '#ofsHor': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w1, w2, ofs, isMin] }) => (isMin) ? ofs : 0 - (w1 - w2) / 2),
+                                        '#ofsVer': $$.$me_atom2_prop(['.isMinimized', '.em', '<.#ofsVer'], ({ masters: [isMin, ofs, ofs2] }) => (isMin) ? ofs : 0 - ofs2),
+                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
+                                    },
+                                    style: {},
+                                    elem: {
+                                        area: () => ({
+                                            prop: {
+                                                '#height': '<.#height',
+                                                '#width': '<.#width',
+                                            },
+                                            dom: {
+                                                innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.#height', '<.#width', '<.isMinimized'], ({ masters: [card, h, w, isMin] }) => {
+                                                    let result = '';
+                                                    if (card) {
+                                                        const photo_list = (card.photo_list) ? card.photo_list : '';
+                                                        const video_list = (card.video_list) ? card.video_list : '';
+                                                        const height = h;
+                                                        const width = w;
+                                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/gallery?photo_list=' + photo_list + '&video_list=' + video_list + '&height=' + height + '&width=' + width + '">';
+                                                    }
+                                                    return result;
+                                                }),
+                                            },
+                                        }),
+                                        size_button: () => ({
+                                            prop: {
+                                                '#width': () => 30,
+                                                '#height': () => 30,
+                                                '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
+                                                '#ofsHor': () => 10,
+                                                '#alignHor': () => $$.$me_align.right,
+                                                caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
+                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 100),
+                                                '#cursor': () => 'pointer',
+                                            },
+                                            style: {
+                                                background: () => 'red',
+                                            },
+                                            event: {
+                                                clickOrTap: (e) => {
+                                                    $$.a('<.isMinimized', !$$.a('<.isMinimized'));
+                                                    return true;
+                                                },
+                                            }
+                                        }),
+                                    },
+                                    event: {}
+                                }),
                             },
                         }),
                     }
@@ -10431,7 +10430,7 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.clientX,
                                         clientY: p.event.clientY,
-                                        deltaY: p.event.deltaY,
+                                        deltaY: 0 - p.event.deltaY,
                                         deltaX: p.event.deltaX,
                                         ret: false,
                                     }).ret;
@@ -10445,7 +10444,7 @@ var $;
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.start.touches[0].clientX,
                                         clientY: p.event.start.touches[0].clientY,
-                                        deltaY: p.event.deltaY,
+                                        deltaY: 0 - p.event.deltaY,
                                         deltaX: p.event.deltaX,
                                         ret: false,
                                     }).ret;
@@ -10454,7 +10453,6 @@ var $;
                             },
                         })
                     },
-                    event: {}
                 }),
                 more_link: () => ({
                     prop: {
@@ -10866,6 +10864,8 @@ var $;
                     },
                     style: {
                         lineHeight: () => 23,
+                        margin: () => 0,
+                        padding: () => 0,
                     },
                     dom: {
                         innerText: '<.agent',
@@ -10880,6 +10880,10 @@ var $;
                         fontSize: '<.fontSize',
                         colorText: '/.colorLink',
                         data: '<.phones',
+                    },
+                    style: {
+                        margin: () => 0,
+                        padding: () => 0,
                     },
                 }),
             }
