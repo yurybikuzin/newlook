@@ -19643,6 +19643,107 @@ var $;
                             `Показано вариантов: ${count} `).toUpperCase()),
                     },
                 }),
+                label1: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '<@shown.#ofsHor',
+                        '#ofsVer': $$.$me_atom2_prop(['<@shown.#ofsVer', '<@shown.#height', '.em'], ({ masters: [ofs, h, em] }) => ofs + h + em),
+                    },
+                    style: {
+                        fontSize: () => 14,
+                    },
+                    dom: {
+                        innerText: () => 'Адрес',
+                    },
+                }),
+                addr: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        '#width': () => 220,
+                        '#height': () => 24,
+                        '#ofsHor': () => 89,
+                        '#ofsVer': '<@label1.#ofsVer',
+                    },
+                }),
+                label2: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 329,
+                        '#ofsVer': '<@label1.#ofsVer',
+                    },
+                    style: {
+                        fontSize: () => 14,
+                    },
+                    dom: {
+                        innerText: () => 'Телефон',
+                    },
+                }),
+                phone: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        '#width': () => 220,
+                        '#height': () => 24,
+                        '#ofsHor': () => 403,
+                        '#ofsVer': '<@label1.#ofsVer',
+                    },
+                }),
+                label3: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '<@label1.#ofsHor',
+                        '#ofsVer': $$.$me_atom2_prop(['<@label1.#ofsVer', '<@label1.#height', '.em'], ({ masters: [ofs, h, em] }) => ofs + h + em),
+                    },
+                    style: {
+                        fontSize: () => 14,
+                    },
+                    dom: {
+                        innerText: () => 'Цена',
+                    },
+                }),
+                price_from: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        '#width': () => 100,
+                        '#height': () => 24,
+                        '#ofsHor': () => 89,
+                        '#ofsVer': '<@label3.#ofsVer',
+                    },
+                }),
+                price_to: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        '#width': () => 100,
+                        '#height': () => 24,
+                        '#ofsHor': () => 208,
+                        '#ofsVer': '<@label3.#ofsVer',
+                    },
+                }),
+                label4: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 329,
+                        '#ofsVer': '<@label3.#ofsVer',
+                    },
+                    style: {
+                        fontSize: () => 14,
+                    },
+                    dom: {
+                        innerText: () => 'Комнат',
+                    },
+                }),
+                rooms: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        '#width': () => 220,
+                        '#height': () => 24,
+                        '#ofsHor': () => 403,
+                        '#ofsVer': '<@label3.#ofsVer',
+                    },
+                }),
                 mode_switcher: () => ({
                     base: $$.$nl_switch,
                     prop: {
@@ -19675,7 +19776,7 @@ var $;
                         }),
                         '#hidden': $$.$me_atom2_prop(['<.mode'], ({ masters: [mode] }) => mode != 'АКТИВНЫЕ'),
                         '#ofsHor': '.em',
-                        '#ofsVer': () => 56,
+                        '#ofsVer': () => 191,
                         '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
                         '#height': $$.$me_atom2_prop(['<.height_target', '<.height_anim_is', '.#ofsVer', '.em'], ({ masters: [height, height_anim_is, ofsVer, em], prev }) => {
                             const val = height - ofsVer - em;
