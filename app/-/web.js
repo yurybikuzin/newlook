@@ -10228,6 +10228,67 @@ var $;
                                         backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
                                     },
                                 }),
+                                image: () => ({
+                                    prop: {
+                                        isMinimized: () => true,
+                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 275 : height),
+                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.isMinimized'], ({ masters: [w, isMin] }) => (isMin) ? 365 : w),
+                                        '#ofsHor': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w1, w2, ofs, isMin] }) => (isMin) ? ofs : 0 - (w1 - w2) / 2),
+                                        '#ofsVer': $$.$me_atom2_prop(['.isMinimized', '.em', '<.#ofsVer'], ({ masters: [isMin, ofs, ofs2] }) => (isMin) ? ofs : 0 - ofs2),
+                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
+                                    },
+                                    style: {},
+                                    elem: {
+                                        area: () => ({
+                                            prop: {
+                                                '#height': '<.#height',
+                                                '#width': '<.#width',
+                                                '#zIndex': '<.#zIndex',
+                                            },
+                                            dom: {
+                                                innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.#height', '<.#width'], ({ masters: [card, h, w] }) => {
+                                                    let result = '';
+                                                    if (card) {
+                                                        const photo_list = (card.photo_list) ? card.photo_list : '';
+                                                        const video_list = (card.video_list) ? card.video_list : '';
+                                                        const height = h;
+                                                        const width = w;
+                                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/gallery?photo_list=' + photo_list + '&video_list=' + video_list + '&height=' + height + '&width=' + width + '">';
+                                                    }
+                                                    return result;
+                                                }),
+                                            },
+                                        }),
+                                        size_button: () => ({
+                                            prop: {
+                                                '#width': () => 28,
+                                                '#height': () => 28,
+                                                '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
+                                                '#ofsHor': () => 10,
+                                                '#alignHor': () => $$.$me_align.right,
+                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                                '#cursor': () => 'pointer',
+                                            },
+                                            style: {
+                                                backgroundColor: () => '#fff',
+                                                boxShadow: () => '0 1px 2px 1px rgba(0,0,0,.15), 0 2px 5px -3px rgba(0,0,0,.15)',
+                                                border: () => '1px solid transparent',
+                                                borderRadius: () => '3px',
+                                                'transition': () => 'background-color .15s ease-out,border-color .15s ease-out,opacity .15s ease-out',
+                                                'backgroundImage': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? 'url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiI+PGcgZmlsbD0iIzZCNkI2QiI+PHBhdGggZD0iTTE2LjE0IDcuODZMMTQuMjcgNkgyMHY1LjdsLTEuODMtMS44MkwxNS4wNCAxMyAxMyAxMC45OGwzLjEzLTMuMTN6bTAgME05Ljg2IDE4LjE0TDExLjczIDIwSDZ2LTUuN2wxLjgzIDEuODJMMTAuOTYgMTMgMTMgMTUuMDJsLTMuMTMgMy4xM3ptMCAwIi8+PC9nPjwvc3ZnPg==)' : 'url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiI+PGcgZmlsbD0iIzZCNkI2QiI+PHBhdGggZD0iTTguMTQgMTUuODZMNi4yNyAxNEgxMnY1LjdsLTEuODMtMS44My0zLjEzIDMuMTRMNSAxOC45OGwzLjEzLTMuMTN6bTAgME0xNy44NiAxMC4xNEwxOS43MyAxMkgxNFY2LjNsMS44MyAxLjgzIDMuMTMtMy4xNEwyMSA3LjAybC0zLjEzIDMuMTN6bTAgMCIvPjwvZz48L3N2Zz4=)'),
+                                                backgroundRepeat: () => 'no-repeat',
+                                                backgroundPosition: () => 'center',
+                                            },
+                                            event: {
+                                                clickOrTap: (e) => {
+                                                    $$.a('<.isMinimized', !$$.a('<.isMinimized'));
+                                                    return true;
+                                                },
+                                            }
+                                        }),
+                                    },
+                                    event: {}
+                                }),
                                 map: () => ({
                                     dispatch(dispatch_name, dispatch_arg) {
                                         console.log('eeee', dispatch_name, dispatch_arg);
@@ -10239,7 +10300,7 @@ var $;
                                         '#width': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w, width, ofs, isMin] }) => (isMin) ? width - 2 * ofs : w),
                                         '#ofsHor': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w1, w2, ofs, isMin] }) => (isMin) ? ofs : 0 - (w1 - w2) / 2),
                                         '#ofsVer': $$.$me_atom2_prop(['<@comment.#height', '<@comment.#ofsVer', '<.horOffset', '.isMinimized', '<.#ofsVer'], ({ masters: [height, ofs, ofs2, isMin, ofs3] }) => (isMin) ? height + ofs + ofs2 : 0 - ofs3),
-                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
+                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 4),
                                     },
                                     style: {
                                         backgroundColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f5f8f8' : '#6b7277'),
@@ -10273,7 +10334,7 @@ var $;
                                                 '#ofsHor': () => 10,
                                                 '#alignHor': () => $$.$me_align.right,
                                                 caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
-                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 10),
+                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                                                 '#cursor': () => 'pointer',
                                             },
                                             style: {
@@ -10287,67 +10348,6 @@ var $;
                                             }
                                         }),
                                     }
-                                }),
-                                image: () => ({
-                                    prop: {
-                                        isMinimized: () => true,
-                                        '#height': $$.$me_atom2_prop(['/.#viewportHeight', '<.horOffset', '.isMinimized'], ({ masters: [height, ofs, isMin] }) => (isMin) ? 275 : height),
-                                        '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.isMinimized'], ({ masters: [w, isMin] }) => (isMin) ? 365 : w),
-                                        '#ofsHor': $$.$me_atom2_prop(['/.#viewportWidth', '<.#width', '<.horOffset', '.isMinimized'], ({ masters: [w1, w2, ofs, isMin] }) => (isMin) ? ofs : 0 - (w1 - w2) / 2),
-                                        '#ofsVer': $$.$me_atom2_prop(['.isMinimized', '.em', '<.#ofsVer'], ({ masters: [isMin, ofs, ofs2] }) => (isMin) ? ofs : 0 - ofs2),
-                                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '.isMinimized'], ({ masters: [zIndex, isMin] }) => (isMin) ? zIndex : zIndex + 3),
-                                    },
-                                    style: {},
-                                    elem: {
-                                        area: () => ({
-                                            prop: {
-                                                '#height': '<.#height',
-                                                '#width': '<.#width',
-                                            },
-                                            dom: {
-                                                innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.#height', '<.#width', '<.isMinimized'], ({ masters: [card, h, w, isMin] }) => {
-                                                    let result = '';
-                                                    if (card) {
-                                                        const photo_list = (card.photo_list) ? card.photo_list : '';
-                                                        const video_list = (card.video_list) ? card.video_list : '';
-                                                        const height = h;
-                                                        const width = w;
-                                                        result = '<iframe width="100%" height="100%" frameborder="0" src="https://online.baza-winner.ru/gallery?photo_list=' + photo_list + '&video_list=' + video_list + '&height=' + height + '&width=' + width + '">';
-                                                    }
-                                                    return result;
-                                                }),
-                                            },
-                                        }),
-                                        size_button: () => ({
-                                            prop: {
-                                                '#width': () => 28,
-                                                '#height': () => 28,
-                                                '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
-                                                '#ofsHor': () => 10,
-                                                '#alignHor': () => $$.$me_align.right,
-                                                caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
-                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '<.isMinimized'], ({ masters: [zIndex, isMin] }) => isMin ? zIndex : zIndex + 100),
-                                                '#cursor': () => 'pointer',
-                                            },
-                                            style: {
-                                                backgroundColor: () => '#fff',
-                                                boxShadow: () => '0 1px 2px 1px rgba(0,0,0,.15), 0 2px 5px -3px rgba(0,0,0,.15)',
-                                                border: () => '1px solid transparent',
-                                                borderRadius: () => '3px',
-                                                'transition': () => 'background-color .15s ease-out,border-color .15s ease-out,opacity .15s ease-out',
-                                                'backgroundImage': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? 'url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiI+PGcgZmlsbD0iIzZCNkI2QiI+PHBhdGggZD0iTTE2LjE0IDcuODZMMTQuMjcgNkgyMHY1LjdsLTEuODMtMS44MkwxNS4wNCAxMyAxMyAxMC45OGwzLjEzLTMuMTN6bTAgME05Ljg2IDE4LjE0TDExLjczIDIwSDZ2LTUuN2wxLjgzIDEuODJMMTAuOTYgMTMgMTMgMTUuMDJsLTMuMTMgMy4xM3ptMCAwIi8+PC9nPjwvc3ZnPg==)' : 'url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiI+PGcgZmlsbD0iIzZCNkI2QiI+PHBhdGggZD0iTTguMTQgMTUuODZMNi4yNyAxNEgxMnY1LjdsLTEuODMtMS44My0zLjEzIDMuMTRMNSAxOC45OGwzLjEzLTMuMTN6bTAgME0xNy44NiAxMC4xNEwxOS43MyAxMkgxNFY2LjNsMS44MyAxLjgzIDMuMTMtMy4xNEwyMSA3LjAybC0zLjEzIDMuMTN6bTAgMCIvPjwvZz48L3N2Zz4=)'),
-                                                backgroundRepeat: () => 'no-repeat',
-                                                backgroundPosition: () => 'center',
-                                            },
-                                            event: {
-                                                clickOrTap: (e) => {
-                                                    $$.a('<.isMinimized', !$$.a('<.isMinimized'));
-                                                    return true;
-                                                },
-                                            }
-                                        }),
-                                    },
-                                    event: {}
                                 }),
                             },
                         }),
