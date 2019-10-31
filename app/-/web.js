@@ -10249,6 +10249,7 @@ var $;
                                             prop: {
                                                 '#height': '<.#height',
                                                 '#width': '<.#width',
+                                                '#zIndex': '<.#zIndex',
                                             },
                                             dom: {
                                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.isMinimized', '<.#height'], ({ masters: [card, isMin, h] }) => {
@@ -10319,17 +10320,24 @@ var $;
                                         }),
                                         size_button: () => ({
                                             prop: {
-                                                '#width': () => 30,
-                                                '#height': () => 30,
+                                                '#width': () => 28,
+                                                '#height': () => 28,
                                                 '#ofsVer': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => 10),
                                                 '#ofsHor': () => 10,
                                                 '#alignHor': () => $$.$me_align.right,
                                                 caption: $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => (isMin) ? '+' : '-'),
-                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 100),
+                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex', '<.isMinimized'], ({ masters: [zIndex, isMin] }) => isMin ? zIndex : zIndex + 100),
                                                 '#cursor': () => 'pointer',
                                             },
                                             style: {
-                                                background: () => 'red',
+                                                backgroundColor: () => '#fff',
+                                                boxShadow: () => '0 1px 2px 1px rgba(0,0,0,.15), 0 2px 5px -3px rgba(0,0,0,.15)',
+                                                border: () => '1px solid transparent',
+                                                borderRadius: () => '3px',
+                                                'transition': () => 'background-color .15s ease-out,border-color .15s ease-out,opacity .15s ease-out',
+                                                'backgroundImage': $$.$me_atom2_prop(['<.isMinimized'], ({ masters: [isMin] }) => isMin ? 'url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiI+PGcgZmlsbD0iIzZCNkI2QiI+PHBhdGggZD0iTTE2LjE0IDcuODZMMTQuMjcgNkgyMHY1LjdsLTEuODMtMS44MkwxNS4wNCAxMyAxMyAxMC45OGwzLjEzLTMuMTN6bTAgME05Ljg2IDE4LjE0TDExLjczIDIwSDZ2LTUuN2wxLjgzIDEuODJMMTAuOTYgMTMgMTMgMTUuMDJsLTMuMTMgMy4xM3ptMCAwIi8+PC9nPjwvc3ZnPg==)' : 'url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiI+PGcgZmlsbD0iIzZCNkI2QiI+PHBhdGggZD0iTTguMTQgMTUuODZMNi4yNyAxNEgxMnY1LjdsLTEuODMtMS44My0zLjEzIDMuMTRMNSAxOC45OGwzLjEzLTMuMTN6bTAgME0xNy44NiAxMC4xNEwxOS43MyAxMkgxNFY2LjNsMS44MyAxLjgzIDMuMTMtMy4xNEwyMSA3LjAybC0zLjEzIDMuMTN6bTAgMCIvPjwvZz48L3N2Zz4=)'),
+                                                backgroundRepeat: () => 'no-repeat',
+                                                backgroundPosition: () => 'center',
                                             },
                                             event: {
                                                 clickOrTap: (e) => {
