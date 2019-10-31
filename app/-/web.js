@@ -19711,6 +19711,9 @@ var $;
                         '#ofsHor': () => 89,
                         '#ofsVer': '<@label3.#ofsVer',
                     },
+                    attr: {
+                        placeholder: () => 'от',
+                    },
                 }),
                 price_to: () => ({
                     base: $$.$nl_input,
@@ -19719,6 +19722,9 @@ var $;
                         '#height': () => 24,
                         '#ofsHor': () => 208,
                         '#ofsVer': '<@label3.#ofsVer',
+                    },
+                    attr: {
+                        placeholder: () => 'до',
                     },
                 }),
                 label4: () => ({
