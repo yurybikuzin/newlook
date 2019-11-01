@@ -22060,7 +22060,7 @@ var $;
         const workspace = {
             prop: {
                 '#ofsHor': $$.$me_atom2_prop(['/@app@menu@list.selected', '<@menu.#width', '/@app.isZoomed'], ({ masters: [selected, w, z] }) => {
-                    const result = (selected == 'search' && z) ? 0 : w;
+                    const result = ((selected == 'search' || selected == 'advs') && z) ? 0 : w;
                     return result;
                 }),
                 '#width': $$.$me_atom2_prop(['/.#viewportWidth', '.#ofsHor'], ({ masters: [viewportWidth, ofsHor, isZoomed] }) => viewportWidth - ofsHor),
