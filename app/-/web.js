@@ -19224,6 +19224,62 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_add = {
+            type: '$nl_icon_add',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 18 20",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: '<.color', fillRule: () => 'nonzero', stroke: '<.color'
+                        },
+                        sub: [
+                            { attr: { d: () => "M16 8.7a5.6 5.6 0 00-2.3-.5A5.7 5.7 0 008 13.9a5.8 5.8 0 003 5.1H2a2 2 0 01-2-2V2a2 2 0 012-2h12a2 2 0 012 2v6.7zm-14.7-6v1.4h1.4V2.7H1.3zm0 2.7v1.4h1.4V5.4H1.3zm3.4-2.7a.7.7 0 000 1.4H14a.7.7 0 100-1.4H4.7zm0 2.7a.7.7 0 000 1.4H14a.7.7 0 100-1.4H4.7z" } },
+                            { attr: { d: () => "M15 13h2a1 1 0 010 2h-2v2a1 1 0 01-2 0v-2h-2a1 1 0 010-2h2v-2a1 1 0 012 0v2z" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//add.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_pub = {
+            type: '$nl_icon_pub',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 18 19",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: '<.color', fillRule: () => 'nonzero', stroke: '<.color'
+                        },
+                        sub: [
+                            { attr: { d: () => "M16.7 9.2a5.7 5.7 0 00-5 10.1h-9a2 2 0 01-2-2V2.7a2 2 0 012-2h12a2 2 0 012 2v6.5zM2 3.3v1.4h1.3V3.3H2zM2 6v1.3h1.3V6H2zm3.3-2.7a.7.7 0 000 1.4h9.4a.7.7 0 000-1.4H5.3zm0 2.7a.7.7 0 000 1.3h9.4a.7.7 0 000-1.3H5.3z" } },
+                            { attr: { d: () => "M12.2 11.4l-.3-.7a7 7 0 012.2.1c.8.2 1.4.5 2 .8a13.9 13.9 0 00-2.3 3.7l-.6-1.4c-.3.4-.4 1-.4 1.5A4 4 0 0015 19c-2.7-1-4-2.5-4-4.5 0-1.5.4-2.5 1.2-3z" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//pub.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_advs_panel_result_cols = {
             'guid': {
                 width: 150,
@@ -19629,7 +19685,7 @@ var $;
                     prop: {
                         '#height': () => null,
                         '#width': () => null,
-                        '#ofsHor': $$.$me_atom2_prop(['.em', '<.isZoomed'], ({ masters: [ofs, isZoomed] }) => isZoomed ? 3 * ofs : ofs),
+                        '#ofsHor': $$.$me_atom2_prop(['.em', '<.isZoomed'], ({ masters: [ofs, isZoomed] }) => isZoomed ? 3 * ofs : 2 * ofs),
                         '#ofsVer': $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(19 / 16)),
                     },
                     style: {
@@ -19750,6 +19806,66 @@ var $;
                         '#ofsVer': '<@label3.#ofsVer',
                     },
                 }),
+                add_link: () => ({
+                    base: image_link,
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': '<@label1.#ofsHor',
+                        '#ofsVer': () => 148,
+                        caption: () => 'Добавить',
+                        icon: () => $$.$nl_icon_add,
+                        fontSize: () => '15px',
+                        color: () => '#0070a4',
+                    },
+                }),
+                pub_link: () => ({
+                    base: image_link,
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsHor': () => 161,
+                        '#ofsVer': () => 148,
+                        caption: () => 'Опубликовать',
+                        icon: () => $$.$nl_icon_pub,
+                        fontSize: () => '15px',
+                        color: () => '#0070a4',
+                    },
+                }),
+                separator: () => ({
+                    prop: {
+                        '#ofsHor': () => 314,
+                        '#ofsVer': () => 144,
+                        '#width': () => 1,
+                        '#height': () => 29,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
+                    },
+                    style: {
+                        background: () => '#adb0b8',
+                    }
+                }),
+                network_link: () => ({
+                    base: image_link,
+                    prop: {
+                        '#ofsHor': () => 339,
+                        '#ofsVer': () => 148,
+                        caption: () => 'Импорт из сети',
+                        icon: () => $$.$nl_icon_pub,
+                        fontSize: () => '15px',
+                        color: () => '#0070a4',
+                    },
+                }),
+                xml_link: () => ({
+                    base: image_link,
+                    prop: {
+                        '#ofsHor': () => 510,
+                        '#ofsVer': () => 148,
+                        caption: () => 'XML-импорт',
+                        icon: () => $$.$nl_icon_pub,
+                        fontSize: () => '15px',
+                        color: () => '#0070a4',
+                    },
+                }),
                 mode_switcher: () => ({
                     base: $$.$nl_switch,
                     prop: {
@@ -19867,6 +19983,51 @@ var $;
                 }),
                 cols: () => $$.$nl_search_panel_result_cols,
             },
+        };
+        const image_link = {
+            prop: {
+                caption: $$.$me_atom2_prop_abstract(),
+                icon: $$.$me_atom2_prop_abstract(),
+                fontSize: $$.$me_atom2_prop_abstract(),
+                color: $$.$me_atom2_prop_abstract(),
+            },
+            elem: {
+                image: () => ({
+                    prop: {
+                        '#width': () => 20,
+                        '#height': () => 20,
+                        '#ofsHor': () => 0,
+                        '#ofsVer': () => 0,
+                        color: '<.color',
+                    },
+                    attr: {
+                        src: $$.$me_atom2_prop(['<.image'], ({ masters: [image] }) => image),
+                    },
+                    style: {
+                        filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
+                    },
+                    elem: {
+                        icon: '<.icon',
+                    },
+                }),
+                link: () => ({
+                    prop: {
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#width'], ({ masters: [w] }) => w + 8),
+                        '#ofsVer': () => 3,
+                        '#cursor': () => 'pointer',
+                        '#width': () => null,
+                        '#height': () => null,
+                        fontSize: '<.fontSize',
+                    },
+                    dom: {
+                        innerHTML: $$.$me_atom2_prop(['<.caption'], ({ masters: [caption] }) => caption),
+                    },
+                    style: {
+                        color: '<.color',
+                    },
+                }),
+            },
+            event: {}
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
