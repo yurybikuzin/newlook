@@ -19280,6 +19280,34 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_import = {
+            type: '$nl_icon_import',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 18 20",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: '<.color', fillRule: () => 'nonzero', stroke: '<.color'
+                        },
+                        sub: [
+                            { attr: { d: () => "M16.7 9.2a5.7 5.7 0 00-5 10.1h-9a2 2 0 01-2-2V2.7a2 2 0 012-2h12a2 2 0 012 2v6.5zM2 3.3v1.4h1.3V3.3H2zM2 6v1.3h1.3V6H2zm3.3-2.7a.7.7 0 000 1.4h9.4a.7.7 0 000-1.4H5.3zm0 2.7a.7.7 0 000 1.3h9.4a.7.7 0 000-1.3H5.3z" } },
+                            { attr: { d: () => "M16.8 11.4l.3-.7a7 7 0 00-2.2.1c-.8.2-1.4.5-1.9.8a13.9 13.9 0 012.3 3.7l.5-1.4c.3.4.4 1 .4 1.5A4 4 0 0114 19c2.7-1 4-2.5 4-4.5 0-1.5-.4-2.5-1.2-3z" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//import.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_advs_panel_result_cols = {
             'guid': {
                 width: 150,
@@ -19704,7 +19732,7 @@ var $;
                         '#height': () => null,
                         '#width': () => null,
                         '#ofsHor': '<@shown.#ofsHor',
-                        '#ofsVer': $$.$me_atom2_prop(['<@shown.#ofsVer', '<@shown.#height', '.em'], ({ masters: [ofs, h, em] }) => ofs + h + em),
+                        '#ofsVer': () => 63,
                     },
                     style: {
                         fontSize: () => 14,
@@ -19719,7 +19747,7 @@ var $;
                         '#width': () => 220,
                         '#height': () => 24,
                         '#ofsHor': () => 89,
-                        '#ofsVer': '<@label1.#ofsVer',
+                        '#ofsVer': () => 60,
                     },
                 }),
                 label2: () => ({
@@ -19750,7 +19778,7 @@ var $;
                         '#height': () => null,
                         '#width': () => null,
                         '#ofsHor': '<@label1.#ofsHor',
-                        '#ofsVer': $$.$me_atom2_prop(['<@label1.#ofsVer', '<@label1.#height', '.em'], ({ masters: [ofs, h, em] }) => ofs + h + em),
+                        '#ofsVer': () => 104
                     },
                     style: {
                         fontSize: () => 14,
@@ -19765,7 +19793,7 @@ var $;
                         '#width': () => 100,
                         '#height': () => 24,
                         '#ofsHor': () => 89,
-                        '#ofsVer': '<@label3.#ofsVer',
+                        '#ofsVer': () => 100,
                     },
                     attr: {
                         placeholder: () => 'от',
@@ -19777,7 +19805,7 @@ var $;
                         '#width': () => 100,
                         '#height': () => 24,
                         '#ofsHor': () => 208,
-                        '#ofsVer': '<@label3.#ofsVer',
+                        '#ofsVer': '<@price_from.#ofsVer',
                     },
                     attr: {
                         placeholder: () => 'до',
@@ -19803,7 +19831,7 @@ var $;
                         '#width': () => 220,
                         '#height': () => 24,
                         '#ofsHor': () => 403,
-                        '#ofsVer': '<@label3.#ofsVer',
+                        '#ofsVer': '<@price_from.#ofsVer',
                     },
                 }),
                 add_link: () => ({
@@ -19850,7 +19878,7 @@ var $;
                         '#ofsHor': () => 339,
                         '#ofsVer': () => 148,
                         caption: () => 'Импорт из сети',
-                        icon: () => $$.$nl_icon_pub,
+                        icon: () => $$.$nl_icon_import,
                         fontSize: () => '15px',
                         color: () => '#0070a4',
                     },
@@ -19861,7 +19889,7 @@ var $;
                         '#ofsHor': () => 510,
                         '#ofsVer': () => 148,
                         caption: () => 'XML-импорт',
-                        icon: () => $$.$nl_icon_pub,
+                        icon: () => $$.$nl_icon_import,
                         fontSize: () => '15px',
                         color: () => '#0070a4',
                     },
@@ -20000,9 +20028,6 @@ var $;
                         '#ofsVer': () => 0,
                         color: '<.color',
                     },
-                    attr: {
-                        src: $$.$me_atom2_prop(['<.image'], ({ masters: [image] }) => image),
-                    },
                     style: {
                         filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '' : 'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)'),
                     },
@@ -20020,10 +20045,16 @@ var $;
                         fontSize: '<.fontSize',
                     },
                     dom: {
-                        innerHTML: $$.$me_atom2_prop(['<.caption'], ({ masters: [caption] }) => caption),
+                        innerHTML: $$.$me_atom2_prop(['<.caption', '.#ofsHor', '.#width'], ({ masters: [caption, ofs, w] }) => {
+                            console.log(ofs, w);
+                            $$.a('<.#height', $$.a('<@image.#height'));
+                            $$.a('<.#width', ofs + w);
+                            return caption;
+                        }),
                     },
                     style: {
                         color: '<.color',
+                        whiteSpace: () => 'nowrap',
                     },
                 }),
             },
