@@ -10901,6 +10901,70 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_advcard = {
+            prop: {
+                '#width': '/.#viewportWidth',
+                '#height': '/.#viewportHeight',
+                isTouch: $$.$me_atom2_prop_store({
+                    default: () => $$.a('/.#isTouch'),
+                    valid: (val) => typeof val == 'boolean' ? val : null,
+                }),
+            },
+            elem: {
+                background: () => ({
+                    prop: {
+                        '#height': '<.#height',
+                        '#width': '<.#width',
+                    },
+                    style: {
+                        background: () => 'rgba(0, 0, 0, .4)',
+                    },
+                }),
+                wrapper: () => ({
+                    prop: {
+                        '#height': () => 700,
+                        '#width': () => 700,
+                        '#alignHor': () => $$.$me_align.center,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
+                    },
+                    style: {
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
+                    },
+                    elem: {
+                        cross: () => ({
+                            base: $$.$me_cross,
+                            prop: {
+                                size: () => 24,
+                                thick: () => 3,
+                                '#ofsVer': () => 10,
+                                '#ofsHor': () => 12,
+                                '#alignHor': () => $$.$me_align.right,
+                                color: '<.grayColor',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                                '#cursor': () => 'pointer',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('/@app.isShownAdvCard', false);
+                                    return true;
+                                },
+                            },
+                        }),
+                    }
+                })
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//advcard.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_panel = {
             style: {
                 background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
@@ -19837,21 +19901,25 @@ var $;
                 add_link: () => ({
                     base: image_link,
                     prop: {
-                        '#height': () => null,
-                        '#width': () => null,
                         '#ofsHor': '<@label1.#ofsHor',
                         '#ofsVer': () => 148,
                         caption: () => 'Добавить',
                         icon: () => $$.$nl_icon_add,
                         fontSize: () => '15px',
                         color: () => '#0070a4',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
+                    event: {
+                        clickOrTap: () => {
+                            console.log('eeeeeeee');
+                            $$.a('/@app.isShownAdvCard', true);
+                            return true;
+                        },
+                    }
                 }),
                 pub_link: () => ({
                     base: image_link,
                     prop: {
-                        '#height': () => null,
-                        '#width': () => null,
                         '#ofsHor': () => 161,
                         '#ofsVer': () => 148,
                         caption: () => 'Опубликовать',
@@ -20018,6 +20086,8 @@ var $;
                 icon: $$.$me_atom2_prop_abstract(),
                 fontSize: $$.$me_atom2_prop_abstract(),
                 color: $$.$me_atom2_prop_abstract(),
+                '#width': () => 135,
+                '#height': () => 20,
             },
             elem: {
                 image: () => ({
@@ -20047,8 +20117,6 @@ var $;
                     dom: {
                         innerHTML: $$.$me_atom2_prop(['<.caption', '.#ofsHor', '.#width'], ({ masters: [caption, ofs, w] }) => {
                             console.log(ofs, w);
-                            $$.a('<.#height', $$.a('<@image.#height'));
-                            $$.a('<.#width', ofs + w);
                             return caption;
                         }),
                     },
@@ -20104,6 +20172,9 @@ var $;
                 offerCount: () => 1200,
                 objCount: () => 800,
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+            },
+            style: {
+                overflow: () => 'hidden',
             },
             elem: {
                 tabs: () => ({
@@ -20161,8 +20232,11 @@ var $;
                                     path_active: $$.a.get('.height_anim_is').path
                                 })),
                         height_anim_is: $$.$me_atom2_prop([], () => false),
-                        '#width': $$.$me_atom2_prop(['.isZoomed', '/.#viewportWidth', '<.#width', '.em'], ({ masters: [isZoomed, viewportWidth, width, em] }) => isZoomed ? viewportWidth : width - 2 * em),
+                        '#width': $$.$me_atom2_prop(['.isZoomed', '/.#viewportWidth', '<.#width', '.em'], ({ masters: [isZoomed, viewportWidth, width, em] }) => isZoomed ? viewportWidth : width - 3 * em),
                     },
+                    style: {
+                        overflow: () => 'hidden',
+                    }
                 }),
             },
         };
@@ -20426,7 +20500,7 @@ var $;
                 }),
             },
             style: {
-                'overflow-x': () => 'hidden',
+                'overflow': () => 'hidden',
             },
             elem: {
                 tabs: () => ({
@@ -21935,7 +22009,7 @@ var $;
                         valid: (val) => typeof val == 'boolean' ?
                             val :
                             null,
-                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro', 'isShownCard'])), { scheme_metro_value: $$.$me_atom2_prop_store({
+                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro', 'isShownCard', 'isShownAdvCard'])), { scheme_metro_value: $$.$me_atom2_prop_store({
                             default: () => [],
                             valid: (val) => Array.isArray(val) ? val : null,
                         }), scheme_metro_value_reciever: $$.$me_atom2_prop_store({
@@ -22006,6 +22080,27 @@ var $;
                                 ofsHor: '.ofsHor_initial',
                                 ofsVer: '.ofsVer_initial',
                                 value: $$.$me_atom2_prop_bind('/@app.card_value'),
+                                src: () => '',
+                                '#zIndex': () => 1000,
+                            },
+                            style: {
+                                'overflow': () => 'hidden',
+                            },
+                            dispatch: (dispatch_name, dispatch_arg) => {
+                                if (dispatch_name == 'close') {
+                                    return true;
+                                }
+                                return false;
+                            },
+                            event: {}
+                        }),
+                        advcard: $$.$me_atom2_prop(['.isShownAdvCard'], ({ masters: [isShownAdvCard] }) => !isShownAdvCard ? null : {
+                            base: $$.$nl_advcard,
+                            prop: {
+                                scale: '.scale_initial',
+                                ofsHor: '.ofsHor_initial',
+                                ofsVer: '.ofsVer_initial',
+                                value: null,
                                 src: () => '',
                                 '#zIndex': () => 1000,
                             },
