@@ -13635,7 +13635,12 @@ var $;
                 '15п': { caption: 'до 15 мин пешком' },
                 '5т': { caption: 'до 5 мин транспортом' },
             },
+            area: {
+                'Москва': {},
+                'Московская область': {},
+            },
             rmqt: {
+                'none': { caption: '' },
                 'free': { caption: 'Св.планировка' },
                 'studio': { caption: 'Студия' },
                 'rmqt1': { caption: '1-комн.' },
@@ -13646,38 +13651,89 @@ var $;
                 'rmqt6': { caption: '6+ комн.' },
             },
             remont: {
-                'требуется капитальный ремонт': {},
-                'без отделки': {},
-                'требуется ремонт': {},
-                'среднее состояние': {},
-                'хорошее состояние': {},
-                'отличное состояние': {},
-                'евроремонт': {},
-                'дизайнерский ремонт': {},
-                'первичная отделка': {},
+                '0': { caption: '' },
+                '1': { caption: 'требуется капитальный ремонт' },
+                '3': { caption: 'без отделки' },
+                '4': { caption: 'требуется ремонт' },
+                '5': { caption: 'среднее состояние' },
+                '6': { caption: 'хорошее состояние' },
+                '8': { caption: 'отличное состояние' },
+                '9': { caption: 'евроремонт' },
+                '10': { caption: 'дизайнерский ремонт' },
+                '11': { caption: 'первичная отделка' },
+            },
+            territory: {
+                '0': { caption: 'не важно' },
+                '1': { caption: 'огороженная' },
+                '2': { caption: 'огороженная и охраняемая' },
+                '3': { caption: 'не огорожена' },
+            },
+            parking: {
+                '0': { caption: 'не важно' },
+                '1': { caption: 'нет' },
+                '2': { caption: 'есть' },
+                '3': { caption: 'охраняемая' },
+                '4': { caption: 'подземная' },
+                '5': { caption: 'стихийная' },
+                '6': { caption: 'закрепленное место' },
+            },
+            elevator: {
+                '0': { caption: '' },
+                '1': { caption: 'Пассажирский' },
+                '2': { caption: 'Грузовой' },
+                '3': { caption: 'Пассажирский + Грузовой' },
+                '4': { caption: 'нет лифта' },
+                '5': { caption: 'есть лифт' },
             },
             lavatory: {
-                '0': { caption: 'может быть совмещенным' },
-                '1': { caption: 'только раздельный' },
-                '2': { caption: 'не менее 2-х' },
-                '3': { caption: 'не менее 3-х' },
-                '4': { caption: 'не менее 4-х' },
+                '0': { caption: '' },
+                '1': { caption: 'отсутствует' },
+                '2': { caption: 'совмещенный' },
+                '3': { caption: 'раздельный' },
+                '4': { caption: 'два санузла' },
+                '5': { caption: 'три санузла' },
+                '6': { caption: 'четыре санузла' },
+                '7': { caption: 'два совмещенных санузла' },
+                '8': { caption: 'два раздельных санузла' },
+                '9': { caption: 'три совмещенных санузла' },
+                '10': { caption: 'три раздельных санузла' },
+                '11': { caption: 'четыре совмещенных санузла' },
+                '12': { caption: 'четыре раздельных санузла' },
+                '13': { caption: 'есть санузел' },
             },
             balcony: {
-                '0': { caption: 'можно без балкона' },
-                '1': { caption: 'нужен балкон' },
-                '2': { caption: 'нужна лоджия' },
-                '3': { caption: 'не менее 2-х балконов/лоджий' },
-                '4': { caption: 'не менее 3-х балконов/лоджий' },
-                '5': { caption: 'не менее 4-х балконов/лоджий' },
+                '0': { caption: '' },
+                '1': { caption: 'нет' },
+                '2': { caption: 'балкон' },
+                '3': { caption: 'лоджия' },
+                '4': { caption: 'балкон + лоджия' },
+                '5': { caption: 'два балкона' },
+                '6': { caption: 'две лоджии' },
+                '7': { caption: 'три лоджии' },
+                '8': { caption: 'четыре лоджии' },
+                '9': { caption: 'три балкона' },
+                '10': { caption: 'балкон + две лоджии' },
+                '11': { caption: 'два балкона + две лоджии' },
+                '12': { caption: 'эркер' },
+                '13': { caption: 'эркер + лоджия' },
+                '14': { caption: 'несколько балконов' },
+                '15': { caption: 'несколько лоджий' },
+            },
+            windows: {
+                '0': { caption: '' },
+                '1': { caption: 'на улицу' },
+                '2': { caption: 'во двор' },
+                '3': { caption: 'во двор и на улицу' },
             },
             КлассЖилья: {
+                '': {},
                 'эконом': {},
                 'комфорт': {},
                 'бизнес': {},
                 'элитный': {},
             },
             ТипДома: {
+                '': {},
                 'панельный': {},
                 'блочный': {},
                 'монолитный': {},
@@ -13689,6 +13745,7 @@ var $;
                 'сталинский': {},
             },
             СерияДома: {
+                '': {},
                 '02/98-НМ': {},
                 '1385 АР-3': {},
                 '1605/12': {},
@@ -14008,7 +14065,7 @@ var $;
     var $$;
     (function ($$) {
         const row_height = 30;
-        const row_space = 20;
+        const row_space = 16;
         const prop_common = (def, p) => ({
             '#hidden': def.hidden,
             row: def.row,
@@ -14035,20 +14092,200 @@ var $;
                 tab_ids: $$.$me_atom2_prop_keys(['.tabs'], true),
                 tabs: () => ({
                     Местоположение: {
-                        icon: '$nl_icon_placemarker',
-                        params: {},
+                        icon: $$.$nl_icon_placemarker,
+                        params: {
+                            adrlabel: {
+                                row: () => 0,
+                                type: 'label',
+                                label: () => 'Адрес',
+                                label_width: () => 108,
+                            },
+                            Адрес: {
+                                row: () => 1,
+                                type: 'address',
+                            },
+                            area: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Регион',
+                                label_width: () => 108,
+                                none: () => 'Москва',
+                                options: () => $$.$nl_advcard_panel_param_options['area'],
+                            },
+                            complex: {
+                                row: () => 3,
+                                type: 'picker',
+                                label: () => 'Название ЖК',
+                                label_width: () => 108,
+                                none: () => '',
+                                options: () => { },
+                            },
+                            stations: {
+                                row: () => 4,
+                                type: 'picker',
+                                label: () => 'Ближайшие станции метро',
+                                label_width: () => 108,
+                                none: () => '',
+                                options: () => { },
+                            },
+                        },
                     },
                     Инфраструктура: {
                         icon: 'icons-8-city-square',
-                        params: {},
+                        params: {
+                            territory: {
+                                row: () => 1,
+                                type: 'picker',
+                                label: () => 'Территория',
+                                label_width: () => 108,
+                                none: () => 'не важно',
+                                options: () => $$.$nl_advcard_panel_param_options['territory'],
+                            },
+                            parking: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Парковка',
+                                label_width: () => 108,
+                                none: () => 'не важно',
+                                options: () => $$.$nl_advcard_panel_param_options['parking'],
+                            },
+                        },
                     },
                     Дом: {
                         icon: 'icons-8-building',
-                        params: {},
+                        params: {
+                            type: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    old: { caption: { text: 'Вторичка' } },
+                                    new: { caption: { text: 'Новостройка' } },
+                                })
+                            },
+                            Этажность: {
+                                row: () => 2,
+                                type: 'diap',
+                                label: () => 'Этажность',
+                                label_width: () => 100,
+                                diap_space: () => 16,
+                            },
+                            Этаж: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Этажность',
+                                label_width: () => 100,
+                                diap_space: () => 16,
+                            },
+                            ТипДома: {
+                                row: () => 4,
+                                type: 'picker',
+                                label: () => 'Тип дома',
+                                label_width: () => 100,
+                                none: () => 'не важен',
+                                options: () => $$.$nl_advcard_panel_param_options['ТипДома'],
+                            },
+                            elevator: {
+                                row: () => 5,
+                                type: 'picker',
+                                label: () => 'Лифт',
+                                label_width: () => 100,
+                                options: () => $$.$nl_advcard_panel_param_options['elevator'],
+                            },
+                            СерияДома: {
+                                row: () => 6,
+                                type: 'picker',
+                                label: () => 'Серия дома',
+                                label_width: () => 100,
+                                none: () => 'не важна',
+                                options: () => $$.$nl_advcard_panel_param_options['СерияДома'],
+                            },
+                            ГодПостройки: {
+                                row: () => 7,
+                                type: 'diap',
+                                label: () => 'Год постройки',
+                                label_width: () => 100,
+                                diap_space: () => 16,
+                            },
+                            КлассЖилья: {
+                                row: () => 8,
+                                type: 'pickermulti',
+                                label: () => 'Класс жилья',
+                                label_width: () => 110,
+                                none: () => 'не важен',
+                                options: () => $$.$nl_advcard_panel_param_options['КлассЖилья'],
+                            },
+                        },
                     },
                     'Квартира': {
                         icon: 'icons-8-key',
-                        params: {},
+                        params: {
+                            type: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    type1: { caption: { text: 'Апартаменты' } },
+                                    type2: { caption: { text: 'Квартира' } },
+                                })
+                            },
+                            rmqt: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Комнаты',
+                                label_width: () => 100,
+                                none: () => '',
+                                options: () => $$.$nl_advcard_panel_param_options['rmqt'],
+                            },
+                            total_sq: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Площадь',
+                                label_width: () => 100,
+                                diap_space: () => 16,
+                            },
+                            life_sq: {
+                                row: () => 4,
+                                type: 'input',
+                                label: () => 'Жилая',
+                                label_width: () => 100,
+                                diap_space: () => 16,
+                            },
+                            kitchen_sq: {
+                                row: () => 5,
+                                type: 'input',
+                                label: () => 'Кухня',
+                                label_width: () => 100,
+                                diap_space: () => 16,
+                            },
+                            lavatory: {
+                                row: () => 6,
+                                type: 'picker',
+                                label: () => 'Санузел',
+                                label_width: () => 100,
+                                options: () => $$.$nl_advcard_panel_param_options['lavatory'],
+                            },
+                            okna: {
+                                row: () => 7,
+                                type: 'picker',
+                                label: () => 'Окна',
+                                label_width: () => 100,
+                                options: () => $$.$nl_advcard_panel_param_options['lavatory'],
+                            },
+                            remont: {
+                                row: () => 8,
+                                type: 'picker',
+                                label: () => 'Ремонт',
+                                label_width: () => 90,
+                                none: () => '',
+                                options: () => $$.$nl_advcard_panel_param_options['remont'],
+                            },
+                            balcony: {
+                                row: () => 9,
+                                type: 'picker',
+                                label: () => 'Балкон',
+                                label_width: () => 90,
+                                options: () => $$.$nl_advcard_panel_param_options['balcony'],
+                            },
+                        },
                     },
                     'Цена и условия': {
                         icon: 'icons-8-money',
@@ -14125,6 +14362,32 @@ var $;
                                     base: input_with_button,
                                     prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
                                 };
+                            }
+                            else if (def.type == 'input') {
+                                const result = {
+                                    prop: Object.assign({}, prop_common(def)),
+                                    elem: {
+                                        label: !def.label ? null : () => ({
+                                            prop: {
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
+                                            },
+                                        }),
+                                    },
+                                };
+                                return result;
                             }
                             else if (def.type == 'picker' || def.type == 'pickermulti') {
                                 const result = {
@@ -14233,6 +14496,25 @@ var $;
                                     dispatch: def.dispatch,
                                 };
                             }
+                            else if (def.type == 'label') {
+                                return {
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    elem: {
+                                        label: () => ({
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#height': () => row_height,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                                '#ofsVer': () => 12,
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                    }
+                                };
+                            }
                             else {
                                 $$.$me_throw(def.type);
                             }
@@ -14278,7 +14560,6 @@ var $;
                                     elem: {
                                         icon: $$.$me_atom2_prop(['<<.options', '<.id'], ({ masters: [options, id] }) => {
                                             const s = options[id] + '';
-                                            console.log('zzzz', id, s);
                                             if (id === 'Местоположение') {
                                                 return $$.$nl_icon_placemarker;
                                             }
