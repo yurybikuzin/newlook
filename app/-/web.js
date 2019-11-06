@@ -14184,7 +14184,7 @@ var $;
                             },
                             Этажность: {
                                 row: () => 2,
-                                type: 'diap',
+                                type: 'input',
                                 label: () => 'Этажность',
                                 label_width: () => 100,
                                 diap_space: () => 16,
@@ -14192,7 +14192,7 @@ var $;
                             Этаж: {
                                 row: () => 3,
                                 type: 'input',
-                                label: () => 'Этажность',
+                                label: () => 'Этаж',
                                 label_width: () => 100,
                                 diap_space: () => 16,
                             },
@@ -14309,7 +14309,65 @@ var $;
                     },
                     'Цена и условия': {
                         icon: 'icons-8-money',
-                        params: {},
+                        params: {
+                            price: {
+                                row: () => 1,
+                                type: 'input',
+                                label: () => 'Цена',
+                                label_width: () => 100,
+                            },
+                            'ТипСделки': {
+                                row: () => 2,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: { width: 95, text: 'Не важно' } },
+                                    '1': { caption: { text: 'Прямая продажа' } },
+                                    '2': { caption: { text: 'Альтернатива' } },
+                                }),
+                            },
+                            'Ипотека': {
+                                row: () => 3,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: {
+                                            width: 95,
+                                            text: 'Не важно'
+                                        } },
+                                    only: { caption: ({ isSelected }) => ({ text: 'Только по ипотеке', width: 186 }) },
+                                    except: { caption: ({ isSelected }) => isSelected ? 'Строго без ипотеки' : {
+                                            text: 'Без ипотеки',
+                                        }
+                                    },
+                                }),
+                            },
+                            'БонусАгенту': {
+                                row: () => 4,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: ({ isSelected }) => ({ text: 'Не важно', width: 95 }) },
+                                    '1': { caption: ({ isSelected }) => ({ text: 'Только с бонусом агенту', width: 186 }) },
+                                    '2': { caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Без бонуса агенту',
+                                        } : {
+                                            text: 'Без бонуса',
+                                        } },
+                                }),
+                            },
+                            'Статус': {
+                                row: () => 5,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: { text: 'Свободна' } },
+                                    '1': { caption: { text: 'Проживают люди' } },
+                                }),
+                            },
+                            livingcount: {
+                                row: () => 6,
+                                type: 'input',
+                                label: () => 'Количество проживающих',
+                                label_width: () => 100,
+                            },
+                        },
                     },
                     'Права': {
                         icon: 'icons-8-money',
@@ -14345,7 +14403,29 @@ var $;
                     },
                     'Контакты и статус': {
                         icon: 'icons-8-money',
-                        params: {}
+                        params: {
+                            deal: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    mode1: { caption: { text: 'Продается' } },
+                                    mode2: { caption: { text: 'Аванс' } },
+                                    mode3: { caption: { text: 'Продана' } },
+                                })
+                            },
+                            agent: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Агент',
+                                label_width: () => 100,
+                            },
+                            phone: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Телефон',
+                                label_width: () => 100,
+                            },
+                        }
                     },
                     'Режим публикации': {
                         icon: 'icons-8-money',
