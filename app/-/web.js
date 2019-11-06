@@ -10901,80 +10901,34 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_advcard = {
+        $$.$nl_icon_placemarker = {
+            type: '$nl_icon_placemarker',
+            base: $$.$me_svg,
             prop: {
-                '#width': '/.#viewportWidth',
-                '#height': '/.#viewportHeight',
-                isTouch: $$.$me_atom2_prop_store({
-                    default: () => $$.a('/.#isTouch'),
-                    valid: (val) => typeof val == 'boolean' ? val : null,
-                }),
-            },
-            elem: {
-                background: () => ({
-                    prop: {
-                        '#height': '<.#height',
-                        '#width': '<.#width',
-                    },
-                    style: {
-                        background: () => 'rgba(0, 0, 0, .4)',
-                    },
-                }),
-                wrapper: () => ({
-                    prop: {
-                        '#height': () => 700,
-                        '#width': () => 700,
-                        '#alignHor': () => $$.$me_align.center,
-                        '#alignVer': () => $$.$me_align.center,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
-                    },
-                    style: {
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
-                    },
-                    elem: {
-                        cross: () => ({
-                            base: $$.$me_cross,
-                            prop: {
-                                size: () => 24,
-                                thick: () => 3,
-                                '#ofsVer': () => 10,
-                                '#ofsHor': () => 12,
-                                '#alignHor': () => $$.$me_align.right,
-                                color: '<.grayColor',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
-                                '#cursor': () => 'pointer',
+                color: '<.color',
+                viewBox: () => "0 0 28 27",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: {},
+                        sub: [
+                            { attr: {
+                                    fillRule: () => 'nonzero',
+                                    fill: () => 'none',
+                                    stroke: () => 'red',
+                                    'stroke-width': () => 1.5,
+                                    d: () => "M8.6 18c-3.7.5-6.1 1.5-7.2 2.7-1.8 2.3 2.3 4.6 9.2 5.2 7 .6 14.1-.8 16-3 1.6-2-1.5-4-7.2-4.9"
+                                }
                             },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a('/@app.isShownAdvCard', false);
-                                    return true;
-                                },
-                            },
-                        }),
-                    }
-                })
+                            { attr: { fill: () => '<.color', d: () => "M14 23C9.3 15 7 9.6 7 7a7 7 0 0114 0c0 2.6-2.3 8-7 16zm0-13.1a3 3 0 100-6 3 3 0 000 6z" } },
+                        ],
+                    },
+                ],
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-//advcard.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_panel = {
-            style: {
-                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
-                borderRadius: () => '2px',
-                boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
+//placemarker.js.map
 ;
 "use strict";
 var $;
@@ -11003,980 +10957,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //option.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const newsUrl = 'https://baza-winner.ru/news/list.php?limit=2&category=W7';
-        $$.$nl_main_workspace = {
-            prop: {
-                sections: () => ({
-                    promo: {
-                        caption: '[ NEW! ]',
-                    },
-                    news: {
-                        caption: 'Новости',
-                    },
-                    orders: {
-                        caption: 'Заказы',
-                    },
-                    alpha: {
-                        caption: 'Альфа Банк',
-                    },
-                    absolut: {
-                        caption: 'Абсолют Банк',
-                    },
-                    face: {
-                        caption: 'Раскрытие лица',
-                    },
-                }),
-                section_ids: $$.$me_atom2_prop_keys(['.sections']),
-                selected: $$.$me_atom2_prop_store({
-                    default: () => $$.a('.section_ids')[0],
-                    valid: (val) => val == $$.a('.sections')[val] ? val : null,
-                }),
-            },
-            elem: {
-                promo: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsHor': '.em',
-                        '#ofsVer': () => 56 + 16,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '<@alpha.#width'], ({ masters: [width, em, width2] }) => width - 3 * em - width2),
-                        '#height': () => 87,
-                    },
-                    elem: {
-                        title: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 18,
-                                color: () => '#e34741',
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('promo', sections).toUpperCase()),
-                            },
-                        }),
-                        more: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#ofsVer': '.em',
-                                '#ofsHor': '.em',
-                                '#alignHor': () => $$.$me_align.right,
-                                '#cursor': () => 'pointer',
-                                colorText: '/.colorLink',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                fontSize: () => 12,
-                            },
-                            dom: {
-                                innerText: () => 'Подробнее'
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            },
-                        }),
-                        text: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': () => 43,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 11,
-                            },
-                            dom: {
-                                innerHTML: () => '<b>СМА (Сравнительный Маркетинговый Анализ)</b> квартир в Москве и МО за 3 минуты в формате PDF. Анализ квартиры по 375 параметрам: БТИ, Росреестр, жкх, банки и т.д.',
-                            },
-                        }),
-                    },
-                }),
-                news: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
-                        '#width': '<@promo.#width',
-                        '#height': () => 300,
-                        news_items: $$.$me_atom2_prop([], ({ atom }) => {
-                            const store_key = 'news';
-                            let result = {};
-                            let already_got = false;
-                            const stored = localStorage.getItem(store_key);
-                            if (stored)
-                                try {
-                                    result = JSON.parse(stored);
-                                }
-                                catch (err) {
-                                    console.error(err, { stored });
-                                }
-                            fetch(newsUrl, { method: 'get' })
-                                .then(response => response.json())
-                                .then(jsonData => {
-                                const stored_to_be = JSON.stringify(jsonData);
-                                if (stored_to_be != stored) {
-                                    localStorage.setItem(store_key, stored_to_be);
-                                    atom.value(jsonData);
-                                }
-                            })
-                                .catch(err => {
-                                console[already_got ? 'warn' : 'error'](`while ${already_got ? 'update' : 'fetch'} data for news:`, err);
-                            });
-                            return result;
-                        }),
-                        news_item_ids: $$.$me_atom2_prop_keys(['.news_items']),
-                        news_item: $$.$me_atom2_prop({ keys: ['.news_item_ids'], masters: ['.news_items'] }, ({ key: [id], masters: [items] }) => items[id]),
-                    },
-                    elem: {
-                        title: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('news', sections).toUpperCase()),
-                            },
-                        }),
-                        more: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => null,
-                                '#ofsVer': '.em',
-                                '#ofsHor': '.em',
-                                '#alignHor': () => $$.$me_align.right,
-                                '#cursor': () => 'pointer',
-                                colorText: '/.colorLink',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                fontSize: () => 12,
-                            },
-                            dom: {
-                                innerText: () => 'Посмотреть все новости'
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            },
-                        }),
-                        news_cont: $$.$me_atom2_prop({ keys: ['.news_item_ids'] }, ({ key: [id] }) => ({
-                            prop: {
-                                id: () => id,
-                                '#ofsVer': () => 46,
-                            },
-                            elem: {
-                                item: () => ({
-                                    base: news_item,
-                                    prop: {
-                                        '#ofsHor': '.em',
-                                        '#width': $$.$me_atom2_prop(['<<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                        '#ofsVer': $$.$me_atom2_prop(['<<.news_item_ids', '<.id', '.em'], ({ masters: [ids, id, ofs] }) => Math.round(ids.indexOf(id)) * (100 + ofs)),
-                                        caption: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].title),
-                                        imageUrl: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].image.thumb),
-                                        text: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].description),
-                                        url: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].link),
-                                        date: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].pubDate),
-                                    }
-                                }),
-                            }
-                        })),
-                    },
-                }),
-                orders: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em', '<@news.#height',], ({ masters: [ofs, height, ofs2, height2] }) => ofs + height + ofs2 + height2 + ofs2),
-                        '#width': '<@promo.#width',
-                        '#height': () => 135,
-                    },
-                    elem: {
-                        title: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('orders', sections).toUpperCase()),
-                            },
-                        }),
-                        more: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#ofsVer': '.em',
-                                '#ofsHor': '.em',
-                                '#alignHor': () => $$.$me_align.right,
-                                '#cursor': () => 'pointer',
-                                colorText: '/.colorLink',
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                fontSize: () => 12,
-                            },
-                            dom: {
-                                innerText: () => 'Посмотреть все заказы'
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            },
-                        }),
-                    },
-                }),
-                alpha: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '': () => 54,
-                        '#ofsVer': '<@promo.#ofsVer',
-                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
-                        '#width': () => 179,
-                        '#height': () => 142,
-                    },
-                    elem: {
-                        svg: () => ({
-                            prop: {
-                                '#ofsVer': () => 12,
-                                '#ofsHor': () => 19,
-                            },
-                            dom: {
-                                innerHTML: () => `
-              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="78" height="17" viewBox="0 0 78 17">
-                  <defs>
-                      <path id="a" d="M0 15.91h76.666V.083H0z"/>
-                  </defs>
-                  <g fill="none" fill-rule="evenodd">
-                      <path fill="#EF3124" d="M74.762 4.09l-2.656 2.8v-2.8h-1.922v7.07h1.922V8.185l2.843 2.977h2.483l-3.497-3.706 3.243-3.366zM67.011 6.727h-2.714V4.089h-1.965v7.072h1.965V8.372h2.714v2.789h1.965V4.089h-1.965z"/>
-                      <g transform="translate(.724 .554)">
-                          <path fill="#EF3124" d="M11.24 7.19c-.045 1.392-.224 1.67-1 1.67v1.75h.29c1.935 0 2.4-1.007 2.472-3.247l.078-2.478h1.815v5.725h1.893V3.15H11.37l-.131 4.04zM21.348 8.967h-1.222V7.072h1.222c.657 0 1.052.291 1.052.914 0 .676-.381.98-1.052.98m.145-3.55h-1.367V3.148h-1.893v7.46h3.286c2.064 0 2.8-1.35 2.8-2.623 0-1.643-1.025-2.57-2.826-2.57M30.485 8.98V4.766c1.051.146 1.709.94 1.709 2.107 0 1.166-.658 1.961-1.71 2.107zm-1.893 0c-1.052-.146-1.71-.941-1.71-2.107 0-1.166.658-1.961 1.71-2.107V8.98zm1.893-6.003V.207h-1.893v2.77c-2.17.185-3.629 1.736-3.629 3.896 0 2.173 1.46 3.724 3.629 3.91v2.809h1.893v-2.81c2.169-.172 3.628-1.736 3.628-3.91 0-2.172-1.46-3.723-3.628-3.895zM39.319 7.827c0 .861-.605 1.352-1.394 1.352-.683 0-1.222-.252-1.222-.994 0-.73.591-.848 1.104-.848h1.512v.49zm1.893.49V5.813c0-1.829-1.157-2.982-3.102-2.982-2.012 0-3.077 1.22-3.169 2.491h1.92c.065-.278.355-.755 1.249-.755.736 0 1.209.345 1.209 1.246h-1.88c-1.683 0-2.682.888-2.682 2.372 0 1.55 1.093 2.61 2.669 2.61 1.155 0 1.797-.55 2.077-.967.25.504.802.782 1.525.782h.657V8.887c-.342 0-.473-.159-.473-.57zM49.231 8.728h-2.024V6.025h2.024c1.052 0 1.643.49 1.643 1.351 0 .888-.591 1.352-1.643 1.352m.092-4.519h-2.116V2.102h4.903V.207h-6.888V10.61h4.101c2.274 0 3.576-1.14 3.576-3.234 0-1.974-1.302-3.167-3.576-3.167M58.25 7.827c0 .861-.605 1.352-1.394 1.352-.684 0-1.223-.252-1.223-.994 0-.73.592-.848 1.104-.848h1.512v.49zm1.892.49V5.813c0-1.829-1.157-2.982-3.102-2.982-2.011 0-3.076 1.22-3.168 2.491h1.919c.066-.278.355-.755 1.249-.755.736 0 1.21.345 1.21 1.246h-1.88c-1.683 0-2.682.888-2.682 2.372 0 1.55 1.093 2.61 2.668 2.61 1.156 0 1.797-.55 2.077-.967.25.504.802.782 1.525.782h.658V8.887c-.342 0-.474-.159-.474-.57z"/>
-                          <mask id="b" fill="#fff">
-                              <use xlink:href="#a"/>
-                          </mask>
-                          <path fill="#EF3124" d="M0 15.91h10.123v-2.12H0zM3.615 6.674l1.42-4.254h.052l1.341 4.254H3.615zm3.286-5.04C6.613.768 6.28.083 5.141.083 4 .082 3.645.764 3.341 1.635L.21 10.61h2.077l.723-2.134h3.997l.67 2.134h2.209L6.9 1.635z" mask="url(#b)"/>
-                      </g>
-                  </g>
-              </svg>
-            `
-                            },
-                        }),
-                        title1: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 20,
-                                '#ofsVer': () => 41,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 11,
-                            },
-                            dom: {
-                                innerText: () => 'Публикация в Альфа Банк',
-                            },
-                        }),
-                        title2: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 20,
-                                '#ofsVer': () => 59,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 11,
-                            },
-                            dom: {
-                                innerText: () => 'Дисконт на % ставку',
-                            },
-                        }),
-                        title3: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 20,
-                                '#ofsVer': () => 76,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 11,
-                            },
-                            dom: {
-                                innerText: () => 'Поток заявок от клиентов',
-                            },
-                        }),
-                        button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 140,
-                                '#height': () => 24,
-                                '#ofsVer': () => 101,
-                                '#alignHor': () => $$.$me_align.center,
-                                caption: () => 'Стать партнером',
-                                target: () => '<',
-                                fontSize: () => 12,
-                            },
-                            style: {
-                                background: () => '#ef3124',
-                                borderRadius: () => '4px',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            }
-                        }),
-                    },
-                }),
-                absolut: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsVer': $$.$me_atom2_prop(['<@alpha.#ofsVer', '<@alpha.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
-                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
-                        '#width': () => 179,
-                        '#height': () => 121,
-                    },
-                    elem: {
-                        svg: () => ({
-                            prop: {
-                                '#ofsVer': () => 12,
-                                '#ofsHor': () => 19,
-                            },
-                            dom: {
-                                innerHTML: () => `
-              <svg xmlns="http://www.w3.org/2000/svg" width="92" height="19" viewBox="0 0 92 19">
-                  <g fill="none" fill-rule="evenodd">
-                      <path fill="#E15D29" d="M3.314 12.527l1.826 1.787v-4.068c0-.79-.448-1.758-1.014-2.302L2.321 6.177v4.07c0 .78.45 1.757.993 2.28zm6.054 5.854l-3.18-3.045c-.63-.606-1.724-1.022-2.627-1.022H.912l3.175 3.041a3.793 3.793 0 0 0 2.536 1.026h2.745zM5.14 6.248c0-.881.415-1.813 1.067-2.44L9.367.753v2.55c0 .867-.431 1.92-1.062 2.527L5.14 8.889v-2.64z"/>
-                      <path fill="#595A59" d="M53.229 12.5c0 .328-.27.59-.608.59l-1.765.003a.598.598 0 0 1-.608-.587v-2.352c0-.323.274-.585.608-.585l1.765-.005c.338 0 .608.262.608.585V12.5zm-.302-4.113l-2.32.006c-1.003 0-1.821.79-1.821 1.761v.412h-1.274V8.393h-1.518v5.875h1.518v-2.527h1.274v.765c0 .97.818 1.762 1.821 1.762l2.32-.005c1 0 1.82-.792 1.82-1.762v-2.352c0-.97-.82-1.762-1.82-1.762zm-12.278.006h3.867v5.875H43V9.57l-2.049-.001a.596.596 0 0 0-.606.585v2.352c0 .97-.817 1.762-1.822 1.762h-.487v-1.175h.184a.597.597 0 0 0 .606-.587v-2.352c0-.97.817-1.761 1.823-1.761zM12.324 11.33l1.387-3.76 1.42 3.76h-2.807zm.485-5.289l-3.441 8.227h1.872l.65-1.762h3.685l.668 1.762h1.81L14.61 6.041h-1.8zm42.492 2.352h5.357v1.176h-1.921v4.699h-1.515V9.569H55.3V8.393zm-32.359 4.113a.598.598 0 0 1-.607.587h-1.82a.596.596 0 0 1-.608-.587V10.153a.597.597 0 0 1 .607-.584h1.821c.334 0 .607.262.607.585v2.352zm-.303-4.113h-1.671c-.395 0-.76.123-1.06.33v-.92c0-.323.271-.585.606-.585h3.217V6.041H20.21c-1.003 0-1.82.791-1.82 1.762v4.703c0 .97.816 1.762 1.82 1.762h2.429c1.004 0 1.82-.792 1.82-1.762v-2.352c0-.97-.816-1.761-1.82-1.761zm13.281 4.113a.598.598 0 0 1-.607.587h-1.82a.597.597 0 0 1-.608-.587v-2.352c0-.323.272-.585.608-.585h1.82c.333 0 .607.262.607.585v2.352zm-.305-4.113h-2.428c-1.002 0-1.82.79-1.82 1.761v2.352c0 .97.818 1.762 1.82 1.762h2.428c1.006 0 1.823-.792 1.823-1.762v-2.352c0-.97-.817-1.761-1.823-1.761zm-8.642 1.761v2.352c0 .326.27.587.606.587h2.999v1.175h-3.304c-1.002 0-1.82-.792-1.82-1.762v-2.352c0-.97.818-1.761 1.82-1.761h3.304v1.176h-2.999a.596.596 0 0 0-.606.585zm41.336 1.696c0 .686-.575 1.243-1.284 1.243h-2.322v-3.02h2.322c.709 0 1.284.555 1.284 1.243v.534zm-.792-2.955h-2.814V7.217h4.674V6.04h-6.19v8.227h4.33c1.38 0 2.5-1.082 2.5-2.418v-.534c0-1.335-1.12-2.421-2.5-2.421zm20.107 2.846h-.553v2.527h-1.52V8.393h1.52v2.173h.555l2.006-2.173h1.707l-2.56 2.766 2.733 3.109h-1.9l-1.988-2.527zm-12.23 1.352h-2.43a.598.598 0 0 1-.61-.587v-.062c0-.326.272-.591.61-.591h2.43v1.24zm-.307-4.7h-3.822v1.176h3.518a.6.6 0 0 1 .611.585v.524h-2.736c-1.002 0-1.82.791-1.82 1.766v.062c0 .97.818 1.762 1.82 1.762h4.249v-4.114c0-.97-.816-1.761-1.82-1.761zm7.614 0h1.518v5.875H82.7v-2.527h-2.973v2.527h-1.52V8.393h1.52v2.173h2.973V8.393z"/>
-                  </g>
-              </svg>
-            `
-                            },
-                        }),
-                        title1: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 20,
-                                '#ofsVer': () => 42,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 11,
-                            },
-                            dom: {
-                                innerHTML: () => 'Дисконт 1% на ипотечную ставку',
-                            },
-                        }),
-                        button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 140,
-                                '#height': () => 24,
-                                '#ofsVer': () => 80,
-                                '#alignHor': () => $$.$me_align.center,
-                                caption: () => 'Стать партнером',
-                                target: () => '<',
-                                fontSize: () => 12,
-                            },
-                            style: {
-                                background: () => '#ff6600',
-                                borderRadius: () => '4px',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            }
-                        }),
-                    },
-                }),
-                face: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsVer': $$.$me_atom2_prop(['<@alpha.#ofsVer', '<@alpha.#height', '.em', '<@absolut.#height',], ({ masters: [ofs, height, ofs2, height2] }) => ofs + height + ofs2 + height2 + ofs2),
-                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
-                        '#width': () => 179,
-                        '#height': () => 161,
-                    },
-                    elem: {
-                        title1: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 20,
-                                '#ofsVer': () => 14,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 12,
-                                fontWeight: () => 700,
-                            },
-                            dom: {
-                                innerText: () => 'Уважаемый клиент!',
-                            },
-                        }),
-                        title2: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 20,
-                                '#ofsVer': () => 36,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 11,
-                            },
-                            dom: {
-                                innerHTML: () => 'Для публикации в "зелёной зоне" Вам необходимо раскрыть своё лицо',
-                            },
-                        }),
-                        title3: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': () => 20,
-                                '#ofsVer': () => 83,
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 11,
-                                fontStyle: () => 'italic',
-                            },
-                            dom: {
-                                innerHTML: () => 'Публикация в "зелёной зоне" бесплатна',
-                            },
-                        }),
-                        button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 140,
-                                '#height': () => 24,
-                                '#ofsVer': () => 121,
-                                '#alignHor': () => $$.$me_align.center,
-                                caption: () => 'Раскрыть лицо',
-                                target: () => '<',
-                                fontSize: () => 12,
-                            },
-                            style: {
-                                borderRadius: () => '4px',
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            }
-                        }),
-                    },
-                }),
-            },
-        };
-        const news_item = {
-            prop: {
-                '#height': () => 100,
-                caption: $$.$me_atom2_prop_abstract(),
-                imageUrl: $$.$me_atom2_prop_abstract(),
-                text: $$.$me_atom2_prop_abstract(),
-                url: $$.$me_atom2_prop_abstract(),
-                date: $$.$me_atom2_prop_abstract(),
-            },
-            elem: {
-                image: () => ({
-                    node: 'img',
-                    prop: {
-                        '#width': () => 130,
-                        '#height': () => 97,
-                        '#ofsHor': () => 0,
-                        '#ofsVer': () => 0,
-                    },
-                    attr: {
-                        src: '<.imageUrl',
-                    },
-                }),
-                title: () => ({
-                    prop: {
-                        '#height': () => null,
-                        '#width': () => null,
-                        '#ofsVer': '<@icon1.#ofsVer',
-                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
-                    },
-                    style: {
-                        fontFamily: () => 'system-ui',
-                        fontSize: () => 12,
-                        fontWeight: () => 500,
-                    },
-                    dom: {
-                        innerText: '<.caption',
-                    },
-                }),
-                text: () => ({
-                    prop: {
-                        '#height': () => null,
-                        '#width': $$.$me_atom2_prop(['<.#width', '<@image.#width', '.em'], ({ masters: [width, img_width, ofs] }) => width - img_width - ofs),
-                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer', '<@title.#height'], ({ masters: [ofs, height] }) => ofs + height + 10),
-                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
-                    },
-                    style: {
-                        fontFamily: () => 'system-ui',
-                        fontSize: () => 12,
-                        fontWeight: () => 400,
-                    },
-                    dom: {
-                        innerText: '<.text',
-                    },
-                }),
-                more: () => ({
-                    prop: {
-                        '#width': () => null,
-                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
-                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
-                        '#cursor': () => 'pointer',
-                        colorText: '/.colorLink',
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        fontSize: () => 12,
-                    },
-                    dom: {
-                        innerText: () => 'Подробнее'
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            console.log('link');
-                            return true;
-                        },
-                    },
-                }),
-                date: () => ({
-                    prop: {
-                        '#width': () => null,
-                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
-                        '#alignHor': () => $$.$me_align.right,
-                        fontSize: () => 10,
-                    },
-                    dom: {
-                        innerText: '<.date'
-                    },
-                    style: {
-                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#d0d0d0'),
-                    },
-                }),
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//workspace.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_tabs = {
-            elem: {
-                tab: $$.$me_atom2_prop({ keys: ['<.order_ids'] }, ({ key: [id] }) => ({
-                    base: tab,
-                    prop: {
-                        id: () => id,
-                    },
-                    dom: {
-                        innerText: id != 'new' ? `<<.order_title[${id}]` : (() => 'Новый заказ +'.toUpperCase()),
-                    },
-                })),
-            },
-        };
-        const tab = {
-            node: 'span',
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    $$.a('<<.selected', $$.a('.id'));
-                    return true;
-                },
-            },
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 10,
-                paddingRight: () => 10,
-                paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$nl_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$nl_theme.light ? 1 : .5})`),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//tabs.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_new = {
-            prop: {
-                data: () => ({
-                    Продажа: {
-                        'Москва': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Загородная: {
-                                'Вся база': 500000,
-                                'За сегодня': 500,
-                                'Новые': 500,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                            Доли: {
-                                'Вся база': 700,
-                                'За сегодня': 70,
-                                'Новые': 70,
-                            },
-                        },
-                        'Московская область': {
-                            Квартиры: {
-                                'Вся база': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
-                            },
-                            Комнаты: {
-                                'Вся база': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Коммерческая: {
-                                'Вся база': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Вся база': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                            Доли: {
-                                'Вся база': 700,
-                                'За сегодня': 70,
-                                'Новые': 70,
-                            },
-                        },
-                    },
-                }),
-                panel_names: $$.$me_atom2_prop_keys(['.data']),
-                panel_data: $$.$me_atom2_prop({ keys: ['.panel_names'], masters: ['.data'] }, ({ key: [panel_name], masters: [data] }) => data[panel_name]),
-                panel_left_first: '.em',
-                panel_top_first: () => 0,
-                panel_width: () => 536,
-                panel_height: () => 580,
-                panel_space_hor: '.em',
-                panel_space_ver: '.em',
-                panel_pos: $$.$me_atom2_prop({
-                    keys: ['.panel_names'],
-                    masters: $$.$me_atom2_prop_masters(['.panel_names'], ({ key: [panel_name], masters: [panel_names] }) => {
-                        const idx = panel_names.indexOf(panel_name);
-                        return !idx ?
-                            ['.panel_left_first', '.panel_top_first'] :
-                            [
-                                '.panel_left_first',
-                                '.panel_top_first',
-                                '.#width',
-                                `.panel_pos[${panel_names[idx - 1]}]`,
-                                '.panel_width',
-                                '.panel_height',
-                                '.panel_space_hor',
-                                '.panel_space_ver',
-                            ];
-                    }),
-                }, ({ key: [panel_name], len, masters: [left, top, width, pos, panel_width, panel_height, space_hor, space_ver] }) => {
-                    if (len <= 2) {
-                        return { left, top };
-                    }
-                    else {
-                        let result = {
-                            left: pos.left + panel_width + space_hor,
-                            top: pos.top,
-                        };
-                        if (result.left + panel_width + space_hor > width) {
-                            result.left = left;
-                            result.top += panel_height + space_ver;
-                        }
-                        return result;
-                    }
-                }),
-            },
-            elem: {
-                panel: $$.$me_atom2_prop({ keys: ['.panel_names'] }, ({ key: [panel_name] }) => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        colorBackground: () => 'white',
-                        '#width': '<.panel_width',
-                        '#height': '<.panel_height',
-                        '#ofsHor': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.left, duration: 800 })),
-                        '#ofsVer': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.top, duration: 800 })),
-                        tables: `<.panel_data[${panel_name}]`,
-                        table_keys: $$.$me_atom2_prop_keys(['.tables']),
-                        table: $$.$me_atom2_prop({ keys: ['.table_keys'], masters: ['.tables'] }, ({ key: [table_key], masters: [tables] }) => tables[table_key]),
-                        table_height: $$.$me_atom2_prop({ keys: ['.table_keys'], masters: ['.table_header_height', '.table_row_keys[]', '.table_row_height', '.table_row_space'] }, ({ masters: [header_height, table_row_key, row_height, row_space] }) => header_height + 2 * row_space + table_row_key.length * (row_height + row_space)),
-                        table_row_height: () => 32,
-                        table_header_height: () => 40,
-                        table_ver_ofs: () => 69,
-                        table_ver_space: '.em',
-                        table_row_space: () => 1,
-                        table_top: $$.$me_atom2_prop({
-                            keys: ['.table_keys'],
-                            masters: $$.$me_atom2_prop_masters(['.table_keys'], ({ key: [table_key], masters: [table_keys] }) => {
-                                const idx = table_keys.indexOf(table_key);
-                                return (!idx ? ['.table_ver_ofs'] :
-                                    [
-                                        `.table_top[${table_keys[idx - 1]}]`,
-                                        `.table_height[${table_keys[idx - 1]}]`,
-                                        '.table_ver_space',
-                                    ]);
-                            }),
-                        }, $$.$me_atom2_prop_compute_fn_sum()),
-                        table_row_keys: $$.$me_atom2_prop_keys({ keys: ['.table_keys'], masters: ['.table[]'] }),
-                        table_row: $$.$me_atom2_prop({ keys: ['.table_keys', '.table_row_keys[]'], masters: ['.table[]'] }, ({ key: [table_key, table_row_key], masters: [table, key] }) => table[table_row_key]),
-                        table_flds: () => ({
-                            'Вся база': {
-                                width: 66 + 2 * (26 - (33 - 24)),
-                                opacity: 1,
-                            },
-                            'За сегодня': {
-                                width: 83 + 2 * (33 - 24),
-                                opacity: 0.7,
-                            },
-                            'Новые': {
-                                width: 51 + 2 * 24,
-                                opacity: 0.7,
-                            },
-                        }),
-                        table_cell_keys: $$.$me_atom2_prop_keys(['.table_flds']),
-                        table_fld: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_flds'] }, ({ key: [key], masters: [table_flds] }) => table_flds[key]),
-                        table_fld_width: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_fld[]'] }, ({ key: [key], masters: [table_fld] }) => table_fld.width),
-                        table_fld_opacity: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_fld[]'] }, ({ key: [key], masters: [table_fld] }) => table_fld.opacity),
-                        table_fld_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.table_cell_keys'], ({ masters: [table_cell_keys] }) => table_cell_keys.map(key => `.table_fld_width[${key}]`)), p => p.masters.reduce((result, w) => result + w, 0)),
-                        table_cell: $$.$me_atom2_prop({ keys: ['.table_keys', '.table_row_keys[]', '.table_cell_keys'], masters: ['.table_row[][]'] }, ({ key: [table_key, table_row_key, table_cell_key], masters: [row] }) => {
-                            var x = (row[table_cell_key] + '').split('.');
-                            var x1 = x[0];
-                            var x2 = x.length > 1 ? '.' + x[1] : '';
-                            var rgx = /(\d+)(\d{3})/;
-                            while (rgx.test(x1))
-                                x1 = x1.replace(rgx, '$1' + ' ' + '$2');
-                            return x1 + x2;
-                        }),
-                    },
-                    elem: {
-                        header: () => ({
-                            prop: {
-                                '#ofsHor': () => 24,
-                                '#ofsVer': () => 32,
-                                '#width': () => null,
-                                '#height': () => null,
-                                em: $$.$me_atom2_prop(['/.em'], ({ masters: [em] }) => em / 16 * 18),
-                                fontWeight: () => 500,
-                            },
-                            dom: {
-                                innerText: () => panel_name.toUpperCase(),
-                            },
-                        }),
-                        table: $$.$me_atom2_prop({ keys: ['.table_keys'] }, ({ key: [table_key] }) => ({
-                            node: 'table',
-                            prop: {
-                                '#ofsVer': `<.table_top[${table_key}]`,
-                                '#ofsHor': '.em',
-                                '#height': `<.table_height[${table_key}]`,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-                            },
-                            style: {
-                                borderCollapse: () => 'separate',
-                                borderSpacing: $$.$me_atom2_prop(['<.table_row_space'], ({ masters: [table_row_space] }) => `0 ${table_row_space}px`),
-                            },
-                            elem: {
-                                header: () => ({
-                                    node: 'tr',
-                                    prop: {
-                                        '#height': '<<.table_header_height',
-                                    },
-                                    style: {
-                                        position: () => 'relative',
-                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581'),
-                                    },
-                                    elem: {
-                                        key: () => ({
-                                            base: th,
-                                            prop: {
-                                                '#width': $$.$me_atom2_prop(['<.#width', '<<<.table_fld_width_sum'], ({ masters: [width, table_fld_width_sum] }) => width - table_fld_width_sum),
-                                            },
-                                            style: {
-                                                textAlign: () => 'left',
-                                                paddingLeft: () => 8,
-                                            },
-                                            dom: {
-                                                innerText: () => table_key,
-                                            },
-                                        }),
-                                        fld: $$.$me_atom2_prop({ keys: ['<<.table_cell_keys'] }, ({ key: [caption] }) => ({
-                                            base: th,
-                                            prop: {
-                                                '#width': `<<<.table_fld_width[${caption}]`,
-                                            },
-                                            style: {
-                                                textAlign: () => 'center',
-                                            },
-                                            dom: {
-                                                innerText: () => caption,
-                                            },
-                                        })),
-                                    },
-                                }),
-                                row: $$.$me_atom2_prop({ keys: [`<.table_row_keys[${table_key}]`] }, ({ key: [table_row_key] }) => ({
-                                    node: 'tr',
-                                    prop: {
-                                        '#height': '<<.table_row_height',
-                                        '#cursor': () => 'pointer',
-                                    },
-                                    event: {
-                                        clickOrTap: () => {
-                                            console.log(panel_name, table_key, table_row_key);
-                                            return true;
-                                        }
-                                    },
-                                    style: {
-                                        position: () => 'relative',
-                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f0f1f4' : '#878f9b'),
-                                    },
-                                    elem: {
-                                        key: () => ({
-                                            base: td,
-                                            prop: {
-                                                '#width': $$.$me_atom2_prop(['<.#width', '<<<.table_fld_width_sum'], ({ masters: [width, table_fld_width_sum] }) => width - table_fld_width_sum),
-                                            },
-                                            style: {
-                                                paddingLeft: () => 8,
-                                                color: () => '#53adff',
-                                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'transparent' : 'rgb(70, 79, 99)'),
-                                            },
-                                            dom: {
-                                                innerText: () => table_row_key,
-                                            },
-                                        }),
-                                        fld: $$.$me_atom2_prop({ keys: ['<<.table_cell_keys'] }, ({ key: [col] }) => ({
-                                            base: td,
-                                            prop: {
-                                                '#width': `<<<.table_fld_width[${col}]`,
-                                            },
-                                            style: {
-                                                textAlign: () => 'center',
-                                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : 'white'),
-                                                opacity: `<<<.table_fld_opacity[${col}]`,
-                                            },
-                                            dom: {
-                                                innerText: `<<<.table_cell[${table_key}][${table_row_key}][${col}]`,
-                                            },
-                                        })),
-                                    },
-                                }))
-                            },
-                        })),
-                    },
-                }))
-            },
-        };
-        const td = {
-            node: 'td',
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 0,
-                paddingTop: () => 0,
-                paddingRight: () => 0,
-                paddingBottom: () => 0,
-            },
-        };
-        const th = {
-            base: td,
-            node: 'th',
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//new.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_search_panel = {
-            base: $$.$nl_panel,
-            prop: {
-                '#ofsHor': '.em',
-                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
-            }
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//panel.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        function $me_word_plural(count, word1, word2_4, word5more) {
-            if (word5more === undefined) {
-                word5more = word2_4;
-            }
-            let result = word5more;
-            const decimal = Math.floor(count / 10) % 10;
-            if (decimal != 1) {
-                const unit = count % 10;
-                if (unit == 1) {
-                    result = word1;
-                }
-                else if (unit >= 2 && unit <= 4) {
-                    result = word2_4;
-                }
-            }
-            return result;
-        }
-        $$.$me_word_plural = $me_word_plural;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//word_plural.js.map
 ;
 "use strict";
 var $;
@@ -12310,44 +11290,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //select.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_switch = {
-            base: $$.$me_select,
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                value: $$.$me_atom2_prop_abstract(),
-                colorBorder: () => 'transparent',
-                colorBorderSelected: () => 'transparent',
-                colorBackground: () => 'transparent',
-                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
-                    '#0070a4' :
-                    '#0facf4'),
-                borderRadius: () => 0,
-                borderWidth: () => 0,
-                paddingHor: () => 0,
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-                option_width_min: () => 40,
-                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
-                    '#0070a4' :
-                    'white'),
-                colorTextSelected: () => 'white',
-                fontFamily: '/.fontFamily',
-                fontWeight: '/.fontWeight',
-                fontWeightSelected: () => 500,
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                alignVer: () => $$.$me_align.bottom,
-                ofsVer: $$.$me_atom2_prop_abstract(),
-                no_adjust: () => true,
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//switch.js.map
 ;
 "use strict";
 var $;
@@ -13354,6 +12296,33 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        function $me_word_plural(count, word1, word2_4, word5more) {
+            if (word5more === undefined) {
+                word5more = word2_4;
+            }
+            let result = word5more;
+            const decimal = Math.floor(count / 10) % 10;
+            if (decimal != 1) {
+                const unit = count % 10;
+                if (unit == 1) {
+                    result = word1;
+                }
+                else if (unit >= 2 && unit <= 4) {
+                    result = word2_4;
+                }
+            }
+            return result;
+        }
+        $$.$me_word_plural = $me_word_plural;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//word_plural.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         let $nl_calendar_mode;
         (function ($nl_calendar_mode) {
             $nl_calendar_mode[$nl_calendar_mode["day"] = 0] = "day";
@@ -14325,6 +13294,249 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_infrastructure = {
+            type: '$nl_icon_infrastructure',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M23 14c0-4.4-4-8-9-8s-9 3.6-9 8H0V0h28v14h-5zm-13-4h8l10 18H0l10-18zm4.6 9l-.2-4h-.8l-.2 4h1.2zm.1 2h-1.4l-.3 6h2l-.3-6zm-.3-7l-.1-2h-.6v2h.7z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//infrastructure.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_building = {
+            type: '$nl_icon_building',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M24 28V18h-8v10H0V4a4 4 0 014-4h20a4 4 0 014 4v24h-4zM4 4v4h8V4H4zm0 7v4h8v-4H4zm0 7v4h8v-4H4zM16 4v4h8V4h-8zm0 7v4h8v-4h-8z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//building.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_key = {
+            type: '$nl_icon_key',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M18.2 21l-2.4 2.4a1 1 0 01-1.4 0l-.7-.7a1 1 0 010-1.5l2.4-2.3-5.3-5.2-.7.6a5.5 5.5 0 01-7.7 0l-.8-.7a5.5 5.5 0 010-7.7L6 1.6a5.5 5.5 0 017.8 0l.7.7a5.5 5.5 0 010 7.8l-.7.7 13.7 13.8a2 2 0 11-2.8 2.8L21.2 24l-2.4 2.4a1 1 0 01-1.4 0l-.7-.7a1 1 0 010-1.5l2.4-2.3-1-.9zM3.8 8a2.5 2.5 0 000 3.5l.7.7a2.5 2.5 0 003.5 0L12.3 8a2.5 2.5 0 000-3.6l-.8-.7a2.5 2.5 0 00-3.5 0L3.8 8z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//key.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_diploma = {
+            type: '$nl_icon_diploma',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 24 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M2 0h20a2 2 0 012 2v24a2 2 0 01-2 2H2a2 2 0 01-2-2V2a2 2 0 012-2zm1 20v7l3-2 3 2v-7c-.5 1.4-1.5 2.2-3 2.2s-2.5-.8-3-2.2zm3 1a3 3 0 100-6 3 3 0 000 6zM3 3a1 1 0 100 2h18a1 1 0 000-2H3zm0 4a1 1 0 100 2h18a1 1 0 000-2H3zm0 4a1 1 0 000 2h9a1 1 0 000-2H3z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//diploma.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_list = {
+            type: '$nl_icon_list',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 24 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M2 0h20a2 2 0 012 2v24a2 2 0 01-2 2H2a2 2 0 01-2-2V2a2 2 0 012-2zm0 3v2h2V3H2zm0 4v2h2V7H2zm0 4v2h2v-2H2zm0 4v2h2v-2H2zM7 3a1 1 0 100 2h14a1 1 0 000-2H7zm0 4a1 1 0 100 2h14a1 1 0 000-2H7zm0 4a1 1 0 000 2h14a1 1 0 000-2H7zm0 4a1 1 0 000 2h14a1 1 0 000-2H7z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//list.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_document = {
+            type: '$nl_icon_document',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 24 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M2 0h17l5 5v21a2 2 0 01-2 2H2a2 2 0 01-2-2V2a2 2 0 012-2zm1 9a1 1 0 000 2h18a1 1 0 000-2H3zm0 4a1 1 0 000 2h13a1 1 0 000-2H3zm0 4a1 1 0 000 2h18a1 1 0 000-2H3zM18 1v4a1 1 0 001 1h4l-5-5z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//document.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_unspalsh = {
+            type: '$nl_icon_unspalsh',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M6 5h1V3.5A3.5 3.5 0 0110.5 0h5A3.5 3.5 0 0119 3.5V5h5a2 2 0 012 2v15a2 2 0 01-2 2H2a2 2 0 01-2-2V7a2 2 0 012-2h1v-.5a1.5 1.5 0 013 0V5zm7 14a5 5 0 110-10 5 5 0 010 10zm0 2a7 7 0 100-14 7 7 0 000 14zm9.5-11a1.5 1.5 0 100-3 1.5 1.5 0 000 3z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//unspalsh.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_comment = {
+            type: '$nl_icon_comment',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 24 28",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M23 11.4h2V25c0 .5-.5 1-1 1H1a1 1 0 01-1-1V2c0-.5.5-1 1-1h15.7v2H2v21h20.8V11.3zm-6-6L20.6 9 8.2 21.4 4 22l.6-4.2L17 5.4zm.7-.7L19 3.2l3.7 3.6-1.5 1.5-3.6-3.6zm2.2-2.2L22.4 0 26 3.6l-2.5 2.5-3.6-3.6z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//comment.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_info = {
+            type: '$nl_icon_info',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 26 26",
+                content: () => [
+                    {
+                        attr: {
+                            fill: '<.color',
+                            fillRule: () => 'nonzero',
+                            stroke: '<.color',
+                            d: () => "M13 26a13 13 0 110-26 13 13 0 010 26zm-1-15v8h2v-9h-3v1h1zm1-2a1 1 0 100-2 1 1 0 000 2z",
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//info.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$me_plus = {
             base: $$.$me_stylesheet,
             prop: {
@@ -14365,6 +13577,1993 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //plus.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_advcard_panel_param_options = {
+            ОтСтанции: {
+                '': { caption: 'не важно' },
+                '2п': { caption: 'до 2 мин пешком' },
+                '5п': { caption: 'до 5 мин пешком' },
+                '7п': { caption: 'до 7 мин пешком' },
+                '10п': { caption: 'до 10 мин пешком' },
+                '12п': { caption: 'до 12 мин пешком' },
+                '15п': { caption: 'до 15 мин пешком' },
+                '5т': { caption: 'до 5 мин транспортом' },
+            },
+            rmqt: {
+                'free': { caption: 'Св.планировка' },
+                'studio': { caption: 'Студия' },
+                'rmqt1': { caption: '1-комн.' },
+                'rmqt2': { caption: '2-комн.' },
+                'rmqt3': { caption: '3-комн.' },
+                'rmqt4': { caption: '4-комн.' },
+                'rmqt5': { caption: '5-комн.' },
+                'rmqt6': { caption: '6+ комн.' },
+            },
+            remont: {
+                'требуется капитальный ремонт': {},
+                'без отделки': {},
+                'требуется ремонт': {},
+                'среднее состояние': {},
+                'хорошее состояние': {},
+                'отличное состояние': {},
+                'евроремонт': {},
+                'дизайнерский ремонт': {},
+                'первичная отделка': {},
+            },
+            lavatory: {
+                '0': { caption: 'может быть совмещенным' },
+                '1': { caption: 'только раздельный' },
+                '2': { caption: 'не менее 2-х' },
+                '3': { caption: 'не менее 3-х' },
+                '4': { caption: 'не менее 4-х' },
+            },
+            balcony: {
+                '0': { caption: 'можно без балкона' },
+                '1': { caption: 'нужен балкон' },
+                '2': { caption: 'нужна лоджия' },
+                '3': { caption: 'не менее 2-х балконов/лоджий' },
+                '4': { caption: 'не менее 3-х балконов/лоджий' },
+                '5': { caption: 'не менее 4-х балконов/лоджий' },
+            },
+            КлассЖилья: {
+                'эконом': {},
+                'комфорт': {},
+                'бизнес': {},
+                'элитный': {},
+            },
+            ТипДома: {
+                'панельный': {},
+                'блочный': {},
+                'монолитный': {},
+                'монолитно-кирпичный': {},
+                'кирпичный': {},
+                'деревянный': {},
+                'шлакоблоки/шлакобетон': {},
+                'железобетон': {},
+                'сталинский': {},
+            },
+            СерияДома: {
+                '02/98-НМ': {},
+                '1385 АР-3': {},
+                '1605/12': {},
+                '1605/9': {},
+                '1605/Б': {},
+                '17/2004-АС': {},
+                '1МГ-600': {},
+                '1МГ-601': {},
+                '2-71/358': {},
+                '2548-01-АР': {},
+                '2548-02-АР': {},
+                '32/2005-АС': {},
+                '349/01': {},
+                '355/24': {},
+                '7040-01': {},
+                'I-303': {},
+                'I-335': {},
+                'I-447': {},
+                'I-510': {},
+                'I-511': {},
+                'I-513': {},
+                'I-515': {},
+                'I605-АМ': {},
+                'II-04': {},
+                'II-05': {},
+                'II-08': {},
+                'II-18': {},
+                'II-18-01-МН': {},
+                'II-18-31/12': {},
+                'II-29': {},
+                'II-32': {},
+                'II-49': {},
+                'II-57': {},
+                'II-68-02': {},
+                'II-68-03': {},
+                'II-89-01-МН': {},
+                'III/17': {},
+                'VI-23': {},
+                'VII-51': {},
+                'VII-58': {},
+                'А-41K': {},
+                'башня Вулыха': {},
+                'Бекерон': {},
+                'БОД-1': {},
+                'В-2000': {},
+                'В-2002': {},
+                'В-2005': {},
+                'ГМС-1': {},
+                'ГМС-3': {},
+                'И-1168 А3': {},
+                'И-1168 А4': {},
+                'И-1233': {},
+                'И-1254': {},
+                'И-1262А': {},
+                'И-1429': {},
+                'И-1430': {},
+                'И-1459-132': {},
+                'И-1491-17': {},
+                'И-1501': {},
+                'И-155': {},
+                'И-155МК': {},
+                'И-155Н': {},
+                'И-1602': {},
+                'И-1677': {},
+                'И-1723': {},
+                'И-1724': {},
+                'И-1731': {},
+                'И-1782/1': {},
+                'И-1812/1': {},
+                'И-1834': {},
+                'И-1836': {},
+                'И-1838': {},
+                'И-1839': {},
+                'И-1849': {},
+                'И-1932': {},
+                'И-208': {},
+                'И-209А': {},
+                'И-2342': {},
+                'И-241': {},
+                'И-491А': {},
+                'И-515-5М': {},
+                'И-515/9ш': {},
+                'И-522': {},
+                'И-522А': {},
+                'И-679': {},
+                'И-700': {},
+                'И-700А': {},
+                'И-760А': {},
+                'И-79-99': {},
+                'И-99-47/405': {},
+                'И-99-47/406': {},
+                'индивидуальный проект': {},
+                'ИП-46С': {},
+                'ИШ3/12': {},
+                'К-7': {},
+                'КМС-101': {},
+                'Колос': {},
+                'КОПЭ': {},
+                'КОПЭ-М-ПАРУС': {},
+                'КТЖС': {},
+                'КТЖС-11/22': {},
+                '1МГ-300': {},
+                'МОНОЛИТ': {},
+                'МЭС-84': {},
+                'НП-46с': {},
+                'П-06': {},
+                'П-111': {},
+                'П-111М': {},
+                'П-111МО': {},
+                'П-12-31/12': {},
+                'II-14': {},
+                'П-14/35': {},
+                'П-18/22': {},
+                'П-20': {},
+                'П-21': {},
+                'П-22': {},
+                'П-23': {},
+                'П-28': {},
+                'П-29': {},
+                'П-3': {},
+                'П-3/16': {},
+                'П-3/17': {},
+                'П-3/22': {},
+                'П-30': {},
+                'П-31': {},
+                'П-32': {},
+                'П-321-60': {},
+                'II-34': {},
+                'II-35': {},
+                'П-37': {},
+                'II-38': {},
+                'П-39': {},
+                'П-3М': {},
+                'П-4': {},
+                'П-40': {},
+                'П-41': {},
+                'П-42': {},
+                'П-43': {},
+                'П-44': {},
+                'П-44К': {},
+                'П-44М': {},
+                'П-44Т': {},
+                'П-44ТМ': {},
+                'П-45': {},
+                'П-46': {},
+                'П-46М': {},
+                'П-47': {},
+                'П-49 Д': {},
+                'П-50': {},
+                'П-53': {},
+                'П-55': {},
+                'П-55М': {},
+                'II-29-41/37': {},
+                'II-66': {},
+                'II-67': {},
+                'II-68': {},
+                'ПД-4': {},
+                'ПД-4/12': {},
+                'Пд4-1/12Н1': {},
+                'ПД4-1/8Н1': {},
+                'ПЗМ-1/14': {},
+                'ПЗМ-1/16': {},
+                'ПЗМ-2/16': {},
+                'ПЗМ-3/16': {},
+                'ПП-70': {},
+                'Призма': {},
+                'РД-90': {},
+                'С-111М': {},
+                'С-220': {},
+                'С-222': {},
+                'ТИП-441': {},
+                'ЦВП-4570-II-63': {},
+                'Юбилейный': {},
+                'II-02': {},
+                'II-01': {},
+                'II-18-01/08': {},
+                'II-18-01/09': {},
+                '1605-АМ/9': {},
+                '1605-АМ/12': {},
+                'II-49П': {},
+                'II-49Д': {},
+                'II-03': {},
+                'II-18-01/12': {},
+                'II-18-02/12': {},
+                'II-18/12': {},
+                'II-20': {},
+                '1605-АМ/5': {},
+                'И-III-3': {},
+                'II-28': {},
+                'II-68-02/16М': {},
+                'КПД-4570': {},
+                'II-68-01': {},
+                '1-515/9': {},
+                'К4/16': {},
+                'И-155Б': {},
+                '1-515/5': {},
+                'II-18-01/12А': {},
+                'СМ-1 ': {},
+                'П-44ТМ/25': {},
+                'И-701': {},
+                'И-155-с': {},
+                'Айсберг': {},
+                'II-14/35': {},
+                'И-99-47/407': {},
+                'П-101': {},
+                '1-300': {},
+                'II-18-01/09К': {},
+                'И-1900': {},
+                'М-10': {},
+                'МПСМ': {},
+                'ИП-46М': {},
+                'П-30М': {},
+                'II-07': {},
+                'ПБ-01': {},
+                'И-1414': {},
+                'И-2111': {},
+                '1605-АМЛ/5': {},
+                '1-447С-26': {},
+                '1-447С-1': {},
+                '1-447С-36': {},
+                '1-447С-2': {},
+                '1-447С-5': {},
+                '1-446': {},
+                'ПБ-02': {},
+                'КПД-4572А': {},
+                'II-68-04': {},
+                '124-124-1': {},
+                '1605-А': {},
+                '1-439': {},
+                'Мм1-3': {},
+                'И-1168': {},
+                'СМ-06': {},
+                'СМ-03': {},
+                '1-419': {},
+                '1-203': {},
+                'ЭС-24': {},
+                '8966': {},
+                '1-126': {},
+                '1-225': {},
+                '1-402': {},
+                '16/2188': {},
+                'Т-1': {},
+                'Т-3': {},
+                '1-233': {},
+                '1-260': {},
+                'К-8-49': {},
+                '1-255': {},
+                'КС-8-50': {},
+                'Д-23': {},
+                'Д-25Н1': {},
+                'ПП-83': {},
+                'К2/16': {},
+                'К7/16': {},
+                'К8/16': {},
+                '1-464А': {},
+                'КОПЭ-87': {},
+                'П-121М': {},
+                '121-041': {},
+                '121-042': {},
+                '121-043': {},
+                'II-29-208': {},
+                'II-29-3': {},
+                'II-29-9': {},
+                'II-29-160': {},
+                'ПД-1': {},
+                'И-02/98-НМ': {},
+                '1-467': {},
+                'ЭЖРЧС': {},
+                'П-3МК': {},
+                'II-18-02/09': {},
+                'ПД-3': {},
+                'И-580': {},
+                'II-18-03/12': {},
+                'К-14': {},
+                'И-700Н': {},
+                'Юникон': {},
+                '111-121': {},
+                '1-211': {},
+                'II-68-01/22': {},
+                'Лебедь': {},
+                'И-99-47': {},
+            },
+            Источник: {
+                winner: {
+                    caption: 'WinNER',
+                },
+                winnerPro: {
+                    caption: 'WinNER PRO',
+                },
+                sob: {
+                    caption: 'Sob.ru',
+                },
+                avito: {
+                    caption: 'Avito.ru',
+                },
+                cian: {
+                    caption: 'Cian.ru',
+                },
+                irr: {
+                    caption: 'Irr.ru',
+                },
+                other: {
+                    caption: 'Прочие',
+                },
+                yandex: {
+                    caption: 'Яндекс',
+                },
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//options.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const row_height = 30;
+        const row_space = 20;
+        const prop_common = (def, p) => ({
+            '#hidden': def.hidden,
+            row: def.row,
+            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'], ({ masters: [row, row_height, row_space] }) => 8 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
+            '#height': '<.row_height',
+            col_space: def.col_space || (() => 16),
+            col_count: def.col_count || (() => 1),
+            col_span: def.col_span || (() => 1),
+            col: def.col,
+            '#width': !def.col_count ? '<.row_width' : $$.$me_atom2_prop(['<.row_width', '.col_space', '.col_count', '.col_span'], ({ masters: [width, col_space, col_count, col_span] }) => Math.round((width - col_space * (col_count - 1)) / col_count) * col_span + col_space * (col_span - 1)),
+            '#ofsHor': !def.col_count || !def.col ? '<.row_left' : $$.$me_atom2_prop(['<.row_left', '<.row_width', '.col_space', '.col_count', '.col'], ({ masters: [left, width, col_space, col_count, col] }) => left + col * (Math.round((width - col_space * (col_count - 1)) / col_count) + col_space)),
+        });
+        let scheme_metro;
+        $$.$nl_advcard_panel_param = {
+            prop: {
+                ofsHor: () => 0,
+                ofsVer: () => 40,
+                header_height: () => 20,
+                footer_height: () => 20,
+                tab_selected: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.tab_ids')[0],
+                    valid: (val) => typeof val == 'string' && ~$$.a('.tab_ids').indexOf(val) ? val : null,
+                }),
+                tab_ids: $$.$me_atom2_prop_keys(['.tabs'], true),
+                tabs: () => ({
+                    Местоположение: {
+                        icon: '$nl_icon_placemarker',
+                        params: {},
+                    },
+                    Инфраструктура: {
+                        icon: 'icons-8-city-square',
+                        params: {},
+                    },
+                    Дом: {
+                        icon: 'icons-8-building',
+                        params: {},
+                    },
+                    'Квартира': {
+                        icon: 'icons-8-key',
+                        params: {},
+                    },
+                    'Цена и условия': {
+                        icon: 'icons-8-money',
+                        params: {},
+                    },
+                    'Права': {
+                        icon: 'icons-8-money',
+                        params: {}
+                    },
+                    'Контакты и статус': {
+                        icon: 'icons-8-money',
+                        params: {}
+                    },
+                    'Режим публикации': {
+                        icon: 'icons-8-money',
+                        params: {}
+                    },
+                    'Фото/Видео': {
+                        icon: 'icons-8-money',
+                        params: {}
+                    },
+                    'Примечание': {
+                        icon: 'icons-8-money',
+                        params: {}
+                    },
+                    'Своя информация': {
+                        icon: 'icons-8-money',
+                        params: {}
+                    },
+                }),
+            },
+            elem: {
+                tabs: () => ({
+                    prop: {
+                        '#ofsVer': '<.header_height',
+                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
+                        options: '<.tabs',
+                        option_ids: '<.tab_ids',
+                        option_height: () => 44,
+                        option_fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em / 16 * 14),
+                        option_iconSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 22),
+                        option_label_ofsHor: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 16 + 16 + 22),
+                        option_width: () => 210,
+                        option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
+                        value: $$.$me_atom2_prop_bind('<.tab_selected'),
+                        params: $$.$me_atom2_prop(['.value', '.options'], ({ masters: [value, options] }) => options[value].params || {}),
+                        param_ids: $$.$me_atom2_prop_keys(['.params'], true),
+                        row_height: () => row_height,
+                        row_space: () => row_space,
+                        row_left: $$.$me_atom2_prop(['.option_width', '.marginHor'], $$.$me_atom2_prop_compute_fn_sum()),
+                        row_width: () => 428,
+                        marginHor: () => 32,
+                        '#order': () => ['option', 'separator', 'param'],
+                    },
+                    elem: {
+                        separator: () => ({
+                            prop: {
+                                '#width': '<.option_width',
+                            },
+                            style: {
+                                borderRight: () => '1px solid #bdc3d1',
+                            },
+                        }),
+                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'] }, ({ key: [id], masters: [params] }) => {
+                            const def = params[id];
+                            if (def.type == 'select') {
+                                return {
+                                    base: $$.$nl_select,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { options: def.options, no_adjust: def.no_adjust }),
+                                };
+                            }
+                            else if (def.type == 'address') {
+                                return {
+                                    base: input_with_button,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
+                                };
+                            }
+                            else if (def.type == 'picker' || def.type == 'pickermulti') {
+                                const result = {
+                                    prop: Object.assign({}, prop_common(def)),
+                                    elem: {
+                                        label: !def.label ? null : () => ({
+                                            prop: {
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            base: $$.$nl_picker,
+                                            prop: {
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
+                                                options: def.options,
+                                                none: def.type == 'picker' ? null : def.none,
+                                            },
+                                        }),
+                                    },
+                                };
+                                return result;
+                            }
+                            else if (def.type == 'diap') {
+                                return {
+                                    base: diap,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { label: def.label, label_width: def.label_width, diap_space: def.diap_space }),
+                                };
+                            }
+                            else if (def.type == 'pickerdate') {
+                                return {
+                                    prop: Object.assign({}, prop_common(def)),
+                                    elem: {
+                                        label: !def.label ? null : () => ({
+                                            prop: {
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            base: $$.$nl_pickerdate,
+                                            prop: {
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
+                                            },
+                                        }),
+                                    },
+                                };
+                            }
+                            else if (def.type == 'include_exclude') {
+                                return {
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    elem: {
+                                        label: () => ({
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#height': () => row_height,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                                '#ofsVer': () => 12,
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        include: () => ({
+                                            base: include_exclude_item,
+                                            prop: {
+                                                label: () => 'Включая',
+                                                label_width: def.label_width,
+                                                '#ofsVer': () => (row_height + row_space),
+                                            },
+                                        }),
+                                        exclude: () => ({
+                                            base: include_exclude_item,
+                                            prop: {
+                                                label: () => 'Исключая',
+                                                label_width: def.label_width,
+                                                '#ofsVer': () => 2 * (row_height + row_space),
+                                            },
+                                        }),
+                                    },
+                                };
+                            }
+                            else if (def.type == 'selector') {
+                                return {
+                                    base: $$.$nl_scheme_selector,
+                                    prop: Object.assign({}, prop_common(def)),
+                                };
+                            }
+                            else if (def.type == 'button') {
+                                return {
+                                    base: $$.$nl_button,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { target: def.target, cmd: def.cmd, caption: def.caption }),
+                                    dispatch: def.dispatch,
+                                };
+                            }
+                            else {
+                                $$.$me_throw(def.type);
+                            }
+                        }),
+                        option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                            prop: {
+                                '#ofsVer': `<.option_top[${id}]`,
+                                '#width': '<.option_width',
+                                '#height': '<.option_height',
+                                isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value == id),
+                                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? null : 'pointer'),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                id: () => id,
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<.value', id);
+                                    return true;
+                                },
+                            },
+                            style: {
+                                background: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => !isSelected ? 'transparent' :
+                                    theme == $$.$nl_theme.light ? '#0070a4' : '#008ecf'),
+                            },
+                            elem: {
+                                icon: () => ({
+                                    prop: {
+                                        '#width': '<<.option_iconSize',
+                                        '#height': '<<.option_iconSize',
+                                        '#alignVer': () => $$.$me_align.center,
+                                        '#ofsHor': () => 16,
+                                    },
+                                    attr: {
+                                        draggable: () => false,
+                                    },
+                                    style: {
+                                        filter: $$.$me_atom2_prop(['<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
+                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
+                                            theme == $$.$nl_theme.light ?
+                                                'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                                'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
+                                    },
+                                    elem: {
+                                        icon: $$.$me_atom2_prop(['<<.options', '<.id'], ({ masters: [options, id] }) => {
+                                            const s = options[id] + '';
+                                            console.log('zzzz', id, s);
+                                            if (id === 'Местоположение') {
+                                                return $$.$nl_icon_placemarker;
+                                            }
+                                            else if (id === 'Инфраструктура') {
+                                                return $$.$nl_icon_infrastructure;
+                                            }
+                                            else if (id === 'Дом') {
+                                                return $$.$nl_icon_building;
+                                            }
+                                            else if (id === 'Квартира') {
+                                                return $$.$nl_icon_key;
+                                            }
+                                            else if (id === 'Цена и условия') {
+                                                return $$.$nl_icon_building;
+                                            }
+                                            else if (id === 'Права') {
+                                                return $$.$nl_icon_diploma;
+                                            }
+                                            else if (id === 'Контакты и статус') {
+                                                return $$.$nl_icon_list;
+                                            }
+                                            else if (id === 'Режим публикации') {
+                                                return $$.$nl_icon_document;
+                                            }
+                                            else if (id === 'Фото/Видео') {
+                                                return $$.$nl_icon_unspalsh;
+                                            }
+                                            else if (id === 'Примечание') {
+                                                return $$.$nl_icon_comment;
+                                            }
+                                            else if (id === 'Своя информация') {
+                                                return $$.$nl_icon_info;
+                                            }
+                                            else {
+                                                return $$.$nl_icon_placemarker;
+                                            }
+                                        }),
+                                    },
+                                }),
+                                label: () => ({
+                                    prop: {
+                                        '#ofsHor': '<<.option_label_ofsHor',
+                                        '#alignVer': () => $$.$me_align.center,
+                                        '#height': () => null,
+                                        '#width': $$.$me_atom2_prop(['<<.option_width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff(-8)),
+                                        fontSize: '<<.option_fontSize',
+                                    },
+                                    dom: {
+                                        innerText: () => id,
+                                    },
+                                    style: {
+                                        color: $$.$me_atom2_prop(['<.isSelected', '.colorText'], ({ masters: [isSelected, colorText] }) => isSelected ? 'white' : colorText),
+                                        whiteSpace: () => 'nowrap',
+                                        overflow: () => 'hidden',
+                                        textOverflow: () => 'ellipsis',
+                                    },
+                                }),
+                            },
+                        })),
+                    },
+                }),
+            },
+        };
+        const diap = {
+            prop: {
+                ids: () => ['min', 'max'],
+                value: $$.$me_atom2_prop({ keys: ['.ids'] }, () => 0),
+                label: $$.$me_atom2_prop_abstract(),
+                label_width: $$.$me_atom2_prop_abstract(),
+                diap_space: $$.$me_atom2_prop_abstract(),
+            },
+            elem: {
+                label: () => ({
+                    prop: {
+                        '#width': '<.label_width',
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                    },
+                    dom: {
+                        innerText: '<.label',
+                    },
+                }),
+                input: $$.$me_atom2_prop({ keys: ['.ids'] }, ({ key: [id] }) => ({
+                    base: $$.$nl_input,
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'change') {
+                            $$.a(`<.value[${id}]`, dispatch_arg == '' ? 0 : Number.parseInt(dispatch_arg, 10));
+                            return true;
+                        }
+                        return false;
+                    },
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': id == 'max' ? null : $$.$me_atom2_prop(['.#width', '<.diap_space'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.label_width', '<.diap_space'], ({ masters: [width, label_width, diap_space] }) => (width - label_width - diap_space) / 2),
+                        placeholder: () => id == 'min' ? 'от' : 'до',
+                    },
+                    dom: {
+                        value: $$.$me_atom2_prop([`<.value[${id}]`], ({ masters: [value] }) => {
+                            return !value ? '' : value + '';
+                        }),
+                    },
+                })),
+            },
+        };
+        const include_exclude_item = {
+            prop: {
+                label: $$.$me_atom2_prop_abstract(),
+                label_width: $$.$me_atom2_prop_abstract(),
+                '#width': '<.#width',
+                '#height': () => row_height,
+                '#ofsVer': $$.$me_atom2_prop_abstract(),
+                '#alignVer': () => $$.$me_align.top,
+            },
+            elem: {
+                label: () => ({
+                    prop: {
+                        '#width': '<.label_width',
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                    },
+                    dom: {
+                        innerText: '<.label',
+                    },
+                }),
+                ctrl: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#height': () => row_height,
+                        '#alignHor': () => $$.$me_align.right,
+                    },
+                }),
+            },
+        };
+        const input_with_button = {
+            elem: {
+                input: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        placeholder: '<.placeholder',
+                    },
+                }),
+                button: () => ({
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#width': () => 40,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                    },
+                    elem: {
+                        square: () => ({
+                            prop: {
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': () => 8,
+                                '#alignVer': () => $$.$me_align.center,
+                                '#width': () => 16,
+                                '#height': () => 16,
+                            },
+                            style: {
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#88B5CE' : '#5FBDF9'),
+                                borderRadius: () => 3,
+                            },
+                            elem: {
+                                plus: () => ({
+                                    base: $$.$me_plus,
+                                    prop: {
+                                        size: () => 10,
+                                        thick: () => 2,
+                                        '#align': () => $$.$me_align.center,
+                                        color: () => 'white',
+                                    },
+                                }),
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log($$.a.curr.name());
+                            return true;
+                        },
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//param.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_advcard = {
+            prop: {
+                '#width': '/.#viewportWidth',
+                '#height': '/.#viewportHeight',
+                isTouch: $$.$me_atom2_prop_store({
+                    default: () => $$.a('/.#isTouch'),
+                    valid: (val) => typeof val == 'boolean' ? val : null,
+                }),
+            },
+            elem: {
+                background: () => ({
+                    prop: {
+                        '#height': '<.#height',
+                        '#width': '<.#width',
+                    },
+                    style: {
+                        background: () => 'rgba(0, 0, 0, .4)',
+                    },
+                }),
+                wrapper: () => ({
+                    prop: {
+                        '#height': () => 560,
+                        '#width': () => 700,
+                        '#alignHor': () => $$.$me_align.center,
+                        '#alignVer': () => $$.$me_align.center,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
+                    },
+                    style: {
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
+                    },
+                    elem: {
+                        cross: () => ({
+                            base: $$.$me_cross,
+                            prop: {
+                                size: () => 24,
+                                thick: () => 3,
+                                '#ofsVer': () => 10,
+                                '#ofsHor': () => 12,
+                                '#alignHor': () => $$.$me_align.right,
+                                color: '<.grayColor',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                                '#cursor': () => 'pointer',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('/@app.isShownAdvCard', false);
+                                    return true;
+                                },
+                            },
+                        }),
+                        panelParam: () => ({
+                            base: $$.$nl_advcard_panel_param,
+                            prop: {
+                                param_mode: () => 'ПОЛНЫЙ',
+                                '#height': () => 500,
+                            },
+                        }),
+                        buttonPanel: () => ({
+                            prop: {
+                                buttonHeight: () => 30,
+                                verticalOffset: () => 15,
+                                '#ofsVer': $$.$me_atom2_prop(['<@panelParam.#ofsVer', '<@panelParam.#height'], ({ masters: [ofs, height] }) => ofs + height),
+                                '#ofsHor': () => 0,
+                                '#height': () => 60,
+                            },
+                            elem: {
+                                saveButton: () => ({
+                                    base: $$.$nl_button,
+                                    prop: {
+                                        '#width': () => 87,
+                                        '#height': '<.buttonHeight',
+                                        '#ofsVer': '<.verticalOffset',
+                                        '#ofsHor': () => 160,
+                                        caption: () => 'Сохранить',
+                                        target: () => '<',
+                                        fontSize: () => 14,
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            $$.a('/@app.isShownAdvCard', false);
+                                            return true;
+                                        },
+                                    }
+                                }),
+                                saveAndPubButton: () => ({
+                                    base: $$.$nl_button,
+                                    prop: {
+                                        '#width': () => 190,
+                                        '#height': '<.buttonHeight',
+                                        '#ofsVer': '<.verticalOffset',
+                                        '#ofsHor': $$.$me_atom2_prop(['<@saveButton.#ofsHor', '<@saveButton.#width'], ({ masters: [ofs, width] }) => ofs + width + 10),
+                                        caption: () => 'Сохранить и опубликовать',
+                                        target: () => '<',
+                                        fontSize: () => 14,
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            $$.a('/@app.isShownAdvCard', false);
+                                            return true;
+                                        },
+                                    }
+                                }),
+                                cancelButton: () => ({
+                                    base: $$.$nl_button,
+                                    prop: {
+                                        '#width': () => 87,
+                                        '#height': '<.buttonHeight',
+                                        '#ofsVer': '<.verticalOffset',
+                                        '#ofsHor': $$.$me_atom2_prop(['<@saveAndPubButton.#ofsHor', '<@saveAndPubButton.#width'], ({ masters: [ofs, width] }) => ofs + width + 10),
+                                        caption: () => 'Отменить',
+                                        fontSize: () => 14,
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            $$.a('/@app.isShownAdvCard', false);
+                                            return true;
+                                        },
+                                    }
+                                }),
+                            }
+                        })
+                    }
+                })
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//advcard.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_panel = {
+            style: {
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
+                borderRadius: () => '2px',
+                boxShadow: () => '0 4px 12px 0 rgba(132, 132, 132, 0.25)',
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const newsUrl = 'https://baza-winner.ru/news/list.php?limit=2&category=W7';
+        $$.$nl_main_workspace = {
+            prop: {
+                sections: () => ({
+                    promo: {
+                        caption: '[ NEW! ]',
+                    },
+                    news: {
+                        caption: 'Новости',
+                    },
+                    orders: {
+                        caption: 'Заказы',
+                    },
+                    alpha: {
+                        caption: 'Альфа Банк',
+                    },
+                    absolut: {
+                        caption: 'Абсолют Банк',
+                    },
+                    face: {
+                        caption: 'Раскрытие лица',
+                    },
+                }),
+                section_ids: $$.$me_atom2_prop_keys(['.sections']),
+                selected: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.section_ids')[0],
+                    valid: (val) => val == $$.a('.sections')[val] ? val : null,
+                }),
+            },
+            elem: {
+                promo: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': () => 56 + 16,
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '<@alpha.#width'], ({ masters: [width, em, width2] }) => width - 3 * em - width2),
+                        '#height': () => 87,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                                color: () => '#e34741',
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('promo', sections).toUpperCase()),
+                            },
+                        }),
+                        more: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#ofsVer': '.em',
+                                '#ofsHor': '.em',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                fontSize: () => 12,
+                            },
+                            dom: {
+                                innerText: () => 'Подробнее'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        text: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': () => 43,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerHTML: () => '<b>СМА (Сравнительный Маркетинговый Анализ)</b> квартир в Москве и МО за 3 минуты в формате PDF. Анализ квартиры по 375 параметрам: БТИ, Росреестр, жкх, банки и т.д.',
+                            },
+                        }),
+                    },
+                }),
+                news: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
+                        '#width': '<@promo.#width',
+                        '#height': () => 300,
+                        news_items: $$.$me_atom2_prop([], ({ atom }) => {
+                            const store_key = 'news';
+                            let result = {};
+                            let already_got = false;
+                            const stored = localStorage.getItem(store_key);
+                            if (stored)
+                                try {
+                                    result = JSON.parse(stored);
+                                }
+                                catch (err) {
+                                    console.error(err, { stored });
+                                }
+                            fetch(newsUrl, { method: 'get' })
+                                .then(response => response.json())
+                                .then(jsonData => {
+                                const stored_to_be = JSON.stringify(jsonData);
+                                if (stored_to_be != stored) {
+                                    localStorage.setItem(store_key, stored_to_be);
+                                    atom.value(jsonData);
+                                }
+                            })
+                                .catch(err => {
+                                console[already_got ? 'warn' : 'error'](`while ${already_got ? 'update' : 'fetch'} data for news:`, err);
+                            });
+                            return result;
+                        }),
+                        news_item_ids: $$.$me_atom2_prop_keys(['.news_items']),
+                        news_item: $$.$me_atom2_prop({ keys: ['.news_item_ids'], masters: ['.news_items'] }, ({ key: [id], masters: [items] }) => items[id]),
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('news', sections).toUpperCase()),
+                            },
+                        }),
+                        more: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#height': () => null,
+                                '#ofsVer': '.em',
+                                '#ofsHor': '.em',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                fontSize: () => 12,
+                            },
+                            dom: {
+                                innerText: () => 'Посмотреть все новости'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        news_cont: $$.$me_atom2_prop({ keys: ['.news_item_ids'] }, ({ key: [id] }) => ({
+                            prop: {
+                                id: () => id,
+                                '#ofsVer': () => 46,
+                            },
+                            elem: {
+                                item: () => ({
+                                    base: news_item,
+                                    prop: {
+                                        '#ofsHor': '.em',
+                                        '#width': $$.$me_atom2_prop(['<<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                        '#ofsVer': $$.$me_atom2_prop(['<<.news_item_ids', '<.id', '.em'], ({ masters: [ids, id, ofs] }) => Math.round(ids.indexOf(id)) * (100 + ofs)),
+                                        caption: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].title),
+                                        imageUrl: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].image.thumb),
+                                        text: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].description),
+                                        url: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].link),
+                                        date: $$.$me_atom2_prop(['<<.news_items'], ({ masters: [items] }) => items[id].pubDate),
+                                    }
+                                }),
+                            }
+                        })),
+                    },
+                }),
+                orders: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@promo.#ofsVer', '<@promo.#height', '.em', '<@news.#height',], ({ masters: [ofs, height, ofs2, height2] }) => ofs + height + ofs2 + height2 + ofs2),
+                        '#width': '<@promo.#width',
+                        '#height': () => 135,
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.em',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('orders', sections).toUpperCase()),
+                            },
+                        }),
+                        more: () => ({
+                            prop: {
+                                '#width': () => null,
+                                '#ofsVer': '.em',
+                                '#ofsHor': '.em',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                fontSize: () => 12,
+                            },
+                            dom: {
+                                innerText: () => 'Посмотреть все заказы'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                    },
+                }),
+                alpha: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '': () => 54,
+                        '#ofsVer': '<@promo.#ofsVer',
+                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
+                        '#width': () => 179,
+                        '#height': () => 142,
+                    },
+                    elem: {
+                        svg: () => ({
+                            prop: {
+                                '#ofsVer': () => 12,
+                                '#ofsHor': () => 19,
+                            },
+                            dom: {
+                                innerHTML: () => `
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="78" height="17" viewBox="0 0 78 17">
+                  <defs>
+                      <path id="a" d="M0 15.91h76.666V.083H0z"/>
+                  </defs>
+                  <g fill="none" fill-rule="evenodd">
+                      <path fill="#EF3124" d="M74.762 4.09l-2.656 2.8v-2.8h-1.922v7.07h1.922V8.185l2.843 2.977h2.483l-3.497-3.706 3.243-3.366zM67.011 6.727h-2.714V4.089h-1.965v7.072h1.965V8.372h2.714v2.789h1.965V4.089h-1.965z"/>
+                      <g transform="translate(.724 .554)">
+                          <path fill="#EF3124" d="M11.24 7.19c-.045 1.392-.224 1.67-1 1.67v1.75h.29c1.935 0 2.4-1.007 2.472-3.247l.078-2.478h1.815v5.725h1.893V3.15H11.37l-.131 4.04zM21.348 8.967h-1.222V7.072h1.222c.657 0 1.052.291 1.052.914 0 .676-.381.98-1.052.98m.145-3.55h-1.367V3.148h-1.893v7.46h3.286c2.064 0 2.8-1.35 2.8-2.623 0-1.643-1.025-2.57-2.826-2.57M30.485 8.98V4.766c1.051.146 1.709.94 1.709 2.107 0 1.166-.658 1.961-1.71 2.107zm-1.893 0c-1.052-.146-1.71-.941-1.71-2.107 0-1.166.658-1.961 1.71-2.107V8.98zm1.893-6.003V.207h-1.893v2.77c-2.17.185-3.629 1.736-3.629 3.896 0 2.173 1.46 3.724 3.629 3.91v2.809h1.893v-2.81c2.169-.172 3.628-1.736 3.628-3.91 0-2.172-1.46-3.723-3.628-3.895zM39.319 7.827c0 .861-.605 1.352-1.394 1.352-.683 0-1.222-.252-1.222-.994 0-.73.591-.848 1.104-.848h1.512v.49zm1.893.49V5.813c0-1.829-1.157-2.982-3.102-2.982-2.012 0-3.077 1.22-3.169 2.491h1.92c.065-.278.355-.755 1.249-.755.736 0 1.209.345 1.209 1.246h-1.88c-1.683 0-2.682.888-2.682 2.372 0 1.55 1.093 2.61 2.669 2.61 1.155 0 1.797-.55 2.077-.967.25.504.802.782 1.525.782h.657V8.887c-.342 0-.473-.159-.473-.57zM49.231 8.728h-2.024V6.025h2.024c1.052 0 1.643.49 1.643 1.351 0 .888-.591 1.352-1.643 1.352m.092-4.519h-2.116V2.102h4.903V.207h-6.888V10.61h4.101c2.274 0 3.576-1.14 3.576-3.234 0-1.974-1.302-3.167-3.576-3.167M58.25 7.827c0 .861-.605 1.352-1.394 1.352-.684 0-1.223-.252-1.223-.994 0-.73.592-.848 1.104-.848h1.512v.49zm1.892.49V5.813c0-1.829-1.157-2.982-3.102-2.982-2.011 0-3.076 1.22-3.168 2.491h1.919c.066-.278.355-.755 1.249-.755.736 0 1.21.345 1.21 1.246h-1.88c-1.683 0-2.682.888-2.682 2.372 0 1.55 1.093 2.61 2.668 2.61 1.156 0 1.797-.55 2.077-.967.25.504.802.782 1.525.782h.658V8.887c-.342 0-.474-.159-.474-.57z"/>
+                          <mask id="b" fill="#fff">
+                              <use xlink:href="#a"/>
+                          </mask>
+                          <path fill="#EF3124" d="M0 15.91h10.123v-2.12H0zM3.615 6.674l1.42-4.254h.052l1.341 4.254H3.615zm3.286-5.04C6.613.768 6.28.083 5.141.083 4 .082 3.645.764 3.341 1.635L.21 10.61h2.077l.723-2.134h3.997l.67 2.134h2.209L6.9 1.635z" mask="url(#b)"/>
+                      </g>
+                  </g>
+              </svg>
+            `
+                            },
+                        }),
+                        title1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 41,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerText: () => 'Публикация в Альфа Банк',
+                            },
+                        }),
+                        title2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 59,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerText: () => 'Дисконт на % ставку',
+                            },
+                        }),
+                        title3: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 76,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerText: () => 'Поток заявок от клиентов',
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 140,
+                                '#height': () => 24,
+                                '#ofsVer': () => 101,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Стать партнером',
+                                target: () => '<',
+                                fontSize: () => 12,
+                            },
+                            style: {
+                                background: () => '#ef3124',
+                                borderRadius: () => '4px',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+                absolut: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<@alpha.#ofsVer', '<@alpha.#height', '.em'], ({ masters: [ofs, height, ofs2] }) => ofs + height + ofs2),
+                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
+                        '#width': () => 179,
+                        '#height': () => 121,
+                    },
+                    elem: {
+                        svg: () => ({
+                            prop: {
+                                '#ofsVer': () => 12,
+                                '#ofsHor': () => 19,
+                            },
+                            dom: {
+                                innerHTML: () => `
+              <svg xmlns="http://www.w3.org/2000/svg" width="92" height="19" viewBox="0 0 92 19">
+                  <g fill="none" fill-rule="evenodd">
+                      <path fill="#E15D29" d="M3.314 12.527l1.826 1.787v-4.068c0-.79-.448-1.758-1.014-2.302L2.321 6.177v4.07c0 .78.45 1.757.993 2.28zm6.054 5.854l-3.18-3.045c-.63-.606-1.724-1.022-2.627-1.022H.912l3.175 3.041a3.793 3.793 0 0 0 2.536 1.026h2.745zM5.14 6.248c0-.881.415-1.813 1.067-2.44L9.367.753v2.55c0 .867-.431 1.92-1.062 2.527L5.14 8.889v-2.64z"/>
+                      <path fill="#595A59" d="M53.229 12.5c0 .328-.27.59-.608.59l-1.765.003a.598.598 0 0 1-.608-.587v-2.352c0-.323.274-.585.608-.585l1.765-.005c.338 0 .608.262.608.585V12.5zm-.302-4.113l-2.32.006c-1.003 0-1.821.79-1.821 1.761v.412h-1.274V8.393h-1.518v5.875h1.518v-2.527h1.274v.765c0 .97.818 1.762 1.821 1.762l2.32-.005c1 0 1.82-.792 1.82-1.762v-2.352c0-.97-.82-1.762-1.82-1.762zm-12.278.006h3.867v5.875H43V9.57l-2.049-.001a.596.596 0 0 0-.606.585v2.352c0 .97-.817 1.762-1.822 1.762h-.487v-1.175h.184a.597.597 0 0 0 .606-.587v-2.352c0-.97.817-1.761 1.823-1.761zM12.324 11.33l1.387-3.76 1.42 3.76h-2.807zm.485-5.289l-3.441 8.227h1.872l.65-1.762h3.685l.668 1.762h1.81L14.61 6.041h-1.8zm42.492 2.352h5.357v1.176h-1.921v4.699h-1.515V9.569H55.3V8.393zm-32.359 4.113a.598.598 0 0 1-.607.587h-1.82a.596.596 0 0 1-.608-.587V10.153a.597.597 0 0 1 .607-.584h1.821c.334 0 .607.262.607.585v2.352zm-.303-4.113h-1.671c-.395 0-.76.123-1.06.33v-.92c0-.323.271-.585.606-.585h3.217V6.041H20.21c-1.003 0-1.82.791-1.82 1.762v4.703c0 .97.816 1.762 1.82 1.762h2.429c1.004 0 1.82-.792 1.82-1.762v-2.352c0-.97-.816-1.761-1.82-1.761zm13.281 4.113a.598.598 0 0 1-.607.587h-1.82a.597.597 0 0 1-.608-.587v-2.352c0-.323.272-.585.608-.585h1.82c.333 0 .607.262.607.585v2.352zm-.305-4.113h-2.428c-1.002 0-1.82.79-1.82 1.761v2.352c0 .97.818 1.762 1.82 1.762h2.428c1.006 0 1.823-.792 1.823-1.762v-2.352c0-.97-.817-1.761-1.823-1.761zm-8.642 1.761v2.352c0 .326.27.587.606.587h2.999v1.175h-3.304c-1.002 0-1.82-.792-1.82-1.762v-2.352c0-.97.818-1.761 1.82-1.761h3.304v1.176h-2.999a.596.596 0 0 0-.606.585zm41.336 1.696c0 .686-.575 1.243-1.284 1.243h-2.322v-3.02h2.322c.709 0 1.284.555 1.284 1.243v.534zm-.792-2.955h-2.814V7.217h4.674V6.04h-6.19v8.227h4.33c1.38 0 2.5-1.082 2.5-2.418v-.534c0-1.335-1.12-2.421-2.5-2.421zm20.107 2.846h-.553v2.527h-1.52V8.393h1.52v2.173h.555l2.006-2.173h1.707l-2.56 2.766 2.733 3.109h-1.9l-1.988-2.527zm-12.23 1.352h-2.43a.598.598 0 0 1-.61-.587v-.062c0-.326.272-.591.61-.591h2.43v1.24zm-.307-4.7h-3.822v1.176h3.518a.6.6 0 0 1 .611.585v.524h-2.736c-1.002 0-1.82.791-1.82 1.766v.062c0 .97.818 1.762 1.82 1.762h4.249v-4.114c0-.97-.816-1.761-1.82-1.761zm7.614 0h1.518v5.875H82.7v-2.527h-2.973v2.527h-1.52V8.393h1.52v2.173h2.973V8.393z"/>
+                  </g>
+              </svg>
+            `
+                            },
+                        }),
+                        title1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 42,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerHTML: () => 'Дисконт 1% на ипотечную ставку',
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 140,
+                                '#height': () => 24,
+                                '#ofsVer': () => 80,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Стать партнером',
+                                target: () => '<',
+                                fontSize: () => 12,
+                            },
+                            style: {
+                                background: () => '#ff6600',
+                                borderRadius: () => '4px',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+                face: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsVer': $$.$me_atom2_prop(['<@alpha.#ofsVer', '<@alpha.#height', '.em', '<@absolut.#height',], ({ masters: [ofs, height, ofs2, height2] }) => ofs + height + ofs2 + height2 + ofs2),
+                        '#ofsHor': $$.$me_atom2_prop(['<@promo.#width', '.em'], ({ masters: [width, ofs] }) => ofs + width + ofs),
+                        '#width': () => 179,
+                        '#height': () => 161,
+                    },
+                    elem: {
+                        title1: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 14,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 12,
+                                fontWeight: () => 700,
+                            },
+                            dom: {
+                                innerText: () => 'Уважаемый клиент!',
+                            },
+                        }),
+                        title2: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 36,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                            },
+                            dom: {
+                                innerHTML: () => 'Для публикации в "зелёной зоне" Вам необходимо раскрыть своё лицо',
+                            },
+                        }),
+                        title3: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': () => 20,
+                                '#ofsVer': () => 83,
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 11,
+                                fontStyle: () => 'italic',
+                            },
+                            dom: {
+                                innerHTML: () => 'Публикация в "зелёной зоне" бесплатна',
+                            },
+                        }),
+                        button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 140,
+                                '#height': () => 24,
+                                '#ofsVer': () => 121,
+                                '#alignHor': () => $$.$me_align.center,
+                                caption: () => 'Раскрыть лицо',
+                                target: () => '<',
+                                fontSize: () => 12,
+                            },
+                            style: {
+                                borderRadius: () => '4px',
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    },
+                }),
+            },
+        };
+        const news_item = {
+            prop: {
+                '#height': () => 100,
+                caption: $$.$me_atom2_prop_abstract(),
+                imageUrl: $$.$me_atom2_prop_abstract(),
+                text: $$.$me_atom2_prop_abstract(),
+                url: $$.$me_atom2_prop_abstract(),
+                date: $$.$me_atom2_prop_abstract(),
+            },
+            elem: {
+                image: () => ({
+                    node: 'img',
+                    prop: {
+                        '#width': () => 130,
+                        '#height': () => 97,
+                        '#ofsHor': () => 0,
+                        '#ofsVer': () => 0,
+                    },
+                    attr: {
+                        src: '<.imageUrl',
+                    },
+                }),
+                title: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#ofsVer': '<@icon1.#ofsVer',
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                    },
+                    style: {
+                        fontFamily: () => 'system-ui',
+                        fontSize: () => 12,
+                        fontWeight: () => 500,
+                    },
+                    dom: {
+                        innerText: '<.caption',
+                    },
+                }),
+                text: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': $$.$me_atom2_prop(['<.#width', '<@image.#width', '.em'], ({ masters: [width, img_width, ofs] }) => width - img_width - ofs),
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer', '<@title.#height'], ({ masters: [ofs, height] }) => ofs + height + 10),
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                    },
+                    style: {
+                        fontFamily: () => 'system-ui',
+                        fontSize: () => 12,
+                        fontWeight: () => 400,
+                    },
+                    dom: {
+                        innerText: '<.text',
+                    },
+                }),
+                more: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
+                        '#ofsHor': $$.$me_atom2_prop(['<@image.#ofsHor', '<@image.#width', '.em'], ({ masters: [ofs_h, width, ofs] }) => ofs_h + width + ofs),
+                        '#cursor': () => 'pointer',
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        fontSize: () => 12,
+                    },
+                    dom: {
+                        innerText: () => 'Подробнее'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log('link');
+                            return true;
+                        },
+                    },
+                }),
+                date: () => ({
+                    prop: {
+                        '#width': () => null,
+                        '#ofsVer': $$.$me_atom2_prop(['<@image.#ofsVer'], ({ masters: [ofs] }) => ofs + 86),
+                        '#alignHor': () => $$.$me_align.right,
+                        fontSize: () => 10,
+                    },
+                    dom: {
+                        innerText: '<.date'
+                    },
+                    style: {
+                        color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#d0d0d0'),
+                    },
+                }),
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//workspace.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_search_tabs = {
+            elem: {
+                tab: $$.$me_atom2_prop({ keys: ['<.order_ids'] }, ({ key: [id] }) => ({
+                    base: tab,
+                    prop: {
+                        id: () => id,
+                    },
+                    dom: {
+                        innerText: id != 'new' ? `<<.order_title[${id}]` : (() => 'Новый заказ +'.toUpperCase()),
+                    },
+                })),
+            },
+        };
+        const tab = {
+            node: 'span',
+            prop: {
+                isSelected: $$.$me_atom2_prop(['<<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
+                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
+            },
+            event: {
+                clickOrTap: () => {
+                    $$.a('<<.selected', $$.a('.id'));
+                    return true;
+                },
+            },
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 10,
+                paddingRight: () => 10,
+                paddingBottom: () => 5,
+                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$nl_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$nl_theme.light ? 1 : .5})`),
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
+                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//tabs.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_search_new = {
+            prop: {
+                data: () => ({
+                    Продажа: {
+                        'Москва': {
+                            Квартиры: {
+                                'Вся база': 1000000,
+                                'За сегодня': 1000,
+                                'Новые': 1000,
+                            },
+                            Комнаты: {
+                                'Вся база': 150000,
+                                'За сегодня': 150,
+                                'Новые': 150,
+                            },
+                            Загородная: {
+                                'Вся база': 500000,
+                                'За сегодня': 500,
+                                'Новые': 500,
+                            },
+                            Коммерческая: {
+                                'Вся база': 1000,
+                                'За сегодня': 150,
+                                'Новые': 150,
+                            },
+                            Гаражи: {
+                                'Вся база': 15000,
+                                'За сегодня': 15,
+                                'Новые': 15,
+                            },
+                            Доли: {
+                                'Вся база': 700,
+                                'За сегодня': 70,
+                                'Новые': 70,
+                            },
+                        },
+                        'Московская область': {
+                            Квартиры: {
+                                'Вся база': 1000000,
+                                'За сегодня': 1000,
+                                'Новые': 1000,
+                            },
+                            Комнаты: {
+                                'Вся база': 150000,
+                                'За сегодня': 150,
+                                'Новые': 150,
+                            },
+                            Коммерческая: {
+                                'Вся база': 1000,
+                                'За сегодня': 150,
+                                'Новые': 150,
+                            },
+                            Гаражи: {
+                                'Вся база': 15000,
+                                'За сегодня': 15,
+                                'Новые': 15,
+                            },
+                            Доли: {
+                                'Вся база': 700,
+                                'За сегодня': 70,
+                                'Новые': 70,
+                            },
+                        },
+                    },
+                }),
+                panel_names: $$.$me_atom2_prop_keys(['.data']),
+                panel_data: $$.$me_atom2_prop({ keys: ['.panel_names'], masters: ['.data'] }, ({ key: [panel_name], masters: [data] }) => data[panel_name]),
+                panel_left_first: '.em',
+                panel_top_first: () => 0,
+                panel_width: () => 536,
+                panel_height: () => 580,
+                panel_space_hor: '.em',
+                panel_space_ver: '.em',
+                panel_pos: $$.$me_atom2_prop({
+                    keys: ['.panel_names'],
+                    masters: $$.$me_atom2_prop_masters(['.panel_names'], ({ key: [panel_name], masters: [panel_names] }) => {
+                        const idx = panel_names.indexOf(panel_name);
+                        return !idx ?
+                            ['.panel_left_first', '.panel_top_first'] :
+                            [
+                                '.panel_left_first',
+                                '.panel_top_first',
+                                '.#width',
+                                `.panel_pos[${panel_names[idx - 1]}]`,
+                                '.panel_width',
+                                '.panel_height',
+                                '.panel_space_hor',
+                                '.panel_space_ver',
+                            ];
+                    }),
+                }, ({ key: [panel_name], len, masters: [left, top, width, pos, panel_width, panel_height, space_hor, space_ver] }) => {
+                    if (len <= 2) {
+                        return { left, top };
+                    }
+                    else {
+                        let result = {
+                            left: pos.left + panel_width + space_hor,
+                            top: pos.top,
+                        };
+                        if (result.left + panel_width + space_hor > width) {
+                            result.left = left;
+                            result.top += panel_height + space_ver;
+                        }
+                        return result;
+                    }
+                }),
+            },
+            elem: {
+                panel: $$.$me_atom2_prop({ keys: ['.panel_names'] }, ({ key: [panel_name] }) => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        colorBackground: () => 'white',
+                        '#width': '<.panel_width',
+                        '#height': '<.panel_height',
+                        '#ofsHor': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.left, duration: 800 })),
+                        '#ofsVer': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.top, duration: 800 })),
+                        tables: `<.panel_data[${panel_name}]`,
+                        table_keys: $$.$me_atom2_prop_keys(['.tables']),
+                        table: $$.$me_atom2_prop({ keys: ['.table_keys'], masters: ['.tables'] }, ({ key: [table_key], masters: [tables] }) => tables[table_key]),
+                        table_height: $$.$me_atom2_prop({ keys: ['.table_keys'], masters: ['.table_header_height', '.table_row_keys[]', '.table_row_height', '.table_row_space'] }, ({ masters: [header_height, table_row_key, row_height, row_space] }) => header_height + 2 * row_space + table_row_key.length * (row_height + row_space)),
+                        table_row_height: () => 32,
+                        table_header_height: () => 40,
+                        table_ver_ofs: () => 69,
+                        table_ver_space: '.em',
+                        table_row_space: () => 1,
+                        table_top: $$.$me_atom2_prop({
+                            keys: ['.table_keys'],
+                            masters: $$.$me_atom2_prop_masters(['.table_keys'], ({ key: [table_key], masters: [table_keys] }) => {
+                                const idx = table_keys.indexOf(table_key);
+                                return (!idx ? ['.table_ver_ofs'] :
+                                    [
+                                        `.table_top[${table_keys[idx - 1]}]`,
+                                        `.table_height[${table_keys[idx - 1]}]`,
+                                        '.table_ver_space',
+                                    ]);
+                            }),
+                        }, $$.$me_atom2_prop_compute_fn_sum()),
+                        table_row_keys: $$.$me_atom2_prop_keys({ keys: ['.table_keys'], masters: ['.table[]'] }),
+                        table_row: $$.$me_atom2_prop({ keys: ['.table_keys', '.table_row_keys[]'], masters: ['.table[]'] }, ({ key: [table_key, table_row_key], masters: [table, key] }) => table[table_row_key]),
+                        table_flds: () => ({
+                            'Вся база': {
+                                width: 66 + 2 * (26 - (33 - 24)),
+                                opacity: 1,
+                            },
+                            'За сегодня': {
+                                width: 83 + 2 * (33 - 24),
+                                opacity: 0.7,
+                            },
+                            'Новые': {
+                                width: 51 + 2 * 24,
+                                opacity: 0.7,
+                            },
+                        }),
+                        table_cell_keys: $$.$me_atom2_prop_keys(['.table_flds']),
+                        table_fld: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_flds'] }, ({ key: [key], masters: [table_flds] }) => table_flds[key]),
+                        table_fld_width: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_fld[]'] }, ({ key: [key], masters: [table_fld] }) => table_fld.width),
+                        table_fld_opacity: $$.$me_atom2_prop({ keys: ['.table_cell_keys'], masters: ['.table_fld[]'] }, ({ key: [key], masters: [table_fld] }) => table_fld.opacity),
+                        table_fld_width_sum: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.table_cell_keys'], ({ masters: [table_cell_keys] }) => table_cell_keys.map(key => `.table_fld_width[${key}]`)), p => p.masters.reduce((result, w) => result + w, 0)),
+                        table_cell: $$.$me_atom2_prop({ keys: ['.table_keys', '.table_row_keys[]', '.table_cell_keys'], masters: ['.table_row[][]'] }, ({ key: [table_key, table_row_key, table_cell_key], masters: [row] }) => {
+                            var x = (row[table_cell_key] + '').split('.');
+                            var x1 = x[0];
+                            var x2 = x.length > 1 ? '.' + x[1] : '';
+                            var rgx = /(\d+)(\d{3})/;
+                            while (rgx.test(x1))
+                                x1 = x1.replace(rgx, '$1' + ' ' + '$2');
+                            return x1 + x2;
+                        }),
+                    },
+                    elem: {
+                        header: () => ({
+                            prop: {
+                                '#ofsHor': () => 24,
+                                '#ofsVer': () => 32,
+                                '#width': () => null,
+                                '#height': () => null,
+                                em: $$.$me_atom2_prop(['/.em'], ({ masters: [em] }) => em / 16 * 18),
+                                fontWeight: () => 500,
+                            },
+                            dom: {
+                                innerText: () => panel_name.toUpperCase(),
+                            },
+                        }),
+                        table: $$.$me_atom2_prop({ keys: ['.table_keys'] }, ({ key: [table_key] }) => ({
+                            node: 'table',
+                            prop: {
+                                '#ofsVer': `<.table_top[${table_key}]`,
+                                '#ofsHor': '.em',
+                                '#height': `<.table_height[${table_key}]`,
+                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                            },
+                            style: {
+                                borderCollapse: () => 'separate',
+                                borderSpacing: $$.$me_atom2_prop(['<.table_row_space'], ({ masters: [table_row_space] }) => `0 ${table_row_space}px`),
+                            },
+                            elem: {
+                                header: () => ({
+                                    node: 'tr',
+                                    prop: {
+                                        '#height': '<<.table_header_height',
+                                    },
+                                    style: {
+                                        position: () => 'relative',
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#d8dce3' : '#6e7581'),
+                                    },
+                                    elem: {
+                                        key: () => ({
+                                            base: th,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '<<<.table_fld_width_sum'], ({ masters: [width, table_fld_width_sum] }) => width - table_fld_width_sum),
+                                            },
+                                            style: {
+                                                textAlign: () => 'left',
+                                                paddingLeft: () => 8,
+                                            },
+                                            dom: {
+                                                innerText: () => table_key,
+                                            },
+                                        }),
+                                        fld: $$.$me_atom2_prop({ keys: ['<<.table_cell_keys'] }, ({ key: [caption] }) => ({
+                                            base: th,
+                                            prop: {
+                                                '#width': `<<<.table_fld_width[${caption}]`,
+                                            },
+                                            style: {
+                                                textAlign: () => 'center',
+                                            },
+                                            dom: {
+                                                innerText: () => caption,
+                                            },
+                                        })),
+                                    },
+                                }),
+                                row: $$.$me_atom2_prop({ keys: [`<.table_row_keys[${table_key}]`] }, ({ key: [table_row_key] }) => ({
+                                    node: 'tr',
+                                    prop: {
+                                        '#height': '<<.table_row_height',
+                                        '#cursor': () => 'pointer',
+                                    },
+                                    event: {
+                                        clickOrTap: () => {
+                                            console.log(panel_name, table_key, table_row_key);
+                                            return true;
+                                        }
+                                    },
+                                    style: {
+                                        position: () => 'relative',
+                                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#f0f1f4' : '#878f9b'),
+                                    },
+                                    elem: {
+                                        key: () => ({
+                                            base: td,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '<<<.table_fld_width_sum'], ({ masters: [width, table_fld_width_sum] }) => width - table_fld_width_sum),
+                                            },
+                                            style: {
+                                                paddingLeft: () => 8,
+                                                color: () => '#53adff',
+                                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'transparent' : 'rgb(70, 79, 99)'),
+                                            },
+                                            dom: {
+                                                innerText: () => table_row_key,
+                                            },
+                                        }),
+                                        fld: $$.$me_atom2_prop({ keys: ['<<.table_cell_keys'] }, ({ key: [col] }) => ({
+                                            base: td,
+                                            prop: {
+                                                '#width': `<<<.table_fld_width[${col}]`,
+                                            },
+                                            style: {
+                                                textAlign: () => 'center',
+                                                color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : 'white'),
+                                                opacity: `<<<.table_fld_opacity[${col}]`,
+                                            },
+                                            dom: {
+                                                innerText: `<<<.table_cell[${table_key}][${table_row_key}][${col}]`,
+                                            },
+                                        })),
+                                    },
+                                }))
+                            },
+                        })),
+                    },
+                }))
+            },
+        };
+        const td = {
+            node: 'td',
+            style: {
+                position: () => 'relative',
+                paddingLeft: () => 0,
+                paddingTop: () => 0,
+                paddingRight: () => 0,
+                paddingBottom: () => 0,
+            },
+        };
+        const th = {
+            base: td,
+            node: 'th',
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//new.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_search_panel = {
+            base: $$.$nl_panel,
+            prop: {
+                '#ofsHor': '.em',
+                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+            }
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//panel.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_switch = {
+            base: $$.$me_select,
+            prop: {
+                options: $$.$me_atom2_prop_abstract(),
+                value: $$.$me_atom2_prop_abstract(),
+                colorBorder: () => 'transparent',
+                colorBorderSelected: () => 'transparent',
+                colorBackground: () => 'transparent',
+                colorBackgroundSelected: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                    '#0070a4' :
+                    '#0facf4'),
+                borderRadius: () => 0,
+                borderWidth: () => 0,
+                paddingHor: () => 0,
+                option_ids: $$.$me_atom2_prop_keys(['.options']),
+                option_width_min: () => 40,
+                colorText: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                    '#0070a4' :
+                    'white'),
+                colorTextSelected: () => 'white',
+                fontFamily: '/.fontFamily',
+                fontWeight: '/.fontWeight',
+                fontWeightSelected: () => 500,
+                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                alignVer: () => $$.$me_align.bottom,
+                ofsVer: $$.$me_atom2_prop_abstract(),
+                no_adjust: () => true,
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//switch.js.map
 ;
 "use strict";
 var $;
@@ -22100,7 +23299,7 @@ var $;
                                 scale: '.scale_initial',
                                 ofsHor: '.ofsHor_initial',
                                 ofsVer: '.ofsVer_initial',
-                                value: null,
+                                value: $$.$me_atom2_prop_bind('/@app.card_value'),
                                 src: () => '',
                                 '#zIndex': () => 1000,
                             },
