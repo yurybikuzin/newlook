@@ -10901,6 +10901,34 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        function $me_option_caption(id, options, val) {
+            const isSelected = typeof val == 'string' ? val == id :
+                val instanceof Set ? val.has(id) :
+                    val instanceof Map ? val.has(id) :
+                        false;
+            const caption = typeof options[id].caption == 'function' ?
+                options[id].caption({ val, isSelected }) :
+                options[id].caption;
+            return caption;
+        }
+        $$.$me_option_caption = $me_option_caption;
+        function $me_option_caption_text(id, options, val) {
+            const caption = $me_option_caption(id, options, val);
+            const result = typeof caption == 'string' ? caption :
+                !caption || typeof caption.text != 'string' ? id :
+                    caption.text;
+            return result;
+        }
+        $$.$me_option_caption_text = $me_option_caption_text;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//option.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_icon_placemarker = {
             type: '$nl_icon_placemarker',
             base: $$.$me_svg,
@@ -10929,34 +10957,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //placemarker.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        function $me_option_caption(id, options, val) {
-            const isSelected = typeof val == 'string' ? val == id :
-                val instanceof Set ? val.has(id) :
-                    val instanceof Map ? val.has(id) :
-                        false;
-            const caption = typeof options[id].caption == 'function' ?
-                options[id].caption({ val, isSelected }) :
-                options[id].caption;
-            return caption;
-        }
-        $$.$me_option_caption = $me_option_caption;
-        function $me_option_caption_text(id, options, val) {
-            const caption = $me_option_caption(id, options, val);
-            const result = typeof caption == 'string' ? caption :
-                !caption || typeof caption.text != 'string' ? id :
-                    caption.text;
-            return result;
-        }
-        $$.$me_option_caption_text = $me_option_caption_text;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//option.js.map
 ;
 "use strict";
 var $;
@@ -13639,6 +13639,14 @@ var $;
                 'Москва': {},
                 'Московская область': {},
             },
+            living_complex: {
+                '0': { caption: 'Простоквашино' },
+                '1': { caption: 'Хендэхохово' },
+            },
+            stations: {
+                '0': { caption: '' },
+                '1': { caption: 'Сссссс' },
+            },
             rmqt: {
                 'none': { caption: '' },
                 'free': { caption: 'Св.планировка' },
@@ -13662,13 +13670,13 @@ var $;
                 '10': { caption: 'дизайнерский ремонт' },
                 '11': { caption: 'первичная отделка' },
             },
-            territory: {
+            territory_type_id: {
                 '0': { caption: 'не важно' },
                 '1': { caption: 'огороженная' },
                 '2': { caption: 'огороженная и охраняемая' },
                 '3': { caption: 'не огорожена' },
             },
-            parking: {
+            parking_type_id: {
                 '0': { caption: 'не важно' },
                 '1': { caption: 'нет' },
                 '2': { caption: 'есть' },
@@ -14098,13 +14106,170 @@ var $;
             '#width': !def.col_count ? '<.row_width' : $$.$me_atom2_prop(['<.row_width', '.col_space', '.col_count', '.col_span'], ({ masters: [width, col_space, col_count, col_span] }) => Math.round((width - col_space * (col_count - 1)) / col_count) * col_span + col_space * (col_span - 1)),
             '#ofsHor': !def.col_count || !def.col ? '<.row_left' : $$.$me_atom2_prop(['<.row_left', '<.row_width', '.col_space', '.col_count', '.col'], ({ masters: [left, width, col_space, col_count, col] }) => left + col * (Math.round((width - col_space * (col_count - 1)) / col_count) + col_space)),
         });
+        function crumb_metro(result, params, fld_name, fld_caption = '') {
+            let size;
+            if (params[fld_name] && (size = params[fld_name].length)) {
+                const guid = params[fld_name][0];
+                const guid2point = $$.a('/.guid2point');
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    guid2point[guid].station.text +
+                    (size == 1 ? '' : ' и ещё ' + (size - 1));
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_pickermulti(result, params, fld_name, fld_caption = '') {
+            let size;
+            if (params[fld_name] && (size = params[fld_name].size)) {
+                const id = [...params[fld_name]].map(([value]) => value)[0];
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    $$.$me_option_caption_text(id, $$.$nl_advcard_panel_param_options[fld_name]) +
+                    (size == 1 ? '' : ' и ещё ' + (size - 1));
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_picker(result, params, fld_name, fld_caption = '') {
+            let size;
+            console.log(fld_name, params[fld_name]);
+            if (params[fld_name] && Object.keys($$.$nl_advcard_panel_param_options[fld_name]).indexOf(params[fld_name])) {
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    $$.$nl_advcard_panel_param_options[fld_name][params[fld_name]].caption;
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_select(result, params, fld_name, values, captions) {
+            if (values.length < 2)
+                $$.$me_throw('values.length < 2', values);
+            if (values.length != captions.length)
+                $$.$me_throw('values.length != captions.length', values, captions);
+            if (params[fld_name] && params[fld_name] != values[0]) {
+                let caption = captions[captions.length - 1];
+                for (let i = 1; i < values.length; i++)
+                    if (params[fld_name] == values[i]) {
+                        caption = captions[i - 1];
+                        break;
+                    }
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_diap(result, params, fld_name, suffix, fld_caption = '') {
+            if (params[fld_name] && (params[fld_name].min || params[fld_name].max)) {
+                if (suffix)
+                    suffix = ' ' + suffix;
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    (params[fld_name].min && params[fld_name].max ? (params[fld_name].min == params[fld_name].max ?
+                        params[fld_name].min + suffix :
+                        params[fld_name].min + '-' + params[fld_name].max + suffix) :
+                        params[fld_name].min ?
+                            'от ' + params[fld_name].min + suffix :
+                            'до ' + params[fld_name].min + suffix);
+                result[fld_name] = { caption };
+            }
+        }
         let scheme_metro;
         $$.$nl_advcard_panel_param = {
             prop: {
                 ofsHor: () => 0,
                 ofsVer: () => 40,
-                header_height: () => 20,
+                value: () => { },
+                '#height': $$.$me_atom2_prop(['.header_height', '@tabs.#height'], ({ masters: [h1, h2] }) => {
+                    console.log(h1, h2);
+                    return h1 + h2;
+                }),
+                header_height: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.crumb_ids'], ({ masters: [crumb_ids] }) => {
+                    const result = ['.crumb_ofsVer'];
+                    if (crumb_ids.length)
+                        result.push(`.crumb_pos[${crumb_ids[crumb_ids.length - 1]}]`, '.crumb_height');
+                    return result;
+                }), ({ len, masters: [crumb_ofsVer, crumb_pos, crumb_height] }) => {
+                    const result = Math.max(crumb_ofsVer, len == 2 ? 0 : crumb_pos.top + crumb_height + crumb_ofsVer);
+                    return result;
+                }),
                 footer_height: () => 20,
+                crumb_height: () => 24,
+                crumb_ofsHor: () => 16,
+                crumb_ofsVer: () => 16,
+                crumb_spaceHor: () => 8,
+                crumb_spaceVer: () => 8,
+                crumb_paddingHor: () => 8,
+                crumbs: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => {
+                    const params = {};
+                    console.log(value);
+                    let deal_type = (value['deal_type_id'] == 1) ? 'Продаётся ' : 'Сдаётся в аренду ';
+                    let rgn = 'в Москве';
+                    const result = {
+                        'раздел': { caption: deal_type + $$.$nl_formatter_object_type(value) },
+                        'Регион': { caption: rgn },
+                        'Адрес': { caption: $$.$nl_formatter_address(value) }
+                    };
+                    crumb_picker(result, value, 'territory_type_id', 'Территория');
+                    crumb_picker(result, value, 'parking_type_id', 'Парковка');
+                    return result;
+                }),
+                crumb_ids: $$.$me_atom2_prop_keys(['.crumbs']),
+                crumb_fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                crumb_fontFamily: '.fontFamily',
+                crumb_fontWeight: () => 400,
+                ctx: () => document.createElement('CANVAS').getContext('2d'),
+                ctx_prepared: $$.$me_atom2_prop(['.ctx', '.crumb_fontFamily', '.crumb_fontSize', '.crumb_fontWeight', '/.#pixelRatio'], ({ masters: [ctx, fontFamily, fontSize, fontWeight, pixelRatio] }) => {
+                    const ctxFontSize = pixelRatio * fontSize;
+                    ctx.font = fontWeight + ' ' + ctxFontSize + 'px ' + fontFamily;
+                    return ctx;
+                }),
+                crumb_pos: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.crumb_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        const result = ['.ctx_prepared', '/.#pixelRatio', '.crumbs', '.crumb_ids', '.crumb_ofsHor', '.crumb_ofsVer', '.crumb_paddingHor'];
+                        if (idx) {
+                            result.push('.#width', '.crumb_spaceHor', '.crumb_spaceVer', `.crumb_pos[${ids[idx - 1]}]`, `.crumb_width[${ids[idx - 1]}]`, '.crumb_height');
+                        }
+                        return result;
+                    }),
+                }, ({ key: [id], masters: [ctx, pixelRatio, crumbs, crumb_ids, crumb_ofsHor, crumb_ofsVer, crumb_paddingHor, width, crumb_spaceHor, crumb_spaceVer, crumb_pos_prev, crumb_width_prev, crumb_height] }) => {
+                    let result;
+                    const idx = crumb_ids.indexOf(id);
+                    let mode_switcher_width = 50, mode_switcher_height = 20;
+                    let crumb_width = Math.ceil(ctx.measureText(crumbs[id].caption).width / pixelRatio) + 2 * crumb_paddingHor;
+                    if (!idx) {
+                        result = {
+                            left: crumb_ofsHor,
+                            top: crumb_ofsVer,
+                            width: crumb_width,
+                        };
+                    }
+                    else {
+                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ?
+                            width - crumb_spaceHor :
+                            width - mode_switcher_width - crumb_spaceHor;
+                        if (crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor + crumb_width + crumb_spaceHor > limitHor) {
+                            result = {
+                                left: crumb_ofsHor,
+                                top: crumb_pos_prev.top + crumb_height + crumb_spaceVer,
+                                width: crumb_width,
+                            };
+                        }
+                        else {
+                            result = {
+                                left: crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor,
+                                top: crumb_pos_prev.top,
+                                width: crumb_width,
+                            };
+                        }
+                    }
+                    return result;
+                }),
+                crumb_left: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ key: [id], masters: [crumb_pos] }) => crumb_pos.left),
+                crumb_top: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ masters: [crumb_pos] }) => crumb_pos.top),
+                crumb_width: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ masters: [crumb_pos] }) => crumb_pos.width),
                 tab_selected: $$.$me_atom2_prop_store({
                     default: () => $$.a('.tab_ids')[0],
                     valid: (val) => typeof val == 'string' && ~$$.a('.tab_ids').indexOf(val) ? val : null,
@@ -14124,7 +14289,7 @@ var $;
                                 row: () => 1,
                                 type: 'address',
                             },
-                            area: {
+                            Регион: {
                                 row: () => 2,
                                 type: 'picker',
                                 label: () => 'Регион',
@@ -14138,7 +14303,7 @@ var $;
                                 label: () => 'Название ЖК',
                                 label_width: () => 108,
                                 none: () => '',
-                                options: () => { },
+                                options: () => $$.$nl_advcard_panel_param_options['living_complex'],
                             },
                             stations: {
                                 row: () => 4,
@@ -14146,28 +14311,28 @@ var $;
                                 label: () => 'Ближайшие станции метро',
                                 label_width: () => 108,
                                 none: () => '',
-                                options: () => { },
+                                options: () => $$.$nl_advcard_panel_param_options['stations'],
                             },
                         },
                     },
                     Инфраструктура: {
                         icon: 'icons-8-city-square',
                         params: {
-                            territory: {
+                            territory_type_id: {
                                 row: () => 1,
                                 type: 'picker',
                                 label: () => 'Территория',
                                 label_width: () => 108,
                                 none: () => 'не важно',
-                                options: () => $$.$nl_advcard_panel_param_options['territory'],
+                                options: () => $$.$nl_advcard_panel_param_options['territory_type_id'],
                             },
-                            parking: {
+                            parking_type_id: {
                                 row: () => 2,
                                 type: 'picker',
                                 label: () => 'Парковка',
                                 label_width: () => 108,
                                 none: () => 'не важно',
-                                options: () => $$.$nl_advcard_panel_param_options['parking'],
+                                options: () => $$.$nl_advcard_panel_param_options['parking_type_id'],
                             },
                         },
                     },
@@ -14182,14 +14347,14 @@ var $;
                                     new: { caption: { text: 'Новостройка' } },
                                 })
                             },
-                            Этажность: {
+                            storeys_count: {
                                 row: () => 2,
                                 type: 'input',
                                 label: () => 'Этажность',
                                 label_width: () => 100,
                                 diap_space: () => 16,
                             },
-                            Этаж: {
+                            storey: {
                                 row: () => 3,
                                 type: 'input',
                                 label: () => 'Этаж',
@@ -14476,10 +14641,68 @@ var $;
                 }),
             },
             elem: {
+                crumb: $$.$me_atom2_prop({ keys: ['.crumb_ids'], masters: ['.crumbs'] }, ({ key: [id], masters: [crumbs] }) => ({
+                    type: crumbs[id].caption,
+                    prop: {
+                        '#ofsHor': `<.crumb_left[${id}]`,
+                        '#ofsVer': `<.crumb_top[${id}]`,
+                        '#width': `<.crumb_width[${id}]`,
+                        '#height': '<.crumb_height',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': id == 'раздел' ? null : () => 'pointer',
+                    },
+                    style: {
+                        border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                            'solid 1px #bdc3d1' :
+                            'solid 1px #d8dce3'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b'),
+                        borderRadius: () => 3,
+                    },
+                    control: {
+                        label: () => ({
+                            base: $$.$me_label,
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': '<.#height',
+                                text: () => crumbs[id].caption,
+                                fontSize: '<<.crumb_fontSize',
+                                paddingHor: '<<.crumb_paddingHor',
+                                alignVer: () => $$.$me_align.center,
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log(id, crumbs[id], $$.a.curr.name(), $$.a('<.tabs'));
+                            let found;
+                            if (id == 'Адрес') {
+                                found = 'Местоположение';
+                            }
+                            else if (id == 'СхемаМетро') {
+                                $$.a('/@app.isShownSchemeMetro', true);
+                            }
+                            else {
+                                const tabs = $$.a('<.tabs');
+                                const tab_ids = Object.keys(tabs);
+                                for (let i = 0; i < tab_ids.length; i++) {
+                                    const tab_id = tab_ids[i];
+                                    if (tabs[tab_id].params[id]) {
+                                        found = tab_id;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (found) {
+                                $$.a('<.tab_selected', found);
+                            }
+                            return true;
+                        },
+                    },
+                })),
                 tabs: () => ({
                     prop: {
                         '#ofsVer': '<.header_height',
-                        '#height': $$.$me_atom2_prop(['<.#height', '.#ofsVer'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#height': () => 500,
                         options: '<.tabs',
                         option_ids: '<.tab_ids',
                         option_height: () => 44,
@@ -14541,6 +14764,12 @@ var $;
                                             prop: {
                                                 '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
                                                 '#alignHor': () => $$.$me_align.right,
+                                                options: def.options,
+                                                none: null,
+                                                value: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
+                                                    return value[id] || '';
+                                                }, ({ val }) => {
+                                                }),
                                             },
                                         }),
                                     },
@@ -14569,6 +14798,10 @@ var $;
                                                 '#alignHor': () => $$.$me_align.right,
                                                 options: def.options,
                                                 none: def.type == 'picker' ? null : def.none,
+                                                value: $$.$me_atom2_prop(['.option_ids', '<<<.value'], ({ atom, masters: [ids, value] }) => {
+                                                    return (value[id] + '') || (def.type == 'picker' ? ids[0] : new Map());
+                                                }, ({ val }) => {
+                                                }),
                                             },
                                         }),
                                     },
@@ -14952,8 +15185,8 @@ var $;
                 }),
                 wrapper: () => ({
                     prop: {
-                        '#height': () => 560,
                         '#width': () => 700,
+                        '#height': $$.$me_atom2_prop(['@panelParam.#height', '@buttonPanel.#height'], ({ masters: [h1, h2] }) => h1 + h2),
                         '#alignHor': () => $$.$me_align.center,
                         '#alignVer': () => $$.$me_align.center,
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
@@ -14986,7 +15219,7 @@ var $;
                             base: $$.$nl_advcard_panel_param,
                             prop: {
                                 param_mode: () => 'ПОЛНЫЙ',
-                                '#height': () => 500,
+                                value: $$.$me_atom2_prop_bind('/@app.card_value'),
                             },
                         }),
                         buttonPanel: () => ({
@@ -15042,6 +15275,7 @@ var $;
                                         '#ofsVer': '<.verticalOffset',
                                         '#ofsHor': $$.$me_atom2_prop(['<@saveAndPubButton.#ofsHor', '<@saveAndPubButton.#width'], ({ masters: [ofs, width] }) => ofs + width + 10),
                                         caption: () => 'Отменить',
+                                        target: () => '<',
                                         fontSize: () => 14,
                                     },
                                     event: {
@@ -21603,6 +21837,7 @@ var $;
                         icon: () => $$.$nl_icon_add,
                         fontSize: () => '15px',
                         color: () => '#0070a4',
+                        '#cursor': () => 'pointer',
                         '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                     },
                     event: {
@@ -21782,6 +22017,7 @@ var $;
                 icon: $$.$me_atom2_prop_abstract(),
                 fontSize: $$.$me_atom2_prop_abstract(),
                 color: $$.$me_atom2_prop_abstract(),
+                '#cursor': () => 'pointer',
                 '#width': () => 135,
                 '#height': () => 20,
             },
@@ -21805,7 +22041,6 @@ var $;
                     prop: {
                         '#ofsHor': $$.$me_atom2_prop(['<@image.#width'], ({ masters: [w] }) => w + 8),
                         '#ofsVer': () => 3,
-                        '#cursor': () => 'pointer',
                         '#width': () => null,
                         '#height': () => null,
                         fontSize: '<.fontSize',
