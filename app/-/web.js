@@ -13725,6 +13725,26 @@ var $;
                 '2': { caption: 'во двор' },
                 '3': { caption: 'во двор и на улицу' },
             },
+            ownership: {
+                '0': { caption: '' },
+                '1': { caption: 'купля/продажа' },
+                '2': { caption: 'ЖСК' },
+                '3': { caption: 'приватизация' },
+                '4': { caption: 'дарение' },
+                '5': { caption: 'наследство' },
+                '6': { caption: 'мена' },
+                '7': { caption: 'инвестирование' },
+                '8': { caption: 'рента' },
+                '9': { caption: 'решение суда' },
+                '10': { caption: 'залог (ипотека)' },
+                '11': { caption: 'иное' },
+                '12': { caption: 'кооператив' },
+                '13': { caption: 'собственность' },
+                '14': { caption: 'по доверенности' },
+                '15': { caption: 'договор долевого участия' },
+                '16': { caption: 'договор уступки прав требования' },
+                '17': { caption: 'предварительный договор купли-продажи' },
+            },
             КлассЖилья: {
                 '': {},
                 'эконом': {},
@@ -14293,7 +14313,35 @@ var $;
                     },
                     'Права': {
                         icon: 'icons-8-money',
-                        params: {}
+                        params: {
+                            mode18: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    mode1: { caption: { text: 'Проживающие "до 18 лет"' } },
+                                    mode2: { caption: { text: 'Нет проживающих "до 18 лет"' } },
+                                })
+                            },
+                            ownership: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Основание права собственности',
+                                label_width: () => 162,
+                                options: () => $$.$nl_advcard_panel_param_options['ownership'],
+                            },
+                            year: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Год вступления в право собственности',
+                                label_width: () => 162,
+                            },
+                            ownercount: {
+                                row: () => 4,
+                                type: 'input',
+                                label: () => 'Количество собственников',
+                                label_width: () => 162,
+                            },
+                        }
                     },
                     'Контакты и статус': {
                         icon: 'icons-8-money',
@@ -14301,7 +14349,17 @@ var $;
                     },
                     'Режим публикации': {
                         icon: 'icons-8-money',
-                        params: {}
+                        params: {
+                            mode: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    mode1: { caption: { text: 'Все' } },
+                                    mode2: { caption: { text: 'Автопубликация' } },
+                                    mode3: { caption: { text: 'Только WinNER' } },
+                                })
+                            },
+                        }
                     },
                     'Фото/Видео': {
                         icon: 'icons-8-money',
@@ -14309,11 +14367,31 @@ var $;
                     },
                     'Примечание': {
                         icon: 'icons-8-money',
-                        params: {}
+                        params: {
+                            cmlabel: {
+                                row: () => 0,
+                                type: 'label',
+                                label: () => 'Примечание (будет опубликовано)',
+                            },
+                            comment: {
+                                row: () => 1,
+                                type: 'textarea',
+                            },
+                        }
                     },
                     'Своя информация': {
                         icon: 'icons-8-money',
-                        params: {}
+                        params: {
+                            infolabel: {
+                                row: () => 0,
+                                type: 'label',
+                                label: () => 'Своя информация (не публикуется)',
+                            },
+                            info: {
+                                row: () => 1,
+                                type: 'textarea',
+                            },
+                        }
                     },
                 }),
             },
@@ -14510,6 +14588,23 @@ var $;
                                             },
                                             dom: {
                                                 innerText: def.label,
+                                            },
+                                        }),
+                                    }
+                                };
+                            }
+                            else if (def.type == 'textarea') {
+                                return {
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    elem: {
+                                        area: () => ({
+                                            node: 'textarea',
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#height': () => 290,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                                '#ofsVer': () => 12,
                                             },
                                         }),
                                     }
