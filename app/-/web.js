@@ -13637,10 +13637,10 @@ var $;
                 '5т': { caption: 'до 5 мин транспортом' },
             },
             area: {
-                'Москва': {},
-                'Московская область': {},
+                'msk': { caption: 'Москва' },
+                'msk_area': { caption: 'Московская область' },
             },
-            living_complex: {
+            housing_complex_id: {
                 '0': { caption: 'Простоквашино' },
                 '1': { caption: 'Хендэхохово' },
             },
@@ -13659,7 +13659,7 @@ var $;
                 '5': { caption: '5-комн.' },
                 '6': { caption: '6+ комн.' },
             },
-            remont: {
+            apartment_condition_type_id: {
                 '0': { caption: '' },
                 '1': { caption: 'требуется капитальный ремонт' },
                 '3': { caption: 'без отделки' },
@@ -13710,7 +13710,7 @@ var $;
                 '12': { caption: 'четыре раздельных санузла' },
                 '13': { caption: 'есть санузел' },
             },
-            balcony: {
+            balcony_type_id: {
                 '0': { caption: '' },
                 '1': { caption: 'нет' },
                 '2': { caption: 'балкон' },
@@ -13734,7 +13734,7 @@ var $;
                 2: { caption: 'во двор' },
                 3: { caption: 'во двор и на улицу' },
             },
-            ownership: {
+            ownership_type_id: {
                 '0': { caption: '' },
                 '1': { caption: 'купля/продажа' },
                 '2': { caption: 'ЖСК' },
@@ -13858,6 +13858,7 @@ var $;
         }
         function crumb_picker(result, params, fld_name, fld_caption = '') {
             let size;
+            console.log(fld_name, params[fld_name], $$.$nl_advcard_panel_param_options[fld_name], Object.keys($$.$nl_advcard_panel_param_options[fld_name]).indexOf(params[fld_name]));
             if (params[fld_name] && params[fld_name] != null && $$.$nl_advcard_panel_param_options[fld_name] && Object.keys($$.$nl_advcard_panel_param_options[fld_name]).indexOf(params[fld_name] + '') >= 0) {
                 const caption = (!fld_caption ? '' : fld_caption + ': ') +
                     $$.$nl_advcard_panel_param_options[fld_name][params[fld_name]].caption;
@@ -13929,17 +13930,28 @@ var $;
                         'Регион': { caption: rgn },
                         'Адрес': { caption: $$.$nl_formatter_address(value) }
                     };
+                    crumb_picker(result, value, 'housing_complex_id', 'ЖК');
                     crumb_picker(result, value, 'territory_type_id', 'Территория');
                     crumb_picker(result, value, 'parking_type_id', 'Парковка');
                     crumb_picker(result, value, 'window_overlook_type_id', 'Окна');
                     crumb_picker(result, value, 'water_closet_type_id', 'Санузел');
                     crumb_picker(result, value, 'elevator_type_id', 'Лифт');
                     crumb_picker(result, value, 'walls_material_type_id', 'Тип дома');
+                    crumb_picker(result, value, 'balcony_type_id', 'Балкон');
                     crumb_input(result, value, 'built_year', 'Год постройки');
                     crumb_input(result, value, 'storeys_count', 'Этажность');
                     crumb_input(result, value, 'storey', 'Этаж ');
+                    crumb_input(result, value, 'total_square', 'Общая');
+                    crumb_input(result, value, 'life_square', 'Жилая ');
+                    crumb_input(result, value, 'kitchen_square', 'Кухня ');
                     crumb_picker(result, value, 'habit_class_id', 'Класс');
                     crumb_picker(result, value, 'building_batch_id', 'Серия');
+                    crumb_picker(result, value, 'apartment_condition_type_id', 'Ремонт');
+                    crumb_input(result, value, 'price_rub', 'Цена');
+                    crumb_input(result, value, 'registered_citizen_count', 'Кол-во проживающих');
+                    crumb_picker(result, value, 'ownership_type_id', 'Основание права собственности');
+                    crumb_input(result, value, 'ownership_year', 'Год вступления в право собственности');
+                    crumb_input(result, value, 'owners_count', 'Кол-во собственников ');
                     return result;
                 }),
                 crumb_ids: $$.$me_atom2_prop_keys(['.crumbs']),
@@ -14026,7 +14038,7 @@ var $;
                                 row: () => 1,
                                 type: 'address',
                             },
-                            Регион: {
+                            area: {
                                 row: () => 2,
                                 type: 'picker',
                                 label: () => 'Регион',
@@ -14034,13 +14046,13 @@ var $;
                                 none: () => 'Москва',
                                 options: () => $$.$nl_advcard_panel_param_options['area'],
                             },
-                            complex: {
+                            housing_complex_id: {
                                 row: () => 3,
                                 type: 'picker',
                                 label: () => 'Название ЖК',
                                 label_width: () => 108,
                                 none: () => '',
-                                options: () => $$.$nl_advcard_panel_param_options['living_complex'],
+                                options: () => $$.$nl_advcard_panel_param_options['housing_complex_id'],
                             },
                             stations: {
                                 row: () => 4,
@@ -14153,26 +14165,23 @@ var $;
                                 none: () => '',
                                 options: () => $$.$nl_advcard_panel_param_options['total_room_count'],
                             },
-                            total_sq: {
+                            total_square: {
                                 row: () => 3,
                                 type: 'input',
                                 label: () => 'Площадь',
                                 label_width: () => 100,
-                                diap_space: () => 16,
                             },
-                            life_sq: {
+                            life_square: {
                                 row: () => 4,
                                 type: 'input',
                                 label: () => 'Жилая',
                                 label_width: () => 100,
-                                diap_space: () => 16,
                             },
-                            kitchen_sq: {
+                            kitchen_square: {
                                 row: () => 5,
                                 type: 'input',
                                 label: () => 'Кухня',
                                 label_width: () => 100,
-                                diap_space: () => 16,
                             },
                             water_closet_type_id: {
                                 row: () => 6,
@@ -14188,27 +14197,27 @@ var $;
                                 label_width: () => 100,
                                 options: () => $$.$nl_advcard_panel_param_options['window_overlook_type_id'],
                             },
-                            remont: {
+                            apartment_condition_type_id: {
                                 row: () => 8,
                                 type: 'picker',
                                 label: () => 'Ремонт',
                                 label_width: () => 90,
                                 none: () => '',
-                                options: () => $$.$nl_advcard_panel_param_options['remont'],
+                                options: () => $$.$nl_advcard_panel_param_options['apartment_condition_type_id'],
                             },
-                            balcony: {
+                            balcony_type_id: {
                                 row: () => 9,
                                 type: 'picker',
                                 label: () => 'Балкон',
                                 label_width: () => 90,
-                                options: () => $$.$nl_advcard_panel_param_options['balcony'],
+                                options: () => $$.$nl_advcard_panel_param_options['balcony_type_id'],
                             },
                         },
                     },
                     'Цена и условия': {
                         icon: 'icons-8-money',
                         params: {
-                            price: {
+                            price_rub: {
                                 row: () => 1,
                                 type: 'input',
                                 label: () => 'Цена',
@@ -14259,7 +14268,7 @@ var $;
                                     '1': { caption: { text: 'Проживают люди' } },
                                 }),
                             },
-                            livingcount: {
+                            registered_citizen_count: {
                                 row: () => 6,
                                 type: 'input',
                                 label: () => 'Количество проживающих',
@@ -14278,20 +14287,20 @@ var $;
                                     mode2: { caption: { text: 'Нет проживающих "до 18 лет"' } },
                                 })
                             },
-                            ownership: {
+                            ownership_type_id: {
                                 row: () => 2,
                                 type: 'picker',
                                 label: () => 'Основание права собственности',
                                 label_width: () => 162,
-                                options: () => $$.$nl_advcard_panel_param_options['ownership'],
+                                options: () => $$.$nl_advcard_panel_param_options['ownership_type_id'],
                             },
-                            year: {
+                            ownership_year: {
                                 row: () => 3,
                                 type: 'input',
                                 label: () => 'Год вступления в право собственности',
                                 label_width: () => 162,
                             },
-                            ownercount: {
+                            owners_count: {
                                 row: () => 4,
                                 type: 'input',
                                 label: () => 'Количество собственников',
@@ -14302,22 +14311,22 @@ var $;
                     'Контакты и статус': {
                         icon: 'icons-8-money',
                         params: {
-                            deal: {
+                            deal_status_id: {
                                 row: () => 1,
                                 type: 'select',
                                 options: () => ({
-                                    mode1: { caption: { text: 'Продается' } },
-                                    mode2: { caption: { text: 'Аванс' } },
-                                    mode3: { caption: { text: 'Продана' } },
+                                    1: { caption: { text: 'Продается' } },
+                                    2: { caption: { text: 'Аванс' } },
+                                    3: { caption: { text: 'Продана' } },
                                 })
                             },
-                            agent: {
+                            agent_name: {
                                 row: () => 2,
-                                type: 'picker',
+                                type: 'input',
                                 label: () => 'Агент',
                                 label_width: () => 100,
                             },
-                            phone: {
+                            phone_list: {
                                 row: () => 3,
                                 type: 'input',
                                 label: () => 'Телефон',
@@ -14351,7 +14360,7 @@ var $;
                                 type: 'label',
                                 label: () => 'Примечание (будет опубликовано)',
                             },
-                            comment: {
+                            note: {
                                 row: () => 1,
                                 type: 'textarea',
                             },
@@ -14651,6 +14660,11 @@ var $;
                                                 fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
                                                 fontWeight: () => 500,
                                                 '#ofsVer': () => 12,
+                                            },
+                                            dom: {
+                                                innerText: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
+                                                    return value[id] || '';
+                                                }),
                                             },
                                         }),
                                     }
@@ -16028,6 +16042,36 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //switch.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_level = {
+            type: '$nl_icon_level',
+            base: $$.$me_svg,
+            prop: {
+                color: '<.color',
+                viewBox: () => "0 0 26 28",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: '<.color', fillRule: () => 'nonzero', stroke: '<.color'
+                        },
+                        sub: [
+                            { attr: { strokeWidth: () => 2, d: () => "M1 14h24v13H1zM1 1h24v13H1z" } },
+                            { attr: { d: () => "M5.5 17.5h15v6h-15z" } },
+                            { attr: { 'stroke-linecap': () => 'square', d: () => "M13 5.5v4m0 9v4" } },
+                            { attr: { d: () => "M5.5 4.5h15v6h-15z" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//level.js.map
 ;
 "use strict";
 var $;
@@ -17493,6 +17537,7 @@ var $;
                                 isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value == id),
                                 '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? null : 'pointer'),
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                id: () => id,
                             },
                             event: {
                                 clickOrTap: () => {
@@ -17506,7 +17551,6 @@ var $;
                             },
                             elem: {
                                 icon: () => ({
-                                    node: 'img',
                                     prop: {
                                         '#width': '<<.option_iconSize',
                                         '#height': '<<.option_iconSize',
@@ -17514,7 +17558,6 @@ var $;
                                         '#ofsHor': () => 16,
                                     },
                                     attr: {
-                                        src: $$.$me_atom2_prop(['<<.options'], ({ masters: [options] }) => `assets/${options[id].icon}@2x.png`),
                                         draggable: () => false,
                                     },
                                     style: {
@@ -17523,6 +17566,31 @@ var $;
                                             theme == $$.$nl_theme.light ?
                                                 'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
                                                 'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
+                                    },
+                                    elem: {
+                                        icon: $$.$me_atom2_prop(['<<.options', '<.id'], ({ masters: [options, id] }) => {
+                                            if (id === 'Местоположение') {
+                                                return $$.$nl_icon_placemarker;
+                                            }
+                                            else if (id === 'Квартира: основные' || id === 'Квартира: ещё') {
+                                                return $$.$nl_icon_key;
+                                            }
+                                            else if (id === 'Цена и условия') {
+                                                return $$.$nl_icon_money;
+                                            }
+                                            else if (id === 'Этаж/Этажность') {
+                                                return $$.$nl_icon_level;
+                                            }
+                                            else if (id === 'Дом') {
+                                                return $$.$nl_icon_building;
+                                            }
+                                            else if (id === 'Инфраструктура') {
+                                                return $$.$nl_icon_infrastructure;
+                                            }
+                                            else if (id === 'Объявление') {
+                                                return $$.$nl_icon_comment;
+                                            }
+                                        }),
                                     },
                                 }),
                                 label: () => ({

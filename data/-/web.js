@@ -178,8 +178,11 @@ var $;
                                     'is_construction_address',
                                     'geo_cache_housing_complex_name',
                                     'location',
+                                    'housing_complex_id',
                                     'building_batch_id',
                                     'habit_class_id',
+                                    'registered_citizen_count',
+                                    'area',
                                 ],
                                 sort: [
                                     { winner_relevance: { order: "desc" } },
