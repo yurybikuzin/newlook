@@ -13779,1132 +13779,10 @@ var $;
                 '1': { caption: '02/98-НМ' },
                 '2': { caption: '1385 АР-3' },
             },
-            Источник: {
-                winner: {
-                    caption: 'WinNER',
-                },
-                winnerPro: {
-                    caption: 'WinNER PRO',
-                },
-                sob: {
-                    caption: 'Sob.ru',
-                },
-                avito: {
-                    caption: 'Avito.ru',
-                },
-                cian: {
-                    caption: 'Cian.ru',
-                },
-                irr: {
-                    caption: 'Irr.ru',
-                },
-                other: {
-                    caption: 'Прочие',
-                },
-                yandex: {
-                    caption: 'Яндекс',
-                },
-            },
         };
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //options.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const row_height = 30;
-        const row_space = 16;
-        const prop_common = (def, p) => ({
-            '#hidden': def.hidden,
-            row: def.row,
-            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'], ({ masters: [row, row_height, row_space] }) => 8 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
-            '#height': '<.row_height',
-            col_space: def.col_space || (() => 16),
-            col_count: def.col_count || (() => 1),
-            col_span: def.col_span || (() => 1),
-            col: def.col,
-            '#width': !def.col_count ? '<.row_width' : $$.$me_atom2_prop(['<.row_width', '.col_space', '.col_count', '.col_span'], ({ masters: [width, col_space, col_count, col_span] }) => Math.round((width - col_space * (col_count - 1)) / col_count) * col_span + col_space * (col_span - 1)),
-            '#ofsHor': !def.col_count || !def.col ? '<.row_left' : $$.$me_atom2_prop(['<.row_left', '<.row_width', '.col_space', '.col_count', '.col'], ({ masters: [left, width, col_space, col_count, col] }) => left + col * (Math.round((width - col_space * (col_count - 1)) / col_count) + col_space)),
-        });
-        function crumb_input(result, params, fld_name, fld_caption = '') {
-            if (params[fld_name]) {
-                const caption = (!fld_caption ? '' : fld_caption + ': ') + params[fld_name];
-                result[fld_name] = { caption };
-            }
-        }
-        function crumb_metro(result, params, fld_name, fld_caption = '') {
-            let size;
-            if (params[fld_name] && (size = params[fld_name].length)) {
-                const guid = params[fld_name][0];
-                const guid2point = $$.a('/.guid2point');
-                const caption = (!fld_caption ? '' : fld_caption + ': ') +
-                    guid2point[guid].station.text +
-                    (size == 1 ? '' : ' и ещё ' + (size - 1));
-                result[fld_name] = { caption };
-            }
-        }
-        function crumb_pickermulti(result, params, fld_name, fld_caption = '') {
-            let size;
-            if (params[fld_name] && (size = params[fld_name].size)) {
-                const id = [...params[fld_name]].map(([value]) => value)[0];
-                const caption = (!fld_caption ? '' : fld_caption + ': ') +
-                    $$.$me_option_caption_text(id, $$.$nl_advcard_panel_param_options[fld_name]) +
-                    (size == 1 ? '' : ' и ещё ' + (size - 1));
-                result[fld_name] = { caption };
-            }
-        }
-        function crumb_picker(result, params, fld_name, fld_caption = '') {
-            let size;
-            console.log(fld_name, params[fld_name], $$.$nl_advcard_panel_param_options[fld_name], Object.keys($$.$nl_advcard_panel_param_options[fld_name]).indexOf(params[fld_name]));
-            if (params[fld_name] && params[fld_name] != null && $$.$nl_advcard_panel_param_options[fld_name] && Object.keys($$.$nl_advcard_panel_param_options[fld_name]).indexOf(params[fld_name] + '') >= 0) {
-                const caption = (!fld_caption ? '' : fld_caption + ': ') +
-                    $$.$nl_advcard_panel_param_options[fld_name][params[fld_name]].caption;
-                result[fld_name] = { caption };
-            }
-        }
-        function crumb_select(result, params, fld_name, values, captions) {
-            if (values.length < 2)
-                $$.$me_throw('values.length < 2', values);
-            if (values.length != captions.length)
-                $$.$me_throw('values.length != captions.length', values, captions);
-            if (params[fld_name] && params[fld_name] != values[0]) {
-                let caption = captions[captions.length - 1];
-                for (let i = 1; i < values.length; i++)
-                    if (params[fld_name] == values[i]) {
-                        caption = captions[i - 1];
-                        break;
-                    }
-                result[fld_name] = { caption };
-            }
-        }
-        function crumb_diap(result, params, fld_name, suffix, fld_caption = '') {
-            if (params[fld_name] && (params[fld_name].min || params[fld_name].max)) {
-                if (suffix)
-                    suffix = ' ' + suffix;
-                const caption = (!fld_caption ? '' : fld_caption + ': ') +
-                    (params[fld_name].min && params[fld_name].max ? (params[fld_name].min == params[fld_name].max ?
-                        params[fld_name].min + suffix :
-                        params[fld_name].min + '-' + params[fld_name].max + suffix) :
-                        params[fld_name].min ?
-                            'от ' + params[fld_name].min + suffix :
-                            'до ' + params[fld_name].min + suffix);
-                result[fld_name] = { caption };
-            }
-        }
-        let scheme_metro;
-        $$.$nl_advcard_panel_param = {
-            prop: {
-                ofsHor: () => 0,
-                ofsVer: () => 40,
-                value: () => { },
-                '#height': $$.$me_atom2_prop(['.header_height', '@tabs.#height'], ({ masters: [h1, h2] }) => {
-                    console.log(h1, h2);
-                    return h1 + h2;
-                }),
-                header_height: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.crumb_ids'], ({ masters: [crumb_ids] }) => {
-                    const result = ['.crumb_ofsVer'];
-                    if (crumb_ids.length)
-                        result.push(`.crumb_pos[${crumb_ids[crumb_ids.length - 1]}]`, '.crumb_height');
-                    return result;
-                }), ({ len, masters: [crumb_ofsVer, crumb_pos, crumb_height] }) => {
-                    const result = Math.max(crumb_ofsVer, len == 2 ? 0 : crumb_pos.top + crumb_height + crumb_ofsVer);
-                    return result;
-                }),
-                footer_height: () => 20,
-                crumb_height: () => 24,
-                crumb_ofsHor: () => 16,
-                crumb_ofsVer: () => 16,
-                crumb_spaceHor: () => 8,
-                crumb_spaceVer: () => 8,
-                crumb_paddingHor: () => 8,
-                crumbs: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => {
-                    const params = {};
-                    console.log(value);
-                    let deal_type = (value['deal_type_id'] == 1) ? 'Продаётся ' : 'Сдаётся в аренду ';
-                    let rgn = 'в Москве';
-                    const result = {
-                        'раздел': { caption: deal_type + $$.$nl_formatter_object_type(value) },
-                        'Регион': { caption: rgn },
-                        'Адрес': { caption: $$.$nl_formatter_address(value) }
-                    };
-                    crumb_picker(result, value, 'housing_complex_id', 'ЖК');
-                    crumb_picker(result, value, 'territory_type_id', 'Территория');
-                    crumb_picker(result, value, 'parking_type_id', 'Парковка');
-                    crumb_picker(result, value, 'window_overlook_type_id', 'Окна');
-                    crumb_picker(result, value, 'water_closet_type_id', 'Санузел');
-                    crumb_picker(result, value, 'elevator_type_id', 'Лифт');
-                    crumb_picker(result, value, 'walls_material_type_id', 'Тип дома');
-                    crumb_picker(result, value, 'balcony_type_id', 'Балкон');
-                    crumb_input(result, value, 'built_year', 'Год постройки');
-                    crumb_input(result, value, 'storeys_count', 'Этажность');
-                    crumb_input(result, value, 'storey', 'Этаж ');
-                    crumb_input(result, value, 'total_square', 'Общая');
-                    crumb_input(result, value, 'life_square', 'Жилая ');
-                    crumb_input(result, value, 'kitchen_square', 'Кухня ');
-                    crumb_picker(result, value, 'habit_class_id', 'Класс');
-                    crumb_picker(result, value, 'building_batch_id', 'Серия');
-                    crumb_picker(result, value, 'apartment_condition_type_id', 'Ремонт');
-                    crumb_input(result, value, 'price_rub', 'Цена');
-                    crumb_input(result, value, 'registered_citizen_count', 'Кол-во проживающих');
-                    crumb_picker(result, value, 'ownership_type_id', 'Основание права собственности');
-                    crumb_input(result, value, 'ownership_year', 'Год вступления в право собственности');
-                    crumb_input(result, value, 'owners_count', 'Кол-во собственников ');
-                    return result;
-                }),
-                crumb_ids: $$.$me_atom2_prop_keys(['.crumbs']),
-                crumb_fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                crumb_fontFamily: '.fontFamily',
-                crumb_fontWeight: () => 400,
-                ctx: () => document.createElement('CANVAS').getContext('2d'),
-                ctx_prepared: $$.$me_atom2_prop(['.ctx', '.crumb_fontFamily', '.crumb_fontSize', '.crumb_fontWeight', '/.#pixelRatio'], ({ masters: [ctx, fontFamily, fontSize, fontWeight, pixelRatio] }) => {
-                    const ctxFontSize = pixelRatio * fontSize;
-                    ctx.font = fontWeight + ' ' + ctxFontSize + 'px ' + fontFamily;
-                    return ctx;
-                }),
-                crumb_pos: $$.$me_atom2_prop({
-                    keys: ['.crumb_ids'],
-                    masters: $$.$me_atom2_prop_masters(['.crumb_ids'], ({ key: [id], masters: [ids] }) => {
-                        const idx = ids.indexOf(id);
-                        const result = ['.ctx_prepared', '/.#pixelRatio', '.crumbs', '.crumb_ids', '.crumb_ofsHor', '.crumb_ofsVer', '.crumb_paddingHor'];
-                        if (idx) {
-                            result.push('.#width', '.crumb_spaceHor', '.crumb_spaceVer', `.crumb_pos[${ids[idx - 1]}]`, `.crumb_width[${ids[idx - 1]}]`, '.crumb_height');
-                        }
-                        return result;
-                    }),
-                }, ({ key: [id], masters: [ctx, pixelRatio, crumbs, crumb_ids, crumb_ofsHor, crumb_ofsVer, crumb_paddingHor, width, crumb_spaceHor, crumb_spaceVer, crumb_pos_prev, crumb_width_prev, crumb_height] }) => {
-                    let result;
-                    const idx = crumb_ids.indexOf(id);
-                    let mode_switcher_width = 50, mode_switcher_height = 20;
-                    let crumb_width = Math.ceil(ctx.measureText(crumbs[id].caption).width / pixelRatio) + 2 * crumb_paddingHor;
-                    if (!idx) {
-                        result = {
-                            left: crumb_ofsHor,
-                            top: crumb_ofsVer,
-                            width: crumb_width,
-                        };
-                    }
-                    else {
-                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ?
-                            width - crumb_spaceHor :
-                            width - mode_switcher_width - crumb_spaceHor;
-                        if (crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor + crumb_width + crumb_spaceHor > limitHor) {
-                            result = {
-                                left: crumb_ofsHor,
-                                top: crumb_pos_prev.top + crumb_height + crumb_spaceVer,
-                                width: crumb_width,
-                            };
-                        }
-                        else {
-                            result = {
-                                left: crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor,
-                                top: crumb_pos_prev.top,
-                                width: crumb_width,
-                            };
-                        }
-                    }
-                    return result;
-                }),
-                crumb_left: $$.$me_atom2_prop({
-                    keys: ['.crumb_ids'],
-                    masters: ['.crumb_pos[]'],
-                }, ({ key: [id], masters: [crumb_pos] }) => crumb_pos.left),
-                crumb_top: $$.$me_atom2_prop({
-                    keys: ['.crumb_ids'],
-                    masters: ['.crumb_pos[]'],
-                }, ({ masters: [crumb_pos] }) => crumb_pos.top),
-                crumb_width: $$.$me_atom2_prop({
-                    keys: ['.crumb_ids'],
-                    masters: ['.crumb_pos[]'],
-                }, ({ masters: [crumb_pos] }) => crumb_pos.width),
-                tab_selected: $$.$me_atom2_prop_store({
-                    default: () => $$.a('.tab_ids')[0],
-                    valid: (val) => typeof val == 'string' && ~$$.a('.tab_ids').indexOf(val) ? val : null,
-                }),
-                tab_ids: $$.$me_atom2_prop_keys(['.tabs'], true),
-                tabs: () => ({
-                    Местоположение: {
-                        icon: $$.$nl_icon_placemarker,
-                        params: {
-                            adrlabel: {
-                                row: () => 0,
-                                type: 'label',
-                                label: () => 'Адрес',
-                                label_width: () => 108,
-                            },
-                            Адрес: {
-                                row: () => 1,
-                                type: 'address',
-                            },
-                            area: {
-                                row: () => 2,
-                                type: 'picker',
-                                label: () => 'Регион',
-                                label_width: () => 108,
-                                none: () => 'Москва',
-                                options: () => $$.$nl_advcard_panel_param_options['area'],
-                            },
-                            housing_complex_id: {
-                                row: () => 3,
-                                type: 'picker',
-                                label: () => 'Название ЖК',
-                                label_width: () => 108,
-                                none: () => '',
-                                options: () => $$.$nl_advcard_panel_param_options['housing_complex_id'],
-                            },
-                            stations: {
-                                row: () => 4,
-                                type: 'picker',
-                                label: () => 'Ближайшие станции метро',
-                                label_width: () => 108,
-                                none: () => '',
-                                options: () => $$.$nl_advcard_panel_param_options['stations'],
-                            },
-                        },
-                    },
-                    Инфраструктура: {
-                        icon: 'icons-8-city-square',
-                        params: {
-                            territory_type_id: {
-                                row: () => 1,
-                                type: 'picker',
-                                label: () => 'Территория',
-                                label_width: () => 108,
-                                none: () => 'не важно',
-                                options: () => $$.$nl_advcard_panel_param_options['territory_type_id'],
-                            },
-                            parking_type_id: {
-                                row: () => 2,
-                                type: 'picker',
-                                label: () => 'Парковка',
-                                label_width: () => 108,
-                                none: () => 'не важно',
-                                options: () => $$.$nl_advcard_panel_param_options['parking_type_id'],
-                            },
-                        },
-                    },
-                    Дом: {
-                        icon: 'icons-8-building',
-                        params: {
-                            type: {
-                                row: () => 1,
-                                type: 'select',
-                                options: () => ({
-                                    old: { caption: { text: 'Вторичка' } },
-                                    new: { caption: { text: 'Новостройка' } },
-                                })
-                            },
-                            storeys_count: {
-                                row: () => 2,
-                                type: 'input',
-                                label: () => 'Этажность',
-                                label_width: () => 100,
-                            },
-                            storey: {
-                                row: () => 3,
-                                type: 'input',
-                                label: () => 'Этаж',
-                                label_width: () => 100,
-                            },
-                            walls_material_type_id: {
-                                row: () => 4,
-                                type: 'picker',
-                                label: () => 'Тип дома',
-                                label_width: () => 100,
-                                none: () => 'не важен',
-                                options: () => $$.$nl_advcard_panel_param_options['walls_material_type_id'],
-                            },
-                            elevator_type_id: {
-                                row: () => 5,
-                                type: 'picker',
-                                label: () => 'Лифт',
-                                label_width: () => 100,
-                                options: () => $$.$nl_advcard_panel_param_options['elevator_type_id'],
-                            },
-                            building_batch_id: {
-                                row: () => 6,
-                                type: 'picker',
-                                label: () => 'Серия дома',
-                                label_width: () => 100,
-                                options: () => $$.$nl_advcard_panel_param_options['building_batch_id'],
-                            },
-                            built_year: {
-                                row: () => 7,
-                                type: 'input',
-                                label: () => 'Год постройки',
-                                label_width: () => 100,
-                            },
-                            habit_class_id: {
-                                row: () => 8,
-                                type: 'pickermulti',
-                                label: () => 'Класс жилья',
-                                label_width: () => 110,
-                                none: () => 'не важен',
-                                options: () => $$.$nl_advcard_panel_param_options['habit_class_id'],
-                            },
-                        },
-                    },
-                    'Квартира': {
-                        icon: 'icons-8-key',
-                        params: {
-                            type: {
-                                row: () => 1,
-                                type: 'select',
-                                options: () => ({
-                                    type1: { caption: { text: 'Апартаменты' } },
-                                    type2: { caption: { text: 'Квартира' } },
-                                })
-                            },
-                            total_room_count: {
-                                row: () => 2,
-                                type: 'picker',
-                                label: () => 'Комнаты',
-                                label_width: () => 100,
-                                none: () => '',
-                                options: () => $$.$nl_advcard_panel_param_options['total_room_count'],
-                            },
-                            total_square: {
-                                row: () => 3,
-                                type: 'input',
-                                label: () => 'Площадь',
-                                label_width: () => 100,
-                            },
-                            life_square: {
-                                row: () => 4,
-                                type: 'input',
-                                label: () => 'Жилая',
-                                label_width: () => 100,
-                            },
-                            kitchen_square: {
-                                row: () => 5,
-                                type: 'input',
-                                label: () => 'Кухня',
-                                label_width: () => 100,
-                            },
-                            water_closet_type_id: {
-                                row: () => 6,
-                                type: 'picker',
-                                label: () => 'Санузел',
-                                label_width: () => 100,
-                                options: () => $$.$nl_advcard_panel_param_options['water_closet_type_id'],
-                            },
-                            window_overlook_type_id: {
-                                row: () => 7,
-                                type: 'picker',
-                                label: () => 'Окна',
-                                label_width: () => 100,
-                                options: () => $$.$nl_advcard_panel_param_options['window_overlook_type_id'],
-                            },
-                            apartment_condition_type_id: {
-                                row: () => 8,
-                                type: 'picker',
-                                label: () => 'Ремонт',
-                                label_width: () => 90,
-                                none: () => '',
-                                options: () => $$.$nl_advcard_panel_param_options['apartment_condition_type_id'],
-                            },
-                            balcony_type_id: {
-                                row: () => 9,
-                                type: 'picker',
-                                label: () => 'Балкон',
-                                label_width: () => 90,
-                                options: () => $$.$nl_advcard_panel_param_options['balcony_type_id'],
-                            },
-                        },
-                    },
-                    'Цена и условия': {
-                        icon: 'icons-8-money',
-                        params: {
-                            price_rub: {
-                                row: () => 1,
-                                type: 'input',
-                                label: () => 'Цена',
-                                label_width: () => 100,
-                            },
-                            'ТипСделки': {
-                                row: () => 2,
-                                type: 'select',
-                                options: () => ({
-                                    '0': { caption: { width: 95, text: 'Не важно' } },
-                                    '1': { caption: { text: 'Прямая продажа' } },
-                                    '2': { caption: { text: 'Альтернатива' } },
-                                }),
-                            },
-                            'Ипотека': {
-                                row: () => 3,
-                                type: 'select',
-                                options: () => ({
-                                    include: { caption: {
-                                            width: 95,
-                                            text: 'Не важно'
-                                        } },
-                                    only: { caption: ({ isSelected }) => ({ text: 'Только по ипотеке', width: 186 }) },
-                                    except: { caption: ({ isSelected }) => isSelected ? 'Строго без ипотеки' : {
-                                            text: 'Без ипотеки',
-                                        }
-                                    },
-                                }),
-                            },
-                            'БонусАгенту': {
-                                row: () => 4,
-                                type: 'select',
-                                options: () => ({
-                                    '0': { caption: ({ isSelected }) => ({ text: 'Не важно', width: 95 }) },
-                                    '1': { caption: ({ isSelected }) => ({ text: 'Только с бонусом агенту', width: 186 }) },
-                                    '2': { caption: ({ isSelected }) => isSelected ? {
-                                            text: 'Без бонуса агенту',
-                                        } : {
-                                            text: 'Без бонуса',
-                                        } },
-                                }),
-                            },
-                            'Статус': {
-                                row: () => 5,
-                                type: 'select',
-                                options: () => ({
-                                    '0': { caption: { text: 'Свободна' } },
-                                    '1': { caption: { text: 'Проживают люди' } },
-                                }),
-                            },
-                            registered_citizen_count: {
-                                row: () => 6,
-                                type: 'input',
-                                label: () => 'Количество проживающих',
-                                label_width: () => 100,
-                            },
-                        },
-                    },
-                    'Права': {
-                        icon: 'icons-8-money',
-                        params: {
-                            mode18: {
-                                row: () => 1,
-                                type: 'select',
-                                options: () => ({
-                                    mode1: { caption: { text: 'Проживающие "до 18 лет"' } },
-                                    mode2: { caption: { text: 'Нет проживающих "до 18 лет"' } },
-                                })
-                            },
-                            ownership_type_id: {
-                                row: () => 2,
-                                type: 'picker',
-                                label: () => 'Основание права собственности',
-                                label_width: () => 162,
-                                options: () => $$.$nl_advcard_panel_param_options['ownership_type_id'],
-                            },
-                            ownership_year: {
-                                row: () => 3,
-                                type: 'input',
-                                label: () => 'Год вступления в право собственности',
-                                label_width: () => 162,
-                            },
-                            owners_count: {
-                                row: () => 4,
-                                type: 'input',
-                                label: () => 'Количество собственников',
-                                label_width: () => 162,
-                            },
-                        }
-                    },
-                    'Контакты и статус': {
-                        icon: 'icons-8-money',
-                        params: {
-                            deal_status_id: {
-                                row: () => 1,
-                                type: 'select',
-                                options: () => ({
-                                    1: { caption: { text: 'Продается' } },
-                                    2: { caption: { text: 'Аванс' } },
-                                    3: { caption: { text: 'Продана' } },
-                                })
-                            },
-                            agent_name: {
-                                row: () => 2,
-                                type: 'input',
-                                label: () => 'Агент',
-                                label_width: () => 100,
-                            },
-                            phone_list: {
-                                row: () => 3,
-                                type: 'input',
-                                label: () => 'Телефон',
-                                label_width: () => 100,
-                            },
-                        }
-                    },
-                    'Режим публикации': {
-                        icon: 'icons-8-money',
-                        params: {
-                            mode: {
-                                row: () => 1,
-                                type: 'select',
-                                options: () => ({
-                                    mode1: { caption: { text: 'Все' } },
-                                    mode2: { caption: { text: 'Автопубликация' } },
-                                    mode3: { caption: { text: 'Только WinNER' } },
-                                })
-                            },
-                        }
-                    },
-                    'Фото/Видео': {
-                        icon: 'icons-8-money',
-                        params: {}
-                    },
-                    'Примечание': {
-                        icon: 'icons-8-money',
-                        params: {
-                            cmlabel: {
-                                row: () => 0,
-                                type: 'label',
-                                label: () => 'Примечание (будет опубликовано)',
-                            },
-                            note: {
-                                row: () => 1,
-                                type: 'textarea',
-                            },
-                        }
-                    },
-                    'Своя информация': {
-                        icon: 'icons-8-money',
-                        params: {
-                            infolabel: {
-                                row: () => 0,
-                                type: 'label',
-                                label: () => 'Своя информация (не публикуется)',
-                            },
-                            info: {
-                                row: () => 1,
-                                type: 'textarea',
-                            },
-                        }
-                    },
-                }),
-            },
-            elem: {
-                crumb: $$.$me_atom2_prop({ keys: ['.crumb_ids'], masters: ['.crumbs'] }, ({ key: [id], masters: [crumbs] }) => ({
-                    type: crumbs[id].caption,
-                    prop: {
-                        '#ofsHor': `<.crumb_left[${id}]`,
-                        '#ofsVer': `<.crumb_top[${id}]`,
-                        '#width': `<.crumb_width[${id}]`,
-                        '#height': '<.crumb_height',
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                        '#cursor': id == 'раздел' ? null : () => 'pointer',
-                    },
-                    style: {
-                        border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
-                            'solid 1px #bdc3d1' :
-                            'solid 1px #d8dce3'),
-                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b'),
-                        borderRadius: () => 3,
-                    },
-                    control: {
-                        label: () => ({
-                            base: $$.$me_label,
-                            prop: {
-                                '#width': '<.#width',
-                                '#height': '<.#height',
-                                text: () => crumbs[id].caption,
-                                fontSize: '<<.crumb_fontSize',
-                                paddingHor: '<<.crumb_paddingHor',
-                                alignVer: () => $$.$me_align.center,
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            console.log(id, crumbs[id], $$.a.curr.name(), $$.a('<.tabs'));
-                            let found;
-                            if (id == 'Адрес') {
-                                found = 'Местоположение';
-                            }
-                            else if (id == 'СхемаМетро') {
-                                $$.a('/@app.isShownSchemeMetro', true);
-                            }
-                            else {
-                                const tabs = $$.a('<.tabs');
-                                const tab_ids = Object.keys(tabs);
-                                for (let i = 0; i < tab_ids.length; i++) {
-                                    const tab_id = tab_ids[i];
-                                    if (tabs[tab_id].params[id]) {
-                                        found = tab_id;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (found) {
-                                $$.a('<.tab_selected', found);
-                            }
-                            return true;
-                        },
-                    },
-                })),
-                tabs: () => ({
-                    prop: {
-                        '#ofsVer': '<.header_height',
-                        '#height': () => 500,
-                        options: '<.tabs',
-                        option_ids: '<.tab_ids',
-                        option_height: () => 44,
-                        option_fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em / 16 * 14),
-                        option_iconSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 22),
-                        option_label_ofsHor: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 16 + 16 + 22),
-                        option_width: () => 210,
-                        option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
-                        value: $$.$me_atom2_prop_bind('<.tab_selected'),
-                        params: $$.$me_atom2_prop(['.value', '.options'], ({ masters: [value, options] }) => options[value].params || {}),
-                        param_ids: $$.$me_atom2_prop_keys(['.params'], true),
-                        row_height: () => row_height,
-                        row_space: () => row_space,
-                        row_left: $$.$me_atom2_prop(['.option_width', '.marginHor'], $$.$me_atom2_prop_compute_fn_sum()),
-                        row_width: () => 428,
-                        marginHor: () => 32,
-                        '#order': () => ['option', 'separator', 'param'],
-                    },
-                    elem: {
-                        separator: () => ({
-                            prop: {
-                                '#width': '<.option_width',
-                            },
-                            style: {
-                                borderRight: () => '1px solid #bdc3d1',
-                            },
-                        }),
-                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'] }, ({ key: [id], masters: [params] }) => {
-                            const def = params[id];
-                            if (def.type == 'select') {
-                                return {
-                                    base: $$.$nl_select,
-                                    prop: Object.assign(Object.assign({}, prop_common(def)), { options: def.options, no_adjust: def.no_adjust }),
-                                };
-                            }
-                            else if (def.type == 'address') {
-                                return {
-                                    base: input_with_button,
-                                    prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
-                                };
-                            }
-                            else if (def.type == 'input') {
-                                const result = {
-                                    prop: Object.assign({}, prop_common(def)),
-                                    elem: {
-                                        label: !def.label ? null : () => ({
-                                            prop: {
-                                                '#width': def.label_width,
-                                                '#height': () => null,
-                                                '#alignVer': () => $$.$me_align.center,
-                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                            },
-                                            dom: {
-                                                innerText: def.label,
-                                            },
-                                        }),
-                                        ctrl: () => ({
-                                            base: $$.$nl_input,
-                                            prop: {
-                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
-                                                '#alignHor': () => $$.$me_align.right,
-                                                options: def.options,
-                                                none: null,
-                                                value: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
-                                                    return value[id] || '';
-                                                }, ({ val }) => {
-                                                }),
-                                            },
-                                        }),
-                                    },
-                                };
-                                return result;
-                            }
-                            else if (def.type == 'picker' || def.type == 'pickermulti') {
-                                const result = {
-                                    prop: Object.assign({}, prop_common(def)),
-                                    elem: {
-                                        label: !def.label ? null : () => ({
-                                            prop: {
-                                                '#width': def.label_width,
-                                                '#height': () => null,
-                                                '#alignVer': () => $$.$me_align.center,
-                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                            },
-                                            dom: {
-                                                innerText: def.label,
-                                            },
-                                        }),
-                                        ctrl: () => ({
-                                            base: $$.$nl_picker,
-                                            prop: {
-                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
-                                                '#alignHor': () => $$.$me_align.right,
-                                                options: def.options,
-                                                none: def.type == 'picker' ? null : def.none,
-                                                value: $$.$me_atom2_prop(['.option_ids', '<<<.value'], ({ atom, masters: [ids, value] }) => {
-                                                    return (value[id] + '') || (def.type == 'picker' ? ids[0] : new Map());
-                                                }, ({ val }) => {
-                                                }),
-                                            },
-                                        }),
-                                    },
-                                };
-                                return result;
-                            }
-                            else if (def.type == 'diap') {
-                                return {
-                                    base: diap,
-                                    prop: Object.assign(Object.assign({}, prop_common(def)), { label: def.label, label_width: def.label_width, diap_space: def.diap_space }),
-                                };
-                            }
-                            else if (def.type == 'pickerdate') {
-                                return {
-                                    prop: Object.assign({}, prop_common(def)),
-                                    elem: {
-                                        label: !def.label ? null : () => ({
-                                            prop: {
-                                                '#width': def.label_width,
-                                                '#height': () => null,
-                                                '#alignVer': () => $$.$me_align.center,
-                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                            },
-                                            dom: {
-                                                innerText: def.label,
-                                            },
-                                        }),
-                                        ctrl: () => ({
-                                            base: $$.$nl_pickerdate,
-                                            prop: {
-                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
-                                                '#alignHor': () => $$.$me_align.right,
-                                            },
-                                        }),
-                                    },
-                                };
-                            }
-                            else if (def.type == 'include_exclude') {
-                                return {
-                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
-                                    elem: {
-                                        label: () => ({
-                                            prop: {
-                                                '#width': '<.#width',
-                                                '#height': () => row_height,
-                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                                fontWeight: () => 500,
-                                                '#ofsVer': () => 12,
-                                            },
-                                            dom: {
-                                                innerText: def.label,
-                                            },
-                                        }),
-                                        include: () => ({
-                                            base: include_exclude_item,
-                                            prop: {
-                                                label: () => 'Включая',
-                                                label_width: def.label_width,
-                                                '#ofsVer': () => (row_height + row_space),
-                                            },
-                                        }),
-                                        exclude: () => ({
-                                            base: include_exclude_item,
-                                            prop: {
-                                                label: () => 'Исключая',
-                                                label_width: def.label_width,
-                                                '#ofsVer': () => 2 * (row_height + row_space),
-                                            },
-                                        }),
-                                    },
-                                };
-                            }
-                            else if (def.type == 'selector') {
-                                return {
-                                    base: $$.$nl_scheme_selector,
-                                    prop: Object.assign({}, prop_common(def)),
-                                };
-                            }
-                            else if (def.type == 'button') {
-                                return {
-                                    base: $$.$nl_button,
-                                    prop: Object.assign(Object.assign({}, prop_common(def)), { target: def.target, cmd: def.cmd, caption: def.caption }),
-                                    dispatch: def.dispatch,
-                                };
-                            }
-                            else if (def.type == 'label') {
-                                return {
-                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
-                                    elem: {
-                                        label: () => ({
-                                            prop: {
-                                                '#width': '<.#width',
-                                                '#height': () => row_height,
-                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                                fontWeight: () => 500,
-                                                '#ofsVer': () => 12,
-                                            },
-                                            dom: {
-                                                innerText: def.label,
-                                            },
-                                        }),
-                                    }
-                                };
-                            }
-                            else if (def.type == 'textarea') {
-                                return {
-                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
-                                    elem: {
-                                        area: () => ({
-                                            node: 'textarea',
-                                            prop: {
-                                                '#width': '<.#width',
-                                                '#height': () => 290,
-                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                                                fontWeight: () => 500,
-                                                '#ofsVer': () => 12,
-                                            },
-                                            dom: {
-                                                innerText: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
-                                                    return value[id] || '';
-                                                }),
-                                            },
-                                        }),
-                                    }
-                                };
-                            }
-                            else {
-                                $$.$me_throw(def.type);
-                            }
-                        }),
-                        option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
-                            prop: {
-                                '#ofsVer': `<.option_top[${id}]`,
-                                '#width': '<.option_width',
-                                '#height': '<.option_height',
-                                isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value == id),
-                                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? null : 'pointer'),
-                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
-                                id: () => id,
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    $$.a('<.value', id);
-                                    return true;
-                                },
-                            },
-                            style: {
-                                background: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => !isSelected ? 'transparent' :
-                                    theme == $$.$nl_theme.light ? '#0070a4' : '#008ecf'),
-                            },
-                            elem: {
-                                icon: () => ({
-                                    prop: {
-                                        '#width': '<<.option_iconSize',
-                                        '#height': '<<.option_iconSize',
-                                        '#alignVer': () => $$.$me_align.center,
-                                        '#ofsHor': () => 16,
-                                    },
-                                    attr: {
-                                        draggable: () => false,
-                                    },
-                                    style: {
-                                        filter: $$.$me_atom2_prop(['<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
-                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
-                                            theme == $$.$nl_theme.light ?
-                                                'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
-                                                'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
-                                    },
-                                    elem: {
-                                        icon: $$.$me_atom2_prop(['<<.options', '<.id'], ({ masters: [options, id] }) => {
-                                            const s = options[id] + '';
-                                            if (id === 'Местоположение') {
-                                                return $$.$nl_icon_placemarker;
-                                            }
-                                            else if (id === 'Инфраструктура') {
-                                                return $$.$nl_icon_infrastructure;
-                                            }
-                                            else if (id === 'Дом') {
-                                                return $$.$nl_icon_building;
-                                            }
-                                            else if (id === 'Квартира') {
-                                                return $$.$nl_icon_key;
-                                            }
-                                            else if (id === 'Цена и условия') {
-                                                return $$.$nl_icon_money;
-                                            }
-                                            else if (id === 'Права') {
-                                                return $$.$nl_icon_diploma;
-                                            }
-                                            else if (id === 'Контакты и статус') {
-                                                return $$.$nl_icon_list;
-                                            }
-                                            else if (id === 'Режим публикации') {
-                                                return $$.$nl_icon_document;
-                                            }
-                                            else if (id === 'Фото/Видео') {
-                                                return $$.$nl_icon_unspalsh;
-                                            }
-                                            else if (id === 'Примечание') {
-                                                return $$.$nl_icon_comment;
-                                            }
-                                            else if (id === 'Своя информация') {
-                                                return $$.$nl_icon_info;
-                                            }
-                                            else {
-                                                return $$.$nl_icon_placemarker;
-                                            }
-                                        }),
-                                    },
-                                }),
-                                label: () => ({
-                                    prop: {
-                                        '#ofsHor': '<<.option_label_ofsHor',
-                                        '#alignVer': () => $$.$me_align.center,
-                                        '#height': () => null,
-                                        '#width': $$.$me_atom2_prop(['<<.option_width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff(-8)),
-                                        fontSize: '<<.option_fontSize',
-                                    },
-                                    dom: {
-                                        innerText: () => id,
-                                    },
-                                    style: {
-                                        color: $$.$me_atom2_prop(['<.isSelected', '.colorText'], ({ masters: [isSelected, colorText] }) => isSelected ? 'white' : colorText),
-                                        whiteSpace: () => 'nowrap',
-                                        overflow: () => 'hidden',
-                                        textOverflow: () => 'ellipsis',
-                                    },
-                                }),
-                            },
-                        })),
-                    },
-                }),
-            },
-        };
-        const diap = {
-            prop: {
-                ids: () => ['min', 'max'],
-                value: $$.$me_atom2_prop({ keys: ['.ids'] }, () => 0),
-                label: $$.$me_atom2_prop_abstract(),
-                label_width: $$.$me_atom2_prop_abstract(),
-                diap_space: $$.$me_atom2_prop_abstract(),
-            },
-            elem: {
-                label: () => ({
-                    prop: {
-                        '#width': '<.label_width',
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                    },
-                    dom: {
-                        innerText: '<.label',
-                    },
-                }),
-                input: $$.$me_atom2_prop({ keys: ['.ids'] }, ({ key: [id] }) => ({
-                    base: $$.$nl_input,
-                    dispatch(dispatch_name, dispatch_arg) {
-                        if (dispatch_name == 'change') {
-                            $$.a(`<.value[${id}]`, dispatch_arg == '' ? 0 : Number.parseInt(dispatch_arg, 10));
-                            return true;
-                        }
-                        return false;
-                    },
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#ofsHor': id == 'max' ? null : $$.$me_atom2_prop(['.#width', '<.diap_space'], $$.$me_atom2_prop_compute_fn_sum()),
-                        '#width': $$.$me_atom2_prop(['<.#width', '<.label_width', '<.diap_space'], ({ masters: [width, label_width, diap_space] }) => (width - label_width - diap_space) / 2),
-                        placeholder: () => id == 'min' ? 'от' : 'до',
-                    },
-                    dom: {
-                        value: $$.$me_atom2_prop([`<.value[${id}]`], ({ masters: [value] }) => {
-                            return !value ? '' : value + '';
-                        }),
-                    },
-                })),
-            },
-        };
-        const include_exclude_item = {
-            prop: {
-                label: $$.$me_atom2_prop_abstract(),
-                label_width: $$.$me_atom2_prop_abstract(),
-                '#width': '<.#width',
-                '#height': () => row_height,
-                '#ofsVer': $$.$me_atom2_prop_abstract(),
-                '#alignVer': () => $$.$me_align.top,
-            },
-            elem: {
-                label: () => ({
-                    prop: {
-                        '#width': '<.label_width',
-                        '#height': () => null,
-                        '#alignVer': () => $$.$me_align.center,
-                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
-                    },
-                    dom: {
-                        innerText: '<.label',
-                    },
-                }),
-                ctrl: () => ({
-                    base: $$.$nl_input,
-                    prop: {
-                        '#width': $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
-                        '#height': () => row_height,
-                        '#alignHor': () => $$.$me_align.right,
-                    },
-                }),
-            },
-        };
-        const input_with_button = {
-            elem: {
-                input: () => ({
-                    base: $$.$nl_input,
-                    prop: {
-                        placeholder: '<.placeholder',
-                    },
-                }),
-                button: () => ({
-                    prop: {
-                        '#alignHor': () => $$.$me_align.right,
-                        '#width': () => 40,
-                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
-                        '#cursor': () => 'pointer',
-                    },
-                    elem: {
-                        square: () => ({
-                            prop: {
-                                '#alignHor': () => $$.$me_align.right,
-                                '#ofsHor': () => 8,
-                                '#alignVer': () => $$.$me_align.center,
-                                '#width': () => 16,
-                                '#height': () => 16,
-                            },
-                            style: {
-                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#88B5CE' : '#5FBDF9'),
-                                borderRadius: () => 3,
-                            },
-                            elem: {
-                                plus: () => ({
-                                    base: $$.$me_plus,
-                                    prop: {
-                                        size: () => 10,
-                                        thick: () => 2,
-                                        '#align': () => $$.$me_align.center,
-                                        color: () => 'white',
-                                    },
-                                }),
-                            },
-                        }),
-                    },
-                    event: {
-                        clickOrTap: () => {
-                            console.log($$.a.curr.name());
-                            return true;
-                        },
-                    },
-                }),
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//param.js.map
 ;
 "use strict";
 var $;
@@ -23662,6 +22540,54 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_user = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 29",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M14.5 15a7.5 7.5 0 110-15 7.5 7.5 0 010 15zm12.6 13H.9a17 17 0 012.7-6.4C6 18.6 11 18 14 18s8.1.6 10.4 3.6a17 17 0 012.7 6.5z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//user.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_enter = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 27 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M11.2 0h12.6C25.6 0 27 1.6 27 3.6v20.8c0 2-1.4 3.6-3.2 3.6H11.2C9.4 28 8 26.4 8 24.4v-5.2h3v5.3c0 .3.2.5.5.5h12c.3 0 .5-.2.5-.5v-21c0-.3-.2-.5-.4-.5H11.5c-.3 0-.5.2-.5.5v5.3H8V3.6C8 1.6 9.4 0 11.2 0zm.8 16H0v-4h12V9l8 5-8 5v-3z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//enter.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_icon_light = {
             type: '$nl_icon_light',
             base: $$.$me_svg,
@@ -23713,6 +22639,225 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //dark.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_home = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M18 28V17.733C18 15.671 16.21 14 14 14s-4 1.671-4 3.733V28H4V14H0L14 0l14 14h-4v14h-6z",
+                            fill: '<.color',
+                            fillRule: () => 'nonzero'
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//home.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_search = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            stroke: () => '#000',
+                            'stroke-width': () => 3,
+                            d: () => "M26.2 24.8L15 13.6l.5-1a7.5 7.5 0 001-3.6A7.5 7.5 0 109 16.5a7.4 7.4 0 003.6-1l1-.5 11.2 11.2h0a1 1 0 001.4 0 1 1 0 000-1.4z M9 16.5a7.5 7.5 0 110-15 7.5 7.5 0 010 15z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//search.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_star = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 30 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M15 22.5l-8.8 4.6 1.7-9.8-7.2-7L10.6 9 15 0l4.4 9 9.9 1.4-7.2 7 1.7 9.7z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//star.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_buy = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M16 9h11a1 1 0 011 1.2l-2.7 15.3a3 3 0 01-3 2.5H5.7a3 3 0 01-3-2.5L0 10.2A1 1 0 011 9h11V2a2 2 0 012-2 2 2 0 012 2v7zm-3 10h-3l4 5 4-5h-3v-5h-2v5z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//buy.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_meeting = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M25 17v2h-1l-1 9h-2l-1-9h-1v-6.8l-.2.4a1 1 0 01-.1.2l-2 2a1 1 0 11-1.4-1.4l1.8-1.9 2-3.7A1 1 0 0120 7h5a1 1 0 011 .6l1.9 4a1 1 0 010 .8l-.9 3.2V17a1 1 0 01-2 0zm0-1.6a1 1 0 010-.3l1-3-1-1.9v5.2zM7.7 7H8a1 1 0 011 1v.2l2.2 4 2.2 1a1 1 0 01-.8 1.9L10 13.9a1 1 0 01-.5-.4L9 12.3V19H8l-1 9H5l-1-9H3v-8.8l-1 1.9 1 3a1 1 0 010 .2V17a1 1 0 11-2 0v-1.5l-1-3.2a1 1 0 01.1-.7l2-4A1 1 0 013 7h4.7zM1 15.3V15.6v-.3zM5.5 7a3.5 3.5 0 110-7 3.5 3.5 0 010 7zm17 0a3.5 3.5 0 110-7 3.5 3.5 0 010 7z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//meeting.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_resume = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M24 18h-4v10h-4V18h-4v10H8V18H4v10H1a1 1 0 01-1-1V1a1 1 0 011-1h26a1 1 0 011 1v26a1 1 0 01-1 1h-3V18zM2 2v2h16V2H2zm0 5v2h24V7H2zm0 5v2h24v-2H2z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//resume.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_infopopup = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M8.2 23A8 8 0 016 25c-1.4 1-3.4 1.6-6 2a8.6 8.6 0 003.7-7A11 11 0 010 12C0 5.4 6.3 0 14 0s14 5.4 14 12-6.3 12-14 12c-2 0-4-.4-5.8-1zM13 11v8h2v-8h-2zm0-5v2h2V6h-2z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//infopopup.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_wallet = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M28 4H5a1 1 0 100 2h23v19a1 1 0 01-1 1H3a3 3 0 01-3-3V3a3 3 0 013-3h24a1 1 0 011 1v3zm-5 10a2 2 0 100 4 2 2 0 000-4z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//wallet.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $$.$nl_icon_settings = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 28 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M7.1 19a8.5 8.5 0 006.9 3.5 8.5 8.5 0 007-3.8L16.3 16a3 3 0 01-2.2 1 3 3 0 01-2-.7L7.2 19zm-1-1.7l5-2.7a3 3 0 011.9-3.4V5.6a8.5 8.5 0 00-6.8 11.7zM15 5.6v5.6a3 3 0 012 3l5 2.7a8.5 8.5 0 00-7-11.3zm8.4 1.8a11.4 11.4 0 012 4.6H28v4h-2.7a11.4 11.4 0 01-1.9 4.6l2 1.9-3 2.8-1.8-1.9a11.4 11.4 0 01-4.6 2V28h-4v-2.7a11.4 11.4 0 01-4.6-1.9l-1.9 2-2.8-3 1.9-1.8a11.4 11.4 0 01-2-4.6H0v-4h2.7a11.4 11.4 0 011.9-4.6l-2-1.9 3-2.8 1.8 1.9a11.4 11.4 0 014.6-2V0h4v2.7c1.7.3 3.2 1 4.6 1.9l1.9-2 2.8 3-1.9 1.8z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//settings.js.map
 ;
 "use strict";
 var $;
@@ -24031,20 +23176,19 @@ var $;
                     },
                     elem: {
                         icon: () => ({
-                            node: 'img',
                             prop: {
                                 '#width': $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => login ? 22 : 20),
                                 '#height': () => 22,
                                 '#align': () => $$.$me_align.center,
-                            },
-                            attr: {
-                                src: $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => 'assets/' + (login ? 'icons-8-user' : 'icons-8-enter-2') + '@2x.png'),
                             },
                             style: {
                                 filter: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                                     'brightness(0%) invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
                                     'brightness(0%) invert(18%) sepia(11%) saturate(1273%) hue-rotate(184deg) brightness(92%) contrast(86%)'),
                             },
+                            elem: {
+                                icon: $$.$me_atom2_prop(['/@app.login'], ({ masters: [login] }) => login ? $$.$nl_icon_user : $$.$nl_icon_enter),
+                            }
                         }),
                     },
                 }),
@@ -24173,15 +23317,15 @@ var $;
                 '#height': $$.$me_atom2_prop(['.#ofsVer', '<.#height'], ({ masters: [ofsVer, height] }) => height - ofsVer),
                 colorBorder: () => 'blue',
                 items: () => ({
-                    'main': { title: 'Главная', icon: 'icons-8-home', icon_width: 26, icon_height: 23 },
-                    'search': { title: 'Поиск', icon: 'icons-8-search' },
-                    'favorites': { title: 'Избранное', icon: 'icons-8-star', icon_width: 26, icon_height: 25 },
-                    'orders': { title: 'Заказы', icon: 'icons-8-buy' },
-                    'clients': { title: 'Клиенты', icon: 'icons-8-meeting', icon_width: 22 },
-                    'advs': { title: 'Мои объявления', icon: 'icons-8-resume-website', icon_width: 22, icon_height: 22 },
-                    'feedback': { title: 'Обратная связь', icon: 'icons-8-info-popup', icon_width: 22 },
-                    'subscription': { title: 'Подписка', icon: 'icons-8-wallet-copy-2', icon_width: 22, icon_height: 22 },
-                    'settings': { title: 'Настройки', icon: 'icons-8-settings' },
+                    'main': { title: 'Главная', icon: $$.$nl_icon_home, icon_width: 26, icon_height: 23 },
+                    'search': { title: 'Поиск', icon: $$.$nl_icon_search },
+                    'favorites': { title: 'Избранное', icon: $$.$nl_icon_star, icon_width: 26, icon_height: 25 },
+                    'orders': { title: 'Заказы', icon: $$.$nl_icon_buy },
+                    'clients': { title: 'Клиенты', icon: $$.$nl_icon_meeting, icon_width: 22 },
+                    'advs': { title: 'Мои объявления', icon: $$.$nl_icon_resume, icon_width: 22, icon_height: 22 },
+                    'feedback': { title: 'Обратная связь', icon: $$.$nl_icon_infopopup, icon_width: 22 },
+                    'subscription': { title: 'Подписка', icon: $$.$nl_icon_wallet, icon_width: 22, icon_height: 22 },
+                    'settings': { title: 'Настройки', icon: $$.$nl_icon_settings },
                 }),
                 item_id: $$.$me_atom2_prop_keys(['.items']),
                 item: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
@@ -24193,7 +23337,7 @@ var $;
                     }),
                 }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
                 item_caption: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
-                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => 'assets/' + item.icon + '@2x.png'),
+                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon),
                 item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
                 item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
                 item_height: () => 52,
@@ -24230,6 +23374,7 @@ var $;
                         menu_cursor_src: $$.$me_atom2_prop(['/.#isTouch', '.#isHover'], ({ masters: [isTouch, isHover] }) => isTouch || !isHover ? '' : id, ({ atom, val }) => {
                             menu_cursor({ origin: atom, val: val });
                         }),
+                        id: () => id,
                     },
                     style: {
                         background: '.colorBackground',
@@ -24248,14 +23393,10 @@ var $;
                             },
                             elem: {
                                 icon: () => ({
-                                    node: 'img',
                                     prop: {
                                         '#width': `<<<.item_icon_width[${id}]`,
                                         '#height': `<<<.item_icon_height[${id}]`,
                                         '#align': () => $$.$me_align.center,
-                                    },
-                                    attr: {
-                                        src: `<<<.item_icon[${id}]`
                                     },
                                     style: {
                                         filter: $$.$me_atom2_prop(['<<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
@@ -24263,6 +23404,9 @@ var $;
                                             theme == $$.$nl_theme.light ?
                                                 'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
                                                 'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
+                                    },
+                                    elem: {
+                                        icon: `<<<.item_icon[${id}]`
                                     },
                                 }),
                             },

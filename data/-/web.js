@@ -207,7 +207,6 @@ var $;
                                 ['Accept', 'application/json'],
                                 ['Content-Type', 'application/json'],
                             ];
-                            console.log(headersInit);
                             const headers = new Headers(headersInit);
                             fetch('https://mls.baza-winner.ru/v2/users/unauthenticated/items/_search.json?project_code=w7', {
                                 method: 'POST',
