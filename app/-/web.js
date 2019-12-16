@@ -35,80 +35,71 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        let isArray = Array.isArray;
-        let keyList = Object.keys;
-        let hasProp = Object.prototype.hasOwnProperty;
         function $me_equal(a, b) {
-            if (a === b)
-                return true;
-            if (a && b && typeof a == 'object' && typeof b == 'object') {
-                const arrA = isArray(a), arrB = isArray(b);
-                if (arrA != arrB)
-                    return false;
-                if (arrA && arrB) {
-                    const length = a.length;
-                    if (length != b.length)
-                        return false;
-                    for (let i = length; i-- !== 0;)
-                        if (!$me_equal(a[i], b[i])) {
-                            return false;
-                        }
-                    return true;
-                }
-                const setA = a instanceof Set, setB = b instanceof Set;
-                if (setA != setB)
-                    return false;
-                if (setA && setB) {
-                    if (a.size != b.size)
-                        return false;
-                    let iter = a.keys();
-                    let next = iter.next();
-                    while (!next.done) {
-                        if (!b.has(next.value))
-                            return false;
-                        next = iter.next();
-                    }
-                    iter = b.keys();
-                    next = iter.next();
-                    while (!next.done) {
-                        if (!a.has(next.value))
-                            return false;
-                        next = iter.next();
-                    }
-                    return true;
-                }
-                const mapA = a instanceof Map, mapB = b instanceof Map;
-                if (mapA != mapB)
-                    return false;
-                if (mapA && mapB)
-                    return $me_equal([...a], [...b]);
-                const dateA = a instanceof Date, dateB = b instanceof Date;
-                if (dateA != dateB)
-                    return false;
-                if (dateA && dateB)
-                    return a.getTime() == b.getTime();
-                const regexpA = a instanceof RegExp, regexpB = b instanceof RegExp;
-                if (regexpA != regexpB)
-                    return false;
-                if (regexpA && regexpB)
-                    return a.toString() == b.toString();
-                const keys = keyList(a);
-                const length = keys.length;
-                if (length !== keyList(b).length)
-                    return false;
-                for (let i = length; i-- !== 0;)
-                    if (!hasProp.call(b, keys[i]))
-                        return false;
-                for (let i = length; i-- !== 0;) {
-                    const key = keys[i];
-                    if (!$me_equal(a[key], b[key]))
-                        return false;
-                }
-                return true;
+            let result;
+            if (a === b) {
+                result = true;
             }
-            return a !== a && b !== b;
+            else if (a && b && typeof a == 'object' && typeof b == 'object') {
+                const isArrayA = isArray(a), isArrayB = isArray(b);
+                const isSetA = a instanceof Set, isSetB = b instanceof Set;
+                const isMapA = a instanceof Map, isMapB = b instanceof Map;
+                const isDateA = a instanceof Date, isDateB = b instanceof Date;
+                const isRegexpA = a instanceof RegExp, isRegexpB = b instanceof RegExp;
+                const isUint8ArrayA = a instanceof Uint8Array, isUint8ArrayB = b instanceof Uint8Array;
+                result =
+                    isArrayA === isArrayB && isSetA === isSetB && isMapA === isMapB && isDateA == isDateB && (isArrayA && isArrayB ? eqArrHelper(a, b) :
+                        isSetA && isSetB ? a.size == b.size && eqSetHelper(a, b) && eqSetHelper(b, a) :
+                            isMapA && isMapB ? $me_equal([...a], [...b]) :
+                                isDateA && isDateB ? a.getTime() == b.getTime() :
+                                    isRegexpA && isRegexpB ? a.toString() == b.toString() :
+                                        isUint8ArrayA && isUint8ArrayB ? eqBufHelper(a, b) :
+                                            eqObjHelper(a, b));
+            }
+            else {
+                result = a !== a && b !== b;
+            }
+            return result;
         }
         $$.$me_equal = $me_equal;
+        const isArray = Array.isArray;
+        const keyList = Object.keys;
+        const hasProp = Object.prototype.hasOwnProperty;
+        function eqBufHelper(a, b) {
+            let result = a.byteLength == b.byteLength;
+            for (let i = 0; result && i < a.byteLength; i++)
+                result = a[i] == b[i];
+            return result;
+        }
+        function eqSetHelper(a, b) {
+            let result = true;
+            const iter = a.keys();
+            let next = iter.next();
+            while (!next.done && (result = b.has(next.value)))
+                next = iter.next();
+            return result;
+        }
+        function eqArrHelper(a, b) {
+            const length = a.length;
+            let result = length == b.length;
+            for (let i = 0; result && i < length; i++) {
+                result = $me_equal(a[i], b[i]);
+            }
+            return result;
+        }
+        function eqObjHelper(a, b) {
+            let result = true;
+            const keys = keyList(a);
+            const length = keys.length;
+            result = length == keyList(b).length;
+            for (let i = 0; result && i < length; i++)
+                result = hasProp.call(b, keys[i]);
+            for (let i = 0; result && i < length; i++) {
+                const key = keys[i];
+                result = $me_equal(a[key], b[key]);
+            }
+            return result;
+        }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //equal.js.map
@@ -967,12 +958,13 @@ var $;
             const atom = $me_atom2_prop(!p.condition ? [] : p.condition, ({ atom, masters, prev, len }) => {
                 let val = null;
                 const name = nameOfStoreKey(atom);
+                const storage = p.isLocal ? localStorage : sessionStorage;
                 if (len && !masters[0]) {
                     val = masters[1] || prev || null;
-                    sessionStorage.removeItem(name);
+                    storage.removeItem(name);
                 }
                 else {
-                    const s = sessionStorage.getItem(name);
+                    const s = storage.getItem(name);
                     if (s)
                         try {
                             val = !p.fromJSON ? JSON.parse(s) : p.fromJSON(JSON.parse(s));
@@ -993,12 +985,13 @@ var $;
                 else if (p.is_equal ? p.is_equal(val, dflt) : $$.$me_equal(val, dflt)) {
                     need_remove = true;
                 }
+                const storage = p.isLocal ? localStorage : sessionStorage;
                 const name = nameOfStoreKey(atom);
                 if (need_remove) {
-                    sessionStorage.removeItem(name);
+                    storage.removeItem(name);
                 }
                 else {
-                    sessionStorage.setItem(name, JSON.stringify(!p.toJSON ? val : p.toJSON(val)));
+                    storage.setItem(name, JSON.stringify(!p.toJSON ? val : p.toJSON(val)));
                 }
                 return val;
             });
@@ -2879,9 +2872,10 @@ var $;
             QUEUE: for (const item of queue) {
                 for (const [path, fn_array] of item.handlers) {
                     const ec = $$.$me_atom2_entity.root().by_path(path);
-                    if (!ec)
-                        continue;
-                    if (!ec._entities.prop['#visible'].value())
+                    if (!(ec &&
+                        ec._entities &&
+                        ec._entities.prop &&
+                        ec._entities.prop['#visible'].value()))
                         continue;
                     const clientRect = ec._entities.prop['#clientRect'].value();
                     if (!clientRect)
@@ -3172,7 +3166,7 @@ var $;
                 return this._state === $me_atom2_state_enum.valid ? this._apply(this._value, true) : new Error(`this._state is ${this._state}`);
             }
             get 'update()'() {
-                return this.update();
+                return this._update();
             }
             get 'masters()'() {
                 const masters = this._masters();
@@ -3275,10 +3269,17 @@ var $;
                         }
                     }
             }
+            update(fn, force = false) {
+                const val = this.value();
+                const ret = fn(val);
+                if (ret === void 0)
+                    $$.$me_throw(`a('${this.name()}'').update.fn returned undefined for val`, val);
+                return this.value(ret, force);
+            }
             value(val, force = false) {
                 if (val === void 0 && this._state === $me_atom2_state_enum.valid)
                     return this._value;
-                this.update(val, force);
+                this._update(val, force);
                 return (this._state !== $me_atom2_state_enum.valid ?
                     null :
                     this._value);
@@ -3286,7 +3287,7 @@ var $;
             static is_valid_value(val) {
                 return !(val == null || Number.isNaN(val));
             }
-            update(val, force = false) {
+            _update(val, force = false) {
                 if (val === void 0 && !(this._state === $me_atom2_state_enum.invalid ||
                     this._state === $me_atom2_state_enum.need_check))
                     return;
@@ -3654,7 +3655,7 @@ var $;
                         to_update.delete(atom);
                         if (atom._active &&
                             atom._state != $me_atom2_state_enum.valid) {
-                            atom.update();
+                            atom._update();
                             count++;
                         }
                     }
@@ -3782,9 +3783,8 @@ var $;
                 const val = atom.value();
                 const ret = fn(val);
                 if (ret === void 0)
-                    $$.$me_throw('update returned undefined for val', val);
-                atom.value(ret, force);
-                return ret;
+                    $$.$me_throw(`a('${atom.name()}'').update.fn returned undefined for val`, val);
+                return atom.value(ret, force);
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -4883,6 +4883,11 @@ var $;
                     default: () => $$.$nl_theme.light,
                     valid: (val) => val == $$.$nl_theme.light || val == $$.$nl_theme.dark ? val : null,
                 }),
+                partnerCode: $$.$me_atom2_prop_store({
+                    isLocal: true,
+                    default: () => '',
+                    valid: (val) => typeof val == 'string' ? val : null,
+                }),
                 colorButton: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     '#0070a4' :
                     '#008ecf'),
@@ -5137,6 +5142,275 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //triangle.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const agateTimeout = 5000;
+        const agateUrl = 'https://alpha-agate.baza-winner.ru';
+        const agateHeaders = new Headers([
+            ['Accept', 'application/json'],
+            ['Content-Type', 'application/json'],
+        ]);
+        const agateUsersPath = 'api/v2/Users';
+        const agateAccountsPath = 'api/v2/accounts';
+        function $nl_agate_find_ip() {
+            return Promise.resolve(null);
+        }
+        $$.$nl_agate_find_ip = $nl_agate_find_ip;
+        ;
+        function $nl_agate_fetch(url, options, timeout = agateTimeout) {
+            return Promise.race([
+                fetch(url, options),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('agate timeout')), timeout))
+            ]).then((response) => {
+                return (response) ? response.json() : '';
+            });
+        }
+        $$.$nl_agate_fetch = $nl_agate_fetch;
+        function $nl_agate_exists_login(username) {
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/existsLogin?checkPassword=1`, {
+                method: 'POST',
+                headers: agateHeaders,
+                body: JSON.stringify({ username: username, realm: 'winner6Client' }),
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_exists_login = $nl_agate_exists_login;
+        function $nl_agate_register_new_user(username, password, metric) {
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}`, {
+                method: 'POST',
+                headers: agateHeaders,
+                body: JSON.stringify({ username: username, password: password, realm: 'winner6Client', metric: metric }),
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_register_new_user = $nl_agate_register_new_user;
+        function $nl_agate_request_token(username, metric) {
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/requestToken`, {
+                method: 'POST',
+                headers: agateHeaders,
+                body: JSON.stringify({ username: username, metric }),
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_request_token = $nl_agate_request_token;
+        function $nl_agate_login_with_token(username, verificationToken, metric, checkMultiSession = false, partnerCode) {
+            let body = {
+                username: username,
+                verificationToken: verificationToken,
+                metric
+            };
+            if (checkMultiSession) {
+                body['checkMultiSession'] = checkMultiSession;
+            }
+            if ($$.a('.partnerCode')) {
+                body['partnerCode'] = $$.a('.partnerCode');
+            }
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/loginWithToken`, {
+                method: 'POST',
+                headers: agateHeaders,
+                body: JSON.stringify(body),
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_login_with_token = $nl_agate_login_with_token;
+        function $nl_agate_login_with_password(username, password, metric, checkMultiSession = false) {
+            let body = {
+                username: username,
+                password: password,
+                checkMultiSession: checkMultiSession,
+                partnerCode: ($$.a('/.partnerCode')) ? $$.a('/.partnerCode') : '',
+                metric: metric
+            };
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/login`, {
+                method: 'POST',
+                headers: agateHeaders,
+                body: JSON.stringify({ username: username, password: password }),
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_login_with_password = $nl_agate_login_with_password;
+        function $nl_agate_find_by_token(findToken, accessToken) {
+            (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/findByToken?token=` + findToken, {
+                method: 'GET',
+                headers: agateHeaders,
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_find_by_token = $nl_agate_find_by_token;
+        function $nl_agate_logout(accessToken) {
+            (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/logout`, {
+                method: 'POST',
+                headers: agateHeaders,
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_logout = $nl_agate_logout;
+        function $nl_agate_update_user(accessToken, userId, attributes) {
+            (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/${userId}`, {
+                method: 'PUT',
+                headers: agateHeaders,
+                mode: 'cors',
+                body: attributes,
+            }, agateTimeout);
+        }
+        $$.$nl_agate_update_user = $nl_agate_update_user;
+        function $nl_agate_update_user_settings(accessToken, userId, settings) {
+            (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/${userId}/settings`, {
+                method: 'POST',
+                headers: agateHeaders,
+                mode: 'cors',
+                body: settings,
+            }, agateTimeout);
+        }
+        $$.$nl_agate_update_user_settings = $nl_agate_update_user_settings;
+        function $nl_agate_set_password(accessToken, userId, password, metric) {
+            (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            return $nl_agate_update_user(accessToken, userId, { password, metric });
+        }
+        $$.$nl_agate_set_password = $nl_agate_set_password;
+        function $nl_agate_confirm_user_contact(userId, accessToken, contact, token) {
+            (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/${userId}`, {
+                method: 'POST',
+                headers: agateHeaders,
+                mode: 'cors',
+                body: {
+                    name: contact,
+                    verificationToken: token
+                },
+            }, agateTimeout);
+        }
+        $$.$nl_agate_confirm_user_contact = $nl_agate_confirm_user_contact;
+        function $nl_agate_get_user_contact(userId, accessToken) {
+            (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/id/${userId}/contacts`, {
+                headers: agateHeaders,
+                mode: 'cors',
+            }, agateTimeout);
+        }
+        $$.$nl_agate_get_user_contact = $nl_agate_get_user_contact;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//agate.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const metricAppCode = 'w7';
+        const metricTimeout = 5000;
+        const metricUrl = 'https://alpha-metric.baza-winner.ru';
+        let _fingerprint = {};
+        let _actionsQueue = [];
+        let _sessionGuid = '';
+        let _userGuid = '';
+        function $nl_metric_find_ip() {
+            return Promise.resolve(null);
+        }
+        $$.$nl_metric_find_ip = $nl_metric_find_ip;
+        function get_userId() {
+            return $$.a('/@app.userId');
+        }
+        function get_userGuid() {
+            if (!_userGuid) {
+                _userGuid = 'aaaaaaaaaaaaaaa';
+            }
+            return _userGuid;
+        }
+        function get_sessionGuid() {
+            if (!_sessionGuid) {
+                _sessionGuid = 'zzzzzzzzzzzzzz';
+            }
+            return _sessionGuid;
+        }
+        function get_fp() {
+            return '_zzzzzzzz';
+        }
+        function get_userAgentInfo() {
+            let _userAgentInfo = {};
+            for (let key in navigator) {
+                if (['doNotTrack', 'language', 'languages', 'platform', 'vendor', 'userAgent'].includes(key)) {
+                    _userAgentInfo[key] = navigator[key];
+                }
+                else if (key === 'plugins') {
+                    _userAgentInfo[key] = [];
+                    for (let i = 0; i < navigator[key].length; ++i) {
+                        _userAgentInfo[key].push(navigator[key][i].name);
+                    }
+                }
+            }
+            _userAgentInfo['display'] = {
+                width: screen.width,
+                height: screen.height,
+            };
+            return _userAgentInfo;
+        }
+        function $nl_metric_item_event(itemGuid, objectGuid, offerId, kind) {
+            return fetch(`${metricUrl}/api/v1/itemEvents`, {
+                method: 'POST',
+                mode: 'cors',
+                body: JSON.stringify({
+                    kind: kind,
+                    appCode: metricAppCode,
+                    itemGuid: itemGuid,
+                    objectGuid: objectGuid,
+                    offerId: offerId,
+                    userId: get_userId,
+                    userGuid: get_userGuid,
+                }),
+            });
+        }
+        $$.$nl_metric_item_event = $nl_metric_item_event;
+        function $nl_metric_get_params() {
+            return {
+                appCode: metricAppCode,
+                fp: get_fp(),
+                referrer: document.referrer,
+                sessionGuid: _sessionGuid,
+                userId: get_userId(),
+                userGuid: _userGuid,
+                appVersion: '1.0.0.0',
+                userAgentInfo: get_userAgentInfo(),
+                location: document.location.pathname
+            };
+        }
+        $$.$nl_metric_get_params = $nl_metric_get_params;
+        function $nl_metric_get_extended_params(code) {
+            const params = $nl_metric_get_params();
+            return Object.assign({ code }, params);
+        }
+        $$.$nl_metric_get_extended_params = $nl_metric_get_extended_params;
+        function $nl_metric_send_actions() {
+            const actions = _actionsQueue.splice(0, _actionsQueue.length);
+            if (actions.length) {
+                navigator.sendBeacon(`${metricUrl}/api/v1/actions/batch`, JSON.stringify({ actions }));
+            }
+            return true;
+        }
+        $$.$nl_metric_send_actions = $nl_metric_send_actions;
+        function $nl_metric_send_action(detail) {
+            const user_id = $$.a('/.userId');
+            const params = $nl_metric_get_params();
+            const action = Object.assign({
+                time: (new Date()).toISOString(),
+                userId: user_id,
+            }, params, detail);
+            _actionsQueue.push(action);
+            return true;
+        }
+        $$.$nl_metric_send_action = $nl_metric_send_action;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//metric.js.map
 ;
 "use strict";
 var $;
@@ -5775,14 +6049,14 @@ var $;
                 selected: $$.$me_atom2_prop_abstract(),
                 def: () => ({
                     enter: {
-                        condition: (selected) => selected != 'restore',
+                        condition: (selected) => selected == 'enter' || selected == 'register',
                         prop: {
                             '#width': () => 180,
                             caption: () => 'ВХОД',
                         },
                     },
                     register: {
-                        condition: (selected) => selected != 'restore',
+                        condition: (selected) => selected == 'enter' || selected == 'register',
                         prop: {
                             '#width': $$.$me_atom2_prop(['<.#width', '<@tab[enter].#width'], ({ masters: [width, tab1_width] }) => width - tab1_width),
                             '#ofsHor': '<@tab[enter].#width',
@@ -5793,6 +6067,36 @@ var $;
                         condition: (selected) => selected == 'restore',
                         prop: {
                             caption: () => 'ВОССТАНОВЛЕНИЕ ПАРОЛЯ',
+                        },
+                    },
+                    confirmation: {
+                        condition: (selected) => selected == 'confirmation',
+                        prop: {
+                            caption: () => 'ПОДТВЕРЖДЕНИЕ',
+                        },
+                    },
+                    change: {
+                        condition: (selected) => selected == 'change',
+                        prop: {
+                            caption: () => 'СМЕНА ПАРОЛЯ',
+                        },
+                    },
+                    contact: {
+                        condition: (selected) => selected == 'contact',
+                        prop: {
+                            caption: () => 'ДОПОЛНИТЕЛЬНЫЙ КОНТАКТ',
+                        },
+                    },
+                    change_success: {
+                        condition: (selected) => selected == 'change_success',
+                        prop: {
+                            caption: () => 'СМЕНА ПАРОЛЯ ЗАВЕРШЕНА',
+                        },
+                    },
+                    register_success: {
+                        condition: (selected) => selected == 'register_success',
+                        prop: {
+                            caption: () => 'РЕГИСТРАЦИЯ ЗАВЕРШЕНА',
                         },
                     },
                 }),
@@ -5838,57 +6142,493 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const stringConstants = {
+            serverErrorMessage: {
+                userNotFound: 'Пользователь не найден',
+                userNotVerified: 'Пользователь не найден',
+                internetConnectionFailed: 'Проверьте соединение с интернетом',
+                winnerServerConnectionFailed: 'Нет соединения с сервером WinNER. Обратитесь в техническую поддержку по телефону +7 (495) 921-41-03',
+                tokenFailed: 'Неверный код подтверждения',
+                loginFailed: {
+                    enter: 'Неверный пароль',
+                    changePassword: 'Неверный старый пароль',
+                },
+                anotherUserUseItAsLogin: 'Данный контакт используется в качестве логина для другого пользователя',
+                notConfrimed: 'Указанный контакт требует подтверждения'
+            },
+            errorMessage: {
+                unknownIdentifierKind: 'Неизвестный тип идентификатора',
+                inputPhoneOrEmail: 'Введите телефон или e-mail',
+                inputPhone: 'Введите корректный телефон',
+                inputPhoneNotSoShort: 'Введите телефон полностью',
+                inputPhoneNotSoLong: 'Введите телефон, не более 10 цифр',
+                inputEmail: 'Введите корректный e-mail',
+                inputPassword: {
+                    enter: 'Введите пароль',
+                    changePassword: 'Введите старый пароль',
+                },
+                inputConfirmation: 'Введите код подтверждения',
+                inputNewPassword: {
+                    changePassword: 'Введите новый пароль',
+                    register: 'Введите пароль'
+                },
+                inputNewPasswordRepeat: 'Повторите новый пароль',
+                wrongNewPasswordRepeat: 'Пароли не совпадают',
+                userNotRegistered: 'Пользователь не зарегистрирован',
+                nameRegisterIsEmpty: 'Имя должно быть указано',
+                nameRegisterIsTooShort: 'Слишком короткое имя',
+                additionalContact: {
+                    phone: 'Введите телефон',
+                    email: 'Введите e-mail'
+                }
+            },
+            identifierButtonCaption: {
+                default: 'Войти',
+                userNotRegistered: 'Регистрация',
+            },
+            general: {
+                titleText: {
+                    enter: 'Вход в WinNER7',
+                    changePassword: 'Смена пароля',
+                    register: 'Регистрация в WinNER7',
+                },
+                passwordPlaceholder: {
+                    enter: 'Введите пароль',
+                },
+                successMessage: {
+                    enter: 'Теперь Вы можете начать работу с WinNER7',
+                    restorePassword: 'Теперь Вы можете начать работу с WinNER7',
+                    changePassword: 'Теперь Вы можете продолжить работу с WinNER7',
+                    register: 'Теперь Вы можете начать работу с WinNER7',
+                },
+                successEnterCaption: {
+                    enter: 'Начать работу',
+                    restorePassword: 'Начать работу',
+                    changePassword: 'Продолжить работу',
+                    register: 'Начать работу',
+                },
+                newPasswordButtonCaption: {
+                    register: 'Зарегистрироваться',
+                    restorePassword: 'Установить пароль',
+                    changePassword: 'Установить пароль',
+                },
+                passwordButtonCaption: {
+                    enter: 'Войти',
+                    changePassword: 'Продолжить',
+                },
+                newPasswordMessage: {
+                    enter: 'Установите новый пароль',
+                    changePassword: 'Установите новый пароль',
+                },
+                newPasswordInputPlaceholder: {
+                    enter: 'Введите пароль',
+                    restorePassword: 'Введите новый пароль',
+                    changePassword: 'Введите новый пароль',
+                    register: 'Введите пароль для входа',
+                },
+                newPasswordRepeatInputPlaceholder: {
+                    enter: 'Повторите пароль',
+                    restorePassword: 'Повторите новый пароль',
+                    changePassword: 'Повторите новый пароль',
+                    register: 'Повторите пароль для входа',
+                },
+            },
+            additionaLogin: {
+                inputPlaceholder: {
+                    email: 'Введите e-mail',
+                    phone: 'Введите номер телефона'
+                }
+            }
+        };
+        function $nl_login_get_string_constant(sectionName, constantName, mode) {
+            let result = stringConstants[sectionName][constantName];
+            if (Object.prototype.toString.call(result) === '[object Object]') {
+                mode = mode || $$.a('/@app@login.mode');
+                result = result[mode];
+            }
+            return result;
+        }
+        $$.$nl_login_get_string_constant = $nl_login_get_string_constant;
+        function $nl_login_with_token(login, confirmation, wasDisabled = false, metric) {
+            const loginWithToken = (checkMultiSession = false) => {
+                return $$.$nl_agate_login_with_token(login, confirmation, metric, checkMultiSession);
+            };
+            return loginWithToken(true)
+                .catch((err) => {
+                return new Promise((resolve, reject) => {
+                    console.log('eeeee', err);
+                    if (err.errorCode === "userHasMultiSession") {
+                        if (confirm("Мы обнаружили активную сессию на другом устройстве. Чтобы продолжить работу необходимо произвести выход из программы со всех других устройств.Продолжить?")) {
+                            resolve(loginWithToken());
+                        }
+                        else {
+                            $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                        }
+                    }
+                    else {
+                        reject(err);
+                    }
+                });
+            });
+        }
+        $$.$nl_login_with_token = $nl_login_with_token;
+        function $nl_check_login() {
+            const accessToken = $$.a('/@app.accessToken');
+            if (accessToken) {
+                console.log('check access token ', accessToken);
+                $$.$nl_agate_find_by_token(accessToken, accessToken)
+                    .then((response) => {
+                    const user = response;
+                    return $$.$nl_agate_get_user_contact(user.id, accessToken)
+                        .then((contacts) => {
+                        return contacts;
+                    })
+                        .then((contacts) => {
+                        user.contacts = contacts;
+                        return {
+                            user: user,
+                            token: {
+                                id: accessToken
+                            },
+                            ip: user.ip
+                        };
+                    })
+                        .then(responses => {
+                        console.log('responses', responses);
+                        $nl_success_login_helper(responses, responses.ip);
+                    })
+                        .catch(err => {
+                        console.log('ERROR ', err);
+                        if ($$.a('/@app.isLoggedIn')) {
+                            $nl_logout();
+                        }
+                    });
+                });
+            }
+        }
+        $$.$nl_check_login = $nl_check_login;
+        function $nl_logout_helper() {
+            $$.a('/@app.isLoggedIn', false);
+            $$.a('/@app.login', '');
+            $$.a('/@app.name', '');
+            $$.a('/@app.mlsBrokerGuid', '');
+            $$.a('/@app.accessToken', '');
+            $$.a('/@app.userId', '');
+            $$.a('/@app.userAccountCode', '');
+            $$.a('/@app.userInternalIp', '');
+            $$.a('/@app.userExternalIp', '');
+            $$.a('/@app.userRestrictions', []);
+            $$.a('/@app.userPermissionCodes', []);
+            $$.a('/@app.needSignDocDate', '');
+            $$.a('/@app.userContacts', []);
+            $$.a('/@app.loginnedAs', '');
+            $$.a('/@app.roles', []);
+            $$.a('/@app.blackPhone', null);
+        }
+        $$.$nl_logout_helper = $nl_logout_helper;
+        function $nl_success_login_helper(params, ip) {
+            $$.a('/@app.isLoggedIn', true);
+            $$.a('/@app.login', params.user.username);
+            $$.a('/@app.name', params.user.name);
+            $$.a('/@app.mlsBrokerGuid', params.user.mlsBrokerGuid);
+            $$.a('/@app.accessToken', params.token.id);
+            $$.a('/@app.userId', params.user.id + '');
+            $$.a('/@app.userAccountCode', params.user.billingClientCode);
+            $$.a('/@app.userInternalIp', null);
+            $$.a('/@app.userExternalIp', ip);
+            $$.a('/@app.userRestrictions', params.user.restrictions ? params.user.restrictions : []);
+            $$.a('/@app.userPermissionCodes', params.user.permissions ? params.user.permissions.map((permission) => permission.code) : []);
+            $$.a('/@app.needSignDocDate', params.user.winnerBillingInfo.needSignDocDate);
+            $$.a('/@app.userContacts', params.user.contacts || []);
+            $$.a('/@app.roles', params.user.roles);
+            $$.a('/@app.blackPhone', params.user.settings ? params.user.settings.blackPhone : null);
+        }
+        $$.$nl_success_login_helper = $nl_success_login_helper;
+        function $nl_logout() {
+            const accessToken = $$.a('/@app.accessToken');
+            if (accessToken) {
+                $$.$nl_agate_logout(accessToken);
+            }
+            $nl_logout_helper();
+        }
+        $$.$nl_logout = $nl_logout;
         $$.$nl_login = {
             dispatch(dispatch_name, dispatch_arg) {
+                console.log('dispatch_name', dispatch_name, dispatch_arg);
+                if (dispatch_name == '_changeSelected') {
+                    $$.a('.selected', dispatch_arg);
+                    return true;
+                }
+                if (dispatch_name == 'resend') {
+                    console.log('повторная отправка кода');
+                    return true;
+                }
                 if (dispatch_name == 'no_reg') {
-                    $$.a('.login', '');
+                    console.log('Войти без регистрации');
+                    $nl_logout_helper();
                     $$.a('.isShown', false);
                     return true;
                 }
-                if (dispatch_name == 'login') {
-                    $$.a('.login', dispatch_arg);
+                if (dispatch_name == '_onSuccessLoginRequest') {
+                    console.log('Вошел как ' + dispatch_arg.params.user.id);
+                    const params = dispatch_arg.params;
+                    const ip = dispatch_arg.ip;
+                    try {
+                        $nl_success_login_helper(params, ip);
+                        $$.a('/@app.loginnedAs', $$.a('.login'));
+                    }
+                    catch (error) {
+                        console.error(error.toString());
+                    }
                     $$.a('.isShown', false);
                     return true;
                 }
                 if (dispatch_name.endsWith("@login@container@button")) {
                     const selected = $$.a('.selected');
-                    const login = $$.a('@container@login.value').trim();
-                    if (!login) {
-                        $$.a('@container@login.error', 'Введите телефон или E-mail');
-                        return true;
-                    }
-                    let pass;
-                    if (selected != 'restore') {
-                        pass = $$.a('@container@pass.value');
-                        if (!pass) {
-                            $$.a('@container@pass.error', 'Введите пароль');
-                            return true;
-                        }
-                    }
+                    const login = $$.a('.login');
+                    console.log('selected: ', selected, ', login', login);
                     switch (selected) {
                         case 'enter': {
-                            if (login != '98@baza-winner.ru') {
-                                $$.a('@container@login.error', 'Несуществующий логин');
+                            const login = $$.a('@container@login.value');
+                            if (!login) {
+                                $$.a('@container@login.error', 'Введите телефон или E-mail');
                                 return true;
                             }
-                            if (pass != '12345') {
-                                $$.a('@container@pass.error', 'Неверный пароль');
+                            const pass = $$.a('@container@pass.value');
+                            if (!pass) {
+                                $$.a('@container@pass.error', 'Введите пароль');
                                 return true;
                             }
-                            $$.a.dispatch('', 'login', login);
+                            $$.a('@container@pass.error', '');
+                            $$.a('@container@login.error', '');
+                            const wasDisabled = $$.a('/@app@login._isDisabled');
+                            $$.a.update('/@app@login._isDisabled', val => true);
+                            const checkMultiSession = $$.a('.checkMultiSession');
+                            let internalIp = '';
+                            $$.$nl_metric_find_ip()
+                                .then(_internalIp => {
+                                internalIp = _internalIp;
+                                const metric = {
+                                    auth: $$.$nl_metric_get_extended_params("w7AuthSuccess"),
+                                };
+                                return $$.$nl_agate_login_with_password(login, pass, metric, checkMultiSession)
+                                    .then((userParams) => {
+                                    console.log('my response', userParams, userParams.error);
+                                    if (userParams && userParams.error === undefined) {
+                                        $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                        $$.a.dispatch('/@app@login', '_onSuccessLoginRequest', { params: userParams, ip: internalIp, page: 'password' });
+                                    }
+                                    else {
+                                        if (userParams.error.status != 200) {
+                                            console.log('enter error block');
+                                            if (userParams.error.status == 423) {
+                                                $$.a('/@app@login@container@login.error', userParams.error.message);
+                                            }
+                                            if (userParams.error.status == 401) {
+                                                $$.a('/@app@login@container@pass.error', 'Неверный пароль');
+                                            }
+                                            else {
+                                                $$.a('/@app@login@container@login.error', userParams.error.message);
+                                            }
+                                        }
+                                    }
+                                    return true;
+                                })
+                                    .catch((request) => {
+                                    console.log('eeeeeeerror', request);
+                                    $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                });
+                            });
                             return true;
                         }
                         case 'register': {
+                            const login = $$.a('@container@login.value');
+                            if (!login) {
+                                $$.a('@container@login.error', 'Введите телефон или E-mail');
+                                return true;
+                            }
+                            const pass = $$.a('@container@pass.value');
+                            if (!pass) {
+                                $$.a('@container@pass.error', 'Введите пароль');
+                                return true;
+                            }
                             const pass_repeat = $$.a('@container@pass_repeat.value');
                             if (!pass_repeat) {
                                 $$.a('@container@pass_repeat.error', 'Повторите пароль');
                                 return true;
                             }
-                            $$.a.dispatch('', 'login', login);
+                            if (pass_repeat != pass) {
+                                $$.a('@container@pass_repeat.error', 'Пароли не совпадают');
+                                return true;
+                            }
+                            $$.a('@container@login.error', '');
+                            $$.a('@container@pass.error', '');
+                            $$.a('@container@pass_repeat.error', '');
+                            $$.a('.selected', 'register');
+                            $$.a('.selectedConfirm', 'register');
+                            const wasDisabled = $$.a('/@app@login._isDisabled');
+                            return $$.$nl_agate_exists_login(login)
+                                .then((response) => {
+                                console.log('response', response);
+                                if (response.isLoginExists) {
+                                    $$.a('/@app@login@container@login.error', 'Такой пользователь уже зарегистрирован');
+                                    return true;
+                                }
+                                const metricParams = {
+                                    token: $$.$nl_metric_get_extended_params("w7AuthConfirmationSent"),
+                                    register: $$.$nl_metric_get_extended_params("w7RegistrationSuccess")
+                                };
+                                return $$.$nl_agate_register_new_user(login, pass, metricParams)
+                                    .then(request => {
+                                    $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                    $$.a.update('/@app@login.selected', val => 'confirmation');
+                                    $$.a.update('/@app@login.login', val => login);
+                                    return true;
+                                })
+                                    .catch((request) => {
+                                    console.log('register error');
+                                    $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                    if (request && request.errorCode === 'timeoutBlocking') {
+                                        $$.a.update('/@app@login.selected', val => 'confirmation');
+                                    }
+                                    $$.a('/@app@login@container@login.error', request.errorCode);
+                                });
+                                return true;
+                            });
                             return true;
                         }
                         case 'restore': {
+                            const login = $$.a('@container@login.value');
+                            if (!login) {
+                                $$.a('@container@login.error', 'Введите телефон или E-mail');
+                                return true;
+                            }
+                            $$.a('@container@login.error', '');
+                            const wasDisabled = $$.a('/@app@login._isDisabled');
+                            $$.a.update('/@app@login._isDisabled', val => true);
+                            return $$.$nl_agate_exists_login(login)
+                                .then((response) => {
+                                console.log('response', response);
+                                if (!response.isLoginExists) {
+                                    $$.a('/@app@login@container@login.error', 'Пользователь не найден');
+                                    return true;
+                                }
+                                else {
+                                    $$.$nl_agate_request_token(login, { token: $$.$nl_metric_get_extended_params("w7AuthConfirmationSent") }).then(() => {
+                                        $$.a('.selectedConfirm', 'register');
+                                        $$.a.dispatch('', '_changeSelected', 'confirmation');
+                                    })
+                                        .catch((err) => Promise.reject(err));
+                                }
+                            })
+                                .catch((request) => {
+                                $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                            });
                             console.log('Инструкция отправлена на ' + login);
+                            return true;
+                        }
+                        case 'confirmation': {
+                            const _confirmation = $$.a('@container@confirm_code.value');
+                            if (!_confirmation) {
+                                $$.a('@container@confirm_code.error', 'Введите код подтверждения');
+                                return true;
+                            }
+                            else {
+                                $$.a('@container@confirm_code.error', '');
+                                const wasDisabled = $$.a('/@app@login._isDisabled');
+                                $$.a.update('/@app@login._isDisabled', val => true);
+                                let internalIp = '';
+                                $$.$nl_metric_find_ip()
+                                    .then(_internalIp => {
+                                    internalIp = _internalIp;
+                                    const _hasNotConfirmedAdditionalLogin = $$.a('/@app@login._hasNotConfirmedAdditionalLogin');
+                                    if (_hasNotConfirmedAdditionalLogin) {
+                                        return $$.$nl_agate_confirm_user_contact($$.a('/@app.userId'), $$.a('/@app.accessToken'), $$.a('/@app@login._notConfirmedAdditionalLogin'), _confirmation)
+                                            .then((res) => {
+                                            $$.a.update('/@app@login._hasNotConfirmedAdditionalLogin', val => false);
+                                            $$.a.dispatch('', '_changeSelected', 'register_success');
+                                        })
+                                            .catch((err) => Promise.reject(err));
+                                    }
+                                    else {
+                                        let userParams = {};
+                                        return $nl_login_with_token($$.a('/@app@login.login'), _confirmation, wasDisabled, {
+                                            notConfirm: $$.$nl_metric_get_extended_params("w7AuthNotConfirmed"),
+                                            confirm: $$.$nl_metric_get_extended_params("w7AuthConfirmed")
+                                        }).then((_userParams) => {
+                                            userParams = _userParams;
+                                            const _isSetPasswordAfterConfirmation = $$.a('/@app@login._isSetPasswordAfterConfirmation');
+                                            if (_isSetPasswordAfterConfirmation) {
+                                                return $$.$nl_agate_set_password(_userParams.token.id, _userParams.user.id, this._newPassword, { update: $$.$nl_metric_get_extended_params("w7AuthPasswordChangedSuccess") })
+                                                    .then(() => {
+                                                    $$.a('/@app@login._isSetPasswordAfterConfirmation', false);
+                                                })
+                                                    .catch(err => Promise.reject(err));
+                                            }
+                                        })
+                                            .then(() => {
+                                            if ($$.a('/@app@login.selected') === 'register') {
+                                                $$.a('/@app.accessToken', userParams.token.id);
+                                            }
+                                        })
+                                            .then(() => {
+                                            const selected_confirm = $$.a('.selectedConfirm');
+                                            $$.a.dispatch('/@app@login', '_changeSelected', selected_confirm);
+                                            $$.a.dispatch('/@app@login', '_onSuccessLoginRequest', { params: userParams, ip: internalIp });
+                                        })
+                                            .catch(err => Promise.reject(err));
+                                    }
+                                }).then(() => {
+                                    $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                    $$.a('@container@confirm_code.value', '');
+                                })
+                                    .catch(request => {
+                                    $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                });
+                            }
+                            console.log('Код подтверждения для ' + login);
+                            return true;
+                        }
+                        case 'change': {
+                            const old_pass = $$.a('@container@old_pass.value');
+                            if (!old_pass) {
+                                $$.a('@container@old_pass.error', 'Введите старый пароль');
+                                return true;
+                            }
+                            const new_pass = $$.a('@container@new_pass.value');
+                            if (!new_pass) {
+                                $$.a('@container@new_pass.error', 'Введите новый пароль');
+                                return true;
+                            }
+                            const new_pass_repeat = $$.a('@container@new_pass_repeat.value');
+                            if (!new_pass_repeat) {
+                                $$.a('@container@new_pass_repeat.error', 'Повторите новый пароль');
+                                return true;
+                            }
+                            if (new_pass_repeat != new_pass) {
+                                $$.a('@container@new_pass_repeat.error', 'Пароли не совпадают');
+                                return true;
+                            }
+                            $$.a('@container@old_pass.error', '');
+                            $$.a('@container@new_pass.error', '');
+                            $$.a('@container@new_pass_repeat.error', '');
+                            const wasDisabled = $$.a('/@app@login._isDisabled');
+                            $$.a.update('/@app@login._isDisabled', val => true);
+                            $$.$nl_agate_set_password($$.a('/@app.accessToken'), $$.a('/@app.userId'), new_pass, {
+                                update: $$.$nl_metric_get_extended_params("w7AuthPasswordChangedSuccess")
+                            })
+                                .then(request => {
+                                $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                $$.a.dispatch('/@app@login', '_changeSelected', 'change_success');
+                            })
+                                .catch(request => {
+                                $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                            });
+                            console.log('Смена пароля для ' + login);
+                            return true;
+                        }
+                        case 'contact': {
+                            console.log('Дополнительный контакт для ' + login);
                             return true;
                         }
                     }
@@ -5898,34 +6638,46 @@ var $;
             prop: {
                 isShown: () => true,
                 selected: $$.$me_atom2_prop_store({
+                    isLocal: true,
                     default: () => 'enter',
-                    valid: (val) => typeof val == 'string' && ~['enter', 'register', 'restore'].indexOf(val) ?
-                        val :
-                        null,
+                    valid: (val) => typeof val == 'string' && ~[
+                        'enter',
+                        'register',
+                        'restore',
+                        'confirmation',
+                        'change',
+                        'contact',
+                    ].indexOf(val) ? val : null,
                 }),
+                selectedBack: () => '',
+                selectedConfirm: () => '',
+                mode: () => '',
                 login: $$.$me_atom2_prop_store({
+                    isLocal: true,
                     default: () => '',
-                    valid: (val) => typeof val == 'string' ?
-                        val.trim() :
-                        null,
-                    condition: ['.stayLogged', '@container@login.value'],
+                    valid: (val) => typeof val == 'string' ? val.trim() : null,
+                    condition: ['/@app.stayLogged', '@container@login.value'],
                 }),
-                stayLogged: $$.$me_atom2_prop_store({
-                    default: () => false,
-                    valid: (val) => typeof val == 'boolean' ?
-                        val :
-                        null,
+                identifierKind: $$.$me_atom2_prop(['.login'], ({ masters: [login] }) => {
+                    console.log('identifierKind');
+                    return login.trim().match(/[^0-9()+-\s]/) ? 'phone' : 'email';
+                }),
+                identifierKindToShow: $$.$me_atom2_prop(['.login'], ({ masters: [login] }) => {
+                    console.log('identifierKindToShow', login);
+                    return login.trim().match(/[^0-9()+-]/) ? 'телефон' : 'e-mail';
                 }),
                 '#width': '/.#viewportWidth',
                 '#height': '/.#viewportHeight',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 10),
-                colorWinnerBlue: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
-                    $$.$nl_logo_color_blue :
-                    'white'),
-                colorWinnerCyan: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
-                    $$.$nl_logo_color_cyan :
-                    'white'),
+                colorWinnerBlue: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? $$.$nl_logo_color_blue : 'white'),
+                colorWinnerCyan: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? $$.$nl_logo_color_cyan : 'white'),
                 isPassword: () => true,
+                '_isDisabled': () => false,
+                checkMultiSession: () => false,
+                _resendConfirmationVisible: () => false,
+                _hasNotConfirmedAdditionalLogin: () => false,
+                _notConfirmedAdditionalLogin: () => '',
+                _isSetPasswordAfterConfirmation: () => false,
             },
             style: {
                 background: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
@@ -5934,8 +6686,7 @@ var $;
                 container: () => ({
                     prop: {
                         '#width': () => 500,
-                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.selected'], ({ masters: [selected] }) => ['.#ofsVer', '.#height'].map(s => (selected == 'enter' || selected == 'register' ?
-                            '@no_reg_text' : '@button')
+                        '#height': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<.selected'], ({ masters: [selected] }) => ['.#ofsVer', '.#height'].map(s => (selected == 'enter' || selected == 'register' ? '@no_reg_text' : '@button')
                             + s).concat('<.selected')), ({ masters: [ofsVer, height, selected] }) => ofsVer + height + (selected == 'register' ? 0 : selected == 'enter' ? 80 : 200) + 32),
                         '#alignHor': () => $$.$me_align.center,
                         on_change_viewportHeight: $$.$me_atom2_prop(['/.#viewportHeight'], null, ({ val }) => {
@@ -5975,8 +6726,9 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    $$.a('<<.selected', 'enter');
-                                    return false;
+                                    const sb = $$.a('<<.selectedBack');
+                                    $$.a.dispatch('<<', '_changeSelected', sb);
+                                    return true;
                                 },
                             }
                         }),
@@ -5998,7 +6750,7 @@ var $;
                                 },
                             },
                         }),
-                        login: () => ({
+                        login: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'confirmation' || page == 'change' || page == 'contact' || page == 'change_success' || page == 'register_success' ? null : {
                             base: $$.$nl_login_input,
                             prop: {
                                 placeholder: () => 'Введите телефон или E-mail',
@@ -6017,10 +6769,10 @@ var $;
                                 icon_margin_right: () => 17,
                                 icon_isClickable: () => false,
                                 icon: () => $$.$nl_icon_phoneemail,
-                                value: $$.$me_atom2_prop(['<<.login', '<<.stayLogged'], ({ masters: [login, stayLogged], prev }) => prev || login),
+                                value: $$.$me_atom2_prop(['<<.login', '/@app.stayLogged'], ({ masters: [login, stayLogged], prev }) => prev || login),
                             },
                         }),
-                        pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
+                        pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' || page == 'confirmation' || page == 'change' || page == 'contact' || page == 'change_success' || page == 'register_success' ? null : {
                             base: input_pass,
                             prop: {
                                 placeholder: () => 'Введите пароль',
@@ -6028,7 +6780,7 @@ var $;
                                 value: () => '',
                             },
                         }),
-                        pass_repeat: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'register' ? null : {
+                        pass_repeat: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'register' || page == 'contact' ? null : {
                             base: input_pass,
                             prop: {
                                 placeholder: () => 'Повторите пароль',
@@ -6036,17 +6788,30 @@ var $;
                                 value: () => '',
                             },
                         }),
-                        check: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
+                        check: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => (page != 'enter' && page != 'register' && page != 'confirmation' && page != 'change') || page == 'contact' ? null : {
                             base: $$.$nl_checkbox,
                             prop: {
                                 '#width': () => 200,
                                 boxSize: () => 18,
-                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => ['.#ofsVer', '.#height'].map(s => (selected == 'enter' ? '<@pass' : '<@pass_repeat') + s)), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => ['.#ofsVer', '.#height'].map(s => {
+                                    if (selected == 'enter') {
+                                        return '<@pass' + s;
+                                    }
+                                    else if (selected == 'confirmation') {
+                                        return '<@confirm_code' + s;
+                                    }
+                                    else if (selected == 'change') {
+                                        return '<@new_pass_repeat' + s;
+                                    }
+                                    else {
+                                        return '<@pass_repeat' + s;
+                                    }
+                                })), $$.$me_atom2_prop_compute_fn_sum(32)),
                                 caption: () => 'Оставаться в системе',
-                                checked: $$.$me_atom2_prop_bind('<<.stayLogged'),
+                                checked: $$.$me_atom2_prop_bind('/@app.stayLogged'),
                             },
                         }),
-                        forget_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'enter' && page != 'register' ? null : {
+                        forget_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => (page != 'enter' && page != 'register' && page != 'change') || page == 'contact' ? null : {
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
@@ -6056,12 +6821,17 @@ var $;
                                 colorText: '/.colorLink',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                             },
+                            style: {
+                                'white-space': () => 'nowrap',
+                            },
                             dom: {
                                 innerText: () => 'Забыли пароль?'
                             },
                             event: {
                                 clickOrTap: () => {
-                                    $$.a('<<.selected', 'restore');
+                                    const sb = $$.a('<<.selected');
+                                    $$.a('<<.selectedBack', sb);
+                                    $$.a.dispatch('<<', '_changeSelected', 'restore');
                                     return true;
                                 },
                             },
@@ -6069,21 +6839,56 @@ var $;
                         button: () => ({
                             base: $$.$nl_button,
                             prop: {
-                                '#width': '<.#width',
+                                '#width': $$.$me_atom2_prop(['<<.selected', '<.#width'], ({ masters: [selected, width] }) => (selected == 'contact') ? 320 : width),
                                 '#height': () => 45,
-                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => selected == 'enter' || selected == 'register' ?
-                                    ['<@check.#ofsVer', '<@check.#height'] :
-                                    ['<@login.#ofsVer', '<@login.#height']), $$.$me_atom2_prop_compute_fn_sum(32)),
-                                caption: $$.$me_atom2_prop(['<<.selected'], ({ masters: [selected] }) => selected == 'enter' ?
-                                    'Войти' :
-                                    selected == 'register' ?
-                                        'Зарегистрироваться' :
-                                        'Отправить'),
+                                '#ofsVer': $$.$me_atom2_prop($$.$me_atom2_prop_masters(['<<.selected'], ({ masters: [selected] }) => {
+                                    if (selected == 'enter' || selected == 'register' || selected == 'confirmation' || selected == 'change') {
+                                        return ['<@check.#ofsVer', '<@check.#height'];
+                                    }
+                                    else if (selected == 'contact') {
+                                        return ['<@do_not_remind.#ofsVer', '<@do_not_remind.#height'];
+                                    }
+                                    else if (selected == 'change_success') {
+                                        return ['<@password_success_text.#ofsVer', '<@password_success_text.#height'];
+                                    }
+                                    else if (selected == 'register_success') {
+                                        return ['<@register_success_text.#ofsVer', '<@register_success_text.#height'];
+                                    }
+                                    else {
+                                        return ['<@login.#ofsVer', '<@login.#height'];
+                                    }
+                                }), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                caption: $$.$me_atom2_prop(['<<.selected'], ({ masters: [selected] }) => {
+                                    if (selected == 'enter') {
+                                        return 'Войти';
+                                    }
+                                    else if (selected == 'register') {
+                                        return 'Зарегистрироваться';
+                                    }
+                                    else if (selected == 'change') {
+                                        return 'Установить пароль';
+                                    }
+                                    else if (selected == 'restore') {
+                                        return 'Восстановить пароль';
+                                    }
+                                    else if (selected == 'contact') {
+                                        return 'Указать контакт';
+                                    }
+                                    else if (selected == 'change_success') {
+                                        return 'Начать работу';
+                                    }
+                                    else if (selected == 'register_success') {
+                                        return 'Начать работу';
+                                    }
+                                    else {
+                                        return 'Отправить';
+                                    }
+                                }),
                                 target: () => '<<',
                                 em: () => 18,
                             },
                         }),
-                        no_reg_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' ? null : {
+                        no_reg_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page == 'restore' || page == 'confirmation' || page == 'change' || page == 'contact' || page == 'change_success' || page == 'register_success' ? null : {
                             prop: {
                                 '#width': () => 200,
                                 '#height': () => 25,
@@ -6115,6 +6920,172 @@ var $;
                             },
                             dom: {
                                 innerText: () => 'На вашу электронную почту будет отправлена инструкция по восстановлению пароля'
+                            },
+                        }),
+                        confirm_code: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'confirmation' ? null : {
+                            base: input_pass,
+                            prop: {
+                                placeholder: () => 'Введите код подтверждения',
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(40)),
+                                value: () => '',
+                            },
+                        }),
+                        no_confirm_code_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'confirmation' ? null : {
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsVer': '<@check.#ofsVer',
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            style: {
+                                'white-space': () => 'nowrap',
+                            },
+                            dom: {
+                                innerText: () => 'Не получили код подтверждения?'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<<._resendConfirmationVisible', true);
+                                    return true;
+                                },
+                            },
+                        }),
+                        before_resend_confirmation_message: $$.$me_atom2_prop(['<.selected', '<._resendConfirmationVisible'], ({ masters: [page, visibility] }) => (page != 'confirmation' || !visibility) ? null : {
+                            base: confirmation_message,
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => 500,
+                                '#ofsVer': $$.$me_atom2_prop(['<@button.#ofsVer', '<@button.#height'], $$.$me_atom2_prop_compute_fn_sum(10)),
+                            }
+                        }),
+                        old_pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'change' ? null : {
+                            base: input_pass,
+                            prop: {
+                                placeholder: () => 'Введите старый пароль',
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(40)),
+                                value: () => '',
+                            },
+                        }),
+                        new_pass: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'change' ? null : {
+                            base: input_pass,
+                            prop: {
+                                placeholder: () => 'Введите новый пароль',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@old_pass' + s), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                value: () => '',
+                            },
+                        }),
+                        new_pass_repeat: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'change' ? null : {
+                            base: input_pass,
+                            prop: {
+                                placeholder: () => 'Введите новый пароль',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@new_pass' + s), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                value: () => '',
+                            },
+                        }),
+                        contact_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'contact' ? null : {
+                            prop: {
+                                '#height': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(20)),
+                                '#alignHor': () => $$.$me_align.center,
+                            },
+                            style: {
+                                textAlign: () => 'center',
+                            },
+                            dom: {
+                                innerHTML: $$.$me_atom2_prop(['<<.login', '<<.identifierKindToShow'], ({ masters: [login, identifierKind] }) => {
+                                    return '<p>Ваш ' + identifierKind + ' ' + login + ' подтвержден!</p><p>Укажите дополнительный контакт </p>';
+                                }),
+                            },
+                        }),
+                        contact_fio: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'contact' ? null : {
+                            base: input_pass,
+                            prop: {
+                                icon: () => '',
+                                placeholder: () => 'Введите ФИО (необязательно)',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@contact_text' + s), $$.$me_atom2_prop_compute_fn_sum(16)),
+                                value: () => '',
+                            },
+                        }),
+                        contact_phone: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'contact' ? null : {
+                            base: input_pass,
+                            prop: {
+                                icon: () => '',
+                                placeholder: () => 'Введите номер телефона (необязательно)',
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@contact_fio' + s), $$.$me_atom2_prop_compute_fn_sum(32)),
+                                value: () => '',
+                            },
+                        }),
+                        do_not_remind: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'contact' ? null : {
+                            base: $$.$nl_checkbox,
+                            prop: {
+                                '#width': () => 200,
+                                boxSize: () => 18,
+                                '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@contact_phone' + s), $$.$me_atom2_prop_compute_fn_sum(16)),
+                                caption: () => 'Больше не спрашивать',
+                                checked: () => false,
+                            },
+                        }),
+                        contact_skip: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'contact' ? null : {
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['<@button.#ofsVer', '<@button.#height', '.#height'], ({ masters: [ofsVer_target, height_target, height] }) => ofsVer_target + height_target / 2 - height / 2),
+                                '#alignHor': () => $$.$me_align.right,
+                                '#cursor': () => 'pointer',
+                                colorText: '/.colorLink',
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                            },
+                            style: {
+                                'white-space': () => 'nowrap',
+                            },
+                            dom: {
+                                innerText: () => 'Пропустить шаг'
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            },
+                        }),
+                        password_success_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'change_success' ? null : {
+                            prop: {
+                                '#height': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(20)),
+                                '#alignHor': () => $$.$me_align.center,
+                            },
+                            style: {
+                                textAlign: () => 'center',
+                            },
+                            dom: {
+                                innerHTML: $$.$me_atom2_prop(['<<.login', '<<.selected'], ({ masters: [login, mode] }) => {
+                                    console.log('mode', mode);
+                                    return '<div>' + login + '</div>' +
+                                        '<div id="newPasswordSuccessMessage">' +
+                                        '  <p>Новый пароль успешно установлен</p>' +
+                                        '  <p>' + $nl_login_get_string_constant('general', 'successMessage', 'enter') + '</p>' +
+                                        '</div>';
+                                }),
+                            },
+                        }),
+                        register_success_text: $$.$me_atom2_prop(['<.selected'], ({ masters: [page] }) => page != 'register_success' ? null : {
+                            prop: {
+                                '#height': () => null,
+                                '#ofsVer': $$.$me_atom2_prop(['<@tabs.#ofsVer', '<@tabs.#height'], $$.$me_atom2_prop_compute_fn_sum(20)),
+                                '#alignHor': () => $$.$me_align.center,
+                            },
+                            style: {
+                                textAlign: () => 'center',
+                            },
+                            dom: {
+                                innerHTML: $$.$me_atom2_prop(['<<.login', '<<.selected'], ({ masters: [login, mode] }) => {
+                                    return '<div class="content">' +
+                                        '  <div class="identifier">' + login + '</div>' +
+                                        '  <div class="message">' + $nl_login_get_string_constant('general', 'successMessage', 'register') + '</div>' +
+                                        '</div>';
+                                }),
                             },
                         }),
                     }
@@ -6150,6 +7121,51 @@ var $;
                     return result;
                 }),
                 isPassword: $$.$me_atom2_prop_bind('<<.isPassword'),
+            },
+        };
+        const confirmation_message = {
+            prop: {
+                identifierKind: () => 'phone',
+            },
+            elem: {
+                msg: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                    },
+                    dom: {
+                        innerHTML: $$.$me_atom2_prop(['<.identifierKind'], ({ masters: [kind] }) => {
+                            let res = (kind == 'phone') ?
+                                '<ul><li>Вы правильно указали номер телефона;</li><li>Телефон включен и находится в зоне действия сети.</li></ul>' :
+                                '<ul name="email"><li>Вы правильно указали e-mail;</li><li>Сообщение не попало в папку "Спам".</li></ul>';
+                            return '<p>Пожалуйста, убедитесь, что:</p>' + res + '<p>После этого </p>';
+                        }),
+                    },
+                }),
+                link: () => ({
+                    prop: {
+                        '#height': () => null,
+                        '#width': () => null,
+                        '#cursor': () => 'pointer',
+                        '#ofsVer': () => 106,
+                        '#ofsHor': () => 100,
+                        colorText: '/.colorLink',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                    },
+                    style: {
+                        'white-space': () => 'nowrap',
+                    },
+                    dom: {
+                        innerText: () => 'повторно запросите код подтверждения'
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('<<<._resendConfirmationVisible', false);
+                            $$.a.dispatch('/@app@login', 'resend');
+                            return true;
+                        },
+                    },
+                })
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
@@ -8337,26 +9353,35 @@ var $;
                     },
                 })),
             },
+            init() {
+                const worker = $$.a('/.metroWorker');
+                if (!worker.onmessage) {
+                    const store_key = 'msk-metro-guids';
+                    worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
+                    worker.onmessage = (event) => {
+                        const cmd = event.data.cmd;
+                        const data = event.data.data;
+                        if (cmd == 'data') {
+                            $$.a('/.scheme_metro', data.scheme);
+                            $$.a('/.guid2point', data.guid2point);
+                            $$.a('/.code2guids', data.code2guids);
+                            if (data.guids)
+                                localStorage.setItem(store_key, data.guids);
+                        }
+                    };
+                }
+            },
         };
-        const idx = window.location.pathname.indexOf('/', 1);
-        const root = !~idx ?
-            window.location.pathname :
-            window.location.pathname.slice(0, idx);
-        const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
-        const store_key = 'msk-metro-guids';
-        worker.postMessage({ cmd: 'prepare', guids: localStorage.getItem(store_key) });
-        worker.onmessage = (event) => {
-            const cmd = event.data.cmd;
-            const data = event.data.data;
-            if (cmd == 'data') {
-                $$.a('/.scheme_metro', data.scheme);
-                $$.a('/.guid2point', data.guid2point);
-                $$.a('/.code2guids', data.code2guids);
-                if (data.guids)
-                    localStorage.setItem(store_key, data.guids);
-            }
-        };
-        $$.$me_atom2_entity.root().props({
+        const root = $$.$me_atom2_entity.root();
+        root.props({
+            'metroWorker': () => {
+                const idx = window.location.pathname.indexOf('/', 1);
+                const root = !~idx ?
+                    window.location.pathname :
+                    window.location.pathname.slice(0, idx);
+                const worker = new Worker(window.location.origin + root + '/metro/-/web.js');
+                return worker;
+            },
             'scheme_metro': () => null,
             'guid2point': () => null,
             'code2guids': () => null,
@@ -8499,6 +9524,17 @@ var $;
             return addrArray.join(', ');
         }
         $$.$nl_formatter_address = $nl_formatter_address;
+        function $nl_formatter_normalize_phone(phone) {
+            let res = (phone) ? phone.replace(/\D/g, '') : '';
+            if (res.length == 11) {
+                res = '+' + res.replace(/^[8]/, '7');
+            }
+            else {
+                res = '';
+            }
+            return res;
+        }
+        $$.$nl_formatter_normalize_phone = $nl_formatter_normalize_phone;
         function $nl_formatter_phone(phone) {
             phone = (phone) ? phone.trim() : '';
             if (phone.length == 7) {
@@ -13783,6 +14819,1102 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //options.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const row_height = 30;
+        const row_space = 16;
+        const prop_common = (def, p) => ({
+            '#hidden': def.hidden,
+            row: def.row,
+            '#ofsVer': $$.$me_atom2_prop(['.row', '<.row_height', '<.row_space'], ({ masters: [row, row_height, row_space] }) => 8 + row * (row_height + row_space) + (p && p.ofsVer || 0)),
+            '#height': '<.row_height',
+            col_space: def.col_space || (() => 16),
+            col_count: def.col_count || (() => 1),
+            col_span: def.col_span || (() => 1),
+            col: def.col,
+            '#width': !def.col_count ? '<.row_width' : $$.$me_atom2_prop(['<.row_width', '.col_space', '.col_count', '.col_span'], ({ masters: [width, col_space, col_count, col_span] }) => Math.round((width - col_space * (col_count - 1)) / col_count) * col_span + col_space * (col_span - 1)),
+            '#ofsHor': !def.col_count || !def.col ? '<.row_left' : $$.$me_atom2_prop(['<.row_left', '<.row_width', '.col_space', '.col_count', '.col'], ({ masters: [left, width, col_space, col_count, col] }) => left + col * (Math.round((width - col_space * (col_count - 1)) / col_count) + col_space)),
+        });
+        function crumb_input(result, params, fld_name, fld_caption = '') {
+            if (params[fld_name]) {
+                const caption = (!fld_caption ? '' : fld_caption + ': ') + params[fld_name];
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_metro(result, params, fld_name, fld_caption = '') {
+            let size;
+            if (params[fld_name] && (size = params[fld_name].length)) {
+                const guid = params[fld_name][0];
+                const guid2point = $$.a('/.guid2point');
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    guid2point[guid].station.text +
+                    (size == 1 ? '' : ' и ещё ' + (size - 1));
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_pickermulti(result, params, fld_name, fld_caption = '') {
+            let size;
+            if (params[fld_name] && (size = params[fld_name].size)) {
+                const id = [...params[fld_name]].map(([value]) => value)[0];
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    $$.$me_option_caption_text(id, $$.$nl_advcard_panel_param_options[fld_name]) +
+                    (size == 1 ? '' : ' и ещё ' + (size - 1));
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_picker(result, params, fld_name, fld_caption = '') {
+            let size;
+            console.log(fld_name, params[fld_name], $$.$nl_advcard_panel_param_options[fld_name], Object.keys($$.$nl_advcard_panel_param_options[fld_name]).indexOf(params[fld_name]));
+            if (params[fld_name] && params[fld_name] != null && $$.$nl_advcard_panel_param_options[fld_name] && Object.keys($$.$nl_advcard_panel_param_options[fld_name]).indexOf(params[fld_name] + '') >= 0) {
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    $$.$nl_advcard_panel_param_options[fld_name][params[fld_name]].caption;
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_select(result, params, fld_name, values, captions) {
+            if (values.length < 2)
+                $$.$me_throw('values.length < 2', values);
+            if (values.length != captions.length)
+                $$.$me_throw('values.length != captions.length', values, captions);
+            if (params[fld_name] && params[fld_name] != values[0]) {
+                let caption = captions[captions.length - 1];
+                for (let i = 1; i < values.length; i++)
+                    if (params[fld_name] == values[i]) {
+                        caption = captions[i - 1];
+                        break;
+                    }
+                result[fld_name] = { caption };
+            }
+        }
+        function crumb_diap(result, params, fld_name, suffix, fld_caption = '') {
+            if (params[fld_name] && (params[fld_name].min || params[fld_name].max)) {
+                if (suffix)
+                    suffix = ' ' + suffix;
+                const caption = (!fld_caption ? '' : fld_caption + ': ') +
+                    (params[fld_name].min && params[fld_name].max ? (params[fld_name].min == params[fld_name].max ?
+                        params[fld_name].min + suffix :
+                        params[fld_name].min + '-' + params[fld_name].max + suffix) :
+                        params[fld_name].min ?
+                            'от ' + params[fld_name].min + suffix :
+                            'до ' + params[fld_name].min + suffix);
+                result[fld_name] = { caption };
+            }
+        }
+        let scheme_metro;
+        $$.$nl_advcard_panel_param = {
+            prop: {
+                ofsHor: () => 0,
+                ofsVer: () => 40,
+                value: () => { },
+                '#height': $$.$me_atom2_prop(['.header_height', '@tabs.#height'], ({ masters: [h1, h2] }) => {
+                    console.log(h1, h2);
+                    return h1 + h2;
+                }),
+                header_height: $$.$me_atom2_prop($$.$me_atom2_prop_masters(['.crumb_ids'], ({ masters: [crumb_ids] }) => {
+                    const result = ['.crumb_ofsVer'];
+                    if (crumb_ids.length)
+                        result.push(`.crumb_pos[${crumb_ids[crumb_ids.length - 1]}]`, '.crumb_height');
+                    return result;
+                }), ({ len, masters: [crumb_ofsVer, crumb_pos, crumb_height] }) => {
+                    const result = Math.max(crumb_ofsVer, len == 2 ? 0 : crumb_pos.top + crumb_height + crumb_ofsVer);
+                    return result;
+                }),
+                footer_height: () => 20,
+                crumb_height: () => 24,
+                crumb_ofsHor: () => 16,
+                crumb_ofsVer: () => 16,
+                crumb_spaceHor: () => 8,
+                crumb_spaceVer: () => 8,
+                crumb_paddingHor: () => 8,
+                crumbs: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => {
+                    const params = {};
+                    console.log(value);
+                    let deal_type = (value['deal_type_id'] == 1) ? 'Продаётся ' : 'Сдаётся в аренду ';
+                    let rgn = 'в Москве';
+                    const result = {
+                        'раздел': { caption: deal_type + $$.$nl_formatter_object_type(value) },
+                        'Регион': { caption: rgn },
+                        'Адрес': { caption: $$.$nl_formatter_address(value) }
+                    };
+                    crumb_picker(result, value, 'housing_complex_id', 'ЖК');
+                    crumb_picker(result, value, 'territory_type_id', 'Территория');
+                    crumb_picker(result, value, 'parking_type_id', 'Парковка');
+                    crumb_picker(result, value, 'window_overlook_type_id', 'Окна');
+                    crumb_picker(result, value, 'water_closet_type_id', 'Санузел');
+                    crumb_picker(result, value, 'elevator_type_id', 'Лифт');
+                    crumb_picker(result, value, 'walls_material_type_id', 'Тип дома');
+                    crumb_picker(result, value, 'balcony_type_id', 'Балкон');
+                    crumb_input(result, value, 'built_year', 'Год постройки');
+                    crumb_input(result, value, 'storeys_count', 'Этажность');
+                    crumb_input(result, value, 'storey', 'Этаж ');
+                    crumb_input(result, value, 'total_square', 'Общая');
+                    crumb_input(result, value, 'life_square', 'Жилая ');
+                    crumb_input(result, value, 'kitchen_square', 'Кухня ');
+                    crumb_picker(result, value, 'habit_class_id', 'Класс');
+                    crumb_picker(result, value, 'building_batch_id', 'Серия');
+                    crumb_picker(result, value, 'apartment_condition_type_id', 'Ремонт');
+                    crumb_input(result, value, 'price_rub', 'Цена');
+                    crumb_input(result, value, 'registered_citizen_count', 'Кол-во проживающих');
+                    crumb_picker(result, value, 'ownership_type_id', 'Основание права собственности');
+                    crumb_input(result, value, 'ownership_year', 'Год вступления в право собственности');
+                    crumb_input(result, value, 'owners_count', 'Кол-во собственников ');
+                    return result;
+                }),
+                crumb_ids: $$.$me_atom2_prop_keys(['.crumbs']),
+                crumb_fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                crumb_fontFamily: '.fontFamily',
+                crumb_fontWeight: () => 400,
+                ctx: () => document.createElement('CANVAS').getContext('2d'),
+                ctx_prepared: $$.$me_atom2_prop(['.ctx', '.crumb_fontFamily', '.crumb_fontSize', '.crumb_fontWeight', '/.#pixelRatio'], ({ masters: [ctx, fontFamily, fontSize, fontWeight, pixelRatio] }) => {
+                    const ctxFontSize = pixelRatio * fontSize;
+                    ctx.font = fontWeight + ' ' + ctxFontSize + 'px ' + fontFamily;
+                    return ctx;
+                }),
+                crumb_pos: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: $$.$me_atom2_prop_masters(['.crumb_ids'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        const result = ['.ctx_prepared', '/.#pixelRatio', '.crumbs', '.crumb_ids', '.crumb_ofsHor', '.crumb_ofsVer', '.crumb_paddingHor'];
+                        if (idx) {
+                            result.push('.#width', '.crumb_spaceHor', '.crumb_spaceVer', `.crumb_pos[${ids[idx - 1]}]`, `.crumb_width[${ids[idx - 1]}]`, '.crumb_height');
+                        }
+                        return result;
+                    }),
+                }, ({ key: [id], masters: [ctx, pixelRatio, crumbs, crumb_ids, crumb_ofsHor, crumb_ofsVer, crumb_paddingHor, width, crumb_spaceHor, crumb_spaceVer, crumb_pos_prev, crumb_width_prev, crumb_height] }) => {
+                    let result;
+                    const idx = crumb_ids.indexOf(id);
+                    let mode_switcher_width = 50, mode_switcher_height = 20;
+                    let crumb_width = Math.ceil(ctx.measureText(crumbs[id].caption).width / pixelRatio) + 2 * crumb_paddingHor;
+                    if (!idx) {
+                        result = {
+                            left: crumb_ofsHor,
+                            top: crumb_ofsVer,
+                            width: crumb_width,
+                        };
+                    }
+                    else {
+                        const limitHor = crumb_pos_prev.top >= mode_switcher_height + crumb_spaceVer / 2 ?
+                            width - crumb_spaceHor :
+                            width - mode_switcher_width - crumb_spaceHor;
+                        if (crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor + crumb_width + crumb_spaceHor > limitHor) {
+                            result = {
+                                left: crumb_ofsHor,
+                                top: crumb_pos_prev.top + crumb_height + crumb_spaceVer,
+                                width: crumb_width,
+                            };
+                        }
+                        else {
+                            result = {
+                                left: crumb_pos_prev.left + crumb_width_prev + crumb_spaceHor,
+                                top: crumb_pos_prev.top,
+                                width: crumb_width,
+                            };
+                        }
+                    }
+                    return result;
+                }),
+                crumb_left: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ key: [id], masters: [crumb_pos] }) => crumb_pos.left),
+                crumb_top: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ masters: [crumb_pos] }) => crumb_pos.top),
+                crumb_width: $$.$me_atom2_prop({
+                    keys: ['.crumb_ids'],
+                    masters: ['.crumb_pos[]'],
+                }, ({ masters: [crumb_pos] }) => crumb_pos.width),
+                tab_selected: $$.$me_atom2_prop_store({
+                    default: () => $$.a('.tab_ids')[0],
+                    valid: (val) => typeof val == 'string' && ~$$.a('.tab_ids').indexOf(val) ? val : null,
+                }),
+                tab_ids: $$.$me_atom2_prop_keys(['.tabs'], true),
+                tabs: () => ({
+                    Местоположение: {
+                        icon: $$.$nl_icon_placemarker,
+                        params: {
+                            adrlabel: {
+                                row: () => 0,
+                                type: 'label',
+                                label: () => 'Адрес',
+                                label_width: () => 108,
+                            },
+                            Адрес: {
+                                row: () => 1,
+                                type: 'address',
+                            },
+                            area: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Регион',
+                                label_width: () => 108,
+                                none: () => 'Москва',
+                                options: () => $$.$nl_advcard_panel_param_options['area'],
+                            },
+                            housing_complex_id: {
+                                row: () => 3,
+                                type: 'picker',
+                                label: () => 'Название ЖК',
+                                label_width: () => 108,
+                                none: () => '',
+                                options: () => $$.$nl_advcard_panel_param_options['housing_complex_id'],
+                            },
+                            stations: {
+                                row: () => 4,
+                                type: 'picker',
+                                label: () => 'Ближайшие станции метро',
+                                label_width: () => 108,
+                                none: () => '',
+                                options: () => $$.$nl_advcard_panel_param_options['stations'],
+                            },
+                        },
+                    },
+                    Инфраструктура: {
+                        icon: 'icons-8-city-square',
+                        params: {
+                            territory_type_id: {
+                                row: () => 1,
+                                type: 'picker',
+                                label: () => 'Территория',
+                                label_width: () => 108,
+                                none: () => 'не важно',
+                                options: () => $$.$nl_advcard_panel_param_options['territory_type_id'],
+                            },
+                            parking_type_id: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Парковка',
+                                label_width: () => 108,
+                                none: () => 'не важно',
+                                options: () => $$.$nl_advcard_panel_param_options['parking_type_id'],
+                            },
+                        },
+                    },
+                    Дом: {
+                        icon: 'icons-8-building',
+                        params: {
+                            type: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    old: { caption: { text: 'Вторичка' } },
+                                    new: { caption: { text: 'Новостройка' } },
+                                })
+                            },
+                            storeys_count: {
+                                row: () => 2,
+                                type: 'input',
+                                label: () => 'Этажность',
+                                label_width: () => 100,
+                            },
+                            storey: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Этаж',
+                                label_width: () => 100,
+                            },
+                            walls_material_type_id: {
+                                row: () => 4,
+                                type: 'picker',
+                                label: () => 'Тип дома',
+                                label_width: () => 100,
+                                none: () => 'не важен',
+                                options: () => $$.$nl_advcard_panel_param_options['walls_material_type_id'],
+                            },
+                            elevator_type_id: {
+                                row: () => 5,
+                                type: 'picker',
+                                label: () => 'Лифт',
+                                label_width: () => 100,
+                                options: () => $$.$nl_advcard_panel_param_options['elevator_type_id'],
+                            },
+                            building_batch_id: {
+                                row: () => 6,
+                                type: 'picker',
+                                label: () => 'Серия дома',
+                                label_width: () => 100,
+                                options: () => $$.$nl_advcard_panel_param_options['building_batch_id'],
+                            },
+                            built_year: {
+                                row: () => 7,
+                                type: 'input',
+                                label: () => 'Год постройки',
+                                label_width: () => 100,
+                            },
+                            habit_class_id: {
+                                row: () => 8,
+                                type: 'pickermulti',
+                                label: () => 'Класс жилья',
+                                label_width: () => 110,
+                                none: () => 'не важен',
+                                options: () => $$.$nl_advcard_panel_param_options['habit_class_id'],
+                            },
+                        },
+                    },
+                    'Квартира': {
+                        icon: 'icons-8-key',
+                        params: {
+                            type: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    type1: { caption: { text: 'Апартаменты' } },
+                                    type2: { caption: { text: 'Квартира' } },
+                                })
+                            },
+                            total_room_count: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Комнаты',
+                                label_width: () => 100,
+                                none: () => '',
+                                options: () => $$.$nl_advcard_panel_param_options['total_room_count'],
+                            },
+                            total_square: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Площадь',
+                                label_width: () => 100,
+                            },
+                            life_square: {
+                                row: () => 4,
+                                type: 'input',
+                                label: () => 'Жилая',
+                                label_width: () => 100,
+                            },
+                            kitchen_square: {
+                                row: () => 5,
+                                type: 'input',
+                                label: () => 'Кухня',
+                                label_width: () => 100,
+                            },
+                            water_closet_type_id: {
+                                row: () => 6,
+                                type: 'picker',
+                                label: () => 'Санузел',
+                                label_width: () => 100,
+                                options: () => $$.$nl_advcard_panel_param_options['water_closet_type_id'],
+                            },
+                            window_overlook_type_id: {
+                                row: () => 7,
+                                type: 'picker',
+                                label: () => 'Окна',
+                                label_width: () => 100,
+                                options: () => $$.$nl_advcard_panel_param_options['window_overlook_type_id'],
+                            },
+                            apartment_condition_type_id: {
+                                row: () => 8,
+                                type: 'picker',
+                                label: () => 'Ремонт',
+                                label_width: () => 90,
+                                none: () => '',
+                                options: () => $$.$nl_advcard_panel_param_options['apartment_condition_type_id'],
+                            },
+                            balcony_type_id: {
+                                row: () => 9,
+                                type: 'picker',
+                                label: () => 'Балкон',
+                                label_width: () => 90,
+                                options: () => $$.$nl_advcard_panel_param_options['balcony_type_id'],
+                            },
+                        },
+                    },
+                    'Цена и условия': {
+                        icon: 'icons-8-money',
+                        params: {
+                            price_rub: {
+                                row: () => 1,
+                                type: 'input',
+                                label: () => 'Цена',
+                                label_width: () => 100,
+                            },
+                            'ТипСделки': {
+                                row: () => 2,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: { width: 95, text: 'Не важно' } },
+                                    '1': { caption: { text: 'Прямая продажа' } },
+                                    '2': { caption: { text: 'Альтернатива' } },
+                                }),
+                            },
+                            'Ипотека': {
+                                row: () => 3,
+                                type: 'select',
+                                options: () => ({
+                                    include: { caption: {
+                                            width: 95,
+                                            text: 'Не важно'
+                                        } },
+                                    only: { caption: ({ isSelected }) => ({ text: 'Только по ипотеке', width: 186 }) },
+                                    except: { caption: ({ isSelected }) => isSelected ? 'Строго без ипотеки' : {
+                                            text: 'Без ипотеки',
+                                        }
+                                    },
+                                }),
+                            },
+                            'БонусАгенту': {
+                                row: () => 4,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: ({ isSelected }) => ({ text: 'Не важно', width: 95 }) },
+                                    '1': { caption: ({ isSelected }) => ({ text: 'Только с бонусом агенту', width: 186 }) },
+                                    '2': { caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Без бонуса агенту',
+                                        } : {
+                                            text: 'Без бонуса',
+                                        } },
+                                }),
+                            },
+                            'Статус': {
+                                row: () => 5,
+                                type: 'select',
+                                options: () => ({
+                                    '0': { caption: { text: 'Свободна' } },
+                                    '1': { caption: { text: 'Проживают люди' } },
+                                }),
+                            },
+                            registered_citizen_count: {
+                                row: () => 6,
+                                type: 'input',
+                                label: () => 'Количество проживающих',
+                                label_width: () => 100,
+                            },
+                        },
+                    },
+                    'Права': {
+                        icon: 'icons-8-money',
+                        params: {
+                            mode18: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    mode1: { caption: { text: 'Проживающие "до 18 лет"' } },
+                                    mode2: { caption: { text: 'Нет проживающих "до 18 лет"' } },
+                                })
+                            },
+                            ownership_type_id: {
+                                row: () => 2,
+                                type: 'picker',
+                                label: () => 'Основание права собственности',
+                                label_width: () => 162,
+                                options: () => $$.$nl_advcard_panel_param_options['ownership_type_id'],
+                            },
+                            ownership_year: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Год вступления в право собственности',
+                                label_width: () => 162,
+                            },
+                            owners_count: {
+                                row: () => 4,
+                                type: 'input',
+                                label: () => 'Количество собственников',
+                                label_width: () => 162,
+                            },
+                        }
+                    },
+                    'Контакты и статус': {
+                        icon: 'icons-8-money',
+                        params: {
+                            deal_status_id: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    1: { caption: { text: 'Продается' } },
+                                    2: { caption: { text: 'Аванс' } },
+                                    3: { caption: { text: 'Продана' } },
+                                })
+                            },
+                            agent_name: {
+                                row: () => 2,
+                                type: 'input',
+                                label: () => 'Агент',
+                                label_width: () => 100,
+                            },
+                            phone_list: {
+                                row: () => 3,
+                                type: 'input',
+                                label: () => 'Телефон',
+                                label_width: () => 100,
+                            },
+                        }
+                    },
+                    'Режим публикации': {
+                        icon: 'icons-8-money',
+                        params: {
+                            mode: {
+                                row: () => 1,
+                                type: 'select',
+                                options: () => ({
+                                    mode1: { caption: { text: 'Все' } },
+                                    mode2: { caption: { text: 'Автопубликация' } },
+                                    mode3: { caption: { text: 'Только WinNER' } },
+                                })
+                            },
+                        }
+                    },
+                    'Фото/Видео': {
+                        icon: 'icons-8-money',
+                        params: {}
+                    },
+                    'Примечание': {
+                        icon: 'icons-8-money',
+                        params: {
+                            cmlabel: {
+                                row: () => 0,
+                                type: 'label',
+                                label: () => 'Примечание (будет опубликовано)',
+                            },
+                            note: {
+                                row: () => 1,
+                                type: 'textarea',
+                            },
+                        }
+                    },
+                    'Своя информация': {
+                        icon: 'icons-8-money',
+                        params: {
+                            infolabel: {
+                                row: () => 0,
+                                type: 'label',
+                                label: () => 'Своя информация (не публикуется)',
+                            },
+                            info: {
+                                row: () => 1,
+                                type: 'textarea',
+                            },
+                        }
+                    },
+                }),
+            },
+            elem: {
+                crumb: $$.$me_atom2_prop({ keys: ['.crumb_ids'], masters: ['.crumbs'] }, ({ key: [id], masters: [crumbs] }) => ({
+                    type: crumbs[id].caption,
+                    prop: {
+                        '#ofsHor': `<.crumb_left[${id}]`,
+                        '#ofsVer': `<.crumb_top[${id}]`,
+                        '#width': `<.crumb_width[${id}]`,
+                        '#height': '<.crumb_height',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                        '#cursor': id == 'раздел' ? null : () => 'pointer',
+                    },
+                    style: {
+                        border: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
+                            'solid 1px #bdc3d1' :
+                            'solid 1px #d8dce3'),
+                        background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#fcfcfd' : '#878f9b'),
+                        borderRadius: () => 3,
+                    },
+                    control: {
+                        label: () => ({
+                            base: $$.$me_label,
+                            prop: {
+                                '#width': '<.#width',
+                                '#height': '<.#height',
+                                text: () => crumbs[id].caption,
+                                fontSize: '<<.crumb_fontSize',
+                                paddingHor: '<<.crumb_paddingHor',
+                                alignVer: () => $$.$me_align.center,
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log(id, crumbs[id], $$.a.curr.name(), $$.a('<.tabs'));
+                            let found;
+                            if (id == 'Адрес') {
+                                found = 'Местоположение';
+                            }
+                            else if (id == 'СхемаМетро') {
+                                $$.a('/@app.isShownSchemeMetro', true);
+                            }
+                            else {
+                                const tabs = $$.a('<.tabs');
+                                const tab_ids = Object.keys(tabs);
+                                for (let i = 0; i < tab_ids.length; i++) {
+                                    const tab_id = tab_ids[i];
+                                    if (tabs[tab_id].params[id]) {
+                                        found = tab_id;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (found) {
+                                $$.a('<.tab_selected', found);
+                            }
+                            return true;
+                        },
+                    },
+                })),
+                tabs: () => ({
+                    prop: {
+                        '#ofsVer': '<.header_height',
+                        '#height': () => 500,
+                        options: '<.tabs',
+                        option_ids: '<.tab_ids',
+                        option_height: () => 44,
+                        option_fontSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => em / 16 * 14),
+                        option_iconSize: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 22),
+                        option_label_ofsHor: $$.$me_atom2_prop(['.em'], ({ masters: [em] }) => 16 + 16 + 22),
+                        option_width: () => 210,
+                        option_top: $$.$me_atom2_prop({ keys: ['.option_ids'], masters: ['.option_ids', '.option_height'] }, ({ key: [id], masters: [ids, height] }) => ids.indexOf(id) * height),
+                        value: $$.$me_atom2_prop_bind('<.tab_selected'),
+                        params: $$.$me_atom2_prop(['.value', '.options'], ({ masters: [value, options] }) => options[value].params || {}),
+                        param_ids: $$.$me_atom2_prop_keys(['.params'], true),
+                        row_height: () => row_height,
+                        row_space: () => row_space,
+                        row_left: $$.$me_atom2_prop(['.option_width', '.marginHor'], $$.$me_atom2_prop_compute_fn_sum()),
+                        row_width: () => 428,
+                        marginHor: () => 32,
+                        '#order': () => ['option', 'separator', 'param'],
+                    },
+                    elem: {
+                        separator: () => ({
+                            prop: {
+                                '#width': '<.option_width',
+                            },
+                            style: {
+                                borderRight: () => '1px solid #bdc3d1',
+                            },
+                        }),
+                        param: $$.$me_atom2_prop({ keys: ['.param_ids'], masters: ['.params'] }, ({ key: [id], masters: [params] }) => {
+                            const def = params[id];
+                            if (def.type == 'select') {
+                                return {
+                                    base: $$.$nl_select,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { options: def.options, no_adjust: def.no_adjust }),
+                                };
+                            }
+                            else if (def.type == 'address') {
+                                return {
+                                    base: input_with_button,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { placeholder: () => 'Горoд, район, адреc, метро, название ЖК' }),
+                                };
+                            }
+                            else if (def.type == 'input') {
+                                const result = {
+                                    prop: Object.assign({}, prop_common(def)),
+                                    elem: {
+                                        label: !def.label ? null : () => ({
+                                            prop: {
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
+                                                options: def.options,
+                                                none: null,
+                                                value: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
+                                                    return value[id] || '';
+                                                }, ({ val }) => {
+                                                }),
+                                            },
+                                        }),
+                                    },
+                                };
+                                return result;
+                            }
+                            else if (def.type == 'picker' || def.type == 'pickermulti') {
+                                const result = {
+                                    prop: Object.assign({}, prop_common(def)),
+                                    elem: {
+                                        label: !def.label ? null : () => ({
+                                            prop: {
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            base: $$.$nl_picker,
+                                            prop: {
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
+                                                options: def.options,
+                                                none: def.type == 'picker' ? null : def.none,
+                                                value: $$.$me_atom2_prop(['.option_ids', '<<<.value'], ({ atom, masters: [ids, value] }) => {
+                                                    return (value[id] + '') || (def.type == 'picker' ? ids[0] : new Map());
+                                                }, ({ val }) => {
+                                                }),
+                                            },
+                                        }),
+                                    },
+                                };
+                                return result;
+                            }
+                            else if (def.type == 'diap') {
+                                return {
+                                    base: diap,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { label: def.label, label_width: def.label_width, diap_space: def.diap_space }),
+                                };
+                            }
+                            else if (def.type == 'pickerdate') {
+                                return {
+                                    prop: Object.assign({}, prop_common(def)),
+                                    elem: {
+                                        label: !def.label ? null : () => ({
+                                            prop: {
+                                                '#width': def.label_width,
+                                                '#height': () => null,
+                                                '#alignVer': () => $$.$me_align.center,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        ctrl: () => ({
+                                            base: $$.$nl_pickerdate,
+                                            prop: {
+                                                '#width': !def.label ? '<.#width' : $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                                                '#alignHor': () => $$.$me_align.right,
+                                            },
+                                        }),
+                                    },
+                                };
+                            }
+                            else if (def.type == 'include_exclude') {
+                                return {
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    elem: {
+                                        label: () => ({
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#height': () => row_height,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                                '#ofsVer': () => 12,
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                        include: () => ({
+                                            base: include_exclude_item,
+                                            prop: {
+                                                label: () => 'Включая',
+                                                label_width: def.label_width,
+                                                '#ofsVer': () => (row_height + row_space),
+                                            },
+                                        }),
+                                        exclude: () => ({
+                                            base: include_exclude_item,
+                                            prop: {
+                                                label: () => 'Исключая',
+                                                label_width: def.label_width,
+                                                '#ofsVer': () => 2 * (row_height + row_space),
+                                            },
+                                        }),
+                                    },
+                                };
+                            }
+                            else if (def.type == 'selector') {
+                                return {
+                                    base: $$.$nl_scheme_selector,
+                                    prop: Object.assign({}, prop_common(def)),
+                                };
+                            }
+                            else if (def.type == 'button') {
+                                return {
+                                    base: $$.$nl_button,
+                                    prop: Object.assign(Object.assign({}, prop_common(def)), { target: def.target, cmd: def.cmd, caption: def.caption }),
+                                    dispatch: def.dispatch,
+                                };
+                            }
+                            else if (def.type == 'label') {
+                                return {
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    elem: {
+                                        label: () => ({
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#height': () => row_height,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                                '#ofsVer': () => 12,
+                                            },
+                                            dom: {
+                                                innerText: def.label,
+                                            },
+                                        }),
+                                    }
+                                };
+                            }
+                            else if (def.type == 'textarea') {
+                                return {
+                                    prop: Object.assign(Object.assign({}, prop_common(def, { ofsVer: -5 })), { '#height': () => row_height + (row_height + row_space) * 2 }),
+                                    elem: {
+                                        area: () => ({
+                                            node: 'textarea',
+                                            prop: {
+                                                '#width': '<.#width',
+                                                '#height': () => 290,
+                                                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                                fontWeight: () => 500,
+                                                '#ofsVer': () => 12,
+                                            },
+                                            dom: {
+                                                innerText: $$.$me_atom2_prop(['<<<.value'], ({ masters: [value] }) => {
+                                                    return value[id] || '';
+                                                }),
+                                            },
+                                        }),
+                                    }
+                                };
+                            }
+                            else {
+                                $$.$me_throw(def.type);
+                            }
+                        }),
+                        option: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
+                            prop: {
+                                '#ofsVer': `<.option_top[${id}]`,
+                                '#width': '<.option_width',
+                                '#height': '<.option_height',
+                                isSelected: $$.$me_atom2_prop(['<.value'], ({ masters: [value] }) => value == id),
+                                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? null : 'pointer'),
+                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                id: () => id,
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    $$.a('<.value', id);
+                                    return true;
+                                },
+                            },
+                            style: {
+                                background: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => !isSelected ? 'transparent' :
+                                    theme == $$.$nl_theme.light ? '#0070a4' : '#008ecf'),
+                            },
+                            elem: {
+                                icon: () => ({
+                                    prop: {
+                                        '#width': '<<.option_iconSize',
+                                        '#height': '<<.option_iconSize',
+                                        '#alignVer': () => $$.$me_align.center,
+                                        '#ofsHor': () => 16,
+                                    },
+                                    attr: {
+                                        draggable: () => false,
+                                    },
+                                    style: {
+                                        filter: $$.$me_atom2_prop(['<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
+                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
+                                            theme == $$.$nl_theme.light ?
+                                                'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                                'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
+                                    },
+                                    elem: {
+                                        icon: $$.$me_atom2_prop(['<<.options', '<.id'], ({ masters: [options, id] }) => {
+                                            const s = options[id] + '';
+                                            if (id === 'Местоположение') {
+                                                return $$.$nl_icon_placemarker;
+                                            }
+                                            else if (id === 'Инфраструктура') {
+                                                return $$.$nl_icon_infrastructure;
+                                            }
+                                            else if (id === 'Дом') {
+                                                return $$.$nl_icon_building;
+                                            }
+                                            else if (id === 'Квартира') {
+                                                return $$.$nl_icon_key;
+                                            }
+                                            else if (id === 'Цена и условия') {
+                                                return $$.$nl_icon_money;
+                                            }
+                                            else if (id === 'Права') {
+                                                return $$.$nl_icon_diploma;
+                                            }
+                                            else if (id === 'Контакты и статус') {
+                                                return $$.$nl_icon_list;
+                                            }
+                                            else if (id === 'Режим публикации') {
+                                                return $$.$nl_icon_document;
+                                            }
+                                            else if (id === 'Фото/Видео') {
+                                                return $$.$nl_icon_unspalsh;
+                                            }
+                                            else if (id === 'Примечание') {
+                                                return $$.$nl_icon_comment;
+                                            }
+                                            else if (id === 'Своя информация') {
+                                                return $$.$nl_icon_info;
+                                            }
+                                            else {
+                                                return $$.$nl_icon_placemarker;
+                                            }
+                                        }),
+                                    },
+                                }),
+                                label: () => ({
+                                    prop: {
+                                        '#ofsHor': '<<.option_label_ofsHor',
+                                        '#alignVer': () => $$.$me_align.center,
+                                        '#height': () => null,
+                                        '#width': $$.$me_atom2_prop(['<<.option_width', '.#ofsHor'], $$.$me_atom2_prop_compute_fn_diff(-8)),
+                                        fontSize: '<<.option_fontSize',
+                                    },
+                                    dom: {
+                                        innerText: () => id,
+                                    },
+                                    style: {
+                                        color: $$.$me_atom2_prop(['<.isSelected', '.colorText'], ({ masters: [isSelected, colorText] }) => isSelected ? 'white' : colorText),
+                                        whiteSpace: () => 'nowrap',
+                                        overflow: () => 'hidden',
+                                        textOverflow: () => 'ellipsis',
+                                    },
+                                }),
+                            },
+                        })),
+                    },
+                }),
+            },
+        };
+        const diap = {
+            prop: {
+                ids: () => ['min', 'max'],
+                value: $$.$me_atom2_prop({ keys: ['.ids'] }, () => 0),
+                label: $$.$me_atom2_prop_abstract(),
+                label_width: $$.$me_atom2_prop_abstract(),
+                diap_space: $$.$me_atom2_prop_abstract(),
+            },
+            elem: {
+                label: () => ({
+                    prop: {
+                        '#width': '<.label_width',
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                    },
+                    dom: {
+                        innerText: '<.label',
+                    },
+                }),
+                input: $$.$me_atom2_prop({ keys: ['.ids'] }, ({ key: [id] }) => ({
+                    base: $$.$nl_input,
+                    dispatch(dispatch_name, dispatch_arg) {
+                        if (dispatch_name == 'change') {
+                            $$.a(`<.value[${id}]`, dispatch_arg == '' ? 0 : Number.parseInt(dispatch_arg, 10));
+                            return true;
+                        }
+                        return false;
+                    },
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#ofsHor': id == 'max' ? null : $$.$me_atom2_prop(['.#width', '<.diap_space'], $$.$me_atom2_prop_compute_fn_sum()),
+                        '#width': $$.$me_atom2_prop(['<.#width', '<.label_width', '<.diap_space'], ({ masters: [width, label_width, diap_space] }) => (width - label_width - diap_space) / 2),
+                        placeholder: () => id == 'min' ? 'от' : 'до',
+                    },
+                    dom: {
+                        value: $$.$me_atom2_prop([`<.value[${id}]`], ({ masters: [value] }) => {
+                            return !value ? '' : value + '';
+                        }),
+                    },
+                })),
+            },
+        };
+        const include_exclude_item = {
+            prop: {
+                label: $$.$me_atom2_prop_abstract(),
+                label_width: $$.$me_atom2_prop_abstract(),
+                '#width': '<.#width',
+                '#height': () => row_height,
+                '#ofsVer': $$.$me_atom2_prop_abstract(),
+                '#alignVer': () => $$.$me_align.top,
+            },
+            elem: {
+                label: () => ({
+                    prop: {
+                        '#width': '<.label_width',
+                        '#height': () => null,
+                        '#alignVer': () => $$.$me_align.center,
+                        fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                    },
+                    dom: {
+                        innerText: '<.label',
+                    },
+                }),
+                ctrl: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        '#width': $$.$me_atom2_prop(['<.#width', '<@label.#width'], $$.$me_atom2_prop_compute_fn_diff()),
+                        '#height': () => row_height,
+                        '#alignHor': () => $$.$me_align.right,
+                    },
+                }),
+            },
+        };
+        const input_with_button = {
+            elem: {
+                input: () => ({
+                    base: $$.$nl_input,
+                    prop: {
+                        placeholder: '<.placeholder',
+                    },
+                }),
+                button: () => ({
+                    prop: {
+                        '#alignHor': () => $$.$me_align.right,
+                        '#width': () => 40,
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                        '#cursor': () => 'pointer',
+                    },
+                    elem: {
+                        square: () => ({
+                            prop: {
+                                '#alignHor': () => $$.$me_align.right,
+                                '#ofsHor': () => 8,
+                                '#alignVer': () => $$.$me_align.center,
+                                '#width': () => 16,
+                                '#height': () => 16,
+                            },
+                            style: {
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#88B5CE' : '#5FBDF9'),
+                                borderRadius: () => 3,
+                            },
+                            elem: {
+                                plus: () => ({
+                                    base: $$.$me_plus,
+                                    prop: {
+                                        size: () => 10,
+                                        thick: () => 2,
+                                        '#align': () => $$.$me_align.center,
+                                        color: () => 'white',
+                                    },
+                                }),
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            console.log($$.a.curr.name());
+                            return true;
+                        },
+                    },
+                }),
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//param.js.map
 ;
 "use strict";
 var $;
@@ -22645,6 +24777,151 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_slide_right = {
+            type: '$nl_icon_slide_right',
+            base: $$.$me_svg,
+            prop: {
+                useFill: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#464f63' : '#D8DCE3'),
+                fill: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#D8DCE3' : '#464f63'),
+                viewBox: () => "0 0 35 72",
+                content: () => [
+                    {
+                        tag: 'defs',
+                        attr: { id: () => "1" },
+                        sub: [
+                            { attr: { id: () => "b", d: () => "M0 0h14a3 3 0 013 3v48a3 3 0 01-3 3H0V0z" } },
+                            {
+                                tag: 'filter',
+                                attr: { id: () => "a", width: () => "294.1%", height: () => "161.1%", x: () => "-97.1%", y: () => "-19.4%", filterUnits: () => "objectBoundingBox" },
+                                sub: [
+                                    { tag: 'feOffset', attr: { dy: () => "6", in: () => "SourceAlpha", result: () => "shadowOffsetOuter1" } },
+                                    { tag: 'feGaussianBlur', attr: { in: () => "shadowOffsetOuter1", result: () => "shadowBlurOuter1", stdDeviation: () => "4.5" } },
+                                    { tag: 'feColorMatrix', attr: { in: () => "shadowBlurOuter1", values: () => "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0" } },
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        tag: 'g',
+                        attr: { fill: () => "none", 'fill-rule': () => "nonzero" },
+                        sub: [
+                            {
+                                tag: 'g',
+                                attr: { transform: () => "translate(9 3)" },
+                                sub: [
+                                    { tag: 'use', attr: { fill: () => "#000", filter: () => "url(#a)", href: () => "#b" } },
+                                    { tag: 'use', attr: { fill: '<<<.useFill', href: () => "#b" } },
+                                ]
+                            },
+                            {
+                                tag: 'g',
+                                attr: { fill: "<<.fill" },
+                                sub: [
+                                    { attr: { d: () => "M19 30l-5 7.1 1.3.9 5.7-8-5.7-8-1.3.9 5 7.1z" } },
+                                    {
+                                        tag: 'g',
+                                        attr: { transform: () => "translate(13 8)" },
+                                        sub: [
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "2.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "2.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "9.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "9.5", r: () => "1.5" } },
+                                        ]
+                                    },
+                                    {
+                                        tag: 'g',
+                                        attr: { transform: () => "translate(13 41)" },
+                                        sub: [
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "1.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "1.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "8.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "8.5", r: () => "1.5" } },
+                                        ]
+                                    },
+                                ]
+                            }
+                        ],
+                    },
+                ],
+            },
+        };
+        $$.$nl_icon_slide_left = {
+            type: '$nl_icon_slide_left',
+            base: $$.$me_svg,
+            prop: {
+                useFill: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#464f63' : '#D8DCE3'),
+                fill: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#D8DCE3' : '#464f63'),
+                viewBox: () => "0 0 35 72",
+                content: () => [
+                    {
+                        tag: 'defs',
+                        attr: { id: () => "1" },
+                        sub: [
+                            { attr: { id: () => "b", d: () => "M0 0h14a3 3 0 013 3v48a3 3 0 01-3 3H0V0z" } },
+                            {
+                                tag: 'filter',
+                                attr: { id: () => "a", width: () => "294.1%", height: () => "161.1%", x: () => "-97.1%", y: () => "-19.4%", filterUnits: () => "objectBoundingBox" },
+                                sub: [
+                                    { tag: 'feOffset', attr: { dy: () => "6", in: () => "SourceAlpha", result: () => "shadowOffsetOuter1" } },
+                                    { tag: 'feGaussianBlur', attr: { in: () => "shadowOffsetOuter1", result: () => "shadowBlurOuter1", stdDeviation: () => "4.5" } },
+                                    { tag: 'feColorMatrix', attr: { in: () => "shadowBlurOuter1", values: () => "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0" } },
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        tag: 'g',
+                        attr: { fill: () => "none", 'fill-rule': () => "nonzero" },
+                        sub: [
+                            {
+                                tag: 'g',
+                                attr: { transform: () => "translate(9 3)" },
+                                sub: [
+                                    { tag: 'use', attr: { fill: () => "#000", filter: () => "url(#a)", href: () => "#b" } },
+                                    { tag: 'use', attr: { fill: '<<<.useFill', href: () => "#b" } },
+                                ]
+                            },
+                            {
+                                tag: 'g',
+                                attr: { fill: "<<.fill" },
+                                sub: [
+                                    { attr: { d: () => "M16 30l5 7.1-1.3.9-5.7-8 5.7-8 1.3.9-5 7.1z" } },
+                                    {
+                                        tag: 'g',
+                                        attr: { transform: () => "translate(13 8)" },
+                                        sub: [
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "2.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "2.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "9.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "9.5", r: () => "1.5" } },
+                                        ]
+                                    },
+                                    {
+                                        tag: 'g',
+                                        attr: { transform: () => "translate(13 41)" },
+                                        sub: [
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "1.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "1.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "1.5", cy: () => "8.5", r: () => "1.5" } },
+                                            { tag: 'circle', attr: { cx: () => "7.5", cy: () => "8.5", r: () => "1.5" } },
+                                        ]
+                                    },
+                                ]
+                            }
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//slide.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_icon_home = {
             base: $$.$me_svg,
             prop: {
@@ -22898,15 +25175,87 @@ var $;
                         }), card_value_reciever: $$.$me_atom2_prop_store({
                             default: () => '',
                             valid: (val) => typeof val == 'string' ? val : null,
-                        }), login: $$.$me_atom2_prop_store({
-                            default: () => '',
-                            valid: (val) => typeof val == 'string' ?
-                                val.trim() :
-                                null,
-                            condition: ['.stayLogged'],
-                        }), stayLogged: $$.$me_atom2_prop_store({
+                        }), isLoggedIn: $$.$me_atom2_prop_store({
                             default: () => false,
                             valid: (val) => typeof val == 'boolean' ? val : null,
+                        }), stayLogged: $$.$me_atom2_prop_store({
+                            default: () => true,
+                            valid: (val) => typeof val == 'boolean' ? val : null,
+                        }), login: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), name: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), mlsBrokerGuid: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), accessToken: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), userId: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), userAccountCode: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), userInternalIp: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), userExternalIp: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), userRestrictions: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => [],
+                            valid: (val) => Array.isArray(val) ? val : null,
+                            condition: ['.stayLogged'],
+                        }), userPermissionCodes: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => [],
+                            valid: (val) => Array.isArray(val) ? val : null,
+                            condition: ['.stayLogged'],
+                        }), needSignDocDate: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), userContacts: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => [],
+                            valid: (val) => Array.isArray(val) ? val : null,
+                            condition: ['.stayLogged'],
+                        }), loginnedAs: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
+                        }), roles: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => [],
+                            valid: (val) => Array.isArray(val) ? val : null,
+                            condition: ['.stayLogged'],
+                        }), blackPhone: $$.$me_atom2_prop_store({
+                            isLocal: true,
+                            default: () => '',
+                            valid: (val) => typeof val == 'string' ? val.trim() : null,
+                            condition: ['.stayLogged'],
                         }), isZoomed: $$.$me_atom2_prop_store({
                             default: () => false,
                             valid: (val) => typeof val == 'boolean' ? val : false,
@@ -23027,6 +25376,9 @@ var $;
                             };
                         }),
                     },
+                    init() {
+                        $$.$nl_check_login();
+                    }
                 } });
         };
         const workspace = {
@@ -23122,19 +25474,25 @@ var $;
             elem: {
                 login: () => login,
                 theme_switch: () => theme_switch,
+                loginMenu: $$.$me_atom2_prop(['/@app.isShownLoginMenu'], ({ masters: [isShownLoginMenu] }) => !isShownLoginMenu ?
+                    null :
+                    {
+                        base: loginMenu,
+                        prop: {
+                            '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@login' + s), $$.$me_atom2_prop_compute_fn_sum()),
+                        },
+                        style: {
+                            background: () => 'red',
+                        },
+                        event: {
+                            clickOrTapOutside: () => {
+                                $$.a('/@app.isShownLoginMenu', false);
+                                return false;
+                            },
+                        },
+                    }),
                 ear: () => ear,
                 list: () => list,
-            },
-        };
-        const loginMenu = {
-            prop: {
-                items: () => ({
-                    'Другой пользователь': {},
-                    'Сменить пароль': {},
-                    'Выйти': {},
-                }),
-                item_keys: $$.$me_atom2_prop_keys(['.items']),
-                item: $$.$me_atom2_prop({ keys: ['.item_keys'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
             },
         };
         const login = {
@@ -23159,7 +25517,9 @@ var $;
                         $$.a('/@app.isShownLoginForm', true);
                     }
                     else {
-                        $$.a.update('/@app.isShownLoginMenu', val => !val);
+                        if (confirm("произвести выход из учетной записи?")) {
+                            $$.$nl_logout();
+                        }
                     }
                     return true;
                 },
@@ -23288,20 +25648,19 @@ var $;
             },
             elem: {
                 img: () => ({
-                    node: 'img',
                     prop: {
                         '#height': () => 72,
                         '#width': () => 35,
                         '#ofsVer': () => -3,
                         '#ofsHor': () => -9,
                     },
-                    attr: {
-                        src: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive', '/.theme'], ({ masters: [isShrinked, isShrinked_animActive, theme] }) => {
+                    elem: {
+                        icon: $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive', '/.theme'], ({ masters: [isShrinked, isShrinked_animActive, theme] }) => {
                             if (isShrinked_animActive)
                                 isShrinked = !isShrinked;
-                            return `assets/${$$.$nl_theme[theme]}-slide-${isShrinked ? 'right' : 'left'}@2x.png`;
+                            return isShrinked ? $$.$nl_icon_slide_right : $$.$nl_icon_slide_left;
                         }),
-                    },
+                    }
                 }),
             },
             event: {
@@ -23309,6 +25668,17 @@ var $;
                     $$.a('<.isShrinked', !$$.a('<.isShrinked'));
                     return true;
                 },
+            },
+        };
+        const loginMenu = {
+            prop: {
+                items: () => ({
+                    'Другой пользователь': {},
+                    'Сменить пароль': {},
+                    'Выйти': {},
+                }),
+                item_keys: $$.$me_atom2_prop_keys(['.items']),
+                item: $$.$me_atom2_prop({ keys: ['.item_keys'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
             },
         };
         const list = {
