@@ -6272,6 +6272,10 @@ var $;
             });
         }
         $$.$nl_login_with_token = $nl_login_with_token;
+        function $nl_change_password() {
+            alert('Yessssss!');
+        }
+        $$.$nl_change_password = $nl_change_password;
         function $nl_check_login() {
             const accessToken = $$.a('/@app.accessToken');
             if (accessToken) {
@@ -23199,7 +23203,7 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
-                        '#ofsVer': () => 54,
+                        '#ofsVer': '.em',
                         '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => Math.floor((width - ofs * 4) / 3)),
                         '#height': () => 420,
                         inputOfs: () => 130,
@@ -23211,7 +23215,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': '.pm',
+                                '#ofsVer': '.em',
                             },
                             style: {
                                 fontFamily: () => 'system-ui',
@@ -23226,7 +23230,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 100,
+                                '#ofsVer': () => 50,
                             },
                             style: {
                                 fontSize: () => 14,
@@ -23238,10 +23242,10 @@ var $;
                         deepdate: () => ({
                             base: $$.$nl_pickerdate,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
-                                '#ofsHor': '<.inputOfs',
+                                '#width': '<.innerWidth',
+                                '#ofsHor': '.em',
                                 '#height': () => 32,
-                                '#ofsVer': () => 93,
+                                '#ofsVer': () => 73,
                             },
                         }),
                         newbld: () => ({
@@ -23250,7 +23254,7 @@ var $;
                                 '#height': () => 32,
                                 '#width': '<.innerWidth',
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 157,
+                                '#ofsVer': () => 137,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
                                             text: 'Можно',
@@ -23270,7 +23274,7 @@ var $;
                                 '#width': '<.innerWidth',
                                 '#height': () => 32,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 221,
+                                '#ofsVer': () => 201,
                                 options: () => ({
                                     no_matter: {
                                         caption: ({ isSelected }) => isSelected ? {
@@ -23294,7 +23298,7 @@ var $;
                                 '#width': '<.innerWidth',
                                 '#height': () => 32,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 285,
+                                '#ofsVer': () => 265,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
                                             text: 'Все',
@@ -23345,7 +23349,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': '.pm',
+                                '#ofsVer': '.em',
                             },
                             style: {
                                 fontFamily: () => 'system-ui',
@@ -23360,7 +23364,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 100,
+                                '#ofsVer': () => 80,
                             },
                             style: {
                                 fontSize: () => 16,
@@ -23375,7 +23379,7 @@ var $;
                                 '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 93,
+                                '#ofsVer': () => 73,
                             },
                         }),
                         label2: () => ({
@@ -23383,7 +23387,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 164,
+                                '#ofsVer': () => 144,
                             },
                             style: {
                                 fontSize: () => 16,
@@ -23398,7 +23402,7 @@ var $;
                                 '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 157,
+                                '#ofsVer': () => 137,
                             },
                         }),
                         label3: () => ({
@@ -23406,7 +23410,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 228,
+                                '#ofsVer': () => 208,
                             },
                             style: {
                                 fontSize: () => 16,
@@ -23421,7 +23425,7 @@ var $;
                                 '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 221,
+                                '#ofsVer': () => 201,
                             },
                         }),
                         label4: () => ({
@@ -23429,7 +23433,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 292,
+                                '#ofsVer': () => 272,
                             },
                             style: {
                                 fontSize: () => 16,
@@ -23441,17 +23445,17 @@ var $;
                         password: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em', '<@edit_password.#width'], ({ masters: [width, inputOfs, ofs, epWidth] }) => width - ofs - inputOfs - epWidth - 16),
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 285,
+                                '#ofsVer': () => 265,
                             },
                         }),
                         edit_password: () => ({
                             prop: {
                                 '#width': () => null,
                                 '#height': () => 25,
-                                '#ofsVer': () => 292,
+                                '#ofsVer': () => 300,
                                 '#ofsHor': '.em',
                                 '#alignHor': () => $$.$me_align.right,
                                 '#cursor': () => 'pointer',
@@ -23463,6 +23467,7 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
+                                    $$.$nl_change_password();
                                     return true;
                                 },
                             },
@@ -23502,7 +23507,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': '.pm',
+                                '#ofsVer': '.em',
                             },
                             style: {
                                 fontFamily: () => 'system-ui',
@@ -23517,7 +23522,7 @@ var $;
                                 '#height': () => null,
                                 '#width': '<<@search.innerWidth',
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 77,
+                                '#ofsVer': () => 40,
                             },
                             style: {
                                 fontSize: () => 14,
@@ -23531,7 +23536,7 @@ var $;
                                 '#height': () => null,
                                 '#width': '<<@search.innerWidth',
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 140,
+                                '#ofsVer': () => 125,
                             },
                             style: {
                                 fontSize: () => 14,
@@ -23545,7 +23550,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 228,
+                                '#ofsVer': () => 208,
                             },
                             style: {
                                 fontSize: () => 16,
@@ -23558,7 +23563,7 @@ var $;
                             base: $$.$nl_input,
                             prop: {
                                 '#height': () => 32,
-                                '#ofsVer': () => 221,
+                                '#ofsVer': () => 201,
                                 '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
                                 '#ofsHor': '<.inputOfs',
                             },
@@ -23568,7 +23573,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': () => 292,
+                                '#ofsVer': () => 272,
                             },
                             style: {
                                 fontSize: () => 16,
@@ -23581,7 +23586,7 @@ var $;
                             base: $$.$nl_input,
                             prop: {
                                 '#height': () => 32,
-                                '#ofsVer': () => 285,
+                                '#ofsVer': () => 265,
                                 '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
                                 '#ofsHor': '<.inputOfs',
                             },
@@ -23620,7 +23625,7 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.em',
-                                '#ofsVer': '.pm',
+                                '#ofsVer': '.em',
                             },
                             style: {
                                 fontFamily: () => 'system-ui',
@@ -23634,7 +23639,7 @@ var $;
                             base: $$.$nl_checkbox,
                             prop: {
                                 boxSize: () => 14,
-                                '#ofsVer': '.pm',
+                                '#ofsVer': () => 20,
                                 '#ofsHor': () => 195,
                                 caption: () => 'Мой список',
                                 checked: () => true,
@@ -23645,7 +23650,7 @@ var $;
                             base: $$.$nl_checkbox,
                             prop: {
                                 boxSize: () => 14,
-                                '#ofsVer': '.pm',
+                                '#ofsVer': () => 20,
                                 '#ofsHor': () => 343,
                                 caption: () => 'Остальной список нашего агентства',
                                 checked: () => false,
@@ -25657,7 +25662,7 @@ var $;
                 '#ofsHor': $$.$me_atom2_prop(['<@login.#width', '.#isHover', '<.isShrinked', '<.isShrinked_animActive', '/.newmenu'], ({ masters: [width, isHover, isShrinked, isShrinked_animActive, newmenu] }) => {
                     if (isHover)
                         isShrinked = !isShrinked;
-                    return width + (isShrinked ? 0 : 2) - ((newmenu) ? 18 : 0);
+                    return width + (isShrinked ? 0 : 2) - ((newmenu) ? 18 : 0) - 5;
                 }),
                 '#cursor': () => 'pointer',
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 3),
