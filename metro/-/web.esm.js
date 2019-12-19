@@ -3645,5 +3645,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //bolshaya_kolcevaya.js.map
-
-//# sourceMappingURL=web.js.map
+;
+export default $
+//# sourceMappingURL=web.esm.js.map
