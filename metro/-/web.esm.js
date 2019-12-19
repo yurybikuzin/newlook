@@ -99,9 +99,9 @@ var $;
                     }
                 }
                 if (!code_SubwayLine)
-                    $$.$me_throw(`spot'${guid}' has no parent[.type='SubwayLine'].code`);
+                    continue;
                 if (!code_SubwaySuperStation)
-                    $$.$me_throw(`spot'${guid}' has no parent[.type='SubwaySuperStation'].code`);
+                    continue;
                 if (!guids[code_SubwayLine]) {
                     guids[code_SubwayLine] = {};
                 }
