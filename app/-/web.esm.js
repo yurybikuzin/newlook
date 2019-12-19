@@ -13700,10 +13700,10 @@ var $;
             prop: {
                 value: () => 6,
                 theme: '/.theme',
-                input_width: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => value == Infinity ? 150 : 90),
+                input_width: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => value == Infinity ? 150 : 100),
                 buttonDropdown_width: () => 40,
-                text_margin: () => 3,
-                icon_size: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(28 / 40)),
+                text_margin: () => 16,
+                icon_size: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(28 / 32)),
                 icon_filter: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     'invert(65%) sepia(17%) saturate(1025%) hue-rotate(158deg) brightness(84%) contrast(87%)' :
                     'invert(46%) sepia(87%) saturate(371%) hue-rotate(162deg) brightness(93%) contrast(84%)'),
@@ -13724,7 +13724,6 @@ var $;
                     },
                     prop: {
                         '#width': '<.input_width',
-                        fontSize: () => 14,
                     },
                     dom: {
                         value: $$.$me_atom2_prop(['<.value', '.isFocused'], ({ masters: [value, isFocused] }) => {
@@ -13799,7 +13798,7 @@ var $;
                                     '#align': () => $$.$me_align.center,
                                 },
                                 style: {
-                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 20)),
+                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
                                 },
                                 dom: {
                                     innerText: $$.$me_atom2_prop(['<<.value'], ({ masters: [value] }) => {
@@ -23165,21 +23164,6 @@ var $;
                                 '#ofsHor': '.tm',
                                 '#height': () => 32,
                                 '#ofsVer': () => 73,
-                                fontSize: () => 13,
-                            },
-                        }),
-                        labelnewbld: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 116,
-                            },
-                            style: {
-                                fontSize: () => 14,
-                            },
-                            dom: {
-                                innerText: () => 'Новостройки',
                             },
                         }),
                         newbld: () => ({
@@ -23189,32 +23173,17 @@ var $;
                                 '#width': '<.innerWidth',
                                 '#ofsHor': '.tm',
                                 '#ofsVer': () => 137,
-                                fontSize: () => 13,
                                 options: () => ({
-                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая их' : {
-                                            text: 'Включая',
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
+                                            text: 'Можно',
                                         } },
-                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Исключая их' : {
-                                            text: 'Исключая',
+                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
+                                            text: 'Кроме',
                                         } },
-                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в них' : {
+                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
                                             text: 'Только',
                                         } },
                                 }),
-                            },
-                        }),
-                        labelapart: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 180,
-                            },
-                            style: {
-                                fontSize: () => 14,
-                            },
-                            dom: {
-                                innerText: () => 'Апартаменты',
                             },
                         }),
                         apartment: () => ({
@@ -23224,32 +23193,21 @@ var $;
                                 '#height': () => 32,
                                 '#ofsHor': '.tm',
                                 '#ofsVer': () => 201,
-                                fontSize: () => 13,
                                 options: () => ({
-                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая их' : {
-                                            text: 'Включая',
-                                        } },
-                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Исключая их' : {
-                                            text: 'Исключая',
-                                        } },
-                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в них' : {
-                                            text: 'Только',
-                                        } },
+                                    no_matter: {
+                                        caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Можно апартаменты',
+                                        } : {
+                                            text: 'Не важно',
+                                        },
+                                    },
+                                    except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Только апартаменты',
+                                        } : {
+                                            text: '...',
+                                        } }
                                 }),
-                            },
-                        }),
-                        labelsold: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 243,
-                            },
-                            style: {
-                                fontSize: () => 14,
-                            },
-                            dom: {
-                                innerText: () => 'Объявления снятые с продажи',
                             },
                         }),
                         sold: () => ({
@@ -23259,18 +23217,19 @@ var $;
                                 '#height': () => 32,
                                 '#ofsHor': '.tm',
                                 '#ofsVer': () => 265,
-                                fontSize: () => 13,
                                 options: () => ({
-                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая их' : {
-                                            text: 'Включая',
+                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
+                                            text: 'Все',
                                         } },
-                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Исключая их' : {
-                                            text: 'Исключая',
+                                    except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
+                                            text: 'Кроме',
                                         } },
-                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в них' : {
+                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                            text: 'Только снятые с продажи',
+                                        } : {
                                             text: 'Только',
                                         } },
-                                }),
+                                })
                             },
                         }),
                         button: () => ({
@@ -23484,7 +23443,7 @@ var $;
                                 '#ofsVer': () => 40,
                             },
                             style: {
-                                fontSize: () => 12,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Вы не раскрыли свое лицо! Ваши объявления публикуются в белой зоне Базы WinNER (в подвале выборки).',
@@ -23495,10 +23454,10 @@ var $;
                                 '#height': () => null,
                                 '#width': '<<@search.innerWidth',
                                 '#ofsHor': '.tm',
-                                '#ofsVer': () => 105,
+                                '#ofsVer': () => 125,
                             },
                             style: {
-                                fontSize: () => 12,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Для публикации в "зелёной зоне" вам необходимо раскрыть свое лицо. Публикация в "зеленой зоне" бесплатна для действующих клиентов.',
@@ -23509,10 +23468,10 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.tm',
-                                '#ofsVer': () => 180,
+                                '#ofsVer': () => 208,
                             },
                             style: {
-                                fontSize: () => 14,
+                                fontSize: () => 16,
                             },
                             dom: {
                                 innerText: () => 'Наименование',
@@ -23523,8 +23482,8 @@ var $;
                             prop: {
                                 '#height': () => 32,
                                 '#ofsVer': () => 201,
-                                '#width': '<<@search.innerWidth',
-                                '#ofsHor': '.tm',
+                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#ofsHor': '<.inputOfs',
                             },
                         }),
                         label4: () => ({
