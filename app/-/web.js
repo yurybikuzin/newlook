@@ -23168,56 +23168,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $$.$nl_settings_tabs = {
-            prop: {
-                options: $$.$me_atom2_prop_abstract(),
-                selected: $$.$me_atom2_prop_abstract(),
-                option_ids: $$.$me_atom2_prop_keys(['.options']),
-            },
-            elem: {
-                tab: $$.$me_atom2_prop({ keys: ['.option_ids'] }, ({ key: [id] }) => ({
-                    base: tab,
-                    prop: {
-                        id: () => id,
-                    },
-                    dom: {
-                        innerText: $$.$me_atom2_prop(['<.options'], ({ masters: [options] }) => $$.$me_option_caption_text(id, options).toUpperCase()),
-                    },
-                })),
-            },
-        };
-        const tab = {
-            node: 'span',
-            prop: {
-                isSelected: $$.$me_atom2_prop(['<.selected', '.id'], ({ masters: [selected, id] }) => selected == id),
-                '#cursor': $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 'default' : 'pointer'),
-            },
-            event: {
-                clickOrTap: () => {
-                    console.log($$.a('.id'), $$.a('<.selected'), $$.a.get('<.selected').name());
-                    $$.a('<.selected', $$.a('.id'));
-                    return true;
-                },
-            },
-            style: {
-                position: () => 'relative',
-                paddingLeft: () => 10,
-                paddingRight: () => 10,
-                paddingBottom: () => 5,
-                borderBottom: $$.$me_atom2_prop(['.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => `3px solid rgba(${theme == $$.$nl_theme.light ? '49,55,69' : '255,255,255'}, ${!isSelected ? .2 : theme == $$.$nl_theme.light ? 1 : .5})`),
-                fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(18 / 16)),
-                fontWeight: $$.$me_atom2_prop(['.isSelected'], ({ masters: [isSelected] }) => isSelected ? 500 : 400)
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//tabs.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
         $$.$nl_settings_workspace = {
             prop: {
                 '#width': '<.#width',
@@ -23245,32 +23195,22 @@ var $;
                 'overflow': () => 'hidden',
             },
             elem: {
-                tabs: () => ({
-                    base: $$.$nl_settings_tabs,
-                    prop: {
-                        '#width': () => null,
-                        options: '<.sections',
-                        selected: $$.$me_atom2_prop_bind('<.selected'),
-                        '#height': '/@app@menu@login.#height',
-                        '#ofsHor': () => 36,
-                        '#ofsVer': () => 16,
-                    },
-                }),
                 search: () => ({
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
                         '#ofsVer': () => 54,
-                        '#width': () => 520,
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => Math.floor((width - ofs * 4) / 3)),
                         '#height': () => 420,
-                        inputOfs: () => 169,
+                        inputOfs: () => 130,
+                        innerWidth: $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => Math.floor((width - ofs * 10) / 3)),
                     },
                     elem: {
                         title: () => ({
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': '.pm',
                             },
                             style: {
@@ -23285,11 +23225,11 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 100,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Глубина поиска',
@@ -23298,7 +23238,7 @@ var $;
                         deepdate: () => ({
                             base: $$.$nl_pickerdate,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
                                 '#ofsHor': '<.inputOfs',
                                 '#height': () => 32,
                                 '#ofsVer': () => 93,
@@ -23308,21 +23248,18 @@ var $;
                             base: $$.$nl_select,
                             prop: {
                                 '#height': () => 32,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.pm'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                '#ofsHor': '.pm',
+                                '#width': '<.innerWidth',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 157,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
                                             text: 'Можно',
-                                            width: 100,
                                         } },
                                     exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
                                             text: 'Кроме',
-                                            width: 100,
                                         } },
                                     only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
                                             text: 'Только',
-                                            width: 100,
                                         } },
                                 }),
                             },
@@ -23330,26 +23267,22 @@ var $;
                         apartment: () => ({
                             base: $$.$nl_select,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '.pm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                '#width': '<.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 221,
                                 options: () => ({
                                     no_matter: {
                                         caption: ({ isSelected }) => isSelected ? {
-                                            width: 250,
                                             text: 'Можно апартаменты',
                                         } : {
-                                            width: 90,
                                             text: 'Не важно',
                                         },
                                     },
                                     except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
                                     only: { caption: ({ isSelected }) => isSelected ? {
-                                            width: 210,
                                             text: 'Только апартаменты',
                                         } : {
-                                            width: 60,
                                             text: '...',
                                         } }
                                 }),
@@ -23358,23 +23291,20 @@ var $;
                         sold: () => ({
                             base: $$.$nl_select,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '.pm'], ({ masters: [width, ofs] }) => width - ofs - ofs),
+                                '#width': '<.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 285,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
-                                            width: 60,
                                             text: 'Все',
                                         } },
                                     except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
                                             text: 'Кроме',
                                         } },
                                     only: { caption: ({ isSelected }) => isSelected ? {
-                                            width: 250,
                                             text: 'Только снятые с продажи',
                                         } : {
-                                            width: 75,
                                             text: 'Только',
                                         } },
                                 })
@@ -23403,18 +23333,18 @@ var $;
                 personal: () => ({
                     base: $$.$nl_panel,
                     prop: {
-                        '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '.pm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
-                        '#width': () => 520,
+                        '#ofsVer': '<@search.#ofsVer',
+                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width + ofs + ofs2),
+                        '#width': '<@search.#width',
                         '#height': () => 420,
-                        inputOfs: () => 130,
+                        inputOfs: () => 100,
                     },
                     elem: {
                         title: () => ({
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': '.pm',
                             },
                             style: {
@@ -23429,7 +23359,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 100,
                             },
                             style: {
@@ -23442,7 +23372,7 @@ var $;
                         fio: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
                                 '#ofsVer': () => 93,
@@ -23452,7 +23382,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 164,
                             },
                             style: {
@@ -23465,7 +23395,7 @@ var $;
                         phone: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
                                 '#ofsVer': () => 157,
@@ -23475,7 +23405,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 228,
                             },
                             style: {
@@ -23488,7 +23418,7 @@ var $;
                         email: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
                                 '#ofsVer': () => 221,
@@ -23498,7 +23428,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 292,
                             },
                             style: {
@@ -23511,7 +23441,7 @@ var $;
                         password: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.pm', '<@edit_password.#width'], ({ masters: [width, inputOfs, ofs, epWidth] }) => width - ofs - inputOfs - epWidth - 16),
+                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em', '<@edit_password.#width'], ({ masters: [width, inputOfs, ofs, epWidth] }) => width - ofs - inputOfs - epWidth - 16),
                                 '#height': () => 32,
                                 '#ofsHor': '<.inputOfs',
                                 '#ofsVer': () => 285,
@@ -23522,7 +23452,7 @@ var $;
                                 '#width': () => null,
                                 '#height': () => 25,
                                 '#ofsVer': () => 292,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#alignHor': () => $$.$me_align.right,
                                 '#cursor': () => 'pointer',
                                 colorText: '/.colorLink',
@@ -23560,18 +23490,18 @@ var $;
                 profile: () => ({
                     base: $$.$nl_panel,
                     prop: {
-                        '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['<@personal.#height', '<@personal.#ofsVer', '.pm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
-                        '#width': () => 520,
+                        '#ofsVer': '<@search.#ofsVer',
+                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width * 2 + ofs + ofs2 * 2),
+                        '#width': '<@search.#width',
                         '#height': () => 420,
-                        inputOfs: () => 171,
+                        inputOfs: () => 160,
                     },
                     elem: {
                         title: () => ({
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': '.pm',
                             },
                             style: {
@@ -23585,12 +23515,12 @@ var $;
                         label1: () => ({
                             prop: {
                                 '#height': () => null,
-                                '#width': () => 456,
-                                '#ofsHor': '.pm',
+                                '#width': '<<@search.innerWidth',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 77,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Вы не раскрыли свое лицо! Ваши объявления публикуются в белой зоне Базы WinNER (в подвале выборки).',
@@ -23599,12 +23529,12 @@ var $;
                         label2: () => ({
                             prop: {
                                 '#height': () => null,
-                                '#width': () => 456,
-                                '#ofsHor': '.pm',
-                                '#ofsVer': () => 124,
+                                '#width': '<<@search.innerWidth',
+                                '#ofsHor': '.em',
+                                '#ofsVer': () => 140,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Для публикации в "зелёной зоне" вам необходимо раскрыть свое лицо. Публикация в "зеленой зоне" бесплатна для действующих клиентов.',
@@ -23614,7 +23544,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 228,
                             },
                             style: {
@@ -23629,7 +23559,7 @@ var $;
                             prop: {
                                 '#height': () => 32,
                                 '#ofsVer': () => 221,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
                                 '#ofsHor': '<.inputOfs',
                             },
                         }),
@@ -23637,7 +23567,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.pm',
+                                '#ofsHor': '.em',
                                 '#ofsVer': () => 292,
                             },
                             style: {
@@ -23652,7 +23582,7 @@ var $;
                             prop: {
                                 '#height': () => 32,
                                 '#ofsVer': () => 285,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.pm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
                                 '#ofsHor': '<.inputOfs',
                             },
                         }),
@@ -23676,6 +23606,92 @@ var $;
                         }),
                     },
                 }),
+                blacklist: () => ({
+                    base: $$.$nl_panel,
+                    prop: {
+                        '#ofsHor': '.em',
+                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                        '#height': $$.$me_atom2_prop(['<.#height', '<@search.#height', '<@search.#ofsVer', '.em'], ({ masters: [height, sh, so, ofs] }) => height - sh - so - ofs * 2),
+                    },
+                    elem: {
+                        title: () => ({
+                            prop: {
+                                '#height': () => null,
+                                '#width': () => null,
+                                '#ofsHor': '.em',
+                                '#ofsVer': '.pm',
+                            },
+                            style: {
+                                fontFamily: () => 'system-ui',
+                                fontSize: () => 18,
+                            },
+                            dom: {
+                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('blacklist', sections).toUpperCase()),
+                            },
+                        }),
+                        isOwnList: () => ({
+                            base: $$.$nl_checkbox,
+                            prop: {
+                                boxSize: () => 14,
+                                '#ofsVer': '.pm',
+                                '#ofsHor': () => 195,
+                                caption: () => 'Мой список',
+                                checked: () => true,
+                                fontSize: () => 16,
+                            },
+                        }),
+                        isAgencyList: () => ({
+                            base: $$.$nl_checkbox,
+                            prop: {
+                                boxSize: () => 14,
+                                '#ofsVer': '.pm',
+                                '#ofsHor': () => 343,
+                                caption: () => 'Остальной список нашего агентства',
+                                checked: () => false,
+                                fontSize: () => 16,
+                            },
+                        }),
+                        add_to_blacklist_button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 160,
+                                '#height': () => 40,
+                                '#alignVer': () => $$.$me_align.bottom,
+                                '#ofsVer': '.em',
+                                '#ofsHor': '.pm',
+                                caption: () => 'Добавить',
+                                target: () => '<',
+                                fontSize: () => 16,
+                                cmd: () => ({ some: 'thing' })
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                        delete_from_blacklist_button: () => ({
+                            base: $$.$nl_button,
+                            prop: {
+                                '#width': () => 160,
+                                '#height': () => 40,
+                                '#alignVer': () => $$.$me_align.bottom,
+                                '#ofsVer': '.em',
+                                '#ofsHor': $$.$me_atom2_prop(['<@add_to_blacklist_button.#width', '.pm'], ({ masters: [width, ofs] }) => width + ofs + 16),
+                                caption: () => 'Удалить',
+                                target: () => '<',
+                                fontSize: () => 16,
+                                cmd: () => ({ some: 'thing' })
+                            },
+                            event: {
+                                clickOrTap: () => {
+                                    return true;
+                                },
+                            }
+                        }),
+                    }
+                })
             },
         };
     })($$ = $.$$ || ($.$$ = {}));
