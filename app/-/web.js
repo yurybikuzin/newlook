@@ -4876,6 +4876,7 @@ var $;
             $$.$me_atom2_entity.root().props({
                 em: () => 16,
                 pm: () => 32,
+                tm: () => 10,
                 colorText: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#313745' : 'white'),
                 fontFamily: () => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 fontWeight: () => 400,
@@ -4895,7 +4896,7 @@ var $;
                     '#2b87db' :
                     '#53adff'),
             });
-            $$.$me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_ec.prop_default), { em: '/.em', pm: '/.pm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
+            $$.$me_atom2_ec.prop_default = Object.assign(Object.assign({}, $$.$me_atom2_ec.prop_default), { em: '/.em', pm: '/.pm', tm: '/.tm', colorText: '/.colorText', fontFamily: '/.fontFamily', fontWeight: '/.fontWeight', fontSize: '.em', theme: '/.theme' });
             $$.$me_atom2_elem.style_default = Object.assign(Object.assign({}, $$.$me_atom2_elem.style_default), { color: '.colorText', fontFamily: '.fontFamily', fontWeight: '.fontWeight', fontSize: '.fontSize' });
         }
         $$.$nl_defaults_init = $nl_defaults_init;
@@ -23203,18 +23204,18 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
-                        '#ofsVer': '.em',
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => Math.floor((width - ofs * 4) / 3)),
-                        '#height': () => 420,
+                        '#ofsVer': '.tm',
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm'], ({ masters: [width, ofs, ofs2] }) => Math.round((width - ofs - ofs2 * 3) / 3)),
+                        '#height': () => 410,
                         inputOfs: () => 130,
-                        innerWidth: $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => Math.floor((width - ofs * 10) / 3)),
+                        innerWidth: $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => Math.round((width - ofs * 10) / 3 - 1)),
                     },
                     elem: {
                         title: () => ({
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': '.em',
                             },
                             style: {
@@ -23229,7 +23230,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 50,
                             },
                             style: {
@@ -23243,7 +23244,7 @@ var $;
                             base: $$.$nl_pickerdate,
                             prop: {
                                 '#width': '<.innerWidth',
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#height': () => 32,
                                 '#ofsVer': () => 73,
                             },
@@ -23253,7 +23254,7 @@ var $;
                             prop: {
                                 '#height': () => 32,
                                 '#width': '<.innerWidth',
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 137,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
@@ -23273,7 +23274,7 @@ var $;
                             prop: {
                                 '#width': '<.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 201,
                                 options: () => ({
                                     no_matter: {
@@ -23297,7 +23298,7 @@ var $;
                             prop: {
                                 '#width': '<.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 265,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
@@ -23338,10 +23339,10 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsVer': '<@search.#ofsVer',
-                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width + ofs + ofs2),
+                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.tm'], ({ masters: [width, ofs, ofs2] }) => width + ofs + ofs2),
                         '#width': '<@search.#width',
-                        '#height': () => 420,
-                        inputOfs: () => 100,
+                        '#height': '<@search.#height',
+                        inputOfs: () => 0,
                     },
                     elem: {
                         title: () => ({
@@ -23363,11 +23364,11 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': () => 80,
+                                '#ofsHor': '.tm',
+                                '#ofsVer': () => 50,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'ФИО',
@@ -23376,9 +23377,9 @@ var $;
                         fio: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#width': '<<@search.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 73,
                             },
                         }),
@@ -23386,11 +23387,11 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': () => 144,
+                                '#ofsHor': '.tm',
+                                '#ofsVer': () => 116,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Телефон',
@@ -23399,9 +23400,9 @@ var $;
                         phone: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#width': '<<@search.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 137,
                             },
                         }),
@@ -23409,11 +23410,11 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': () => 208,
+                                '#ofsHor': '.tm',
+                                '#ofsVer': () => 180,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Е-mail',
@@ -23422,9 +23423,9 @@ var $;
                         email: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#width': '<<@search.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 201,
                             },
                         }),
@@ -23432,11 +23433,11 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': () => 272,
+                                '#ofsHor': '.tm',
+                                '#ofsVer': () => 243,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Пароль',
@@ -23445,9 +23446,9 @@ var $;
                         password: () => ({
                             base: $$.$nl_input,
                             prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.em'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                '#width': '<<@search.innerWidth',
                                 '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 265,
                             },
                         }),
@@ -23496,17 +23497,17 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsVer': '<@search.#ofsVer',
-                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.em'], ({ masters: [width, ofs, ofs2] }) => width * 2 + ofs + ofs2 * 2),
+                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.tm'], ({ masters: [width, ofs, ofs2] }) => width * 2 + ofs + ofs2 * 2),
                         '#width': '<@search.#width',
-                        '#height': () => 420,
-                        inputOfs: () => 160,
+                        '#height': '<@search.#height',
+                        inputOfs: () => 130,
                     },
                     elem: {
                         title: () => ({
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': '.em',
                             },
                             style: {
@@ -23521,7 +23522,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': '<<@search.innerWidth',
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 40,
                             },
                             style: {
@@ -23535,7 +23536,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': '<<@search.innerWidth',
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 125,
                             },
                             style: {
@@ -23549,7 +23550,7 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
+                                '#ofsHor': '.tm',
                                 '#ofsVer': () => 208,
                             },
                             style: {
@@ -23564,7 +23565,7 @@ var $;
                             prop: {
                                 '#height': () => 32,
                                 '#ofsVer': () => 201,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
                                 '#ofsHor': '<.inputOfs',
                             },
                         }),
@@ -23572,11 +23573,11 @@ var $;
                             prop: {
                                 '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': () => 272,
+                                '#ofsHor': '.tm',
+                                '#ofsVer': () => 243,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Ссылка на сайт',
@@ -23587,8 +23588,8 @@ var $;
                             prop: {
                                 '#height': () => 32,
                                 '#ofsVer': () => 265,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.em', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
-                                '#ofsHor': '<.inputOfs',
+                                '#width': '<<@search.innerWidth',
+                                '#ofsHor': '.tm',
                             },
                         }),
                         button: () => ({
@@ -23615,9 +23616,9 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '.em'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@search.#height', '<@search.#ofsVer', '.em'], ({ masters: [height, sh, so, ofs] }) => height - sh - so - ofs * 2),
+                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '.tm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm'], ({ masters: [width, ofs, ofs2] }) => width - ofs - ofs2),
+                        '#height': $$.$me_atom2_prop(['<.#height', '<@search.#height', '<@search.#ofsVer', '.tm'], ({ masters: [height, sh, so, ofs] }) => height - sh - so - ofs * 2),
                     },
                     elem: {
                         title: () => ({
@@ -25486,7 +25487,7 @@ var $;
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
                 '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                    to: isShrinked ? 64 : 222,
+                    to: isShrinked ? 64 : 180,
                     path_active: $$.a.get('.isShrinked_animActive').path,
                 })),
                 isShrinked_animActive: $$.$me_atom2_prop([], () => false),
@@ -25551,7 +25552,7 @@ var $;
                         '#width': () => 28,
                         '#height': () => 28,
                         '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked', '/.newmenu'], ({ masters: [isShrinked, newmenu] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? ((newmenu ? 6 : 18)) : 16
+                            to: isShrinked ? ((newmenu ? 6 : 8)) : 5
                         })),
                         '#alignVer': () => $$.$me_align.center,
                     },
@@ -25576,7 +25577,7 @@ var $;
                 text: () => ({
                     prop: {
                         '#width': () => null,
-                        '#ofsHor': () => 61,
+                        '#ofsHor': () => 40,
                         '#height': () => null,
                         '#alignVer': () => $$.$me_align.center,
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
@@ -25626,7 +25627,7 @@ var $;
                         '#width': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 26 : 20),
                         '#height': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 25 : 21),
                         '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? 18 : 16
+                            to: isShrinked ? 8 : 5
                         })),
                         '#alignVer': () => $$.$me_align.center,
                         color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 'white' : '#313745'),
@@ -25638,7 +25639,7 @@ var $;
                 text: () => ({
                     prop: {
                         '#width': () => null,
-                        '#ofsHor': () => 61,
+                        '#ofsHor': () => 40,
                         '#height': () => null,
                         '#alignVer': () => $$.$me_align.center,
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
@@ -25778,7 +25779,7 @@ var $;
                                 '#width': () => 28,
                                 '#height': () => 28,
                                 '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                                    to: isShrinked ? 18 : 16
+                                    to: isShrinked ? 8 : 5
                                 })),
                                 '#alignVer': () => $$.$me_align.center,
                             },
@@ -25806,7 +25807,7 @@ var $;
                             prop: {
                                 '#alignVer': () => $$.$me_align.center,
                                 '#height': () => null,
-                                '#ofsHor': () => 61,
+                                '#ofsHor': () => 40,
                                 '#width': () => null,
                                 '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                             },
