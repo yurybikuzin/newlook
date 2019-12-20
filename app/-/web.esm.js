@@ -11268,6 +11268,7 @@ var $;
                                                 innerHTML: $$.$me_atom2_prop(['/@app.card_value', '<.isMinimized', '<.#height'], ({ masters: [card, isMin, h] }) => {
                                                     let result = '';
                                                     if (card) {
+                                                        console.log('card', card);
                                                         const lat = (card.location.lat) ? card.location.lat : 0;
                                                         const lon = (card.location.lon) ? card.location.lon : 0;
                                                         const addr = $$.$nl_formatter_address(card);
@@ -23197,7 +23198,6 @@ var $;
                             else {
                                 res = Math.round((width - ofs - ofs2 * 3) / 3);
                             }
-                            console.log('eeee', res, width, sz1, sz2, mw);
                             return res;
                         }),
                         '#height': () => 410,
@@ -23360,7 +23360,6 @@ var $;
                             else {
                                 res = sofs;
                             }
-                            console.log('ofsver', res);
                             return res;
                         }),
                         '#height': '<@search.#height',
@@ -23530,7 +23529,6 @@ var $;
                             else {
                                 res = sofs;
                             }
-                            console.log('ofsver3', res);
                             return res;
                         }),
                         '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [swidth, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
@@ -23554,7 +23552,6 @@ var $;
                             else {
                                 res = Math.round((width - ofs - ofs2 * 3) / 3);
                             }
-                            console.log('eeee', res, width, sz1, sz2, mw);
                             return res;
                         }),
                         inputOfs: () => 150,
