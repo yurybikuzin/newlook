@@ -13700,10 +13700,10 @@ var $;
             prop: {
                 value: () => 6,
                 theme: '/.theme',
-                input_width: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => value == Infinity ? 150 : 100),
+                input_width: $$.$me_atom2_prop(['.value'], ({ masters: [value] }) => value == Infinity ? 150 : 90),
                 buttonDropdown_width: () => 40,
-                text_margin: () => 16,
-                icon_size: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(28 / 32)),
+                text_margin: () => 3,
+                icon_size: $$.$me_atom2_prop(['.#height'], $$.$me_atom2_prop_compute_fn_mul(28 / 40)),
                 icon_filter: $$.$me_atom2_prop(['.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ?
                     'invert(65%) sepia(17%) saturate(1025%) hue-rotate(158deg) brightness(84%) contrast(87%)' :
                     'invert(46%) sepia(87%) saturate(371%) hue-rotate(162deg) brightness(93%) contrast(84%)'),
@@ -13724,6 +13724,7 @@ var $;
                     },
                     prop: {
                         '#width': '<.input_width',
+                        fontSize: () => 14,
                     },
                     dom: {
                         value: $$.$me_atom2_prop(['<.value', '.isFocused'], ({ masters: [value, isFocused] }) => {
@@ -13798,7 +13799,7 @@ var $;
                                     '#align': () => $$.$me_align.center,
                                 },
                                 style: {
-                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 16)),
+                                    fontSize: $$.$me_atom2_prop(['.em'], $$.$me_atom2_prop_compute_fn_mul(14 / 20)),
                                 },
                                 dom: {
                                     innerText: $$.$me_atom2_prop(['<<.value'], ({ masters: [value] }) => {
@@ -23112,6 +23113,8 @@ var $;
                     default: () => $$.a('.section_ids')[0],
                     valid: (val) => val == $$.a('.sections')[val] ? val : null,
                 }),
+                columnOneMaxSize: () => 1024,
+                columnTwoMaxSize: () => 1300,
             },
             style: {
                 'overflow': () => 'hidden',
@@ -23122,7 +23125,20 @@ var $;
                     prop: {
                         '#ofsHor': '.em',
                         '#ofsVer': '.tm',
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm'], ({ masters: [width, ofs, ofs2] }) => Math.round((width - ofs - ofs2 * 3) / 3)),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [width, ofs, ofs2, sz1, sz2, mw] }) => {
+                            let res = 0;
+                            if (width < sz1 - mw) {
+                                res = width - ofs - ofs2;
+                            }
+                            else if (width < sz2 - mw) {
+                                res = Math.round((width - ofs - ofs2 * 2) / 2);
+                            }
+                            else {
+                                res = Math.round((width - ofs - ofs2 * 3) / 3);
+                            }
+                            console.log('eeee', res, width, sz1, sz2, mw);
+                            return res;
+                        }),
                         '#height': () => 410,
                         inputOfs: () => 130,
                         innerWidth: $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => Math.round((width - ofs * 10) / 3 - 1)),
@@ -23164,6 +23180,7 @@ var $;
                                 '#ofsHor': '.tm',
                                 '#height': () => 32,
                                 '#ofsVer': () => 73,
+                                fontSize: () => 13,
                             },
                         }),
                         newbld: () => ({
@@ -23173,6 +23190,7 @@ var $;
                                 '#width': '<.innerWidth',
                                 '#ofsHor': '.tm',
                                 '#ofsVer': () => 137,
+                                fontSize: () => 14,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
                                             text: 'Можно',
@@ -23193,9 +23211,11 @@ var $;
                                 '#height': () => 32,
                                 '#ofsHor': '.tm',
                                 '#ofsVer': () => 201,
+                                fontSize: () => 14,
                                 options: () => ({
                                     no_matter: {
                                         caption: ({ isSelected }) => isSelected ? {
+                                            width: 200,
                                             text: 'Можно апартаменты',
                                         } : {
                                             text: 'Не важно',
@@ -23205,7 +23225,7 @@ var $;
                                     only: { caption: ({ isSelected }) => isSelected ? {
                                             text: 'Только апартаменты',
                                         } : {
-                                            text: '...',
+                                            text: 'Только',
                                         } }
                                 }),
                             },
@@ -23217,6 +23237,7 @@ var $;
                                 '#height': () => 32,
                                 '#ofsHor': '.tm',
                                 '#ofsVer': () => 265,
+                                fontSize: () => 14,
                                 options: () => ({
                                     include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
                                             text: 'Все',
@@ -23255,9 +23276,34 @@ var $;
                 personal: () => ({
                     base: $$.$nl_panel,
                     prop: {
-                        '#ofsVer': '<@search.#ofsVer',
-                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.tm'], ({ masters: [width, ofs, ofs2] }) => width + ofs + ofs2),
                         '#width': '<@search.#width',
+                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [swidth, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                            let res = 0;
+                            if (width < sz1 - mw) {
+                                res = sofs;
+                            }
+                            else if (width < sz2 - mw) {
+                                res = sofs + swidth + ofs2;
+                            }
+                            else {
+                                res = sofs + swidth + ofs2;
+                            }
+                            return res;
+                        }),
+                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [sheight, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                            let res = 0;
+                            if (width < sz1 - mw) {
+                                res = sofs + sheight + ofs2;
+                            }
+                            else if (width < sz2 - mw) {
+                                res = sofs;
+                            }
+                            else {
+                                res = sofs;
+                            }
+                            console.log('ofsver', res);
+                            return res;
+                        }),
                         '#height': '<@search.#height',
                         inputOfs: () => 0,
                     },
@@ -23413,10 +23459,45 @@ var $;
                 profile: () => ({
                     base: $$.$nl_panel,
                     prop: {
-                        '#ofsVer': '<@search.#ofsVer',
-                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '.tm'], ({ masters: [width, ofs, ofs2] }) => width * 2 + ofs + ofs2 * 2),
-                        '#width': '<@search.#width',
                         '#height': '<@search.#height',
+                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [sheight, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                            let res = 0;
+                            if (width < sz1 - mw) {
+                                res = sofs + sheight * 2 + ofs2 * 2;
+                            }
+                            else if (width < sz2 - mw) {
+                                res = sofs + sheight + ofs2;
+                            }
+                            else {
+                                res = sofs;
+                            }
+                            console.log('ofsver3', res);
+                            return res;
+                        }),
+                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [swidth, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                            let res = 0;
+                            if (width < sz1 - mw) {
+                                res = sofs;
+                            }
+                            else if (width < sz2 - mw) {
+                                res = sofs;
+                            }
+                            else {
+                                res = swidth * 2 + sofs + ofs2 * 2;
+                            }
+                            return res;
+                        }),
+                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [width, ofs, ofs2, sz1, sz2, mw] }) => {
+                            let res = 0;
+                            if (width < sz2 - mw) {
+                                res = width - ofs - ofs2;
+                            }
+                            else {
+                                res = Math.round((width - ofs - ofs2 * 3) / 3);
+                            }
+                            console.log('eeee', res, width, sz1, sz2, mw);
+                            return res;
+                        }),
                         inputOfs: () => 130,
                     },
                     elem: {
@@ -23443,7 +23524,7 @@ var $;
                                 '#ofsVer': () => 40,
                             },
                             style: {
-                                fontSize: () => 14,
+                                fontSize: () => 12,
                             },
                             dom: {
                                 innerText: () => 'Вы не раскрыли свое лицо! Ваши объявления публикуются в белой зоне Базы WinNER (в подвале выборки).',
@@ -23454,10 +23535,10 @@ var $;
                                 '#height': () => null,
                                 '#width': '<<@search.innerWidth',
                                 '#ofsHor': '.tm',
-                                '#ofsVer': () => 125,
+                                '#ofsVer': () => 105,
                             },
                             style: {
-                                fontSize: () => 14,
+                                fontSize: () => 12,
                             },
                             dom: {
                                 innerText: () => 'Для публикации в "зелёной зоне" вам необходимо раскрыть свое лицо. Публикация в "зеленой зоне" бесплатна для действующих клиентов.',
@@ -23468,10 +23549,10 @@ var $;
                                 '#height': () => null,
                                 '#width': () => null,
                                 '#ofsHor': '.tm',
-                                '#ofsVer': () => 208,
+                                '#ofsVer': () => 180,
                             },
                             style: {
-                                fontSize: () => 16,
+                                fontSize: () => 14,
                             },
                             dom: {
                                 innerText: () => 'Наименование',
@@ -23482,8 +23563,8 @@ var $;
                             prop: {
                                 '#height': () => 32,
                                 '#ofsVer': () => 201,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
-                                '#ofsHor': '<.inputOfs',
+                                '#width': '<<@search.innerWidth',
+                                '#ofsHor': '.tm',
                             },
                         }),
                         label4: () => ({
@@ -23533,9 +23614,9 @@ var $;
                     base: $$.$nl_panel,
                     prop: {
                         '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '.tm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
+                        '#ofsVer': $$.$me_atom2_prop(['<@profile.#height', '<@profile.#ofsVer', '.tm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
                         '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm'], ({ masters: [width, ofs, ofs2] }) => width - ofs - ofs2),
-                        '#height': $$.$me_atom2_prop(['<.#height', '<@search.#height', '<@search.#ofsVer', '.tm'], ({ masters: [height, sh, so, ofs] }) => height - sh - so - ofs * 2),
+                        '#height': () => 400
                     },
                     elem: {
                         title: () => ({
