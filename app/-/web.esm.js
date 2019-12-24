@@ -23144,6 +23144,7 @@ var $;
                 clickOrTap: () => {
                     console.log($$.a('.id'), $$.a('<.selected'), $$.a.get('<.selected').name());
                     $$.a('<.selected', $$.a('.id'));
+                    $$.a.dispatch('<<<@wrapper@wrapper2', 'tabclick', $$.a('.id'));
                     return true;
                 },
             },
@@ -23194,655 +23195,674 @@ var $;
             style: {
                 'overflow': () => 'hidden',
             },
-            dispatch(dispatch_name, dispatch_arg) {
-                if (dispatch_name == 'wheel') {
-                    const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
-                    if ($$.a.dispatch('', 'isInVisible', { clientX, clientY, ret: false }).ret) {
-                        $$.a.update('.#ofsVer', val => {
-                            const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
-                            return result;
-                        });
-                        dispatch_arg.ret = true;
-                    }
-                    return true;
-                }
-                else if (dispatch_name == 'ofsVer') {
-                    const delta_v = $$.a('.height_visible') - $$.a('.height_content');
-                    const { val, deltaY } = dispatch_arg;
-                    dispatch_arg.ret = deltaY < 0 ? Math.max(val + deltaY, delta_v) : Math.min(val + deltaY, 0);
-                    return true;
-                }
-                else if (dispatch_name == 'isInVisible') {
-                    const { clientX, clientY } = dispatch_arg;
-                    const clientRect = $$.a('.#clientRect');
-                    const rect = {
-                        left: clientRect.left,
-                        top: clientRect.top,
-                        right: clientRect.right,
-                        bottom: clientRect.top + $$.a('.height_visible'),
-                    };
-                    dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect);
-                    return true;
-                }
-                return false;
-            },
-            event: {
-                wheel: p => {
-                    const result = $$.a.dispatch('', 'wheel', {
-                        clientX: p.event.clientX,
-                        clientY: p.event.clientY,
-                        deltaY: 0 - p.event.deltaY,
-                        deltaX: p.event.deltaX,
-                        ret: false,
-                    }).ret;
-                    return result;
-                },
-                wheelTouch: p => {
-                    const result = $$.a.dispatch('', 'wheel', {
-                        clientX: p.event.start.touches[0].clientX,
-                        clientY: p.event.start.touches[0].clientY,
-                        deltaY: 0 - p.event.deltaY,
-                        deltaX: p.event.deltaX,
-                        ret: false,
-                    }).ret;
-                    return result;
-                },
-                pinch: p => {
-                    if ($$.a.dispatch('', 'isInVisible', {
-                        clientX: p.event.start.touches[0].clientX,
-                        clientY: p.event.start.touches[0].clientY,
-                        ret: false
-                    }).ret ||
-                        $$.a.dispatch('', 'isInVisible', {
-                            clientX: p.event.start.touches[1].clientX,
-                            clientY: p.event.start.touches[1].clientY,
-                            ret: false
-                        }).ret ||
-                        false)
-                        return true;
-                    return false;
-                },
-            },
             elem: {
-                tabs: () => ({
-                    base: $$.$nl_settings_tabs,
+                wrappertabs: () => ({
                     prop: {
-                        '#width': () => null,
-                        options: '<.sections',
-                        selected: $$.$me_atom2_prop_bind('<.selected'),
                         '#height': '/@app@menu@login.#height',
-                        '#ofsHor': () => 36,
-                        '#ofsVer': () => 16,
-                    },
-                }),
-                search: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsHor': '.em',
-                        '#ofsVer': () => 54,
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [width, ofs, ofs2, sz1, sz2, mw] }) => {
-                            let res = 0;
-                            if (width < sz1 - mw) {
-                                res = width - ofs - ofs2;
-                            }
-                            else if (width < sz2 - mw) {
-                                res = Math.round((width - ofs - ofs2 * 2) / 2);
-                            }
-                            else {
-                                res = Math.round((width - ofs - ofs2 * 3) / 3);
-                            }
-                            return res;
-                        }),
-                        '#height': () => 410,
-                        inputOfs: () => 140,
+                        '#width': '<.#width',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
                     },
                     elem: {
-                        title: () => ({
+                        tabs: () => ({
+                            base: $$.$nl_settings_tabs,
                             prop: {
-                                '#height': () => null,
                                 '#width': () => null,
-                                '#ofsHor': '.tm',
+                                '#height': () => null,
+                                options: '<<.sections',
+                                selected: $$.$me_atom2_prop_bind('<<.selected'),
+                                '#ofsHor': () => 24,
                                 '#ofsVer': '.em',
                             },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('search', sections).toUpperCase()),
-                            },
                         }),
-                        label1: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 80,
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            },
-                            dom: {
-                                innerText: () => 'Глубина поиска',
-                            },
-                        }),
-                        deepdate: () => ({
-                            base: $$.$nl_pickerdate,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
-                                '#ofsHor': '<.inputOfs',
-                                '#height': () => 32,
-                                '#ofsVer': () => 73,
-                            },
-                        }),
-                        newbld: () => ({
-                            base: $$.$nl_select,
-                            prop: {
-                                '#height': () => 32,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 137,
-                                fontSize: () => 14,
-                                options: () => ({
-                                    include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
-                                            text: 'Можно',
-                                        } },
-                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
-                                            text: 'Кроме',
-                                        } },
-                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
-                                            text: 'Только',
-                                        } },
-                                }),
-                            },
-                        }),
-                        apartment: () => ({
-                            base: $$.$nl_select,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                '#height': () => 32,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 201,
-                                fontSize: () => 14,
-                                options: () => ({
-                                    no_matter: {
-                                        caption: ({ isSelected }) => isSelected ? {
-                                            width: 200,
-                                            text: 'Можно апартаменты',
-                                        } : {
-                                            text: 'Не важно',
-                                        },
-                                    },
-                                    except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
-                                    only: { caption: ({ isSelected }) => isSelected ? {
-                                            text: 'Только апартаменты',
-                                        } : {
-                                            text: 'Только',
-                                        } }
-                                }),
-                            },
-                        }),
-                        sold: () => ({
-                            base: $$.$nl_select,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                '#height': () => 32,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 265,
-                                fontSize: () => 14,
-                                options: () => ({
-                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
-                                            text: 'Все',
-                                        } },
-                                    except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
-                                            text: 'Кроме',
-                                        } },
-                                    only: { caption: ({ isSelected }) => isSelected ? {
-                                            text: 'Только снятые с продажи',
-                                        } : {
-                                            text: 'Только',
-                                        } },
-                                })
-                            },
-                        }),
-                        button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 200,
-                                '#height': () => 40,
-                                '#ofsVer': () => 349,
-                                '#alignHor': () => $$.$me_align.center,
-                                caption: () => 'Сохранить',
-                                target: () => '<',
-                                fontSize: () => 16,
-                                cmd: () => ({ some: 'thing' })
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            }
-                        }),
-                    },
+                    }
                 }),
-                personal: () => ({
-                    base: $$.$nl_panel,
+                wrapper: () => ({
                     prop: {
-                        '#width': '<@search.#width',
-                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [swidth, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
-                            let res = 0;
-                            if (width < sz1 - mw) {
-                                res = sofs;
-                            }
-                            else if (width < sz2 - mw) {
-                                res = sofs + swidth + ofs2;
-                            }
-                            else {
-                                res = sofs + swidth + ofs2;
-                            }
-                            return res;
-                        }),
-                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [sheight, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
-                            let res = 0;
-                            if (width < sz1 - mw) {
-                                res = sofs + sheight + ofs2;
-                            }
-                            else if (width < sz2 - mw) {
-                                res = sofs;
-                            }
-                            else {
-                                res = sofs;
-                            }
-                            return res;
-                        }),
-                        '#height': '<@search.#height',
-                        inputOfs: () => 110,
+                        '#height': $$.$me_atom2_prop(['<.#height', '<@wrappertabs.#height'], ({ masters: [h1, h2] }) => h1 - h2),
+                        '#ofsVer': '<@wrappertabs.#height',
+                        '#width': '<.#width',
+                        '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 2),
+                    },
+                    style: {
+                        'overflow': () => 'hidden',
                     },
                     elem: {
-                        title: () => ({
+                        wrapper2: () => ({
                             prop: {
+                                '#width': '<.#width',
                                 '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('personal', sections).toUpperCase()),
-                            },
-                        }),
-                        label1: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 80,
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            },
-                            dom: {
-                                innerText: () => 'ФИО',
-                            },
-                        }),
-                        fio: () => ({
-                            base: $$.$nl_input,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
-                                '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 73,
-                            },
-                        }),
-                        label2: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 144,
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            },
-                            dom: {
-                                innerText: () => 'Телефон',
-                            },
-                        }),
-                        phone: () => ({
-                            base: $$.$nl_input,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
-                                '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 137,
-                            },
-                        }),
-                        label3: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 208,
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            },
-                            dom: {
-                                innerText: () => 'Е-mail',
-                            },
-                        }),
-                        email: () => ({
-                            base: $$.$nl_input,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
-                                '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 201,
-                            },
-                        }),
-                        label4: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 272,
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            },
-                            dom: {
-                                innerText: () => 'Пароль',
-                            },
-                        }),
-                        password: () => ({
-                            base: $$.$nl_input,
-                            prop: {
-                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
-                                '#height': () => 32,
-                                '#ofsHor': '<.inputOfs',
-                                '#ofsVer': () => 265,
-                            },
-                        }),
-                        edit_password: () => ({
-                            prop: {
-                                '#width': () => null,
-                                '#height': () => 25,
-                                '#ofsVer': () => 300,
-                                '#ofsHor': '.em',
-                                '#alignHor': () => $$.$me_align.right,
-                                '#cursor': () => 'pointer',
-                                colorText: '/.colorLink',
                                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                '#ofsVer': () => 0,
+                                horOffset: () => 0,
+                                grayColor: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#979aa1' : '#f1f1f1'),
+                                grayColor2: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? '#6a6c74' : '#c1c1c1'),
+                                height_visible: '<.#height',
+                                clickableBottom: () => 0,
+                                clickableTop: () => 0,
+                                curtainHeight: () => 0,
+                                height_content: () => 0,
                             },
-                            dom: {
-                                innerText: () => 'редактировать'
+                            style: {
+                                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
+                            },
+                            dispatch(dispatch_name, dispatch_arg) {
+                                if (dispatch_name == 'tabclick') {
+                                    console.log('tab id ', dispatch_arg);
+                                    if (dispatch_arg == 'search') {
+                                        $$.a.update('.#ofsVer', val => 10 - $$.a('@search.#ofsVer'));
+                                    }
+                                    else if (dispatch_arg == 'personal') {
+                                        $$.a.update('.#ofsVer', val => 10 - $$.a('@personal.#ofsVer'));
+                                    }
+                                    else if (dispatch_arg == 'profile') {
+                                        $$.a.update('.#ofsVer', val => 10 - $$.a('@profile.#ofsVer'));
+                                    }
+                                    else if (dispatch_arg == 'blacklist') {
+                                        $$.a.update('.#ofsVer', val => 10 - $$.a('@blacklist.#ofsVer'));
+                                    }
+                                    return true;
+                                }
+                                else if (dispatch_name == 'wheel') {
+                                    const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
+                                    if ($$.a.dispatch('', 'isInVisible', { clientX, clientY, ret: false }).ret) {
+                                        console.log(41, deltaY, dispatch_arg);
+                                        $$.a.update('.#ofsVer', val => {
+                                            const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
+                                            console.warn(43, { result });
+                                            return result;
+                                        });
+                                        dispatch_arg.ret = true;
+                                    }
+                                    return true;
+                                }
+                                else if (dispatch_name == 'ofsVer') {
+                                    const delta_v = $$.a('.height_visible') - $$.a('.height_content');
+                                    const { val, deltaY } = dispatch_arg;
+                                    dispatch_arg.ret = deltaY < 0 ? Math.max(val + deltaY, delta_v) : Math.min(val + deltaY, 0);
+                                    return true;
+                                }
+                                else if (dispatch_name == 'isInVisible') {
+                                    const { clientX, clientY } = dispatch_arg;
+                                    const clientRect = $$.a('.#clientRect');
+                                    const rect = {
+                                        left: clientRect.left,
+                                        top: clientRect.top,
+                                        right: clientRect.right,
+                                        bottom: clientRect.top + $$.a('.height_visible'),
+                                    };
+                                    dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect);
+                                    console.log(96, dispatch_arg.ret, { clientX, clientY }, clientRect, $$.a('.height_visible'));
+                                    return true;
+                                }
+                                return false;
                             },
                             event: {
-                                clickOrTap: () => {
-                                    $$.$nl_change_password();
-                                    return true;
+                                wheel: p => {
+                                    const result = $$.a.dispatch('', 'wheel', {
+                                        clientX: p.event.clientX,
+                                        clientY: p.event.clientY,
+                                        deltaY: 0 - p.event.deltaY,
+                                        deltaX: p.event.deltaX,
+                                        ret: false,
+                                    }).ret;
+                                    return result;
+                                },
+                                wheelTouch: p => {
+                                    const result = $$.a.dispatch('', 'wheel', {
+                                        clientX: p.event.start.touches[0].clientX,
+                                        clientY: p.event.start.touches[0].clientY,
+                                        deltaY: 0 - p.event.deltaY,
+                                        deltaX: p.event.deltaX,
+                                        ret: false,
+                                    }).ret;
+                                    return result;
                                 },
                             },
-                        }),
-                        button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 200,
-                                '#height': () => 40,
-                                '#ofsVer': () => 349,
-                                '#alignHor': () => $$.$me_align.center,
-                                caption: () => 'Сохранить',
-                                target: () => '<',
-                                fontSize: () => 16,
-                                cmd: () => ({ some: 'thing' })
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
+                            elem: {
+                                search: () => ({
+                                    base: $$.$nl_panel,
+                                    prop: {
+                                        '#ofsHor': '.em',
+                                        '#ofsVer': '.tm',
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm', '<<<.columnOneMaxSize', '<<<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [width, ofs, ofs2, sz1, sz2, mw] }) => {
+                                            let res = 0;
+                                            if (width < sz1 - mw) {
+                                                res = width - ofs - ofs2;
+                                            }
+                                            else if (width < sz2 - mw) {
+                                                res = Math.round((width - ofs - ofs2 * 2) / 2);
+                                            }
+                                            else {
+                                                res = Math.round((width - ofs - ofs2 * 3) / 3);
+                                            }
+                                            return res;
+                                        }),
+                                        '#height': () => 410,
+                                        inputOfs: () => 140,
+                                    },
+                                    elem: {
+                                        title: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': '.em',
+                                            },
+                                            style: {
+                                                fontFamily: () => 'system-ui',
+                                                fontSize: () => 18,
+                                            },
+                                            dom: {
+                                                innerText: $$.$me_atom2_prop(['<<<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('search', sections).toUpperCase()),
+                                            },
+                                        }),
+                                        label1: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 80,
+                                            },
+                                            style: {
+                                                fontSize: () => 16,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Глубина поиска',
+                                            },
+                                        }),
+                                        deepdate: () => ({
+                                            base: $$.$nl_pickerdate,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                                '#ofsHor': '<.inputOfs',
+                                                '#height': () => 32,
+                                                '#ofsVer': () => 73,
+                                            },
+                                        }),
+                                        newbld: () => ({
+                                            base: $$.$nl_select,
+                                            prop: {
+                                                '#height': () => 32,
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 137,
+                                                fontSize: () => 14,
+                                                options: () => ({
+                                                    include: { caption: ({ isSelected }) => isSelected ? 'Можно в новостройке' : {
+                                                            text: 'Можно',
+                                                        } },
+                                                    exclude: { caption: ({ isSelected }) => isSelected ? 'Кроме новостроек' : {
+                                                            text: 'Кроме',
+                                                        } },
+                                                    only: { caption: ({ isSelected }) => isSelected ? 'Только в новостройке' : {
+                                                            text: 'Только',
+                                                        } },
+                                                }),
+                                            },
+                                        }),
+                                        apartment: () => ({
+                                            base: $$.$nl_select,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                                '#height': () => 32,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 201,
+                                                fontSize: () => 14,
+                                                options: () => ({
+                                                    no_matter: {
+                                                        caption: ({ isSelected }) => isSelected ? {
+                                                            width: 200,
+                                                            text: 'Можно апартаменты',
+                                                        } : {
+                                                            text: 'Не важно',
+                                                        },
+                                                    },
+                                                    except: { caption: ({ isSelected }) => isSelected ? 'Кроме апартаментов' : 'Кроме' },
+                                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                                            text: 'Только апартаменты',
+                                                        } : {
+                                                            text: 'Только',
+                                                        } }
+                                                }),
+                                            },
+                                        }),
+                                        sold: () => ({
+                                            base: $$.$nl_select,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                                '#height': () => 32,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 265,
+                                                fontSize: () => 14,
+                                                options: () => ({
+                                                    include: { caption: ({ isSelected }) => isSelected ? 'Включая снятые с продажи' : {
+                                                            text: 'Все',
+                                                        } },
+                                                    except: { caption: ({ isSelected, val }) => isSelected ? 'Кроме снятых с продажи' : {
+                                                            text: 'Кроме',
+                                                        } },
+                                                    only: { caption: ({ isSelected }) => isSelected ? {
+                                                            text: 'Только снятые с продажи',
+                                                        } : {
+                                                            text: 'Только',
+                                                        } },
+                                                })
+                                            },
+                                        }),
+                                        button: () => ({
+                                            base: $$.$nl_button,
+                                            prop: {
+                                                '#width': () => 200,
+                                                '#height': () => 40,
+                                                '#ofsVer': () => 349,
+                                                '#alignHor': () => $$.$me_align.center,
+                                                caption: () => 'Сохранить',
+                                                fontSize: () => 16,
+                                                cmd: () => ({ some: 'thing' })
+                                            },
+                                        }),
+                                    },
+                                }),
+                                personal: () => ({
+                                    base: $$.$nl_panel,
+                                    prop: {
+                                        '#width': '<@search.#width',
+                                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '<.#width', '.em', '.tm', '<<<.columnOneMaxSize', '<<<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [swidth, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                                            let res = 0;
+                                            if (width < sz1 - mw) {
+                                                res = sofs;
+                                            }
+                                            else if (width < sz2 - mw) {
+                                                res = sofs + swidth + ofs2;
+                                            }
+                                            else {
+                                                res = sofs + swidth + ofs2;
+                                            }
+                                            return res;
+                                        }),
+                                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '<.#width', '.em', '.tm', '<<<.columnOneMaxSize', '<<<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [sheight, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                                            let res = 0;
+                                            if (width < sz1 - mw) {
+                                                res = sofs + sheight + ofs2;
+                                            }
+                                            else if (width < sz2 - mw) {
+                                                res = sofs;
+                                            }
+                                            else {
+                                                res = sofs;
+                                            }
+                                            return res;
+                                        }),
+                                        '#height': '<@search.#height',
+                                        inputOfs: () => 110,
+                                    },
+                                    elem: {
+                                        title: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.em',
+                                                '#ofsVer': '.em',
+                                            },
+                                            style: {
+                                                fontFamily: () => 'system-ui',
+                                                fontSize: () => 18,
+                                            },
+                                            dom: {
+                                                innerText: $$.$me_atom2_prop(['<<<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('personal', sections).toUpperCase()),
+                                            },
+                                        }),
+                                        label1: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 80,
+                                            },
+                                            style: {
+                                                fontSize: () => 16,
+                                            },
+                                            dom: {
+                                                innerText: () => 'ФИО',
+                                            },
+                                        }),
+                                        fio: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                                '#height': () => 32,
+                                                '#ofsHor': '<.inputOfs',
+                                                '#ofsVer': () => 73,
+                                            },
+                                        }),
+                                        label2: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 144,
+                                            },
+                                            style: {
+                                                fontSize: () => 16,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Телефон',
+                                            },
+                                        }),
+                                        phone: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                                '#height': () => 32,
+                                                '#ofsHor': '<.inputOfs',
+                                                '#ofsVer': () => 137,
+                                            },
+                                        }),
+                                        label3: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 208,
+                                            },
+                                            style: {
+                                                fontSize: () => 16,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Е-mail',
+                                            },
+                                        }),
+                                        email: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                                '#height': () => 32,
+                                                '#ofsHor': '<.inputOfs',
+                                                '#ofsVer': () => 201,
+                                            },
+                                        }),
+                                        label4: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 272,
+                                            },
+                                            style: {
+                                                fontSize: () => 16,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Пароль',
+                                            },
+                                        }),
+                                        password: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#width': $$.$me_atom2_prop(['<.#width', '<.inputOfs', '.tm'], ({ masters: [width, inputOfs, ofs] }) => width - ofs - inputOfs),
+                                                '#height': () => 32,
+                                                '#ofsHor': '<.inputOfs',
+                                                '#ofsVer': () => 265,
+                                            },
+                                        }),
+                                        edit_password: () => ({
+                                            prop: {
+                                                '#width': () => null,
+                                                '#height': () => 25,
+                                                '#ofsVer': () => 300,
+                                                '#ofsHor': '.em',
+                                                '#alignHor': () => $$.$me_align.right,
+                                                '#cursor': () => 'pointer',
+                                                colorText: '/.colorLink',
+                                                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                                            },
+                                            dom: {
+                                                innerText: () => 'редактировать'
+                                            },
+                                            event: {
+                                                clickOrTap: () => {
+                                                    $$.$nl_change_password();
+                                                    return true;
+                                                },
+                                            },
+                                        }),
+                                        button: () => ({
+                                            base: $$.$nl_button,
+                                            prop: {
+                                                '#width': () => 200,
+                                                '#height': () => 40,
+                                                '#ofsVer': () => 349,
+                                                '#alignHor': () => $$.$me_align.center,
+                                                caption: () => 'Сохранить',
+                                                fontSize: () => 16,
+                                            },
+                                        }),
+                                    },
+                                }),
+                                profile: () => ({
+                                    base: $$.$nl_panel,
+                                    prop: {
+                                        '#height': '<@search.#height',
+                                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '<.#width', '.em', '.tm', '<<<.columnOneMaxSize', '<<<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [sheight, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                                            let res = 0;
+                                            if (width < sz1 - mw) {
+                                                res = sofs + sheight * 2 + ofs2 * 2;
+                                            }
+                                            else if (width < sz2 - mw) {
+                                                res = sofs + sheight + ofs2;
+                                            }
+                                            else {
+                                                res = sofs;
+                                            }
+                                            return res;
+                                        }),
+                                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '<.#width', '.em', '.tm', '<<<.columnOneMaxSize', '<<<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [swidth, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
+                                            let res = 0;
+                                            if (width < sz1 - mw) {
+                                                res = sofs;
+                                            }
+                                            else if (width < sz2 - mw) {
+                                                res = sofs;
+                                            }
+                                            else {
+                                                res = swidth * 2 + sofs + ofs2 * 2;
+                                            }
+                                            return res;
+                                        }),
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm', '<<<.columnOneMaxSize', '<<<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [width, ofs, ofs2, sz1, sz2, mw] }) => {
+                                            let res = 0;
+                                            if (width < sz2 - mw) {
+                                                res = width - ofs - ofs2;
+                                            }
+                                            else {
+                                                res = Math.round((width - ofs - ofs2 * 3) / 3);
+                                            }
+                                            return res;
+                                        }),
+                                        inputOfs: () => 150,
+                                    },
+                                    elem: {
+                                        title: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': '.em',
+                                            },
+                                            style: {
+                                                fontFamily: () => 'system-ui',
+                                                fontSize: () => 18,
+                                            },
+                                            dom: {
+                                                innerText: $$.$me_atom2_prop(['<<<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('profile', sections).toUpperCase()),
+                                            },
+                                        }),
+                                        label1: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 60,
+                                            },
+                                            style: {
+                                                fontSize: () => 14,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Вы не раскрыли свое лицо! Ваши объявления публикуются в белой зоне Базы WinNER (в подвале выборки).',
+                                            },
+                                        }),
+                                        label2: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 125,
+                                            },
+                                            style: {
+                                                fontSize: () => 14,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Для публикации в "зелёной зоне" вам необходимо раскрыть свое лицо. Публикация в "зеленой зоне" бесплатна для действующих клиентов.',
+                                            },
+                                        }),
+                                        label3: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 208,
+                                            },
+                                            style: {
+                                                fontSize: () => 16,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Наименование',
+                                            },
+                                        }),
+                                        rname: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#height': () => 32,
+                                                '#ofsVer': () => 201,
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                                '#ofsHor': '<.inputOfs',
+                                            },
+                                        }),
+                                        label4: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.tm',
+                                                '#ofsVer': () => 272,
+                                            },
+                                            style: {
+                                                fontSize: () => 16,
+                                            },
+                                            dom: {
+                                                innerText: () => 'Ссылка на сайт',
+                                            },
+                                        }),
+                                        wwwlink: () => ({
+                                            base: $$.$nl_input,
+                                            prop: {
+                                                '#height': () => 32,
+                                                '#ofsVer': () => 265,
+                                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
+                                                '#ofsHor': '<.inputOfs',
+                                            },
+                                        }),
+                                        button: () => ({
+                                            base: $$.$nl_button,
+                                            prop: {
+                                                '#width': () => 200,
+                                                '#height': () => 40,
+                                                '#ofsVer': () => 349,
+                                                '#alignHor': () => $$.$me_align.center,
+                                                caption: () => 'Отправить',
+                                                fontSize: () => 16,
+                                            },
+                                        }),
+                                    },
+                                }),
+                                blacklist: () => ({
+                                    base: $$.$nl_panel,
+                                    prop: {
+                                        '#ofsHor': '.em',
+                                        '#ofsVer': $$.$me_atom2_prop(['<@profile.#height', '<@profile.#ofsVer', '.tm'], ({ masters: [height, ofs, ofs2] }) => {
+                                            let res = height + ofs + ofs2;
+                                            const h = $$.a('.#height');
+                                            const nh = res + h + ofs2;
+                                            $$.a.update('<.height_content', val => nh);
+                                            return res;
+                                        }),
+                                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm'], ({ masters: [width, ofs, ofs2] }) => width - ofs - ofs2),
+                                        '#height': () => 400
+                                    },
+                                    elem: {
+                                        title: () => ({
+                                            prop: {
+                                                '#height': () => null,
+                                                '#width': () => null,
+                                                '#ofsHor': '.em',
+                                                '#ofsVer': '.em',
+                                            },
+                                            style: {
+                                                fontFamily: () => 'system-ui',
+                                                fontSize: () => 18,
+                                            },
+                                            dom: {
+                                                innerText: $$.$me_atom2_prop(['<<<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('blacklist', sections).toUpperCase()),
+                                            },
+                                        }),
+                                        isOwnList: () => ({
+                                            base: $$.$nl_checkbox,
+                                            prop: {
+                                                boxSize: () => 14,
+                                                '#ofsVer': () => 20,
+                                                '#ofsHor': () => 195,
+                                                caption: () => 'Мой список',
+                                                checked: () => true,
+                                                fontSize: () => 16,
+                                            },
+                                        }),
+                                        isAgencyList: () => ({
+                                            base: $$.$nl_checkbox,
+                                            prop: {
+                                                boxSize: () => 14,
+                                                '#ofsVer': () => 20,
+                                                '#ofsHor': () => 343,
+                                                caption: () => 'Остальной список нашего агентства',
+                                                checked: () => false,
+                                                fontSize: () => 16,
+                                            },
+                                        }),
+                                        add_to_blacklist_button: () => ({
+                                            base: $$.$nl_button,
+                                            prop: {
+                                                '#width': () => 160,
+                                                '#height': () => 40,
+                                                '#alignVer': () => $$.$me_align.bottom,
+                                                '#ofsVer': '.em',
+                                                '#ofsHor': '.pm',
+                                                caption: () => 'Добавить',
+                                                fontSize: () => 16,
+                                            },
+                                        }),
+                                        delete_from_blacklist_button: () => ({
+                                            base: $$.$nl_button,
+                                            prop: {
+                                                '#width': () => 160,
+                                                '#height': () => 40,
+                                                '#alignVer': () => $$.$me_align.bottom,
+                                                '#ofsVer': '.em',
+                                                '#ofsHor': $$.$me_atom2_prop(['<@add_to_blacklist_button.#width', '.pm'], ({ masters: [width, ofs] }) => width + ofs + 16),
+                                                caption: () => 'Удалить',
+                                                fontSize: () => 16,
+                                            },
+                                        }),
+                                    }
+                                })
                             }
-                        }),
-                    },
-                }),
-                profile: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#height': '<@search.#height',
-                        '#ofsVer': $$.$me_atom2_prop(['<@search.#height', '<@search.#ofsVer', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [sheight, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
-                            let res = 0;
-                            if (width < sz1 - mw) {
-                                res = sofs + sheight * 2 + ofs2 * 2;
-                            }
-                            else if (width < sz2 - mw) {
-                                res = sofs + sheight + ofs2;
-                            }
-                            else {
-                                res = sofs;
-                            }
-                            return res;
-                        }),
-                        '#ofsHor': $$.$me_atom2_prop(['<@search.#width', '<@search.#ofsHor', '<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [swidth, sofs, width, ofs, ofs2, sz1, sz2, mw] }) => {
-                            let res = 0;
-                            if (width < sz1 - mw) {
-                                res = sofs;
-                            }
-                            else if (width < sz2 - mw) {
-                                res = sofs;
-                            }
-                            else {
-                                res = swidth * 2 + sofs + ofs2 * 2;
-                            }
-                            return res;
-                        }),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm', '<.columnOneMaxSize', '<.columnTwoMaxSize', '/@app@menu@list.#width'], ({ masters: [width, ofs, ofs2, sz1, sz2, mw] }) => {
-                            let res = 0;
-                            if (width < sz2 - mw) {
-                                res = width - ofs - ofs2;
-                            }
-                            else {
-                                res = Math.round((width - ofs - ofs2 * 3) / 3);
-                            }
-                            return res;
-                        }),
-                        inputOfs: () => 150,
-                    },
-                    elem: {
-                        title: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('profile', sections).toUpperCase()),
-                            },
-                        }),
-                        label1: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 60,
-                            },
-                            style: {
-                                fontSize: () => 14,
-                            },
-                            dom: {
-                                innerText: () => 'Вы не раскрыли свое лицо! Ваши объявления публикуются в белой зоне Базы WinNER (в подвале выборки).',
-                            },
-                        }),
-                        label2: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm'], ({ masters: [width, ofs] }) => width - ofs * 2),
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 125,
-                            },
-                            style: {
-                                fontSize: () => 14,
-                            },
-                            dom: {
-                                innerText: () => 'Для публикации в "зелёной зоне" вам необходимо раскрыть свое лицо. Публикация в "зеленой зоне" бесплатна для действующих клиентов.',
-                            },
-                        }),
-                        label3: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 208,
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            },
-                            dom: {
-                                innerText: () => 'Наименование',
-                            },
-                        }),
-                        rname: () => ({
-                            base: $$.$nl_input,
-                            prop: {
-                                '#height': () => 32,
-                                '#ofsVer': () => 201,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
-                                '#ofsHor': '<.inputOfs',
-                            },
-                        }),
-                        label4: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.tm',
-                                '#ofsVer': () => 272,
-                            },
-                            style: {
-                                fontSize: () => 16,
-                            },
-                            dom: {
-                                innerText: () => 'Ссылка на сайт',
-                            },
-                        }),
-                        wwwlink: () => ({
-                            base: $$.$nl_input,
-                            prop: {
-                                '#height': () => 32,
-                                '#ofsVer': () => 265,
-                                '#width': $$.$me_atom2_prop(['<.#width', '.tm', '<.inputOfs'], ({ masters: [width, ofs, inputOfs] }) => width - inputOfs - ofs),
-                                '#ofsHor': '<.inputOfs',
-                            },
-                        }),
-                        button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 200,
-                                '#height': () => 40,
-                                '#ofsVer': () => 349,
-                                '#alignHor': () => $$.$me_align.center,
-                                caption: () => 'Отправить',
-                                target: () => '<',
-                                fontSize: () => 16,
-                                cmd: () => ({ some: 'thing' })
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            }
-                        }),
-                    },
-                }),
-                blacklist: () => ({
-                    base: $$.$nl_panel,
-                    prop: {
-                        '#ofsHor': '.em',
-                        '#ofsVer': $$.$me_atom2_prop(['<@profile.#height', '<@profile.#ofsVer', '.tm'], ({ masters: [height, ofs, ofs2] }) => height + ofs + ofs2),
-                        '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm'], ({ masters: [width, ofs, ofs2] }) => width - ofs - ofs2),
-                        '#height': () => 400
-                    },
-                    elem: {
-                        title: () => ({
-                            prop: {
-                                '#height': () => null,
-                                '#width': () => null,
-                                '#ofsHor': '.em',
-                                '#ofsVer': '.em',
-                            },
-                            style: {
-                                fontFamily: () => 'system-ui',
-                                fontSize: () => 18,
-                            },
-                            dom: {
-                                innerText: $$.$me_atom2_prop(['<<.sections'], ({ masters: [sections] }) => $$.$me_option_caption_text('blacklist', sections).toUpperCase()),
-                            },
-                        }),
-                        isOwnList: () => ({
-                            base: $$.$nl_checkbox,
-                            prop: {
-                                boxSize: () => 14,
-                                '#ofsVer': () => 20,
-                                '#ofsHor': () => 195,
-                                caption: () => 'Мой список',
-                                checked: () => true,
-                                fontSize: () => 16,
-                            },
-                        }),
-                        isAgencyList: () => ({
-                            base: $$.$nl_checkbox,
-                            prop: {
-                                boxSize: () => 14,
-                                '#ofsVer': () => 20,
-                                '#ofsHor': () => 343,
-                                caption: () => 'Остальной список нашего агентства',
-                                checked: () => false,
-                                fontSize: () => 16,
-                            },
-                        }),
-                        add_to_blacklist_button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 160,
-                                '#height': () => 40,
-                                '#alignVer': () => $$.$me_align.bottom,
-                                '#ofsVer': '.em',
-                                '#ofsHor': '.pm',
-                                caption: () => 'Добавить',
-                                target: () => '<',
-                                fontSize: () => 16,
-                                cmd: () => ({ some: 'thing' })
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            }
-                        }),
-                        delete_from_blacklist_button: () => ({
-                            base: $$.$nl_button,
-                            prop: {
-                                '#width': () => 160,
-                                '#height': () => 40,
-                                '#alignVer': () => $$.$me_align.bottom,
-                                '#ofsVer': '.em',
-                                '#ofsHor': $$.$me_atom2_prop(['<@add_to_blacklist_button.#width', '.pm'], ({ masters: [width, ofs] }) => width + ofs + 16),
-                                caption: () => 'Удалить',
-                                target: () => '<',
-                                fontSize: () => 16,
-                                cmd: () => ({ some: 'thing' })
-                            },
-                            event: {
-                                clickOrTap: () => {
-                                    return true;
-                                },
-                            }
-                        }),
+                        })
                     }
                 })
             },
