@@ -4826,15 +4826,15 @@ var $;
         $$.$me_stylesheet = {
             prop: {
                 styleSheetName: $$.$me_atom2_prop_abstract(),
-                styleSheet: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => ''),
-                styleSheetCommon: $$.$me_atom2_prop(['.styleSheet'], ({ masters: [styleSheet] }) => ''),
+                styleSheet: $$.$me_atom2_prop(['.className'], ({ masters: [className] }) => ``),
+                styleSheetCommon: $$.$me_atom2_prop(['.styleSheet'], ({ masters: [styleSheet] }) => ``),
                 instanceId: () => null,
                 styleSheet_apply: $$.$me_atom2_prop(['.styleSheet', '.styleSheetName', '.instanceId'], null, styleSheet_apply_fn),
                 styleSheetCommon_apply: $$.$me_atom2_prop(['.styleSheetCommon', '.styleSheetName'], null, styleSheet_apply_fn),
                 className: $$.$me_atom2_prop(['.styleSheetName', '.instanceId'], ({ masters: [styleSheetName, instanceId] }) => styleSheetName + '-' + instanceId),
             },
             dom: {
-                className: $$.$me_atom2_prop(['.styleSheetName', '.className'], ({ masters: [styleSheetName, className] }) => styleSheetName + ' ' + className),
+                className: $$.$me_atom2_prop(['.styleSheetName', '.className'], ({ masters }) => masters.join(' ')),
             },
             init: (self) => {
                 const styleSheetName = $$.a('.styleSheetName');
@@ -5079,7 +5079,7 @@ var $;
         function $nl_agate_fetch(url, options, timeout = agateTimeout) {
             return Promise.race([
                 fetch(url, options),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('agate timeout')), timeout))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Нет связи с сервером')), timeout))
             ]).then((response) => {
                 return (response) ? response.json() : '';
             });
@@ -5168,11 +5168,12 @@ var $;
         $$.$nl_agate_logout = $nl_agate_logout;
         function $nl_agate_update_user(accessToken, userId, attributes) {
             (agateHeaders.has('Authorization')) ? agateHeaders.set('Authorization', accessToken) : agateHeaders.append('Authorization', accessToken);
+            console.log('attributes', attributes);
             return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/${userId}`, {
                 method: 'PUT',
                 headers: agateHeaders,
                 mode: 'cors',
-                body: attributes,
+                body: JSON.stringify(attributes),
             }, agateTimeout);
         }
         $$.$nl_agate_update_user = $nl_agate_update_user;
@@ -6188,7 +6189,8 @@ var $;
         }
         $$.$nl_login_with_token = $nl_login_with_token;
         function $nl_change_password() {
-            alert('Yessssss!');
+            $$.a('/@app.ChangePasswordMode', true);
+            $$.a('/@app.isShownLoginForm', true);
         }
         $$.$nl_change_password = $nl_change_password;
         function $nl_check_login() {
@@ -6280,6 +6282,18 @@ var $;
                 }
                 if (dispatch_name == 'resend') {
                     console.log('повторная отправка кода');
+                    return true;
+                }
+                if (dispatch_name == 'closedialog') {
+                    const selected = $$.a('.selected');
+                    $$.a('/@app.ChangePasswordMode', false);
+                    if (selected == 'restore' || selected == 'change' || selected == 'contact' || selected == 'change_success' || selected == 'register_success') {
+                    }
+                    else if (selected == 'enter' || selected == 'register' || selected == 'confirmation') {
+                        $nl_logout_helper();
+                    }
+                    console.log('закрытие диалога');
+                    $$.a('.isShown', false);
                     return true;
                 }
                 if (dispatch_name == 'no_reg') {
@@ -6542,8 +6556,18 @@ var $;
                             })
                                 .catch(request => {
                                 $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
+                                console.log('errrrrrr', request);
+                                $$.a('/@app@login@container@old_pass.error', request);
                             });
                             console.log('Смена пароля для ' + login);
+                            return true;
+                        }
+                        case 'change_success': {
+                            $$.a.dispatch('/@app@login', 'closedialog');
+                            return true;
+                        }
+                        case 'register_success': {
+                            $$.a.dispatch('/@app@login', 'closedialog');
                             return true;
                         }
                         case 'contact': {
@@ -6664,7 +6688,7 @@ var $;
                             },
                             event: {
                                 clickOrTap: () => {
-                                    $$.a.dispatch('<<', 'no_reg');
+                                    $$.a.dispatch('<<', 'closedialog');
                                     return true;
                                 },
                             },
@@ -23170,6 +23194,75 @@ var $;
             style: {
                 'overflow': () => 'hidden',
             },
+            dispatch(dispatch_name, dispatch_arg) {
+                if (dispatch_name == 'wheel') {
+                    const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
+                    if ($$.a.dispatch('', 'isInVisible', { clientX, clientY, ret: false }).ret) {
+                        $$.a.update('.#ofsVer', val => {
+                            const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
+                            return result;
+                        });
+                        dispatch_arg.ret = true;
+                    }
+                    return true;
+                }
+                else if (dispatch_name == 'ofsVer') {
+                    const delta_v = $$.a('.height_visible') - $$.a('.height_content');
+                    const { val, deltaY } = dispatch_arg;
+                    dispatch_arg.ret = deltaY < 0 ? Math.max(val + deltaY, delta_v) : Math.min(val + deltaY, 0);
+                    return true;
+                }
+                else if (dispatch_name == 'isInVisible') {
+                    const { clientX, clientY } = dispatch_arg;
+                    const clientRect = $$.a('.#clientRect');
+                    const rect = {
+                        left: clientRect.left,
+                        top: clientRect.top,
+                        right: clientRect.right,
+                        bottom: clientRect.top + $$.a('.height_visible'),
+                    };
+                    dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect);
+                    return true;
+                }
+                return false;
+            },
+            event: {
+                wheel: p => {
+                    const result = $$.a.dispatch('', 'wheel', {
+                        clientX: p.event.clientX,
+                        clientY: p.event.clientY,
+                        deltaY: 0 - p.event.deltaY,
+                        deltaX: p.event.deltaX,
+                        ret: false,
+                    }).ret;
+                    return result;
+                },
+                wheelTouch: p => {
+                    const result = $$.a.dispatch('', 'wheel', {
+                        clientX: p.event.start.touches[0].clientX,
+                        clientY: p.event.start.touches[0].clientY,
+                        deltaY: 0 - p.event.deltaY,
+                        deltaX: p.event.deltaX,
+                        ret: false,
+                    }).ret;
+                    return result;
+                },
+                pinch: p => {
+                    if ($$.a.dispatch('', 'isInVisible', {
+                        clientX: p.event.start.touches[0].clientX,
+                        clientY: p.event.start.touches[0].clientY,
+                        ret: false
+                    }).ret ||
+                        $$.a.dispatch('', 'isInVisible', {
+                            clientX: p.event.start.touches[1].clientX,
+                            clientY: p.event.start.touches[1].clientY,
+                            ret: false
+                        }).ret ||
+                        false)
+                        return true;
+                    return false;
+                },
+            },
             elem: {
                 tabs: () => ({
                     base: $$.$nl_settings_tabs,
@@ -25217,6 +25310,30 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_exit = {
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 27 28",
+                content: () => [
+                    {
+                        attr: {
+                            d: () => "M15.8 0H3.2C1.4 0 0 1.6 0 3.6v20.8c0 2 1.4 3.6 3.2 3.6h12.6c1.8 0 3.2-1.6 3.2-3.6v-5.2h-3v5.3c0 .3-.2.5-.5.5h-12c-.3 0-.5-.2-.5-.5v-21c0-.3.2-.5.4-.5h12.1c.3 0 .5.2.5.5v5.3h3V3.6c0-2-1.4-3.6-3.2-3.6zM20 16v3l8-5-8-5v3H8v4h12z",
+                            fill: '<.color',
+                        },
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//exit.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_app = (rootElem) => {
             $$.$nl_defaults_init();
             return new $$.$me_atom2_elem({ tail: 'app', cnf: {
@@ -25239,7 +25356,7 @@ var $;
                         valid: (val) => typeof val == 'boolean' ?
                             val :
                             null,
-                    }), ['isShownLoginForm', 'isShownLoginMenu', 'isShownSchemeMetro', 'isShownCard', 'isShownAdvCard'])), { scheme_metro_value: $$.$me_atom2_prop_store({
+                    }), ['isShownLoginForm', 'isShownSchemeMetro', 'isShownCard', 'isShownAdvCard', 'ChangePasswordMode'])), { isShownLoginMenu: () => false, scheme_metro_value: $$.$me_atom2_prop_store({
                             default: () => [],
                             valid: (val) => Array.isArray(val) ? val : null,
                         }), scheme_metro_value_reciever: $$.$me_atom2_prop_store({
@@ -25339,10 +25456,10 @@ var $;
                     elem: {
                         menu: () => menu,
                         workspace: () => workspace,
-                        login: $$.$me_atom2_prop(['.isShownLoginForm'], ({ masters: [isShownLoginForm] }) => !isShownLoginForm ? null : {
+                        login: $$.$me_atom2_prop(['.isShownLoginForm', '.ChangePasswordMode'], ({ masters: [isShownLoginForm, ChangePasswordMode] }) => !isShownLoginForm ? null : {
                             base: $$.$nl_login,
                             prop: {
-                                selected: () => 'enter',
+                                selected: () => ChangePasswordMode ? 'change' : 'enter',
                                 isShown: $$.$me_atom2_prop_bind('<.isShownLoginForm'),
                                 stayLogged: $$.$me_atom2_prop_bind('<.stayLogged'),
                                 login: $$.$me_atom2_prop_bind('<.login'),
@@ -25507,28 +25624,33 @@ var $;
                     valid: (val) => typeof val == 'boolean' ? val : null,
                 }),
                 '#width': $$.$me_atom2_prop(['.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                    to: isShrinked ? 64 : 180,
+                    to: isShrinked ? 64 : 240,
                     path_active: $$.a.get('.isShrinked_animActive').path,
                 })),
                 isShrinked_animActive: $$.$me_atom2_prop([], () => false),
-                '#order': () => ['login', 'ear', 'theme_switch', 'list'],
+                '#order': () => ['login', 'ear', 'theme_switch', 'list', 'login_menu'],
             },
             elem: {
                 login: () => login,
                 theme_switch: () => theme_switch,
-                loginMenu: $$.$me_atom2_prop(['/@app.isShownLoginMenu'], ({ masters: [isShownLoginMenu] }) => !isShownLoginMenu ?
+                login_menu: $$.$me_atom2_prop(['/@app.isShownLoginMenu'], ({ masters: [isShownLoginMenu] }) => !isShownLoginMenu ?
                     null :
                     {
-                        base: loginMenu,
+                        base: login_list,
                         prop: {
                             '#ofsVer': $$.$me_atom2_prop(['.#ofsVer', '.#height'].map(s => '<@login' + s), $$.$me_atom2_prop_compute_fn_sum()),
+                            '#zIndex': () => 11111,
                         },
                         style: {
-                            background: () => 'red',
+                            'box-shadow': () => '7px 7px 5px 0px rgba(50, 50, 50, 0.75)',
+                            'z-index': () => '1000',
                         },
                         event: {
-                            clickOrTapOutside: () => {
-                                $$.a('/@app.isShownLoginMenu', false);
+                            clickOrTapOutside: p => {
+                                let e = p.event;
+                                if (e.target.id.indexOf('/@app@menu@login') < 0) {
+                                    $$.a('/@app.isShownLoginMenu', false);
+                                }
                                 return false;
                             },
                         },
@@ -25559,9 +25681,7 @@ var $;
                         $$.a('/@app.isShownLoginForm', true);
                     }
                     else {
-                        if (confirm("произвести выход из учетной записи?")) {
-                            $$.$nl_logout();
-                        }
+                        $$.a.update('/@app.isShownLoginMenu', val => !val);
                     }
                     return true;
                 },
@@ -25572,7 +25692,7 @@ var $;
                         '#width': () => 28,
                         '#height': () => 28,
                         '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked', '/.newmenu'], ({ masters: [isShrinked, newmenu] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? ((newmenu ? 6 : 8)) : 5
+                            to: isShrinked ? ((newmenu ? 6 : 18)) : 16
                         })),
                         '#alignVer': () => $$.$me_align.center,
                     },
@@ -25597,7 +25717,7 @@ var $;
                 text: () => ({
                     prop: {
                         '#width': () => null,
-                        '#ofsHor': () => 40,
+                        '#ofsHor': () => 61,
                         '#height': () => null,
                         '#alignVer': () => $$.$me_align.center,
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
@@ -25647,7 +25767,7 @@ var $;
                         '#width': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 26 : 20),
                         '#height': $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 25 : 21),
                         '#ofsHor': $$.$me_atom2_prop(['<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                            to: isShrinked ? 8 : 5
+                            to: isShrinked ? 18 : 16
                         })),
                         '#alignVer': () => $$.$me_align.center,
                         color: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme != $$.$nl_theme.light ? 'white' : '#313745'),
@@ -25659,7 +25779,7 @@ var $;
                 text: () => ({
                     prop: {
                         '#width': () => null,
-                        '#ofsHor': () => 40,
+                        '#ofsHor': () => 61,
                         '#height': () => null,
                         '#alignVer': () => $$.$me_align.center,
                         '#hidden': $$.$me_atom2_prop(['<<.isShrinked', '<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
@@ -25710,17 +25830,6 @@ var $;
                     $$.a('<.isShrinked', !$$.a('<.isShrinked'));
                     return true;
                 },
-            },
-        };
-        const loginMenu = {
-            prop: {
-                items: () => ({
-                    'Другой пользователь': {},
-                    'Сменить пароль': {},
-                    'Выйти': {},
-                }),
-                item_keys: $$.$me_atom2_prop_keys(['.items']),
-                item: $$.$me_atom2_prop({ keys: ['.item_keys'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
             },
         };
         const list = {
@@ -25799,7 +25908,7 @@ var $;
                                 '#width': () => 28,
                                 '#height': () => 28,
                                 '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
-                                    to: isShrinked ? 8 : 5
+                                    to: isShrinked ? 18 : 16
                                 })),
                                 '#alignVer': () => $$.$me_align.center,
                             },
@@ -25827,7 +25936,7 @@ var $;
                             prop: {
                                 '#alignVer': () => $$.$me_align.center,
                                 '#height': () => null,
-                                '#ofsHor': () => 40,
+                                '#ofsHor': () => 61,
                                 '#width': () => null,
                                 '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
                             },
@@ -25869,6 +25978,150 @@ var $;
                 _value.origin.by_path_s('<.menu_cursor').value(id);
             },
         });
+        const login_list = {
+            prop: {
+                '#ofsVer': $$.$me_atom2_prop(['<@login.#height', '<@theme_switch.#height'], ({ masters: [height1, height2] }) => height1 + height2),
+                '#height': $$.$me_atom2_prop(['.#ofsVer', '<.#height'], ({ masters: [ofsVer, height] }) => 156),
+                '#ofsHor': () => 0,
+                '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
+                colorBorder: () => 'blue',
+                items: () => ({
+                    'another': { title: 'Другой пользователь', icon: $$.$nl_icon_user, icon_width: 26, icon_height: 23 },
+                    'change': { title: 'Сменить пароль', icon: $$.$nl_icon_key },
+                    'exit': { title: 'Выйти', icon: $$.$nl_icon_exit, icon_width: 26, icon_height: 25 },
+                }),
+                item_id: $$.$me_atom2_prop_keys(['.items']),
+                item: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.items'] }, ({ key: [id], masters: [items] }) => items[id]),
+                item_top: $$.$me_atom2_prop({
+                    keys: ['.item_id'],
+                    masters: $$.$me_atom2_prop_masters(['.item_id'], ({ key: [id], masters: [ids] }) => {
+                        const idx = ids.indexOf(id);
+                        return !idx ? [] : [`.item_top[${ids[idx - 1]}]`, '.item_height'];
+                    }),
+                }, ({ len, masters: [top, height] }) => !len ? 0 : top + height),
+                item_caption: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.title),
+                item_icon: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon),
+                item_icon_width: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_width || 24),
+                item_icon_height: $$.$me_atom2_prop({ keys: ['.item_id'], masters: ['.item[]'] }, ({ masters: [item] }) => item.icon_height || 24),
+                item_height: () => 52,
+                selected: $$.$me_atom2_prop_store({
+                    default: () => '',
+                    valid: (val) => typeof val == 'string' ? val : null,
+                }),
+                menu_cursor: () => '',
+            },
+            style: {
+                background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#464f63'),
+            },
+            elem: {
+                item: $$.$me_atom2_prop({ keys: ['.item_id'] }, ({ key: [id] }) => ({
+                    prop: {
+                        '#ofsVer': `<.item_top[${id}]`,
+                        '#height': '<.item_height',
+                        '#cursor': () => 'pointer',
+                        'isSelected': $$.$me_atom2_prop(['<.selected'], ({ masters: [selected] }) => id == selected),
+                        'isSelectedPrev': $$.$me_atom2_prop(['<.selected', '<.item_id'], ({ masters: [selected, ids] }) => {
+                            const idx = ids.indexOf(selected);
+                            const result = ~idx && ids.indexOf(id) == idx + 1;
+                            return result;
+                        }),
+                        'isHoveredPrev': $$.$me_atom2_prop(['<.menu_cursor', '<.item_id'], ({ masters: [selected, ids] }) => {
+                            const idx = ids.indexOf(selected);
+                            const result = ~idx && ids.indexOf(id) == idx + 1;
+                            return result;
+                        }),
+                        'colorBackground': $$.$me_atom2_prop(['.isSelected', '.#isHover', '/.theme'], ({ masters: [isSelected, isHover, theme] }) => isSelected ? (theme == $$.$nl_theme.light ? '#0070a4' : '#008ecf') :
+                            isHover ? (theme == $$.$nl_theme.light ? '#cce2ed' : '#306283') :
+                                (theme == $$.$nl_theme.light ? 'white' : '#464f63')),
+                        'colorText': $$.$me_atom2_prop(['.isSelected', '/.colorText'], ({ masters: [isSelected, color] }) => isSelected ? 'white' : color),
+                        menu_cursor_src: $$.$me_atom2_prop(['/.#isTouch', '.#isHover'], ({ masters: [isTouch, isHover] }) => isTouch || !isHover ? '' : id, ({ atom, val }) => {
+                            menu_cursor({ origin: atom, val: val });
+                        }),
+                        id: () => id,
+                    },
+                    style: {
+                        background: '.colorBackground',
+                        overflow: () => 'hidden',
+                        userSelect: () => 'none',
+                    },
+                    elem: {
+                        iconSquare: () => ({
+                            prop: {
+                                '#width': () => 28,
+                                '#height': () => 28,
+                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                                    to: isShrinked ? 18 : 16
+                                })),
+                                '#alignVer': () => $$.$me_align.center,
+                            },
+                            elem: {
+                                icon: () => ({
+                                    prop: {
+                                        '#width': `<<<.item_icon_width[${id}]`,
+                                        '#height': `<<<.item_icon_height[${id}]`,
+                                        '#align': () => $$.$me_align.center,
+                                    },
+                                    style: {
+                                        filter: $$.$me_atom2_prop(['<<.isSelected', '/.theme'], ({ masters: [isSelected, theme] }) => isSelected ?
+                                            'invert(100%) sepia(89%) saturate(0%) hue-rotate(253deg) brightness(112%) contrast(100%)' :
+                                            theme == $$.$nl_theme.light ?
+                                                'invert(22%) sepia(56%) saturate(3987%) hue-rotate(182deg) brightness(96%) contrast(101%)' :
+                                                'invert(45%) sepia(90%) saturate(515%) hue-rotate(154deg) brightness(106%) contrast(97%)'),
+                                    },
+                                    elem: {
+                                        icon: `<<<.item_icon[${id}]`
+                                    },
+                                }),
+                            },
+                        }),
+                        text: () => ({
+                            prop: {
+                                '#alignVer': () => $$.$me_align.center,
+                                '#height': () => null,
+                                '#ofsHor': () => 61,
+                                '#width': () => null,
+                                '#hidden': $$.$me_atom2_prop(['<<<.isShrinked', '<<<.isShrinked_animActive'], ({ masters: [isShrinked, isShrinked_animActive] }) => isShrinked && !isShrinked_animActive),
+                            },
+                            dom: {
+                                innerText: `<<.item_caption[${id}]`,
+                            },
+                            style: {
+                                color: '<.colorText',
+                                whiteSpace: () => 'nowrap',
+                                opacity: $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({ to: isShrinked ? 0 : 1 })),
+                            },
+                        }),
+                        separator: $$.$me_atom2_prop(['<.item_id', '.isSelected', '.isSelectedPrev'], ({ masters: [ids, isSelected, isSelectedPrev] }) => isSelected || isSelectedPrev || !ids.indexOf(id) ? null : {
+                            prop: {
+                                '#hidden': $$.$me_atom2_prop(['<.#isHover', '<.isHoveredPrev'], $$.$me_atom2_prop_compute_fn_or()),
+                                '#ofsHor': $$.$me_atom2_prop(['<<<.isShrinked'], ({ masters: [isShrinked] }) => $$.$me_atom2_anim({
+                                    to: isShrinked ? 12 : 16
+                                })),
+                                '#width': $$.$me_atom2_prop(['<.#width', '.#ofsHor'], ({ masters: [width, ofsHor] }) => width - 2 * ofsHor),
+                            },
+                            style: {
+                                borderTop: () => '1px solid #eceff5',
+                            },
+                        }),
+                    },
+                    event: {
+                        clickOrTap: () => {
+                            $$.a('/@app.isShownLoginMenu', false);
+                            if (id == 'exit') {
+                                $$.$nl_logout();
+                            }
+                            else if (id == 'change') {
+                                $$.$nl_change_password();
+                            }
+                            else if (id == 'another') {
+                                $$.a('/@app.isShownLoginForm', true);
+                            }
+                            return true;
+                        },
+                    },
+                })),
+            },
+        };
         const root = $$.$me_atom2_entity.root();
         root.props({
             'newmenu': () => 0
