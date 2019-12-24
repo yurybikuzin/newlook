@@ -23178,7 +23178,7 @@ var $;
                         caption: 'Личные данные',
                     },
                     profile: {
-                        caption: 'Настройка профиля',
+                        caption: 'Профиль',
                     },
                     blacklist: {
                         caption: 'Черный список',
@@ -23316,6 +23316,21 @@ var $;
                                         ret: false,
                                     }).ret;
                                     return result;
+                                },
+                                pinch: p => {
+                                    if ($$.a.dispatch('', 'isInVisible', {
+                                        clientX: p.event.start.touches[0].clientX,
+                                        clientY: p.event.start.touches[0].clientY,
+                                        ret: false
+                                    }).ret ||
+                                        $$.a.dispatch('', 'isInVisible', {
+                                            clientX: p.event.start.touches[1].clientX,
+                                            clientY: p.event.start.touches[1].clientY,
+                                            ret: false
+                                        }).ret ||
+                                        false)
+                                        return true;
+                                    return false;
                                 },
                             },
                             elem: {
@@ -23457,6 +23472,7 @@ var $;
                                                 '#ofsVer': () => 349,
                                                 '#alignHor': () => $$.$me_align.center,
                                                 caption: () => 'Сохранить',
+                                                target: () => '<',
                                                 fontSize: () => 16,
                                                 cmd: () => ({ some: 'thing' })
                                             },
@@ -23633,6 +23649,7 @@ var $;
                                                 '#ofsVer': () => 349,
                                                 '#alignHor': () => $$.$me_align.center,
                                                 caption: () => 'Сохранить',
+                                                target: () => '<',
                                                 fontSize: () => 16,
                                             },
                                         }),
@@ -23778,6 +23795,7 @@ var $;
                                                 '#ofsVer': () => 349,
                                                 '#alignHor': () => $$.$me_align.center,
                                                 caption: () => 'Отправить',
+                                                target: () => '<',
                                                 fontSize: () => 16,
                                             },
                                         }),
@@ -23844,6 +23862,7 @@ var $;
                                                 '#ofsVer': '.em',
                                                 '#ofsHor': '.pm',
                                                 caption: () => 'Добавить',
+                                                target: () => '<',
                                                 fontSize: () => 16,
                                             },
                                         }),
@@ -23856,6 +23875,7 @@ var $;
                                                 '#ofsVer': '.em',
                                                 '#ofsHor': $$.$me_atom2_prop(['<@add_to_blacklist_button.#width', '.pm'], ({ masters: [width, ofs] }) => width + ofs + 16),
                                                 caption: () => 'Удалить',
+                                                target: () => '<',
                                                 fontSize: () => 16,
                                             },
                                         }),
