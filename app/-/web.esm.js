@@ -23246,6 +23246,7 @@ var $;
                                 background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
                             },
                             dispatch(dispatch_name, dispatch_arg) {
+                                console.log('dispatch_name', dispatch_name, 'dispatch_arg', dispatch_arg);
                                 if (dispatch_name == 'tabclick') {
                                     console.log('tab id ', dispatch_arg);
                                     if (dispatch_arg == 'search') {
@@ -23354,6 +23355,9 @@ var $;
                                         }),
                                         '#height': () => 410,
                                         inputOfs: () => 140,
+                                    },
+                                    dispatch(dispatch_name, dispatch_arg) {
+                                        return true;
                                     },
                                     elem: {
                                         title: () => ({
@@ -23511,6 +23515,9 @@ var $;
                                         }),
                                         '#height': '<@search.#height',
                                         inputOfs: () => 110,
+                                    },
+                                    dispatch(dispatch_name, dispatch_arg) {
+                                        return true;
                                     },
                                     elem: {
                                         title: () => ({
@@ -23697,6 +23704,9 @@ var $;
                                         }),
                                         inputOfs: () => 150,
                                     },
+                                    dispatch(dispatch_name, dispatch_arg) {
+                                        return true;
+                                    },
                                     elem: {
                                         title: () => ({
                                             prop: {
@@ -23813,7 +23823,10 @@ var $;
                                             return res;
                                         }),
                                         '#width': $$.$me_atom2_prop(['<.#width', '.em', '.tm'], ({ masters: [width, ofs, ofs2] }) => width - ofs - ofs2),
-                                        '#height': () => 400
+                                        '#height': $$.$me_atom2_prop(['<<.#height', '.tm'], ({ masters: [height, ofs2] }) => height - ofs2 - ofs2),
+                                    },
+                                    dispatch(dispatch_name, dispatch_arg) {
+                                        return true;
                                     },
                                     elem: {
                                         title: () => ({
