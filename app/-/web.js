@@ -5121,8 +5121,8 @@ var $;
             if (checkMultiSession) {
                 body['checkMultiSession'] = checkMultiSession;
             }
-            if ($$.a('.partnerCode')) {
-                body['partnerCode'] = $$.a('.partnerCode');
+            if (partnerCode) {
+                body['partnerCode'] = partnerCode;
             }
             return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/loginWithToken`, {
                 method: 'POST',
@@ -5132,12 +5132,12 @@ var $;
             }, agateTimeout);
         }
         $$.$nl_agate_login_with_token = $nl_agate_login_with_token;
-        function $nl_agate_login_with_password(username, password, metric, checkMultiSession = false) {
+        function $nl_agate_login_with_password(username, password, metric, checkMultiSession = false, partnerCode = '') {
             let body = {
                 username: username,
                 password: password,
                 checkMultiSession: checkMultiSession,
-                partnerCode: ($$.a('/.partnerCode')) ? $$.a('/.partnerCode') : '',
+                partnerCode: (partnerCode) ? partnerCode : '',
                 metric: metric
             };
             return $nl_agate_fetch(`${agateUrl}/${agateUsersPath}/login`, {
@@ -8598,6 +8598,7 @@ var $;
                             return true;
                         },
                         touchstart: p => {
+                            console.log('ttttt');
                             const clientX = p.event.touches[0].clientX;
                             const clientY = p.event.touches[0].clientY;
                             if (p.event.touches.length > 1) {
@@ -21653,67 +21654,33 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        let _dataWorker;
         $$.$nl_advs_new = {
             prop: {
                 data: () => ({
                     Продажа: {
                         'Москва': {
                             Квартиры: {
-                                'Всего': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
+                                'Всего': 0,
+                                'Публикуются': 0,
+                                'В архиве': 0,
                             },
                             Комнаты: {
-                                'Всего': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Загородная: {
-                                'Всего': 500000,
-                                'За сегодня': 500,
-                                'Новые': 500,
-                            },
-                            Коммерческая: {
-                                'Всего': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Всего': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                            Доли: {
-                                'Всего': 700,
-                                'За сегодня': 70,
-                                'Новые': 70,
+                                'Всего': 0,
+                                'Публикуются': 0,
+                                'В архиве': 0,
                             },
                         },
                         'Московская область': {
                             Квартиры: {
-                                'Всего': 1000000,
-                                'За сегодня': 1000,
-                                'Новые': 1000,
+                                'Всего': 0,
+                                'Публикуются': 0,
+                                'В архиве': 0,
                             },
                             Комнаты: {
-                                'Всего': 150000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Коммерческая: {
-                                'Всего': 1000,
-                                'За сегодня': 150,
-                                'Новые': 150,
-                            },
-                            Гаражи: {
-                                'Всего': 15000,
-                                'За сегодня': 15,
-                                'Новые': 15,
-                            },
-                            Доли: {
-                                'Всего': 700,
-                                'За сегодня': 70,
-                                'Новые': 70,
+                                'Всего': 0,
+                                'Публикуются': 0,
+                                'В архиве': 0,
                             },
                         },
                     },
@@ -21722,8 +21689,8 @@ var $;
                 panel_data: $$.$me_atom2_prop({ keys: ['.panel_names'], masters: ['.data'] }, ({ key: [panel_name], masters: [data] }) => data[panel_name]),
                 panel_left_first: '.em',
                 panel_top_first: () => 0,
-                panel_width: () => 536,
-                panel_height: () => 580,
+                panel_width: () => 600,
+                panel_height: () => 400,
                 panel_space_hor: '.em',
                 panel_space_ver: '.em',
                 panel_pos: $$.$me_atom2_prop({
@@ -21768,7 +21735,7 @@ var $;
                         '#width': '<.panel_width',
                         '#height': '<.panel_height',
                         '#ofsHor': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.left, duration: 800 })),
-                        '#ofsVer': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.top, duration: 800 })),
+                        '#ofsVer': $$.$me_atom2_prop([`<.panel_pos[${panel_name}]`], ({ masters: [pos] }) => $$.$me_atom2_anim({ to: pos.top + 10, duration: 800 })),
                         tables: `<.panel_data[${panel_name}]`,
                         table_keys: $$.$me_atom2_prop_keys(['.tables']),
                         table: $$.$me_atom2_prop({ keys: ['.table_keys'], masters: ['.tables'] }, ({ key: [table_key], masters: [tables] }) => tables[table_key]),
@@ -21777,7 +21744,7 @@ var $;
                         table_header_height: () => 40,
                         table_ver_ofs: () => 69,
                         table_ver_space: '.em',
-                        table_row_space: () => 1,
+                        table_row_space: () => 2,
                         table_top: $$.$me_atom2_prop({
                             keys: ['.table_keys'],
                             masters: $$.$me_atom2_prop_masters(['.table_keys'], ({ key: [table_key], masters: [table_keys] }) => {
@@ -21797,11 +21764,11 @@ var $;
                                 width: 66 + 2 * (26 - (33 - 24)),
                                 opacity: 1,
                             },
-                            'За сегодня': {
+                            'Публикуются': {
                                 width: 83 + 2 * (33 - 24),
                                 opacity: 0.7,
                             },
-                            'Новые': {
+                            'В архиве': {
                                 width: 51 + 2 * 24,
                                 opacity: 0.7,
                             },
@@ -21820,6 +21787,72 @@ var $;
                                 x1 = x1.replace(rgx, '$1' + ' ' + '$2');
                             return x1 + x2;
                         }),
+                        _provider: () => $$.a.curr.parent(true).path,
+                        provider_tag: () => 'new',
+                        count: $$.$me_atom2_prop(['.provider_tag'], ({ masters: [tag] }) => {
+                            const accessToken = $$.a('/@app.accessToken');
+                            const brokerGuid = $$.a('/@app.mlsBrokerGuid');
+                            console.log('nmmmtag', tag);
+                            $$.a('.dataWorker').postMessage({ cmd: 'stat', tag, accessToken, brokerGuid });
+                            return -1;
+                        }),
+                        dataWorker: () => {
+                            if (!_dataWorker) {
+                                const base = window.location.href.slice(0, -window.location.search.length);
+                                _dataWorker = new Worker(base + 'mydata/-/web.js');
+                                const curr = $$.a.curr;
+                                _dataWorker.onmessage = (event) => {
+                                    console.log('stat on message', event.data.tag);
+                                    const prev = $$.a.curr;
+                                    $$.a.curr = curr;
+                                    if (event.data.tag != $$.a('.provider_tag')) {
+                                        console.warn({ tag: event.data.tag, provider_tag: $$.a('.provider_tag') }, event.data);
+                                    }
+                                    else if (event.data.status != 'ok') {
+                                        console.error(event.data);
+                                    }
+                                    else if (event.data.cmd == 'stat') {
+                                        if (event.data && event.data.sale) {
+                                            let el = $$.a.get('@table[Москва]@row[Квартиры]@fld[Всего]');
+                                            el.node.innerHTML = event.data.sale.msk.flat.actual;
+                                            el = $$.a.get('@table[Москва]@row[Квартиры]@fld[Публикуются]');
+                                            el.node.innerHTML = event.data.sale.msk.flat.published;
+                                            el = $$.a.get('@table[Москва]@row[Квартиры]@fld[В архиве]');
+                                            el.node.innerHTML = event.data.sale.msk.flat.archive;
+                                            el = $$.a.get('@table[Москва]@row[Комнаты]@fld[Всего]');
+                                            el.node.innerHTML = event.data.sale.msk.room.actual;
+                                            el = $$.a.get('@table[Москва]@row[Комнаты]@fld[Публикуются]');
+                                            el.node.innerHTML = event.data.sale.msk.room.published;
+                                            el = $$.a.get('@table[Москва]@row[Комнаты]@fld[В архиве]');
+                                            el.node.innerHTML = event.data.sale.msk.room.archive;
+                                            el = $$.a.get('@table[Московская область]@row[Квартиры]@fld[Всего]');
+                                            el.node.innerHTML = event.data.sale.msk_area.flat.actual;
+                                            el = $$.a.get('@table[Московская область]@row[Квартиры]@fld[Публикуются]');
+                                            el.node.innerHTML = event.data.sale.msk_area.flat.published;
+                                            el = $$.a.get('@table[Московская область]@row[Квартиры]@fld[В архиве]');
+                                            el.node.innerHTML = event.data.sale.msk_area.flat.archive;
+                                            el = $$.a.get('@table[Московская область]@row[Комнаты]@fld[Всего]');
+                                            el.node.innerHTML = event.data.sale.msk_area.room.actual;
+                                            el = $$.a.get('@table[Московская область]@row[Комнаты]@fld[Публикуются]');
+                                            el.node.innerHTML = event.data.sale.msk_area.room.published;
+                                            el = $$.a.get('@table[Московская область]@row[Комнаты]@fld[В архиве]');
+                                            el.node.innerHTML = event.data.sale.msk_area.room.archive;
+                                        }
+                                    }
+                                    else {
+                                        console.error(event.data);
+                                    }
+                                    $$.a.curr = prev;
+                                };
+                            }
+                            return _dataWorker;
+                        },
+                    },
+                    init: () => {
+                        const accessToken = $$.a('/@app.accessToken');
+                        const brokerGuid = $$.a('/@app.mlsBrokerGuid');
+                        const tag = $$.a('.provider_tag');
+                        $$.a('.dataWorker').postMessage({ cmd: 'stat', tag, accessToken, brokerGuid });
                     },
                     elem: {
                         header: () => ({
@@ -22355,7 +22388,7 @@ var $;
     (function ($$) {
         let _dataWorker;
         $$.$nl_advs_panel_result = {
-            base: $$.$nl_search_panel,
+            base: $$.$nl_advs_panel,
             dispatch: (dispatch_name, dispatch_arg) => {
                 if (dispatch_name == 'get_recs') {
                     $$.a('.dataWorker').postMessage(Object.assign(Object.assign({}, dispatch_arg), { cmd: 'recs', tag: $$.a('.provider_tag') }));
@@ -22388,15 +22421,19 @@ var $;
                 }),
                 isZoomed: '/@app.isZoomed',
                 count: $$.$me_atom2_prop(['.provider_tag'], ({ masters: [tag] }) => {
-                    $$.a('.dataWorker').postMessage({ cmd: 'count', tag });
+                    const accessToken = $$.a('/@app.accessToken');
+                    const brokerGuid = $$.a('/@app.mlsBrokerGuid');
+                    console.log('tag', tag);
+                    $$.a('.dataWorker').postMessage({ cmd: 'count', tag, accessToken, brokerGuid });
                     return -1;
                 }),
                 dataWorker: () => {
                     if (!_dataWorker) {
                         const base = window.location.href.slice(0, -window.location.search.length);
-                        _dataWorker = new Worker(base + 'data/-/web.js');
+                        _dataWorker = new Worker(base + 'mydata/-/web.js');
                         const curr = $$.a.curr;
                         _dataWorker.onmessage = (event) => {
+                            console.log('result on message', event.data.tag);
                             const prev = $$.a.curr;
                             $$.a.curr = curr;
                             if (event.data.tag != $$.a('.provider_tag')) {
@@ -23309,6 +23346,7 @@ var $;
                                     return result;
                                 },
                                 wheelTouch: p => {
+                                    console.log('wheelTouch');
                                     const result = $$.a.dispatch('', 'wheel', {
                                         clientX: p.event.start.touches[0].clientX,
                                         clientY: p.event.start.touches[0].clientY,
@@ -26039,8 +26077,8 @@ var $;
                 '#zIndex': $$.$me_atom2_prop(['<.#zIndex'], ({ masters: [zIndex] }) => zIndex + 1),
                 colorBorder: () => 'blue',
                 items: () => ({
-                    'another': { title: 'Другой пользователь', icon: $$.$nl_icon_user, icon_width: 26, icon_height: 23 },
-                    'change': { title: 'Сменить пароль', icon: $$.$nl_icon_key },
+                    'profile': { title: 'Профиль', icon: $$.$nl_icon_user, icon_width: 26, icon_height: 23 },
+                    'blacklist': { title: 'Черный список', icon: $$.$nl_icon_list },
                     'exit': { title: 'Выйти', icon: $$.$nl_icon_exit, icon_width: 26, icon_height: 25 },
                 }),
                 item_id: $$.$me_atom2_prop_keys(['.items']),
@@ -26163,11 +26201,13 @@ var $;
                             if (id == 'exit') {
                                 $$.$nl_logout();
                             }
-                            else if (id == 'change') {
-                                $$.$nl_change_password();
+                            else if (id == 'profile') {
+                                $$.a('/@app@menu@list.selected', 'settings');
+                                $$.a.dispatch('/@app@workspace@settings@wrapper@wrapper2', 'tabclick', 'personal');
                             }
-                            else if (id == 'another') {
-                                $$.a('/@app.isShownLoginForm', true);
+                            else if (id == 'blacklist') {
+                                $$.a('/@app@menu@list.selected', 'settings');
+                                $$.a.dispatch('/@app@workspace@settings@wrapper@wrapper2', 'tabclick', 'blacklist');
                             }
                             return true;
                         },
