@@ -6193,6 +6193,25 @@ var $;
             $$.a('/@app.isShownLoginForm', true);
         }
         $$.$nl_change_password = $nl_change_password;
+        function $nl_update_settings(response) {
+            $$.a('/@app@workspace@settings.personalName', response.user.name);
+            const contacts = response.user.contacts;
+            contacts.forEach((item) => {
+                const item_name = item['name'];
+                const item_kind = item['contactKindId'];
+                if (item_kind == 1) {
+                    $$.a('/@app@workspace@settings.personalPhone', item_name);
+                }
+                else if (item_kind == 2) {
+                    $$.a('/@app@workspace@settings.personalEmail', item_name);
+                }
+            });
+            if (response.user.isPasswordSet) {
+                $$.a('/@app@workspace@settings.personalIsPasswordSet', true);
+                $$.a('/@app@workspace@settings.personalPassword', '1111111111');
+            }
+        }
+        $$.$nl_update_settings = $nl_update_settings;
         function $nl_check_login() {
             const accessToken = $$.a('/@app.accessToken');
             if (accessToken) {
@@ -6216,6 +6235,7 @@ var $;
                     })
                         .then(responses => {
                         console.log('responses', responses);
+                        $nl_update_settings(responses);
                         $nl_success_login_helper(responses, responses.ip);
                     })
                         .catch(err => {
@@ -6347,6 +6367,7 @@ var $;
                                 return $$.$nl_agate_login_with_password(login, pass, metric, checkMultiSession)
                                     .then((userParams) => {
                                     console.log('my response', userParams, userParams.error);
+                                    $nl_update_settings(userParams);
                                     if (userParams && userParams.error === undefined) {
                                         $$.a.update('/@app@login._isDisabled', val => wasDisabled && $$.a('/@app@login._isDisabled'));
                                         $$.a.dispatch('/@app@login', '_onSuccessLoginRequest', { params: userParams, ip: internalIp, page: 'password' });
@@ -6448,7 +6469,7 @@ var $;
                                 }
                                 else {
                                     $$.$nl_agate_request_token(login, { token: $$.$nl_metric_get_extended_params("w7AuthConfirmationSent") }).then(() => {
-                                        $$.a('.selectedConfirm', 'register');
+                                        $$.a('/@app@login.selectedConfirm', 'register');
                                         $$.a.dispatch('', '_changeSelected', 'confirmation');
                                     })
                                         .catch((err) => Promise.reject(err));
@@ -6505,7 +6526,7 @@ var $;
                                             }
                                         })
                                             .then(() => {
-                                            const selected_confirm = $$.a('.selectedConfirm');
+                                            const selected_confirm = $$.a('/@app@login.selectedConfirm');
                                             $$.a.dispatch('/@app@login', '_changeSelected', selected_confirm);
                                             $$.a.dispatch('/@app@login', '_onSuccessLoginRequest', { params: userParams, ip: internalIp });
                                         })
@@ -23226,6 +23247,11 @@ var $;
                 }),
                 columnOneMaxSize: () => 1024,
                 columnTwoMaxSize: () => 1300,
+                personalName: () => '',
+                personalPhone: () => '',
+                personalEmail: () => '',
+                personalPassword: () => '',
+                personalIsPasswordSet: () => false,
             },
             style: {
                 'overflow': () => 'hidden',
@@ -23281,9 +23307,7 @@ var $;
                                 background: $$.$me_atom2_prop(['/.theme'], ({ masters: [theme] }) => theme == $$.$nl_theme.light ? 'white' : '#414c5f'),
                             },
                             dispatch(dispatch_name, dispatch_arg) {
-                                console.log('dispatch_name', dispatch_name, 'dispatch_arg', dispatch_arg);
                                 if (dispatch_name == 'tabclick') {
-                                    console.log('tab id ', dispatch_arg);
                                     if (dispatch_arg == 'search') {
                                         $$.a.update('.#ofsVer', val => 10 - $$.a('@search.#ofsVer'));
                                     }
@@ -23301,10 +23325,8 @@ var $;
                                 else if (dispatch_name == 'wheel') {
                                     const { clientX, clientY, deltaY, deltaX } = dispatch_arg;
                                     if ($$.a.dispatch('', 'isInVisible', { clientX, clientY, ret: false }).ret) {
-                                        console.log(41, deltaY, dispatch_arg);
                                         $$.a.update('.#ofsVer', val => {
                                             const result = $$.a.dispatch('', 'ofsVer', { val, deltaY, ret: 0 }).ret;
-                                            console.warn(43, { result });
                                             return result;
                                         });
                                         dispatch_arg.ret = true;
@@ -23327,7 +23349,6 @@ var $;
                                         bottom: clientRect.top + $$.a('.height_visible'),
                                     };
                                     dispatch_arg.ret = $$.$me_rect_has_point(clientX, clientY, rect);
-                                    console.log(96, dispatch_arg.ret, { clientX, clientY }, clientRect, $$.a('.height_visible'));
                                     return true;
                                 }
                                 return false;
@@ -23592,6 +23613,7 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 73,
+                                                'value': '<<<<.personalName',
                                             },
                                         }),
                                         label2: () => ({
@@ -23615,6 +23637,7 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 137,
+                                                'value': '<<<<.personalPhone',
                                             },
                                         }),
                                         label3: () => ({
@@ -23638,6 +23661,7 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 201,
+                                                'value': '<<<<.personalEmail',
                                             },
                                         }),
                                         label4: () => ({
@@ -23661,7 +23685,11 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 265,
+                                                'value': '<<<<.personalPassword',
                                             },
+                                            attr: {
+                                                'type': () => 'password',
+                                            }
                                         }),
                                         edit_password: () => ({
                                             prop: {
