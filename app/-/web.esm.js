@@ -5764,6 +5764,32 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        $$.$nl_icon_eyeclose = {
+            type: '$nl_icon_eyeClose',
+            base: $$.$me_svg,
+            prop: {
+                color: '/.colorText',
+                viewBox: () => "0 0 26 11",
+                content: () => [
+                    {
+                        tag: 'g',
+                        attr: { fill: () => 'none', fillRule: () => 'evenodd', stroke: '<.color' },
+                        sub: [
+                            { attr: { d: () => "M13 7c4.418 0 8.418-2.333 12-7-3.582 4.667-7.582 7-12 7S4.582 4.667 1 0c3.582 4.667 7.582 7 12 7zM1.168 6.311l2.106-2.224M25.277 6.308L23.166 4.09M19.93 9.556l-1.418-2.714M5.89 9.51l1.22-2.462M13 11V8" } },
+                        ],
+                    },
+                ],
+            },
+        };
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+//eyeClose.js.map
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
         $$.$nl_icon_eyeopen = {
             type: '$nl_icon_eyeOpen',
             base: $$.$me_svg,
@@ -5792,32 +5818,6 @@ var $;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 //eyeOpen.js.map
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $$.$nl_icon_eyeclose = {
-            type: '$nl_icon_eyeClose',
-            base: $$.$me_svg,
-            prop: {
-                color: '/.colorText',
-                viewBox: () => "0 0 26 11",
-                content: () => [
-                    {
-                        tag: 'g',
-                        attr: { fill: () => 'none', fillRule: () => 'evenodd', stroke: '<.color' },
-                        sub: [
-                            { attr: { d: () => "M13 7c4.418 0 8.418-2.333 12-7-3.582 4.667-7.582 7-12 7S4.582 4.667 1 0c3.582 4.667 7.582 7 12 7zM1.168 6.311l2.106-2.224M25.277 6.308L23.166 4.09M19.93 9.556l-1.418-2.714M5.89 9.51l1.22-2.462M13 11V8" } },
-                        ],
-                    },
-                ],
-            },
-        };
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-//eyeClose.js.map
 ;
 "use strict";
 var $;
@@ -7058,9 +7058,7 @@ var $;
                 icon_margin_right: () => 30,
                 icon_isClickable: () => true,
                 icon: $$.$me_atom2_prop(['.isPassword'], ({ masters: [isPassword] }) => {
-                    const result = isPassword ?
-                        $$.$nl_icon_eyeopen :
-                        $$.$nl_icon_eyeclose;
+                    const result = isPassword ? $$.$nl_icon_eyeclose : $$.$nl_icon_eyeopen;
                     return result;
                 }),
                 isPassword: $$.$me_atom2_prop_bind('<<.isPassword'),
