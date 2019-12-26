@@ -25807,7 +25807,7 @@ var $;
                 }),
                 text: () => ({
                     prop: {
-                        '#width': () => null,
+                        '#width': $$.$me_atom2_prop(['<<.#width'], ({ masters: [w] }) => w - 70),
                         '#ofsHor': () => 61,
                         '#height': () => null,
                         '#alignVer': () => $$.$me_align.center,
