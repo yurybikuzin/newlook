@@ -6194,21 +6194,22 @@ var $;
         }
         $$.$nl_change_password = $nl_change_password;
         function $nl_update_settings(response) {
-            $$.a('/@app@workspace@settings.personalName', response.user.name);
+            console.log('eeeeeeeeeeeeeeeeeee');
+            $$.a('/@app.personalName', response.user.name);
             const contacts = response.user.contacts;
             contacts.forEach((item) => {
                 const item_name = item['name'];
                 const item_kind = item['contactKindId'];
                 if (item_kind == 1) {
-                    $$.a('/@app@workspace@settings.personalPhone', item_name);
+                    $$.a('/@app.personalPhone', item_name);
                 }
                 else if (item_kind == 2) {
-                    $$.a('/@app@workspace@settings.personalEmail', item_name);
+                    $$.a('/@app.personalEmail', item_name);
                 }
             });
             if (response.user.isPasswordSet) {
-                $$.a('/@app@workspace@settings.personalIsPasswordSet', true);
-                $$.a('/@app@workspace@settings.personalPassword', '1111111111');
+                $$.a('/@app.personalIsPasswordSet', true);
+                $$.a('/@app.personalPassword', '1111111111');
             }
         }
         $$.$nl_update_settings = $nl_update_settings;
@@ -23247,11 +23248,6 @@ var $;
                 }),
                 columnOneMaxSize: () => 1024,
                 columnTwoMaxSize: () => 1300,
-                personalName: () => '',
-                personalPhone: () => '',
-                personalEmail: () => '',
-                personalPassword: () => '',
-                personalIsPasswordSet: () => false,
             },
             style: {
                 'overflow': () => 'hidden',
@@ -23613,7 +23609,7 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 73,
-                                                'value': '<<<<.personalName',
+                                                'value': '/@app.personalName',
                                             },
                                         }),
                                         label2: () => ({
@@ -23637,7 +23633,7 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 137,
-                                                'value': '<<<<.personalPhone',
+                                                'value': '/@app.personalPhone',
                                             },
                                         }),
                                         label3: () => ({
@@ -23661,7 +23657,7 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 201,
-                                                'value': '<<<<.personalEmail',
+                                                'value': '/@app.personalEmail',
                                             },
                                         }),
                                         label4: () => ({
@@ -23685,10 +23681,11 @@ var $;
                                                 '#height': () => 32,
                                                 '#ofsHor': '<.inputOfs',
                                                 '#ofsVer': () => 265,
-                                                'value': '<<<<.personalPassword',
+                                                'value': '/@app.personalPassword',
                                             },
                                             attr: {
                                                 'type': () => 'password',
+                                                'readonly': () => 'readonly',
                                             }
                                         }),
                                         edit_password: () => ({
@@ -25566,7 +25563,7 @@ var $;
                             default: () => '',
                             valid: (val) => typeof val == 'string' ? val.trim() : null,
                             condition: ['.stayLogged'],
-                        }), isZoomed: $$.$me_atom2_prop_store({
+                        }), personalName: () => '', personalPhone: () => '', personalEmail: () => '', personalPassword: () => '', personalIsPasswordSet: () => false, isZoomed: $$.$me_atom2_prop_store({
                             default: () => false,
                             valid: (val) => typeof val == 'boolean' ? val : false,
                         }), '#order': () => ['menu', 'workspace', 'login', 'tapEffect'] }),
